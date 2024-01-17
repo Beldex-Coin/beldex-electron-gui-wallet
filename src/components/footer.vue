@@ -93,11 +93,15 @@ export default {
       } else {
         pct = ((100 * this.wallet.info.height) / this.target_height).toFixed(1);
       }
+      // this.walletStatus()
       if (pct == 100.0 && this.wallet.info.height < this.target_height)
         return 99.9;
       else return pct;
     },
     status() {
+      // console.log("deamon details ::", this.daemon.info);
+      // console.log("wallet details ::", this.wallet);
+
       const daemonType = this.config_daemon.type;
       const isSyncing =
         this.daemon.info.height_without_bootstrap < this.target_height;
@@ -129,6 +133,56 @@ export default {
       }
     }
   })
+  // methods:{
+  //   walletStatus() {
+  //     // console.log("deamon details ::", this.daemon.info);
+  //     console.log("walletStatus walletStatus 1::", this.wallet.info);
+
+  //     const daemonType = this.config_daemon.type;
+  //     console.log("walletStatus walletStatus 2::", daemonType);
+
+  //     const isSyncing =
+  //       this.daemon.info.height_without_bootstrap < this.target_height;
+  //     console.log("walletStatus walletStatus 3::",  this.daemon.info.height_without_bootstrap,this.target_height);
+
+  //     const isScanning =
+  //       this.wallet.info.height < this.target_height - 1 &&
+  //       this.wallet.info.height != 0;
+  //     console.log("walletStatus walletStatus 4::",  this.wallet.info.height , this.target_height - 1 , this.wallet.info.height);
+
+  //       // console.log("sync 1::", isSyncing);
+  //       // console.log("sync 2::", isScanning);
+
+  //     if (this.update_required) {
+  //       // i18n string and class of statusbar
+  //       return "updateRequired";
+  //     }
+
+  //     if (daemonType === "local") {
+  //       if (isSyncing) {
+  //         return "syncing";
+  //       } else if (isScanning) {
+  //         return "scanning";
+  //       } else {
+  //         return "ready";
+  //       }
+  //     } else {
+  //       if (isScanning) {
+  //         console.log("walletStatus walletStatus 5::",isScanning);
+
+  //         return "scanning";
+  //       } else if (daemonType === "local_remote" && isSyncing) {
+  //         console.log("walletStatus walletStatus 6::",isSyncing,daemonType);
+
+  //         return "syncing";
+  //       } else {
+  //         console.log("walletStatus walletStatus 7::",'ready');
+
+  //         return "ready";
+  //       }
+  //     }
+  //   }
+  // }
 };
 </script>
 

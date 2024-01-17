@@ -132,9 +132,34 @@ export class Backend {
         port: "19091"
       },
       {
-        host: "rpcnode.stream",
-        port: "19091"
+        host: "publicnode1.rpcnode.stream",
+        port: "29095",
+        active: 0,
+        type: "Remote"
+      },
+      {
+        host: "publicnode2.rpcnode.stream",
+        port: "29095",
+        active: 0,
+        type: "Remote"
+      },
+      {
+        host: "publicnode3.rpcnode.stream",
+        port: "29095",
+        active: 0,
+        type: "Remote"
+      },
+      {
+        host: "publicnode4.rpcnode.stream",
+        port: "29095",
+        active: 0,
+        type: "Remote"
       }
+
+      // {
+      //   host: "rpcnode.stream",
+      //   port: "19091"
+      // }
     ];
 
     this.token = config.token;

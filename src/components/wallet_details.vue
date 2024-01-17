@@ -279,12 +279,39 @@ export default {
             }
           })
           .onOk(() => {
+            this.$store.commit("gateway/set_wallet_data", {
+              info: {
+                balance: 0,
+                unlocked_balance: 0,
+                height: 1
+              },
+              transactions: { tx_list: [] }
+            });
+            // this.$store.commit("gateway/set_daemon_data", {
+            //   info: {
+            //     height:0
+            //   }
+            // })
             this.$gateway.send("wallet", "rescan_blockchain");
           })
           .onDismiss(() => {})
           .onCancel(() => {});
       } else {
+        // this.$store.commit("gateway/set_wallet_data", {
+        //   info: {
+        //     balance: 0,
+        //     unlocked_balance: 0,
+        //     height:0
+        //   },
+        //   transactions: { tx_list: [] }
+        // });
+        // this.$store.commit("gateway/set_daemon_data", {
+        //   info: {
+        //     height:0
+        //   }
+        // })
         this.$gateway.send("wallet", "rescan_spent");
+        // this.get_balance()
       }
     },
     copyAddress(text) {
@@ -309,6 +336,7 @@ export default {
   }
 
   .wallet-content {
+    width: 100%;
     text-align: center;
     // padding:0 1em;
     // padding: 0 1em 1em;

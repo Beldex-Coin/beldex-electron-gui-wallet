@@ -192,8 +192,8 @@ export default {
   font-size: 16px;
 }
 .searchBox .oxen-field .content {
-  min-height: 45px !important;
-  height: 45px !important;
+  min-height: 58px !important;
+  height: 58px !important;
   background-color: #32324a;
   margin-bottom: unset !important;
 }

@@ -1,6 +1,6 @@
 {
   "name": "beldex-electron-wallet",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Modern GUI interface for Beldex Currency",
   "productName": "Beldex Electron Wallet",
   "repository": {
@@ -49,7 +49,7 @@
     "babel-eslint": "^10.1.0",
     "devtron": "^1.4.0",
     "dotenv": "^8.1.0",
-    "electron": "^4.1.1",
+    "electron": "^15.1.0",
     "electron-builder": "23.0.2",
     "electron-debug": "^2.1.0",
     "electron-devtools-installer": "^2.2.4",

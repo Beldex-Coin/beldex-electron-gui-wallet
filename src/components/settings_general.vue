@@ -475,7 +475,16 @@
       v-if="!welcome"
       class="flex row align-center justify-center a-center q-mt-lg"
     >
-      <q-btn color="primary" :label="$t('buttons.save')" @click="save" />
+      <q-btn
+        :disabled="
+          config_daemon.type != 'local'
+            ? !this.config_daemon.remote_host || !this.config_daemon.remote_port
+            : !this.config_daemon.rpc_bind_port
+        "
+        color="primary"
+        :label="$t('buttons.save')"
+        @click="save"
+      />
     </div>
     <div v-if="welcome" class="flex row align-center justify-center q-mt-lg">
       <div class="a-center q-mr-lg">

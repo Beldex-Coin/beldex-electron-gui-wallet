@@ -62,6 +62,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
+      contextIsolation: false,
       // anything we want preloaded, e.g. global vars
       preload: path.resolve(__dirname, "electron-preload.js")
     }

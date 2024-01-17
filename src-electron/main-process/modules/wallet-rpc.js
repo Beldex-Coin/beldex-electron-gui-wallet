@@ -954,9 +954,12 @@ export class WalletRPC {
   }
 
   startHeartbeat() {
+    let count = 0;
     clearInterval(this.heartbeat);
     this.heartbeat = setInterval(() => {
       this.heartbeatAction();
+      count++;
+      console.log("count ::", count);
     }, 8000);
     this.heartbeatAction(true);
 
@@ -997,6 +1000,7 @@ export class WalletRPC {
 
       for (let n of data) {
         if (n.hasOwnProperty("error") || !n.hasOwnProperty("result")) {
+          console.log("error ::", n);
           // Maybe we also need to look into the other error codes it could give us
           // Error -13: No wallet file - This occurs when you call open wallet while another wallet is still syncing
           if (extended && n.error && n.error.code === -13) {
@@ -1020,20 +1024,38 @@ export class WalletRPC {
             }
           });
         } else if (n.method == "getbalance") {
+          console.log(
+            "getbalance 1::",
+            this.wallet_state.balance,
+            n.result.balance,
+            this.wallet_state.unlocked_balance,
+            n.result.unlocked_balance
+          );
+          // window?.log("getbalance 1::",this.wallet_state.balance == n.result.balance,this.wallet_state.unlocked_balance == n.result.unlocked_balance)
+
           if (
             this.wallet_state.balance == n.result.balance &&
             this.wallet_state.unlocked_balance == n.result.unlocked_balance
           ) {
+            console.log(
+              "getbalance 1::",
+              this.wallet_state.balance,
+              n.result.balance,
+              this.wallet_state.unlocked_balance,
+              n.result.unlocked_balance
+            );
+
+            // window?.log("getbalance 2::",this.wallet_state.balance == n.result.balance,this.wallet_state.unlocked_balance == n.result.unlocked_balance)
             continue;
           }
-
           this.wallet_state.balance = wallet.info.balance = n.result.balance;
           this.wallet_state.unlocked_balance = wallet.info.unlocked_balance =
             n.result.unlocked_balance;
+
           this.sendGateway("set_wallet_data", {
             info: wallet.info
           });
-
+          console.log("this.getTransactions");
           // if balance has recently changed, get updated list of transactions and used addresses
           let actions = [this.getTransactions(), this.getAddressList()];
           actions.push(this.getAddressBook());
@@ -2129,7 +2151,12 @@ export class WalletRPC {
   }
 
   rescanBlockchain() {
+    clearInterval(this.heartbeat);
+    clearInterval(this.lnsHeartbeat);
+    this.wallet_state.balance = null;
+    this.wallet_state.unlocked_balance = null;
     this.sendRPC("rescan_blockchain");
+    this.startHeartbeat();
   }
 
   rescanSpent() {
@@ -2927,6 +2954,9 @@ export class WalletRPC {
     // after another action has started, but before it has finished
     if (!this.wallet_state.open && method == "set_wallet_data") {
       return;
+    }
+    if (method == "set_wallet_data") {
+      console.log("sertdata 1::", data);
     }
     this.backend.send(method, data);
   }

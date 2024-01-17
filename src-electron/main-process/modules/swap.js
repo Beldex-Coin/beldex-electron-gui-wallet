@@ -169,22 +169,22 @@ export class Swap {
 
   async sendRPC(method, params = {}) {
     try {
-      const https = require("https");
+      // const https = require("https");
       const body = {
         jsonrpc: "2.0",
         id: "test",
         method,
         params
       };
-      const agent = new https.Agent({
-        requestCert: true,
-        rejectUnauthorized: false,
-        ca: `your pem key`
-      });
+      // const agent = new https.Agent({
+      //   requestCert: true,
+      //   rejectUnauthorized: false,
+      //   ca: `your pem key`
+      // });
       let signature = await axios.post(
         "https://api.beldex.io/api/v1/swap",
-        body,
-        { httpsAgent: agent }
+        body
+        // { httpsAgent: agent }
       );
       let headers = {
         headers: {
