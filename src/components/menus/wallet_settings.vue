@@ -716,7 +716,7 @@ export default {
       let new_password_confirm = this.modals.change_password
         .new_password_confirm;
 
-      if (!old_password || !new_password || !new_password_confirm) {
+      if (!new_password || !new_password_confirm) {
         this.$q.notify({
           type: "negative",
           timeout: 1000,

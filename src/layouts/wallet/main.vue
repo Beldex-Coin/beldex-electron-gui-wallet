@@ -5,10 +5,10 @@
       <q-toolbar>
         <!-- <div>
           <img src="../../assets/images/Logo.png" />
-        </div> -->
+        </div>-->
         <div class="main-title flex items-center">
           <img src="../../assets/images/Logo.png" />
-          <span class="green q-mr-xs q-ml-sm">Beldex </span>
+          <span class="green q-mr-xs q-ml-sm">Beldex</span>
           <span>Electron Wallet</span>
         </div>
         <!-- <div class="flex items-center justify-center" style="margin:9px">
@@ -51,6 +51,7 @@
             <router-link to="/wallet/masternode" class="box">
               <article
                 class="flex row alignItem-center justify-between menuList selected q-mt-md"
+                @click="doKeyImages()"
               >
                 <div class="flex row align-center justify-center a-center">
                   <svg
@@ -66,9 +67,9 @@
                     />
                   </svg>
                   <!-- <span class="divider"></span> -->
-                  <span>{{
-                    this.$t("strings.transactions.types.masterNode")
-                  }}</span>
+                  <span>
+                    {{ this.$t("strings.transactions.types.masterNode") }}
+                  </span>
                 </div>
                 <q-icon name="chevron_right" size="24px" />
               </article>
@@ -150,7 +151,7 @@
                 </q-stepper-navigation>
               </q-step>
             </q-stepper>
-          </div> -->
+            </div>-->
             <div class="swap-stepper q-mt-sm">
               <div class="flex row">
                 <div
@@ -172,10 +173,10 @@
                   </span>
                 </div>
                 <div class="menu-wrapper">
-                  <span class="ft-semibold">{{
-                    this.$t("titles.swap.exchangePair")
-                  }}</span
-                  ><br />
+                  <span class="ft-semibold">
+                    {{ this.$t("titles.swap.exchangePair") }}
+                  </span>
+                  <br />
                   <span class="ft-Light step-content"
                     >{{ this.$t("titles.swap.exchangePairDisc") }}r</span
                   >
@@ -204,13 +205,13 @@
                   </span>
                 </div>
                 <div class="menu-wrapper">
-                  <span class="ft-semibold">{{
-                    this.$t("titles.swap.walletAddress")
-                  }}</span
-                  ><br />
-                  <span class="ft-Light step-content">{{
-                    this.$t("titles.swap.walletAddressDisc")
-                  }}</span>
+                  <span class="ft-semibold">
+                    {{ this.$t("titles.swap.walletAddress") }}
+                  </span>
+                  <br />
+                  <span class="ft-Light step-content">
+                    {{ this.$t("titles.swap.walletAddressDisc") }}
+                  </span>
                 </div>
               </div>
 
@@ -236,13 +237,13 @@
                   </span>
                 </div>
                 <div class="menu-wrapper">
-                  <span class="ft-semibold">{{
-                    this.$t("titles.swap.payment")
-                  }}</span
-                  ><br />
-                  <span class="ft-Light step-content">{{
-                    this.$t("titles.swap.paymentDisc")
-                  }}</span>
+                  <span class="ft-semibold">
+                    {{ this.$t("titles.swap.payment") }}
+                  </span>
+                  <br />
+                  <span class="ft-Light step-content">
+                    {{ this.$t("titles.swap.paymentDisc") }}
+                  </span>
                 </div>
               </div>
 
@@ -269,13 +270,13 @@
                   <!-- <span class="position flex justify-center items-center">4</span> -->
                 </div>
                 <div class="menu-wrapper">
-                  <span class="ft-semibold">{{
-                    this.$t("titles.swap.exchange")
-                  }}</span
-                  ><br />
-                  <span class="ft-Light step-content">{{
-                    this.$t("titles.swap.exchangeDisc")
-                  }}</span>
+                  <span class="ft-semibold">
+                    {{ this.$t("titles.swap.exchange") }}
+                  </span>
+                  <br />
+                  <span class="ft-Light step-content">
+                    {{ this.$t("titles.swap.exchangeDisc") }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -296,7 +297,7 @@
                     />
                   </svg>
                   <!-- <span class="divider"></span> -->
-                  <span> {{ this.$t("buttons.advanced") }}</span>
+                  <span>{{ this.$t("buttons.advanced") }}</span>
                 </div>
                 <q-icon name="chevron_right" size="24px" />
               </article>
@@ -362,7 +363,7 @@
           <!-- <div class="navigation row items-end"> -->
           <!-- <router-link to="/wallet">
               <q-btn class="single-icon" size="md" icon="swap_horiz" />
-            </router-link> -->
+          </router-link>-->
           <!-- <router-link to="/wallet/send">
               <q-btn
                 class="large-btn"
@@ -371,7 +372,7 @@
                 icon-right="arrow_right_alt"
                 align="between"
               />
-            </router-link>-->
+          </router-link>-->
           <!-- <router-link to="/wallet/receive">
               <q-btn
                 class="large-btn"
@@ -380,7 +381,7 @@
                 icon-right="save_alt"
                 align="between"
               />
-            </router-link>-->
+          </router-link>-->
           <!-- <router-link to="/wallet/masternode">
               <q-btn
                 class="large-btn"
@@ -389,7 +390,7 @@
                 icon-right="router"
                 align="between"
               />
-            </router-link> -->
+          </router-link>-->
           <!-- <router-link to="/wallet/bns">
             <q-btn
               class="large-btn"
@@ -398,7 +399,7 @@
               icon-right="text_fields"
               align="between"
             />
-            </router-link>-->
+          </router-link>-->
           <!-- <router-link to="/wallet/advanced">
               <q-btn
                 class="large-btn"
@@ -407,10 +408,10 @@
                 icon-right="tune"
                 align="between"
               />
-            </router-link> -->
+          </router-link>-->
           <!-- <router-link to="/wallet/addressbook" class="address">
               <q-btn class="single-icon" size="md" icon="person" />
-            </router-link> -->
+          </router-link>-->
           <!-- </div> -->
           <!-- <div class="hr-separator" /> -->
           <keep-alive>
@@ -442,6 +443,7 @@ import StatusFooter from "components/footer";
 import MainMenu from "components/menus/mainmenu";
 import RightPane from "app/src/layouts/wallet/rightPane.vue";
 import { version } from "../../../package.json";
+import WalletPassword from "src/mixins/wallet_password";
 
 export default {
   name: "LayoutDefault",
@@ -451,8 +453,16 @@ export default {
     WalletDetails,
     RightPane
   },
+  mixins: [WalletPassword],
   data() {
-    return { version, step: 1 };
+    return {
+      version,
+      step: 1,
+      key_image: {
+        visible: false,
+        type: "Export"
+      }
+    };
   },
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
@@ -483,6 +493,41 @@ export default {
         timeout: 1000,
         message: this.$t("notification.positive.linkCopied")
       });
+    },
+    async doKeyImages() {
+      const type = this.$t(
+        `dialog.keyImages.${this.key_image.type.toLowerCase()}`
+      );
+      console.log("type:", type);
+      let passwordDialog = await this.showPasswordConfirmation({
+        title: "Show master node",
+        noPasswordMessage: "Do you want to continue?",
+        // this.$t("dialog.keyImages.message", {
+        //   type: type.toLocaleLowerCase(this.locale)
+        // })
+        ok: {
+          label: "Master node",
+          color: "primary"
+        },
+        cancel: {
+          color: "accent"
+        },
+        dark: this.theme == "dark",
+        color: this.theme == "dark" ? "white" : "dark"
+      });
+      passwordDialog
+        .onOk(password => {
+          // if no password set
+          password = password || "";
+          this.$gateway.send("wallet", "deregister_images", {
+            password: password
+            // path: this.modals.key_image.export_path
+          });
+        })
+        .onCancel(() => {
+          this.$router.go(-1);
+        })
+        .onDismiss(() => {});
     }
   }
 };

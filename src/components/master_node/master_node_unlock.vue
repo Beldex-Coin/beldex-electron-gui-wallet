@@ -2,20 +2,19 @@
   <div v-if="isVisible" class="master-node-stake-tab">
     <div :class="`q-pa-md ${master_nodes.length === 0 ? 'd-center' : ''}`">
       <div
-        class="q-pb-sm header items-center  "
+        class="q-pb-sm header items-center"
         style="font-family: Poppins-Regular;
                font-size: 16px;
                display: flex;
               justify-content: center;"
       >
-        <span v-if="master_nodes.length">{{
-          $t("titles.currentlyStakedNodes")
-        }}</span>
-        <span v-else style="color: #77778B;"
-          >{{ $t("strings.masterNodeStartStakingDescription") }}
-          <span style="font-family: Poppins-SemiBold;">{{
-            $t("titles.masterNode.staking")
-          }}</span
+        <span v-if="master_nodes.length">
+          {{ $t("titles.currentlyStakedNodes") }}
+        </span>
+        <span v-else style="color: #77778B;">
+          {{ $t("strings.masterNodeStartStakingDescription") }}
+          <span style="font-family: Poppins-SemiBold;">
+            {{ $t("titles.masterNode.staking") }} </span
           >&nbsp;
           <span>{{ $t("strings.masterNodeStartStakingDescription1") }}</span>
         </span>
@@ -85,17 +84,66 @@ export default {
     master_nodes(state) {
       let nodes = state.gateway.daemon.master_nodes.nodes;
       // don't count reserved nodes in my stakes (where they are a contributor of amount 0)
+      console.log(
+        "master_nodes_deregister:",
+        state.gateway.daemon.master_nodes_deregister
+      );
+      console.log("signed_key_images:", state.gateway.daemon.signed_key_images);
+      let master_nodes_deregister = state.gateway.daemon.master_nodes_deregister
+        ? state.gateway.daemon.master_nodes_deregister
+        : [];
+      let signed_key_images = state.gateway.daemon.signed_key_images
+        ? state.gateway.daemon.signed_key_images
+        : [];
+      console.log("master_nodes_deregister:", master_nodes_deregister);
+      console.log("signed_key_images:", signed_key_images);
+      let match = [];
+      for (let i = 0; i < master_nodes_deregister.length; i++) {
+        for (let j = 0; j < signed_key_images.length; j++) {
+          if (
+            master_nodes_deregister[i].key_image ==
+            signed_key_images[j].key_image
+          ) {
+            console.log("i....", i, j);
+            console.log(
+              "master_nodes_deregister[i].key_image:",
+              master_nodes_deregister[i]
+            );
+            console.log(
+              "signed_key_images[j].key_image:",
+              signed_key_images[j]
+            );
+            match.push(
+              Object.assign(signed_key_images[j], master_nodes_deregister[i])
+            );
+            //amount: 10000000000000
+            // key_image:"bde711f12eb61c25f7b6a6fe52826c560f5f4919e45626ab93c243d646293e60"
+            // signature: "cb0c8caedb27eb06a87786a895f0c7d62ecda1923aee177b6d68620da8dafe04aa5402a8e0a5a678b6cd10aefd94c630f77ddbb6ab80f9dae1a60e54bcfdb80b"
+            // unlock_height: 1418700
+          }
+        }
+      }
+      console.log("match:", match);
+
       const getOurContribution = node =>
         node.contributors.find(
           c => c.address === this.our_address && c.amount > 0
         );
-      return nodes.filter(getOurContribution).map(n => {
+      let masterNodes = nodes.filter(getOurContribution).map(n => {
         const ourContribution = getOurContribution(n);
         return {
           ...n,
           ourContributionAmount: ourContribution.amount
         };
       });
+      return masterNodes;
+      // return nodes.filter(getOurContribution).map(n => {
+      //   const ourContribution = getOurContribution(n);
+      //   return {
+      //     ...n,
+      //     ourContributionAmount: ourContribution.amount
+      //   };
+      // });
     },
     fetching: state => state.gateway.daemon.master_nodes.fetching
   }),

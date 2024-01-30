@@ -482,6 +482,10 @@ export class WalletRPC {
         // });
         break;
 
+      case "deregister_images":
+        this.deregisterImages(params.password);
+        break;
+
       default:
     }
   }
@@ -2464,6 +2468,54 @@ export class WalletRPC {
   set_stepperPosition(val) {
     this.sendGateway("set_stepperPosition", val);
   }
+
+  deregisterImages(password) {
+    console.log("deregister_images.....wallet-rpc");
+    crypto.pbkdf2(
+      password,
+      this.auth[2],
+      1000,
+      64,
+      "sha512",
+      (err, password_hash) => {
+        if (err) {
+          this.sendGateway("show_notification", {
+            type: "negative",
+            i18n: "notification.errors.internalError",
+            timeout: 2000
+          });
+          return;
+        }
+        if (!this.isValidPasswordHash(password_hash)) {
+          this.sendGateway("show_notification", {
+            type: "negative",
+            i18n: "notification.errors.invalidPassword",
+            timeout: 2000
+          });
+          return;
+        }
+        this.sendRPC("export_key_images")
+          .then(data => {
+            if (
+              data.hasOwnProperty("error") ||
+              !data.hasOwnProperty("result")
+            ) {
+              // onError();
+              return [];
+            }
+            if (data.result.signed_key_images) {
+              const signed_key_images = data.result.signed_key_images;
+              return this.sendGateway("set_daemon_data", { signed_key_images });
+              // return data.result.signed_key_images;
+            } else {
+              return [];
+            }
+          })
+          .catch();
+      }
+    );
+  }
+
   exportKeyImages(password, filename = null) {
     crypto.pbkdf2(
       password,
