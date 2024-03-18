@@ -476,13 +476,9 @@
       class="flex row align-center justify-center a-center q-mt-lg"
     >
       <q-btn
+        :disable="this.saveBtnValidation(this.config_daemon)"
         color="primary"
         :label="$t('buttons.save')"
-        :disabled="
-          config_daemon.type != 'local'
-            ? !this.config_daemon.remote_host || !this.config_daemon.remote_port
-            : !this.config_daemon.rpc_bind_port
-        "
         @click="save"
       />
     </div>
@@ -606,6 +602,30 @@ export default {
     toString(value) {
       if (!value && typeof value !== "number") return "";
       return String(value);
+    },
+    saveBtnValidation(config_daemon) {
+      const {
+        type,
+        rpc_bind_ip,
+        rpc_bind_port,
+        remote_host,
+        remote_port
+      } = config_daemon;
+      const isLocal = type === "local";
+      const isRemote = type === "remote";
+      const isLocalRemote = type === "local_remote";
+
+      const isValid =
+        (isLocal && rpc_bind_ip && rpc_bind_port) ||
+        (isRemote && remote_host && remote_port) ||
+        (isLocalRemote &&
+          rpc_bind_ip &&
+          rpc_bind_port &&
+          remote_host &&
+          remote_port);
+
+      const result = isLocal || isRemote || isLocalRemote ? !isValid : false;
+      return result;
     }
   }
 };

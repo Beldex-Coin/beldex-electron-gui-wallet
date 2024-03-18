@@ -91,9 +91,9 @@
         />
       </q-toolbar>
     </q-header>
-    <div style="height: 62px;"></div>
+    <div style="height: 62px"></div>
     <q-page class="detail-page" style="min-height: unset">
-      <div class="layout-padding" style="padding-top: 0 !important;">
+      <div class="layout-padding" style="padding-top: 0 !important">
         <!-- <div class="row items-center non-selectable">
           <div class="q-mr-sm">
             <TxTypeIcon :type="tx.type" :tooltip="false" />
@@ -176,6 +176,7 @@
               </div>
             </div>
           </div>
+
           <div class="hr-separator" />
           <div class="infoBox">
             <div class="flex row justify-between tx_details_wrapper ft-regular">
@@ -235,7 +236,19 @@
         <p class="monospace break-all">
           {{ tx.payment_id ? tx.payment_id : "N/A" }}
         </p> -->
-
+        <div v-if="tx.payment_id != '0000000000000000'" class="infoBox">
+          <div class="flex row justify-between tx_details_wrapper ft-regular">
+            <div class="text">
+              <span>
+                {{ $t("strings.paymentID") }}
+              </span>
+            </div>
+            <div class="value">
+              <span> {{ tx.payment_id ? tx.payment_id : "N/A" }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-if="tx.payment_id != '0000000000000000'" class="hr-separator" />
         <div
           v-if="tx.type == 'in' || tx.type == 'pool'"
           class="tx_details_wrapper ft-regular"
@@ -380,7 +393,7 @@
         <article class="content-wrapper q-mt-md">
           {{ JSON.stringify(this.tx, null, 2) }}
         </article>
-        <div class="flex justify-center q-my-lg ">
+        <div class="flex justify-center q-my-lg">
           <q-btn
             color="accent"
             :label="$t('buttons.close')"

@@ -143,7 +143,7 @@
         </div>
       </div>
 
-      <div class="absolute-bottom">
+      <div class="absolute-bottom version">
         {{ version }}
       </div>
     </div>
@@ -272,6 +272,9 @@ export default {
 .init-screen-page {
   height: 100vh;
   position: relative;
+  .version {
+    color: white;
+  }
 }
 .startup-icons {
   & > div {
