@@ -68,9 +68,9 @@
         </div>
       </div>
       <div v-if="status.state.signature" class="signature-wrapper">
-        <div class="txid q-mb-sm">
-          <div class="title">{{ $t("strings.transactionID") }}</div>
-          <div>{{ status.state.txid }}</div>
+        <div class="txid q-mb-sm flex row no-wrap ">
+          <div class="title q-mr-sm">{{ $t("strings.transactionID") }}</div>
+          <div style="color:white">{{ status.state.txid }}</div>
         </div>
         <p class="signature">
           {{ status.state.signature }}

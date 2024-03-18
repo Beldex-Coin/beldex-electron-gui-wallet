@@ -382,7 +382,7 @@
                   color="primary"
                   padding="xs"
                   size="sm"
-                  icon="file_copy"
+                  icon="content_copy"
                   style="margin-left: 8px"
                   @click="copyAddress"
                 />
@@ -391,7 +391,8 @@
             <q-btn color="primary" label="Close" @click="showAbout(false)" />
           </div>
         </q-dialog>
-        <div v-if="!is_able_to_send" class="app-content router-view-wrapper">
+        <!-- <div v-if="!is_able_to_send" class="app-content router-view-wrapper"> -->
+        <div class="app-content router-view-wrapper">
           <!-- <div class="navigation row items-end"> -->
           <!-- <router-link to="/wallet">
               <q-btn class="single-icon" size="md" icon="swap_horiz" />

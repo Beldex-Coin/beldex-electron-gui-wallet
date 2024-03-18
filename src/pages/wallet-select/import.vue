@@ -123,7 +123,7 @@ export default {
     status: {
       handler(val, old) {
         if (val.code == old.code) return;
-        const { code, message } = val;
+        const { code, i18n } = val;
         switch (code) {
           case 1:
             break;
@@ -141,7 +141,7 @@ export default {
             this.$q.notify({
               type: "negative",
               timeout: 1000,
-              message
+              message: this.$t(i18n)
             });
             break;
         }

@@ -153,12 +153,12 @@
           <q-item-label class="contributors-title ft-regular"
             >{{ $t("strings.masterNodeDetails.contributors") }}:</q-item-label
           >
+          <!-- clickable -->
           <q-item
             v-for="contributor in contributors"
             :key="contributor.address"
             class="oxen-list-item"
             style="margin-right: 5px;"
-            clickable
             @click="openUserWalletInfo(contributor.address)"
           >
             <q-item-label>
@@ -280,10 +280,11 @@ export default {
   }),
   methods: {
     openUserWalletInfo(contributorAddress) {
-      const url = `https://www.beldexsn.com/user/${contributorAddress}`;
-      this.$gateway.send("core", "open_url", {
-        url
-      });
+      console.log(contributorAddress);
+      // const url = `https://www.beldexsn.com/user/${contributorAddress}`;
+      // this.$gateway.send("core", "open_url", {
+      //   url
+      // });
     },
     openExplorer() {
       // console.log('nodedetails::',this.nodedetails)
