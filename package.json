@@ -1,6 +1,6 @@
 {
   "name": "beldex-electron-wallet",
-  "version": "5.3.1",
+  "version": "5.3.2",
   "description": "Modern GUI interface for Beldex Currency",
   "productName": "Beldex Electron Wallet",
   "repository": {
