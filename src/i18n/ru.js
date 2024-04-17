@@ -49,7 +49,8 @@ export default {
     sweepAll: "Sweep All",
     unlock: "UNLOCK",
     viewOnExplorer: "ПОСМОТРЕТЬ В ЭКСПЛОРЕРЕ",
-    add: "Добавлять"
+    add: "Добавлять",
+    bnsUpdate: "Обновление БНС"
   },
   dialog: {
     // Generic buttons
@@ -235,7 +236,14 @@ export default {
     rescanSpentOutputs: "Пересканировать потраченные выходы",
     transactionNotes: "Заметки Транзакции",
     chooseNetwork: "Выберите сеть",
-    network: "Сеть"
+    network: "Сеть",
+
+    // new design revamp
+
+    OwnerWalletaddress: "Адрес кошелька владельца",
+    backupOwnerWalletAddress: "Адрес кошелька владельца резервной копии",
+    updateOwner: "Обновить владельца",
+    updateValues: "Обновить значения"
   },
   footer: {
     ready: "СИНХРОНИЗИРОВАН",

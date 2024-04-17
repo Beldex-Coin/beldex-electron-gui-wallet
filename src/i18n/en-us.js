@@ -60,7 +60,8 @@ export default {
     viewOnExplorer: "View in explorer",
     //new wamp
     add: "Add",
-    max: "Max"
+    max: "Max",
+    bnsUpdate: "BNS Update"
   },
   dialog: {
     // Generic buttons
@@ -110,7 +111,7 @@ export default {
     bnsUpdate: {
       title: "Update BNS record",
       message: "Do you want to update the BNS record?",
-      ok: "UPDATE"
+      ok: "Update"
     },
     noPassword: {
       title: "No Password Set",
@@ -279,7 +280,11 @@ export default {
     network: "Network",
 
     // new design vamp
-    to: "To"
+    to: "To",
+    OwnerWalletaddress: "Owner Wallet address",
+    backupOwnerWalletAddress: "Backup Owner Wallet Address",
+    updateOwner: "Update Owner",
+    updateValues: "Update Values"
   },
   footer: {
     ready: "Synchronized",

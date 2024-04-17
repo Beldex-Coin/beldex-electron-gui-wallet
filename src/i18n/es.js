@@ -52,7 +52,8 @@ export default {
     sweepAll: "TRANSFERIR/BARRER TODO",
     unlock: "LIBERAR",
     viewOnExplorer: "VER EN EL EXPLORADOR",
-    add: "Agregar"
+    add: "Agregar",
+    bnsUpdate: "Actualización BNS"
   },
   dialog: {
     // Generic buttons
@@ -240,9 +241,15 @@ export default {
     rescanSpentOutputs: "Volver a examinar las salidas gastadas",
     transactionNotes: "Notas de la Transacción",
     chooseNetwork: "Seleccione una Red",
-    network: "Red"
+    network: "Red",
 
     // new design revamp
+
+    OwnerWalletaddress: "Dirección de billetera del propietario",
+    backupOwnerWalletAddress:
+      "Dirección de billetera del propietario de respaldo",
+    updateOwner: "Actualizar propietario",
+    updateValues: "Actualizar valores"
   },
   footer: {
     ready: "LISTO",

@@ -76,12 +76,12 @@
       <section
         v-if="selectedNameHash === record.name_hash"
         class="q-pa-md"
-        style="position: relative;"
+        style="position: relative"
       >
-        <div class="tablewrapper flex row  no-wrap">
+        <div class="tablewrapper flex row no-wrap">
           <div class="label">{{ record.name ? "Name" : "Name Hash" }}</div>
-          <div class="row no-wrap" style="width:70%">
-            <div class="address" style="width:100%">
+          <div class="row no-wrap" style="width: 70%">
+            <div class="address" style="width: 100%">
               {{ record.name || record.name_hash }}
             </div>
             <div
@@ -152,6 +152,36 @@
           <div class="label">Belnet ID</div>
           <div class="address">{{ record.value_belnet }}</div>
         </div>
+        <div
+          v-if="
+            record.name &&
+              (record.value_wallet || record.value_bchat || record.value_belnet)
+          "
+          class="flex row justify-end"
+        >
+          <!-- <router-link to="/wallet/updateBns" class="box"> -->
+          <q-btn
+            color="secondary"
+            class="q-mt-lg updation-btn"
+            @click="onUpdate(record)"
+          >
+            <img
+              src="../../assets/images/update.svg"
+              alt="Update"
+              style="height: 24px; width: auto"
+            />
+            Update
+          </q-btn>
+          <!-- </router-link> -->
+          <q-btn color="primary" class="q-mt-lg q-ml-sm updation-btn ">
+            <img
+              src="../../assets/images/renew.svg"
+              alt="Update"
+              style="height: 24px; width: auto"
+            />
+            Renew
+          </q-btn>
+        </div>
       </section>
     </div>
   </q-list>
@@ -161,6 +191,7 @@
 import { mapState } from "vuex";
 import { i18n } from "boot/i18n";
 import ContextMenu from "components/menus/contextmenu";
+
 const { clipboard } = require("electron");
 
 export default {
@@ -206,6 +237,7 @@ export default {
     },
     onUpdate(record) {
       this.$emit("onUpdate", record);
+      // this.$router.push({ path: "/wallet/updateBns",query: { data: { record}}});
     },
     onRenew(record) {
       this.$emit("onRenew", record);
@@ -308,6 +340,12 @@ export default {
       word-break: break-word;
       width: 75%;
     }
+  }
+  .updation-btn {
+    min-width: unset;
+    width: 140px;
+    height: 45px;
+    font-size: 15px;
   }
 }
 </style>

@@ -246,7 +246,7 @@ export class WalletRPC {
 
   async handle(data) {
     let params = data.data;
-
+    console.log("handle.......", params);
     switch (data.method) {
       case "has_password":
         this.hasPassword();
@@ -374,12 +374,16 @@ export class WalletRPC {
         this.lnsRenewMapping(params.password, params.type, params.name);
         break;
       case "update_bns_mapping":
+        console.log("params ...", params);
         this.updateBNSMapping(
           params.password,
-          params.type,
+          // // params.type,
           params.name,
-          params.value,
           params.owner || "",
+          params.backup_owner || "",
+          params.value_bchat || "",
+          params.value_belnet || "",
+          params.value_wallet || "",
           params.backup_owner || ""
         );
         break;
@@ -1947,17 +1951,39 @@ export class WalletRPC {
     );
   }
 
-  updateBNSMapping(password, type, name, value, owner, backupOwner) {
-    let _name = name.trim().toLowerCase();
-    const _owner = owner.trim() === "" ? null : owner;
+  updateBNSMapping(
+    password,
+    name,
+    owner,
+    backupOwner,
+    value_bchat,
+    value_belnet,
+    value_wallet
+  ) {
+    // updateBNSMapping(params) {
+    // console.log('update value ........',params)
+    console.log(
+      "update value ........",
+      password,
+      name,
+      owner,
+      backupOwner,
+      value_bchat,
+      value_belnet,
+      value_wallet
+    );
+    // let _name = name.trim().toLowerCase();
+    // const _owner = owner.trim() === "" ? null : owner;
+    // const _owner = null
+
     const backup_owner = backupOwner.trim() === "" ? null : backupOwner;
 
     // updated records have type "belnet" or "bchat"
     // UI passes the values without the extension
-    if (type === "belnet") {
-      _name = _name + ".bdx";
-      value = value + ".bdx";
-    }
+    // if (type === "belnet") {
+    //   _name = _name + ".bdx";
+    //   value = value + ".bdx";
+    // }
 
     crypto.pbkdf2(
       password,
@@ -1983,15 +2009,37 @@ export class WalletRPC {
           return;
         }
 
-        const params = {
-          type,
-          owner: _owner,
-          backup_owner,
-          name: _name,
-          value
+        let params = {
+          name
         };
+        // const updateproperty = ['owner', 'backupOwner', 'value_bchat', 'value_belnet', 'value_wallet'];
+        // updateproperty.forEach((item)=>{
+        //      if(item)
+        //      {
+        //       params[item]=item
+        //      }
+        // })
+        console.log("updateproperty .........", params);
+        if (owner) {
+          params.owner = owner;
+        }
+        if (backupOwner) {
+          params.backupOwner = backupOwner;
+        }
+        if (value_bchat) {
+          params.value_bchat = value_bchat;
+        }
+        if (value_belnet) {
+          params.value_belnet = value_belnet;
+        }
+        if (value_wallet) {
+          params.value_wallet = value_wallet;
+        }
+
+        console.log("bns_params ...........", params);
 
         this.sendRPC("bns_update_mapping", params).then(data => {
+          console.log("bns_update_mapping ...........", data);
           if (data.hasOwnProperty("error")) {
             let error =
               data.error.message.charAt(0).toUpperCase() +
@@ -2011,7 +2059,7 @@ export class WalletRPC {
             return;
           }
 
-          this.purchasedNames[name.trim()] = type;
+          // this.purchasedNames[name.trim()] = type;
 
           // Fetch new records and then get the decrypted record for the one we just inserted
           setTimeout(() => this.updateLocalBNSRecords(), 5000);
@@ -2020,15 +2068,15 @@ export class WalletRPC {
           const { bnsRecords } = this.wallet_state;
           const newRecords = bnsRecords.map(record => {
             if (
-              record.type === type &&
+              // record.type === type &&
               record.name &&
-              record.name.toLowerCase() === _name
+              record.name.toLowerCase() === name
             ) {
               return {
                 ...record,
-                owner: _owner,
+                owner: owner,
                 backup_owner,
-                value
+                value_wallet
               };
             }
 
@@ -2039,8 +2087,9 @@ export class WalletRPC {
 
           this.sendGateway("set_bns_status", {
             code: 0,
-            i18n: "notification.positive.lnsRecordUpdated",
-            sending: false
+            i18n: "notification.positive.bnsRecordUpdated",
+            sending: false,
+            message: "notification.positive.bnsRecordUpdated"
           });
         });
       }

@@ -1,6 +1,9 @@
 <template>
-  <q-page class="bns-page" style="min-height: unset;">
-    <div class="header row items-center justify-center q-pb-xs">
+  <q-page class="bns-page" style="min-height: unset">
+    <div
+      v-if="screen !== 'updateBns'"
+      class="header row items-center justify-center q-pb-xs"
+    >
       <q-btn-toggle
         v-model="screen"
         toggle-color="primary"
@@ -17,25 +20,37 @@
         ]"
       />
     </div>
+
     <BNSPurchase v-if="screen === 'purchase'" ref="purchase" />
     <MyBNS v-if="screen === 'my_bns'" @onUpdate="onUpdate" @onRenew="onRenew" />
+    <BNSUpdate
+      v-if="screen === 'updateBns'"
+      :current-record="this.record"
+      @onBack="onBack"
+    />
+    <!-- <BNSRenew /> -->
   </q-page>
 </template>
 
 <script>
 import BNSPurchase from "components/bns/bns_purchase";
 import MyBNS from "components/bns/bns_mybns";
+import BNSUpdate from "components/bns/bns_update.vue";
+// import BNSRenew from "components/bns/bns_renew.vue";
 import Vue from "vue";
 import _ from "lodash";
 
 export default {
   components: {
     MyBNS,
-    BNSPurchase
+    BNSPurchase,
+    BNSUpdate
+    // BNSRenew
   },
   data() {
     return {
-      screen: "purchase"
+      screen: "purchase",
+      record: {}
     };
   },
   methods: {
@@ -55,15 +70,24 @@ export default {
         this.$refs.purchase[action](recordCopy);
       });
     },
+    onBack() {
+      this.screen = "my_bns";
+    },
+    onScreen() {
+      this.screen = "updateBns";
+    },
     onUpdate(record) {
       let updateRecord = {
-        ...record,
-        // Don't pre-fill these fields on update
-        value: "",
-        owner: "",
-        backup_owner: ""
+        ...record
+        // // Don't pre-fill these fields on update
+        // value: "",
+        // owner: "",
+        // backup_owner: ""
       };
-      this.purchasePageAction(updateRecord, "startUpdating");
+      this.record = updateRecord;
+      console.log("updateRecord >>>>>>>>>>>>>", updateRecord);
+      this.screen = "updateBns";
+      // this.purchasePageAction(updateRecord, "startUpdating");
     },
     onRenew(record) {
       this.purchasePageAction(record, "startRenewing");
