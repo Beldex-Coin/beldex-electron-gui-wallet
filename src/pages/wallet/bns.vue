@@ -1,7 +1,7 @@
 <template>
   <q-page class="bns-page" style="min-height: unset">
     <div
-      v-if="screen !== 'updateBns'"
+      v-if="screen === 'purchase' || screen === 'my_bns'"
       class="header row items-center justify-center q-pb-xs"
     >
       <q-btn-toggle
@@ -28,7 +28,11 @@
       :current-record="this.record"
       @onBack="onBack"
     />
-    <!-- <BNSRenew /> -->
+    <BNSRenew
+      v-if="screen === 'renewBns'"
+      :current-record="this.record"
+      @onBack="onBack"
+    />
   </q-page>
 </template>
 
@@ -36,7 +40,7 @@
 import BNSPurchase from "components/bns/bns_purchase";
 import MyBNS from "components/bns/bns_mybns";
 import BNSUpdate from "components/bns/bns_update.vue";
-// import BNSRenew from "components/bns/bns_renew.vue";
+import BNSRenew from "components/bns/bns_renew.vue";
 import Vue from "vue";
 import _ from "lodash";
 
@@ -44,8 +48,8 @@ export default {
   components: {
     MyBNS,
     BNSPurchase,
-    BNSUpdate
-    // BNSRenew
+    BNSUpdate,
+    BNSRenew
   },
   data() {
     return {
@@ -73,24 +77,20 @@ export default {
     onBack() {
       this.screen = "my_bns";
     },
-    onScreen() {
-      this.screen = "updateBns";
-    },
     onUpdate(record) {
       let updateRecord = {
         ...record
-        // // Don't pre-fill these fields on update
-        // value: "",
-        // owner: "",
-        // backup_owner: ""
       };
       this.record = updateRecord;
-      console.log("updateRecord >>>>>>>>>>>>>", updateRecord);
       this.screen = "updateBns";
-      // this.purchasePageAction(updateRecord, "startUpdating");
     },
     onRenew(record) {
-      this.purchasePageAction(record, "startRenewing");
+      let updateRecord = {
+        ...record,
+        name: record.name.slice(0, record.name.length - 4)
+      };
+      this.record = updateRecord;
+      this.screen = "renewBns";
     }
   }
 };

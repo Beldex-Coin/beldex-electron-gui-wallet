@@ -130,7 +130,7 @@ export default {
     renew: {
       title: "Renew name",
       message: "Do you want to renew the name?",
-      ok: "RENEW"
+      ok: "Renew"
     },
     registerMasterNode: {
       title: "Register master node",

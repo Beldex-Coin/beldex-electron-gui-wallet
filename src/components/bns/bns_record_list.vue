@@ -159,7 +159,6 @@
           "
           class="flex row justify-end"
         >
-          <!-- <router-link to="/wallet/updateBns" class="box"> -->
           <q-btn
             color="secondary"
             class="q-mt-lg updation-btn"
@@ -172,8 +171,12 @@
             />
             Update
           </q-btn>
-          <!-- </router-link> -->
-          <q-btn color="primary" class="q-mt-lg q-ml-sm updation-btn ">
+
+          <q-btn
+            color="primary"
+            class="q-mt-lg q-ml-sm updation-btn "
+            @click="onRenew(record)"
+          >
             <img
               src="../../assets/images/renew.svg"
               alt="Update"

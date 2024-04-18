@@ -33,24 +33,6 @@
             />
           </OxenField>
         </div>
-        <!-- Backup owner -->
-        <!-- <div class="col q-mt-sm">
-          <OxenField
-            class="q-mt-md"
-            :label="$t('fieldLabels.backupOwnerWalletAddress')"
-            optional
-          >
-            <q-input
-              v-model.trim="record.backup_owner"
-              :dark="theme == 'dark'"
-              placeholder="owner"
-              :disable="contentUpdate === 'Values'"
-              borderless
-              dense
-              @blur="$v.record.backup_owner.$touch"
-            />
-          </OxenField>
-        </div> -->
       </div>
     </div>
 
@@ -164,27 +146,14 @@
         />
         Update
       </q-btn>
-      <!-- <q-btn
-        color="primary"
-        :disable="
-          !(is_ready && record.name && (address || bchatId || belnetId))
-        "
-        :label="submitLabel"
-        @click="submit()"
-      /> -->
     </div>
   </div>
 </template>
 <script>
 import { ref } from "vue";
 import { mapState } from "vuex";
-import { required } from "vuelidate/lib/validators";
-import {
-  address,
-  bchat_id,
-  belnet_address,
-  bns_name
-} from "src/validators/common";
+
+import { address, bchat_id, belnet_address } from "src/validators/common";
 import OxenField from "components/oxen_field";
 import WalletPassword from "src/mixins/wallet_password";
 
@@ -209,7 +178,6 @@ export default {
     }
   },
   data() {
-    // console.log('currentRecord ::',this.currentRecord)
     const initialRecord = this.currentRecord;
 
     return {
@@ -250,55 +218,12 @@ export default {
   },
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
-    our_address: state => state.gateway.wallet.info.address,
     info: state => state.gateway.wallet.info,
     is_ready() {
       return this.$store.getters["gateway/isReady"];
-    },
-    is_able_to_send() {
-      return this.$store.getters["gateway/isAbleToSend"];
-    },
-    value_field_label() {
-      if (this.record.type === "bchat") {
-        return this.$t("fieldLabels.bchatId");
-      } else {
-        return this.$t("fieldLabels.belnetFullAddress");
-      }
-    },
-
-    value_placeholder() {
-      if (this.record.type === "bchat") {
-        return this.$t("placeholders.bchatId");
-      } else {
-        return this.$t("placeholders.belnetFullAddress");
-      }
-    },
-    owner_placeholder() {
-      const { owner } = this.initialRecord || {};
-      if (!owner || owner.trim() === "") {
-        return this.our_address;
-      }
-
-      return owner;
-    },
-    cleanRecord() {
-      return {
-        type: "bchat",
-        name: "",
-        value: "",
-        owner: "",
-        backup_owner: ""
-      };
     }
   }),
   methods: {
-    setRecord(record) {
-      this.initialRecord = {
-        ...this.cleanRecord,
-        ...(record || {})
-      };
-      this.record = { ...this.initialRecord };
-    },
     isAddress: function(value) {
       if (value === "") return true;
 
@@ -308,88 +233,63 @@ export default {
           .catch(() => resolve(false));
       });
     },
-    reset() {
-      this.initialRecord = { ...this.cleanRecord };
-      this.record = { ...this.cleanRecord };
-      (this.bchatId = ""), (this.belnetId = ""), (this.address = "");
-      (this.bchatIdRef = false),
-        (this.belnetIdRef = false),
-        (this.addressRef = false);
-      this.$v.$reset();
+    toastmsg(msg) {
+      this.$q.notify({
+        type: "negative",
+        timeout: 3000,
+        message: msg
+      });
     },
     submit() {
-      this.$v.record.$touch();
-      // console.log('this.record .....::',this.record)
-
-      // if (this.$v.record.backup_owner.$error) {
-      //   this.$q.notify({
-      //     type: "negative",
-      //     timeout: 3000,
-      //     message: this.$t("notification.errors.invalidBackupOwner")
-      //   });
-      //   return;
-      // }
-
+      this.$v.ownerAddress.$touch();
       if (this.contentUpdate === "Owner" && this.$v.ownerAddress.$error) {
-        this.$q.notify({
-          type: "negative",
-          timeout: 3000,
-          message: this.$t("notification.errors.invalidOwner")
-        });
+        this.toastmsg(this.$t("notification.errors.invalidOwner"));
         return;
       }
       if (
         this.contentUpdate === "Owner" &&
         this.ownerAddress === this.record.owner
       ) {
-        this.$q.notify({
-          type: "negative",
-          timeout: 3000,
-          message: "same owner address"
-        });
+        this.toastmsg("same owner address");
         return;
       }
-      if (this.contentUpdate === "Value" && this.addressRef) {
+      if (this.contentUpdate === "Values" && this.addressRef) {
         this.$v.address.$touch();
         if (this.$v.address.$error) {
-          this.$q.notify({
-            type: "negative",
-            timeout: 3000,
-            message: "Invalid Address"
-          });
+          this.toastmsg("Invalid Address");
           return;
         }
-      }
-      if (this.contentUpdate === "Value" && this.bchatIdRef) {
-        this.$v.bchatId.$touch();
-        if (this.$v.bchatId.$error) {
-          this.$q.notify({
-            type: "negative",
-            timeout: 3000,
-            message: "Invalid Bchat Id"
-          });
-          return;
-        }
-      }
-      if (this.contentUpdate === "Value" && this.belnetIdRef) {
-        this.$v.belnetId.$touch();
-        if (this.$v.belnetId.$error) {
-          this.$q.notify({
-            type: "negative",
-            timeout: 3000,
-            message: "Invalid Belnet Id"
-          });
+        if (this.address === this.record.value_wallet) {
+          this.toastmsg("same wallet address");
           return;
         }
       }
 
-      // The validators validate on lowercase, need to submit as lowercase too
-      // const submitRecord = {
-      //   ...this.record,
-      //   value_bchat: this.bchatId,
-      //   value_belnet: this.belnetId,
-      //   value_wallet: this.address
-      // };
+      if (this.contentUpdate === "Values" && this.bchatIdRef) {
+        this.$v.bchatId.$touch();
+        if (this.$v.bchatId.$error) {
+          this.toastmsg("Invalid Bchat Id");
+          return;
+        }
+
+        if (this.bchatId === this.record.value_bchat) {
+          this.toastmsg("same Bchat id");
+          return;
+        }
+      }
+
+      if (this.contentUpdate === "Values" && this.belnetIdRef) {
+        this.$v.belnetId.$touch();
+        if (this.$v.belnetId.$error) {
+          this.toastmsg("Invalid Belnet Id");
+          return;
+        }
+        if (this.belnetId === this.record.value_belnet) {
+          this.toastmsg("same Belnet id");
+          return;
+        }
+      }
+
       let submitRecord;
       if (this.contentUpdate === "Owner") {
         submitRecord = {
@@ -407,44 +307,9 @@ export default {
       }
       // Send up the submission with the record
       this.$emit("onSubmit", submitRecord);
-    },
-    clear() {
-      this.$emit("onClear");
     }
   },
   validations: {
-    record: {
-      name: {
-        required,
-        maxLength: function(value) {
-          let hypens = value.includes("-");
-          if (hypens) {
-            return value.length < 64;
-          } else {
-            return value.length < 33;
-          }
-        },
-        hyphen: function(value) {
-          let str = value || "";
-
-          return !(str.startsWith("-") || str.endsWith("-"));
-        },
-        validate: function(value) {
-          const _value = value.toLowerCase();
-          return bns_name(_value);
-        }
-      },
-      owner: {
-        validate: function(value) {
-          return this.isAddress(value);
-        }
-      },
-      backup_owner: {
-        validate: function(value) {
-          return this.isAddress(value);
-        }
-      }
-    },
     ownerAddress: {
       validate: function(value) {
         return this.isAddress(value);

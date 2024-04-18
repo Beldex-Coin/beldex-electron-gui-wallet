@@ -10,18 +10,11 @@
       />
       <div class="back-btn-label">{{ $t("buttons.bnsUpdate") }}</div>
     </div>
-    <!-- :disable-name="updating || renewing"
-        :updating="updating"
-        :renewing="renewing" -->
-    <!-- :show-clear-button="updating || renewing"
-        :disable-submit-button="disable_submit_button" -->
     <div class="bns-input">
       <BNSUpdateInputForm
         ref="form"
-        submit-label="buttons.update"
         :current-record="currentRecord"
         @onSubmit="onSubmit"
-        @onClear="onClear"
       />
       <q-dialog v-model="confirmModal.open">
         <q-card class="bnsConfirmmodal">
@@ -46,15 +39,6 @@
                   {{ this.confirmModal.record.owner }}
                 </div>
               </div>
-              <!-- <div
-                v-if="this.confirmModal.backup_owner"
-                class="tablewrapper flex row q-mt-md"
-              >
-                <div class="label">Backup Owner</div>
-                <div class="address">
-                  {{ this.confirmModal.record.backup_owner }}
-                </div>
-              </div> -->
             </section>
           </q-card-section>
           <q-card-section
@@ -167,9 +151,6 @@ export default {
               timeout: 1000,
               message
             });
-            this.$refs.form.reset();
-            // this.renewing = false;
-            // this.updating = false;
             this.onBackBtn();
             break;
           case -1:
@@ -194,21 +175,12 @@ export default {
       };
     },
     onBackBtn() {
-      console.log("onBackBtn ::");
-
       this.$emit("onBack", "");
-    },
-    onClear() {
-      this.$refs.form.reset();
     },
     async update(record) {
       const updatedRecord = {
-        ...record,
-        value: record.value,
-        owner: record.owner
-        // backup_owner: record.backup_owner
+        ...record
       };
-
       let passwordDialog = await this.showPasswordConfirmation({
         title: this.$t("dialog.bnsUpdate.title"),
         noPasswordMessage: this.$t("dialog.bnsUpdate.message"),
@@ -235,37 +207,6 @@ export default {
             password
           });
           this.$gateway.send("wallet", "update_bns_mapping", bns);
-        })
-        .onDismiss(() => {})
-        .onCancel(() => {});
-    },
-
-    async renew(record) {
-      let passwordDialog = await this.showPasswordConfirmation({
-        title: this.$t("dialog.renew.title"),
-        noPasswordMessage: this.$t("dialog.renew.message"),
-        ok: {
-          label: this.$t("dialog.renew.ok"),
-          color: "primary"
-        },
-        dark: this.theme == "dark",
-        color: this.theme == "dark" ? "white" : "dark"
-      });
-      passwordDialog
-        .onOk(password => {
-          // if no password set
-          password = password || "";
-          this.$store.commit("gateway/set_bns_status", {
-            code: 1,
-            message: "Sending renew mapping transaction",
-            sending: true
-          });
-          const params = {
-            type: record.type,
-            name: record.name,
-            password
-          };
-          this.$gateway.send("wallet", "bns_renew_mapping", params);
         })
         .onDismiss(() => {})
         .onCancel(() => {});

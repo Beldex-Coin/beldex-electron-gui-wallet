@@ -246,7 +246,6 @@ export class WalletRPC {
 
   async handle(data) {
     let params = data.data;
-    console.log("handle.......", params);
     switch (data.method) {
       case "has_password":
         this.hasPassword();
@@ -371,10 +370,9 @@ export class WalletRPC {
         );
         break;
       case "bns_renew_mapping":
-        this.lnsRenewMapping(params.password, params.type, params.name);
+        this.bnsRenewMapping(params.password, params.years, params.name);
         break;
       case "update_bns_mapping":
-        console.log("params ...", params);
         this.updateBNSMapping(
           params.password,
           // // params.type,
@@ -1154,14 +1152,14 @@ export class WalletRPC {
   type can be:
   belnet_1y, belnet_2y, belnet_5y, belnet_10y
   */
-  lnsRenewMapping(password, type, name) {
+  bnsRenewMapping(password, years, name) {
     let _name = name.trim().toLowerCase();
 
     // the RPC accepts names with the .bdx already appeneded only
     // can be belnet_1y, belnet_2y, belnet_5y, belnet_10y
-    if (type.startsWith("belnet")) {
-      _name = _name + ".bdx";
-    }
+    // if (type.startsWith("belnet")) {
+    //   _name = _name + ".bdx";
+    // }
 
     crypto.pbkdf2(
       password,
@@ -1186,12 +1184,10 @@ export class WalletRPC {
           });
           return;
         }
-
         const params = {
-          type,
+          years,
           name: _name
         };
-
         this.sendRPC("bns_renew_mapping", params).then(data => {
           if (data.hasOwnProperty("error")) {
             let error =
@@ -1205,13 +1201,14 @@ export class WalletRPC {
             return;
           }
 
-          this.purchasedNames[name.trim()] = type;
+          // this.purchasedNames[name.trim()] = type;
 
           setTimeout(() => this.updateLocalBNSRecords(), 5000);
 
           this.sendGateway("set_bns_status", {
             code: 0,
             i18n: "notification.positive.nameRenewed",
+            message: "notification.positive.nameRenewed",
             sending: false
           });
         });
@@ -1960,18 +1957,6 @@ export class WalletRPC {
     value_belnet,
     value_wallet
   ) {
-    // updateBNSMapping(params) {
-    // console.log('update value ........',params)
-    console.log(
-      "update value ........",
-      password,
-      name,
-      owner,
-      backupOwner,
-      value_bchat,
-      value_belnet,
-      value_wallet
-    );
     // let _name = name.trim().toLowerCase();
     // const _owner = owner.trim() === "" ? null : owner;
     // const _owner = null
@@ -2012,14 +1997,6 @@ export class WalletRPC {
         let params = {
           name
         };
-        // const updateproperty = ['owner', 'backupOwner', 'value_bchat', 'value_belnet', 'value_wallet'];
-        // updateproperty.forEach((item)=>{
-        //      if(item)
-        //      {
-        //       params[item]=item
-        //      }
-        // })
-        console.log("updateproperty .........", params);
         if (owner) {
           params.owner = owner;
         }
@@ -2035,11 +2012,7 @@ export class WalletRPC {
         if (value_wallet) {
           params.value_wallet = value_wallet;
         }
-
-        console.log("bns_params ...........", params);
-
         this.sendRPC("bns_update_mapping", params).then(data => {
-          console.log("bns_update_mapping ...........", data);
           if (data.hasOwnProperty("error")) {
             let error =
               data.error.message.charAt(0).toUpperCase() +

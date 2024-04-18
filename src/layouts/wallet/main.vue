@@ -48,13 +48,7 @@
               </article>
             </router-link>
 
-            <router-link
-              to="/wallet/bns"
-              class="box "
-              :class="[
-                currentRouteName === '/wallet/updateBns' ? 'bnsService' : ''
-              ]"
-            >
+            <router-link to="/wallet/bns" class="box ">
               <article
                 class="flex row alignItem-center justify-between menuList selected q-mt-md"
               >
@@ -501,10 +495,6 @@ export default {
     stepperPosition: state => state.gateway.stepperPosition,
     is_able_to_send() {
       return this.$store.state.gateway.update_required;
-    },
-    currentRouteName() {
-      console.log(this.$route);
-      return this.$route.path;
     }
   }),
   mounted() {
