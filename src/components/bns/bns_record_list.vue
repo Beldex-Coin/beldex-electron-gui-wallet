@@ -167,7 +167,7 @@
             <img
               src="../../assets/images/update.svg"
               alt="Update"
-              style="height: 24px; width: auto"
+              style="height: 24px; width: auto;margin-right: 5px;"
             />
             Update
           </q-btn>
@@ -180,7 +180,7 @@
             <img
               src="../../assets/images/renew.svg"
               alt="Update"
-              style="height: 24px; width: auto"
+              style="height: 24px; width: auto;margin-right: 5px;"
             />
             Renew
           </q-btn>

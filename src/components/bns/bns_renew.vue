@@ -8,11 +8,11 @@
         flat
         @click="onBackBtn()"
       />
-      <div class="back-btn-label">{{ $t("buttons.bnsUpdate") }}</div>
+      <div class="back-btn-label">{{ $t("buttons.bnsRenew") }}</div>
     </div>
     <div class="prices">
       <span class="pricelabel">
-        <span class="bnsname q-mr-sm">BNS</span>
+        <span class="bnsname ">BNS</span>
         {{ $t("strings.bns.prices") }}
       </span>
       <section class="flex row no-wrap q-mt-xs q-gutter-sm">
@@ -45,13 +45,20 @@
       </OxenField>
     </div>
 
-    <div class="buttons-wrapper flex justify-center  items-end q-mt-sm">
+    <div class="buttons-wrapper flex justify-center items-end q-mt-sm">
       <q-btn
         color="primary"
+        class="q-mt-lg q-ml-sm updation-btn"
         :disable="!is_ready"
-        :label="$t('buttons.renew')"
         @click="handlePopup(currentRecord)"
-      />
+      >
+        <img
+          src="../../assets/images/renew.svg"
+          alt="Update"
+          style="height: 24px; width: auto ;margin-right:5px;"
+        />
+        {{ $t("buttons.renew") }}
+      </q-btn>
     </div>
 
     <!--  ---------------------------------------confirm popup ------------------------------------------------->
@@ -60,7 +67,7 @@
       <q-card class="bnsConfirmmodal">
         <q-card-section>
           <div class="text-h6 text-center" style="font-weight: 600">
-            Confirm Purchase
+            Confirm Renew
           </div>
         </q-card-section>
 
@@ -276,6 +283,9 @@ export default {
   .buttons-wrapper {
     height: calc(100vh - 752px);
   }
+  .bnsname {
+    color: #20d030;
+  }
   // }
 }
 .prices,
@@ -289,6 +299,7 @@ export default {
 
   .selected {
     border: 2px solid #00ad07;
+    background: #474764;
   }
 }
 .pricelabel {
@@ -299,7 +310,7 @@ export default {
   width: 23.7%;
   height: 50px;
   background-color: #40405d;
-  border-radius: 7px;
+  border-radius: 10px;
   padding: 10px;
   font-weight: 500;
   border: 2px solid #32324a;

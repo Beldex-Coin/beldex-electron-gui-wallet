@@ -4,14 +4,9 @@
       class="owner-updation q-pa-lg q-my-md"
       :class="[contentUpdate === 'Owner' ? 'radio-btn' : '']"
     >
-      <div class="q-gutter-sm q-mb-md">
-        <q-radio
-          v-model="contentUpdate"
-          class="owner-label"
-          dense
-          val="Owner"
-          :label="$t('fieldLabels.updateOwner')"
-        />
+      <div class="q-gutter-sm q-mb-md flex row">
+        <q-radio v-model="contentUpdate" dense val="Owner" />
+        <div class="radio-btn-label">{{ $t("fieldLabels.updateOwner") }}</div>
       </div>
       <div :class="[contentUpdate === 'Values' ? 'opacity' : '']">
         <!-- Owner -->
@@ -20,7 +15,6 @@
             class="q-mt-md"
             :label="$t('fieldLabels.OwnerWalletaddress')"
             :error="$v.ownerAddress.$error"
-            optional
           >
             <q-input
               v-model.trim="ownerAddress"
@@ -43,14 +37,9 @@
         contentUpdate === 'Values' ? 'radio-btn' : ''
       ]"
     >
-      <div class="q-gutter-sm q-mb-md">
-        <q-radio
-          v-model="contentUpdate"
-          class="owner-label"
-          dense
-          val="Values"
-          :label="$t('fieldLabels.updateValues')"
-        />
+      <div class="q-gutter-sm q-mb-md flex row">
+        <q-radio v-model="contentUpdate" dense val="Values" />
+        <div class="radio-btn-label">{{ $t("fieldLabels.updateValues") }}</div>
       </div>
       <section :class="[contentUpdate === 'Owner' ? 'opacity' : '']">
         <div
@@ -124,7 +113,13 @@
         </div>
       </section>
     </div>
-
+    <div class="updatesNotes flex row q-px-md">
+      <div>
+        <span style="font-weight: 600">Note :</span> You can only update owner
+        address or values at a time. If you want to update both, you can either
+        update the value before ownership or after transferring ownership.
+      </div>
+    </div>
     <div class="buttons flex justify-center q-mt-sm">
       <q-btn
         color="primary"
@@ -142,7 +137,7 @@
         <img
           src="../../assets/images/update.svg"
           alt="Update"
-          style="height: 24px; width: auto"
+          style="height: 24px; width: auto;margin-right: 5px;"
         />
         Update
       </q-btn>
@@ -191,6 +186,12 @@ export default {
     };
   },
   watch: {
+    contentUpdate: {
+      handler(val, old) {
+        if (val === old) return;
+        this.updateInputFieldChanger();
+      }
+    },
     addressRef: {
       handler(val, old) {
         if (val === old) return;
@@ -239,6 +240,9 @@ export default {
         timeout: 3000,
         message: msg
       });
+    },
+    updateInputFieldChanger() {
+      this.$v.$reset();
     },
     submit() {
       this.$v.ownerAddress.$touch();
@@ -342,12 +346,7 @@ export default {
 .bns-update-input-form {
   .owner-updation {
     border: 1.5px solid #484856;
-
     border-radius: 20px;
-    .owner-label {
-      font-size: 16px;
-      font-weight: 600;
-    }
     .opacity {
       opacity: 0.3;
     }
@@ -355,6 +354,11 @@ export default {
 
   .radio-btn {
     background-color: #32324a;
+  }
+  .radio-btn-label {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
   }
   .buttons {
     margin-top: 20px;
@@ -368,7 +372,10 @@ export default {
     border: 1px solid red;
   }
 }
-
+.updatesNotes {
+  font-weight: 400;
+  color: #afafbe;
+}
 .idSelectorWrapper {
   .selectionBox {
     background-color: #474766;

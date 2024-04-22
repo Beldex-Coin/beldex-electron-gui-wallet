@@ -61,7 +61,8 @@ export default {
     //new wamp
     add: "Add",
     max: "Max",
-    bnsUpdate: "BNS Update"
+    bnsUpdate: "BNS Update",
+    bnsRenew: "BNS Renew"
   },
   dialog: {
     // Generic buttons

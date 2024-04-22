@@ -20,7 +20,7 @@
         <q-card class="bnsConfirmmodal">
           <q-card-section>
             <div class="text-h6 text-center" style="font-weight: 600">
-              Confirm Purchase
+              Confirm Update
             </div>
           </q-card-section>
 

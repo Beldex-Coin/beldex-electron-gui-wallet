@@ -50,7 +50,8 @@ export default {
     unlock: "UNLOCK",
     viewOnExplorer: "ПОСМОТРЕТЬ В ЭКСПЛОРЕРЕ",
     add: "Добавлять",
-    bnsUpdate: "Обновление БНС"
+    bnsUpdate: "Обновление БНС",
+    bnsRenew: "БНС Продлить"
   },
   dialog: {
     // Generic buttons

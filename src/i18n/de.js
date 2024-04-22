@@ -52,7 +52,8 @@ export default {
     unlock: "UNLOCK",
     viewOnExplorer: "IN EXPLORER ANZEIGEN",
     add: "Hinzufügen",
-    bnsUpdate: "BNS-Update"
+    bnsUpdate: "BNS-Update",
+    bnsRenew: "BNS erneuern"
   },
   dialog: {
     // Generic buttons
