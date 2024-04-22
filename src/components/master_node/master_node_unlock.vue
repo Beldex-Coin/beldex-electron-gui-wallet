@@ -1,6 +1,6 @@
 <template>
   <div v-if="isVisible" class="master-node-stake-tab">
-    <div :class="`q-pa-md ${master_nodes.length === 0 ? 'd-center' : ''}`">
+    <div :class="` ${master_nodes.length === 0 ? 'd-center' : ''}`">
       <div
         class="q-pb-sm header items-center"
         style="font-family: Poppins-Regular;
@@ -27,6 +27,9 @@
           :details="details"
           :action="unlockWarning"
         />
+      </div>
+      <div>
+        <div>Deregistered Nodes</div>
       </div>
       <q-inner-loading
         :showing="unlock_status.sending || fetching"

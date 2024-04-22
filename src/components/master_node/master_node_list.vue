@@ -7,18 +7,8 @@
         @click.native="details(nodeWithMinContribution(node))"
       >
         <q-item-section>
-          <q-item-label class="ellipsis"
-            >{{ $t("strings.masterNodeDetails.snKey") }}:
-            {{ node.master_node_pubkey }}</q-item-label
-          >
+          <span v-if="getRole(node)">{{ getRole(node) }} •</span>
           <q-item-label class="non-selectable">
-            <span v-if="node.ourContributionAmount > 0">
-              <span v-if="getRole(node)">{{ getRole(node) }} •</span>
-              <span>
-                {{ $t("strings.contribution") }}:
-                <FormatOxen :amount="node.ourContributionAmount" />
-              </span>
-            </span>
             <!-- you only have a contribution amount of 0 if you are a "contributor"
             by way of the node having reserved a spot for you on the node -->
             <span
@@ -35,8 +25,18 @@
               {{ openForContriubtionOxen(node) }} BDX
             </span>
           </q-item-label>
+          <q-item-label class="ellipsis"
+            >{{ $t("strings.masterNodeDetails.snKey") }}:
+            {{ node.master_node_pubkey }}</q-item-label
+          >
         </q-item-section>
         <q-item-section side>
+          <span v-if="node.ourContributionAmount > 0">
+            <span>
+              {{ $t("strings.contribution") }}:
+              <FormatOxen :amount="node.ourContributionAmount" />
+            </span>
+          </span>
           <span class="fee">{{ getFee(node) }}</span>
         </q-item-section>
         <q-item-section side>
