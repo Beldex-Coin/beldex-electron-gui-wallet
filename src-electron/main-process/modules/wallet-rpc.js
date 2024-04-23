@@ -257,6 +257,7 @@ export class WalletRPC {
 
       case "decrypt_record": {
         const record = await this.decryptBNSRecord(params.type, params.name);
+        this.startBnsHeartBeat();
         this.sendGateway("set_decrypt_record_result", {
           record,
           decrypted: !!record
@@ -947,15 +948,16 @@ export class WalletRPC {
       this.heartbeatAction();
     }, 8000);
     this.heartbeatAction(true);
-
+    this.startBnsHeartBeat();
+  }
+  startBnsHeartBeat() {
     clearInterval(this.bnsHeartbeat);
     this.bnsHeartbeat = setInterval(() => {
-      1000;
       this.updateLocalBNSRecords();
     }, 80000); // change from 30*1000 to 80000
+
     this.updateLocalBNSRecords();
   }
-
   heartbeatAction(extended = false) {
     Promise.all([
       this.sendRPC("get_address", { account_index: 0 }, 5000),
@@ -1961,7 +1963,7 @@ export class WalletRPC {
     // const _owner = owner.trim() === "" ? null : owner;
     // const _owner = null
 
-    const backup_owner = backupOwner.trim() === "" ? null : backupOwner;
+    // const backup_owner = backupOwner.trim() === "" ? null : backupOwner;
 
     // updated records have type "belnet" or "bchat"
     // UI passes the values without the extension
@@ -2035,7 +2037,7 @@ export class WalletRPC {
           // this.purchasedNames[name.trim()] = type;
 
           // Fetch new records and then get the decrypted record for the one we just inserted
-          setTimeout(() => this.updateLocalBNSRecords(), 5000);
+          setTimeout(() => this.startBnsHeartBeat(), 5000);
 
           // Optimistically update our record
           const { bnsRecords } = this.wallet_state;
@@ -2047,9 +2049,7 @@ export class WalletRPC {
             ) {
               return {
                 ...record,
-                owner: owner,
-                backup_owner,
-                value_wallet
+                ...params
               };
             }
 

@@ -159,7 +159,7 @@ export default {
               timeout: 3000,
               message
             });
-            this.onBackBtn();
+            // this.onBackBtn();
             break;
         }
       },
