@@ -1,19 +1,13 @@
 <template>
   <div v-if="isVisible" class="master-node-stake-tab">
-    <div :class="`q-pa-md ${master_nodes.length === 0 ? 'd-center' : ''}`">
-      <div
-        class="q-pb-sm header items-center  "
-        style="font-family: Poppins-Regular;
-               font-size: 16px;
-               display: flex;
-              justify-content: center;"
-      >
+    <div :class="` ${master_nodes.length === 0 ? 'd-center' : ''}`">
+      <div class="q-my-md header items-center" style="font-size: 16px">
         <span v-if="master_nodes.length">{{
           $t("titles.currentlyStakedNodes")
         }}</span>
-        <span v-else style="color: #77778B;"
+        <span v-else style="color: #77778b"
           >{{ $t("strings.masterNodeStartStakingDescription") }}
-          <span style="font-family: Poppins-SemiBold;">{{
+          <span style="font-family: Poppins-SemiBold">{{
             $t("titles.masterNode.staking")
           }}</span
           >&nbsp;
@@ -29,6 +23,33 @@
           :action="unlockWarning"
         />
       </div>
+      <div>
+        <div class="deregister-header q-my-md">Deregistered Nodes</div>
+
+        <q-list class="master-node-list" no-border>
+          <q-item>
+            <q-item-section>
+              <q-item-label class="ellipsis">
+                <span style="font-weight: 600"
+                  >{{ $t("strings.masterNodeDetails.snKey") }} </span
+                >:
+                f839c386fd94ddb026fb88d3579f0f0a09b823a1505b57c5ff186e134bbd9f23</q-item-label
+              >
+            </q-item-section>
+            <q-item-section side>
+              <span>
+                <!-- <span v-if="getRole(node)">{{ getRole(node) }} •</span> -->
+                <span class="contri-wrapper">
+                  Amount:
+                  <span class="amount">
+                    <FormatOxen :amount="1000" />
+                  </span>
+                </span>
+              </span>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
       <q-inner-loading
         :showing="unlock_status.sending || fetching"
         :dark="theme == 'dark'"
@@ -37,6 +58,7 @@
       </q-inner-loading>
     </div>
   </div>
+
   <MasterNodeDetails
     v-else
     ref="masterNodeDetailsUnlock"
@@ -55,12 +77,14 @@ import { master_node_key } from "src/validators/common";
 import WalletPassword from "src/mixins/wallet_password";
 import MasterNodeDetails from "./master_node_details";
 import MasterNodeList from "./master_node_list";
+import FormatOxen from "components/format_oxen";
 
 export default {
   name: "MasterNodeUnlock",
   components: {
     MasterNodeDetails,
-    MasterNodeList
+    MasterNodeList,
+    FormatOxen
   },
   mixins: [WalletPassword],
   data() {
@@ -276,6 +300,10 @@ export default {
 </script>
 
 <style lang="scss">
+.deregister-header {
+  color: white;
+  font-size: 1rem;
+}
 .d-center {
   display: flex;
   justify-content: center;
