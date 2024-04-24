@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isVisible" class="master-node-stake-tab contribute">
-    <div class="q-pa-md">
+  <div v-if="isVisible" class="master-node-stake-tab contribute ">
+    <div class="q-pa-md ">
       <div class="row align-items sn-contribution-info">
         <div class="col-md-9">
           <div class="header">{{ $t("titles.availableForContribution") }}</div>

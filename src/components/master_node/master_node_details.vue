@@ -1,6 +1,6 @@
 <template>
   <!-- <q-dialog v-model="isVisible" class="masterNodeDetails" > -->
-  <q-layout class="masterNodeDetails" style="min-height:unset">
+  <q-layout class="masterNodeDetails" style="min-height: unset">
     <q-header>
       <q-toolbar color="dark" inverted class="q-pa-none">
         <div class="flex items-center back-arrow-btn" @click="goback()">
@@ -18,7 +18,7 @@
           </svg>
         </div>
         <q-toolbar-title class="ft-semibold">
-          {{ $t("strings.masterNodeDetails.masterNodeKey") }}
+          {{ $t("titles.masterNodeDetails") }}
         </q-toolbar-title>
 
         <q-btn
@@ -56,14 +56,14 @@
           /> -->
       </q-toolbar>
     </q-header>
-    <q-page class="detail-page" style="min-height:unset;">
+    <q-page v-if="true" class="detail-page" style="min-height: unset">
       <div lass="q-mt-lg ">
         <!-- <h6 class="q-mt-xs q-mb-none text-weight-light">
           {{ $t("strings.masterNodeDetails.masterNodeKey") }}
         </h6>
         <p class="break-all">{{ node.master_node_pubkey }}</p> -->
 
-        <div class=" detailbox flex row justify-between">
+        <div class="detailbox flex row justify-between">
           <div class="mn-detail-wrapper">
             <div class="infoBoxContent">
               <div class="text ft-Light">
@@ -106,7 +106,7 @@
           </div>
           <div class="mn-detail-wrapper">
             <div class="infoBoxContent">
-              <div class="text ft-Light" style="padding-right: 25px;">
+              <div class="text ft-Light" style="padding-right: 25px">
                 <span>{{ $t("strings.masterNodeDetails.operatorFee") }}</span>
               </div>
               <div class="value ft-semibold">
@@ -158,7 +158,7 @@
             v-for="contributor in contributors"
             :key="contributor.address"
             class="oxen-list-item"
-            style="margin-right: 5px;"
+            style="margin-right: 5px"
             @click="openUserWalletInfo(contributor.address)"
           >
             <q-item-label>
@@ -191,6 +191,40 @@
       <q-inner-loading :showing="unlock_status.sending" :dark="theme == 'dark'">
         <q-spinner color="primary" size="30" />
       </q-inner-loading>
+    </q-page>
+    <!-- --------------------------------deregister details------------------------- -->
+    <q-page v-else class="detail-page" style="min-height: unset">
+      <div class="deregister-wrapper q-pa-md">
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis">
+            <span class="label">Amount :</span
+            ><span class="value"
+              ><FormatOxen :amount="node.staking_requirement"/></span
+          ></q-item-label>
+        </div>
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis"
+            ><span class="label">Unlock Height </span
+            ><span class="value">: 1418700</span>
+          </q-item-label>
+        </div>
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis">
+            <span class="label">Key Image : </span
+            ><span class="value "
+              >bde711f12eb61c25f7b6a6fe52826c560f5f4919e45626ab93c243d646293e60</span
+            >
+          </q-item-label>
+        </div>
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis">
+            <span class="label">Signature :</span
+            ><span class="value ellipsis">
+              cb0c8caedb27eb06a87786a895f0c7d62ecda1923aee177b6d68620da8dafe04aa5402a8e0a5a678b6cd10aefd94c630f77ddbb6ab80f9dae1a60e54bcfdb80b</span
+            >
+          </q-item-label>
+        </div>
+      </div>
     </q-page>
   </q-layout>
   <!-- </q-dialog> -->
@@ -331,6 +365,21 @@ export default {
 
   .info {
     margin-right: 30px;
+  }
+  .deregister-wrapper {
+    border: 2px solid #41415b;
+    border-radius: 10px;
+    .q-item__label {
+      line-height: 1.6em !important;
+    }
+    .label {
+      font-weight: 300;
+      font-size: 1rem;
+    }
+    .value {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
   }
 }
 </style>
