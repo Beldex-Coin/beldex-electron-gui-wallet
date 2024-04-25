@@ -677,7 +677,7 @@ export default {
       myStakes: "My Stakes"
     },
 
-    masterNodeDetails: "Master node details",
+    masterNodeDetails: "Masternode details",
     settings: {
       title: "Settings",
       tabs: {

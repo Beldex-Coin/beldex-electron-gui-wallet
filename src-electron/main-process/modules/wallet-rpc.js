@@ -464,10 +464,6 @@ export class WalletRPC {
         this.set_sender_address(params.data);
         break;
 
-      case "set_mnDetails":
-        this.set_mnDetails(params.data);
-        break;
-
       case "deregister_images":
         this.deregisterImages(params.password);
         break;
@@ -2464,9 +2460,7 @@ export class WalletRPC {
   set_sender_address(val) {
     this.sendGateway("set_sender_address", val);
   }
-  set_mnDetails(val) {
-    this.sendGateway("set_mnDetails", val);
-  }
+
   set_stepperPosition(val) {
     this.sendGateway("set_stepperPosition", val);
   }

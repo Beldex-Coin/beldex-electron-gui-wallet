@@ -485,7 +485,6 @@ export class Daemon {
 
     this.getRPC("master_node_blacklisted_key_images").then(data => {
       if (!data.hasOwnProperty("result")) return;
-      console.log("data:", data.result);
       const master_nodes_deregister = data.result.blacklist;
       this.sendGateway("set_daemon_data", { master_nodes_deregister });
     });

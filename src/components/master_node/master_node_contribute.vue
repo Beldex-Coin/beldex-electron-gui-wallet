@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isVisible" class="master-node-stake-tab contribute ">
-    <div class="q-pa-md ">
+  <div v-if="toggleVisible" class="master-node-stake-tab contribute">
+    <div class="q-pa-md">
       <div class="row align-items sn-contribution-info">
         <div class="col-md-9">
           <div class="header">{{ $t("titles.availableForContribution") }}</div>
@@ -60,11 +60,14 @@ export default {
     awaitingMasterNodes: {
       type: Array,
       required: true
+    },
+    toggleVisible: {
+      type: Boolean,
+      required: true
     }
   },
   data() {
     return {
-      isVisible: true,
       nodeDetails: ""
     };
   },
@@ -84,8 +87,7 @@ export default {
       const minContribution = node.minContribution;
       // close the detail popup if it's open
       this.$refs.masterNodeDetailsContribute.isVisible = false;
-      this.isVisible = false;
-
+      this.$emit("onChangeVisible", false);
       this.$emit("contribute", key, minContribution);
       this.$q.notify({
         type: "positive",
@@ -94,23 +96,11 @@ export default {
       });
     },
     details(node) {
-      // this.$refs.masterNodeDetailsContribute.isVisible = true;
-      // this.$refs.masterNodeDetailsContribute.node = node;
       this.nodeDetails = node;
-      this.isVisible = false;
-
-      this.$gateway.send("wallet", "set_mnDetails", {
-        data: node
-      });
-
-      // this.$refs.masterNodeDetailsUnlock.isVisible = true;
-      // this.$refs.masterNodeDetailsUnlock.node = node;
+      this.$emit("onChangeVisible", false);
     },
     goback() {
-      this.isVisible = true;
-      this.$gateway.send("wallet", "set_mnDetails", {
-        data: {}
-      });
+      this.$emit("onChangeVisible", true);
     },
     updateMasterNodeList() {
       this.$gateway.send("wallet", "update_master_node_list");

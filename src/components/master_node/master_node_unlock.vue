@@ -23,17 +23,16 @@
           :action="unlockWarning"
         />
       </div>
-      <div>
+      <div v-if="deregister_master_nodes.length > 0">
         <div class="deregister-header q-my-md">Deregistered Nodes</div>
 
         <q-list class="master-node-list" no-border>
           <q-item v-for="node in deregister_master_nodes" :key="node.key_image">
-            <q-item-section>
+            <q-item-section @click="assignDeregisterDetails(node)">
               <q-item-label class="ellipsis">
                 <span style="font-weight: 600"
                   >{{ $t("strings.masterNodeDetails.snKey") }} </span
-                >:
-                f839c386fd94ddb026fb88d3579f0f0a09b823a1505b57c5ff186e134bbd9f23</q-item-label
+                >: {{ node.key_image }}</q-item-label
               >
             </q-item-section>
             <q-item-section side>
@@ -87,6 +86,12 @@ export default {
     FormatOxen
   },
   mixins: [WalletPassword],
+  props: {
+    onChangeVisible: {
+      type: Function,
+      require: false
+    }
+  },
   data() {
     const menuItems = [
       { action: "copyMasterNodeKey", i18n: "menuItems.copyMasterNodeKey" },
@@ -106,52 +111,33 @@ export default {
       const primary = state.gateway.wallet.address_list.primary[0];
       return (primary && primary.address) || null;
     },
-    deregister_master_nodes: state =>
-      state.gateway.daemon.master_nodes_deregister,
-    // just SNs the user has contributed to
-    master_nodes(state) {
-      let nodes = state.gateway.daemon.master_nodes.nodes;
-      // don't count reserved nodes in my stakes (where they are a contributor of amount 0)
-      console.log(
-        "master_nodes_deregister:",
-        state.gateway.daemon.master_nodes_deregister
-      );
-      console.log("signed_key_images:", state.gateway.daemon.signed_key_images);
+    deregister_master_nodes: state => {
       let master_nodes_deregister = state.gateway.daemon.master_nodes_deregister
         ? state.gateway.daemon.master_nodes_deregister
         : [];
       let signed_key_images = state.gateway.daemon.signed_key_images
         ? state.gateway.daemon.signed_key_images
         : [];
-      console.log("master_nodes_deregister:", master_nodes_deregister);
-      console.log("signed_key_images:", signed_key_images);
-      let match = [];
+      let degisterList = [];
       for (let i = 0; i < master_nodes_deregister.length; i++) {
         for (let j = 0; j < signed_key_images.length; j++) {
           if (
             master_nodes_deregister[i].key_image ==
             signed_key_images[j].key_image
           ) {
-            console.log("i....", i, j);
-            console.log(
-              "master_nodes_deregister[i].key_image:",
-              master_nodes_deregister[i]
-            );
-            console.log(
-              "signed_key_images[j].key_image:",
-              signed_key_images[j]
-            );
-            match.push(
+            degisterList.push(
               Object.assign(signed_key_images[j], master_nodes_deregister[i])
             );
-            //amount: 10000000000000
-            // key_image:"bde711f12eb61c25f7b6a6fe52826c560f5f4919e45626ab93c243d646293e60"
-            // signature: "cb0c8caedb27eb06a87786a895f0c7d62ecda1923aee177b6d68620da8dafe04aa5402a8e0a5a678b6cd10aefd94c630f77ddbb6ab80f9dae1a60e54bcfdb80b"
-            // unlock_height: 1418700
           }
         }
       }
-      console.log("match:", match);
+      return degisterList;
+    },
+    // just SNs the user has contributed to
+    master_nodes(state) {
+      let nodes = state.gateway.daemon.master_nodes.nodes;
+      // don't count reserved nodes in my stakes (where they are a contributor of amount 0)
+
       const getOurContribution = node =>
         node.contributors.find(
           c => c.address === this.our_address && c.amount > 0
@@ -163,7 +149,6 @@ export default {
           ourContributionAmount: ourContribution.amount
         };
       });
-      console.log("final mn data .....", masterNodes);
       return masterNodes;
     },
     fetching: state => state.gateway.daemon.master_nodes.fetching
@@ -234,19 +219,18 @@ export default {
     details(node) {
       this.nodeDetails = node;
       this.isVisible = false;
-
-      this.$gateway.send("wallet", "set_mnDetails", {
-        data: node
-      });
-
-      // this.$refs.masterNodeDetailsUnlock.isVisible = true;
-      // this.$refs.masterNodeDetailsUnlock.node = node;
+      this.deregisterDetail = "";
+      this.$emit("onChangeVisible", false);
+    },
+    assignDeregisterDetails(node) {
+      this.nodeDetails = "";
+      this.isVisible = false;
+      this.deregisterDetail = node;
+      this.$emit("onChangeVisible", false);
     },
     goback() {
       this.isVisible = true;
-      this.$gateway.send("wallet", "set_mnDetails", {
-        data: {}
-      });
+      this.$emit("onChangeVisible", true);
     },
     unlockWarning(node, event) {
       const key = node.master_node_pubkey;

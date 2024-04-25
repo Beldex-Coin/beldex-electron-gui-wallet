@@ -147,7 +147,6 @@ export default {
   update_required: false,
   router_path_rightpane: "send",
   sender_address: "",
-  mnDetails: {},
   stepperPosition: 1,
 
   //  swap states

@@ -11,11 +11,6 @@
           <span class="green q-mr-xs q-ml-sm">Beldex </span>
           <span>Electron Wallet</span>
         </div>
-        <!-- <div class="flex items-center justify-center" style="margin:9px">
-          <img src="beldex.png" height="32" />
-          welcome
-        </div>-->
-
         <MainMenu />
       </q-toolbar>
     </q-header>
@@ -23,7 +18,7 @@
     <q-page class="flex row justify-around">
       <!-- <div class="col-md-3"> -->
       <div style="width: 23%; height: auto">
-        <section class="rectangleBox" style="position: relative;">
+        <section class="rectangleBox" style="position: relative">
           <article style="height: 93%; overflow-y: auto">
             <router-link to="/wallet" class="box">
               <article
@@ -48,7 +43,7 @@
               </article>
             </router-link>
 
-            <router-link to="/wallet/bns" class="box ">
+            <router-link to="/wallet/bns" class="box">
               <article
                 class="flex row alignItem-center justify-between menuList selected q-mt-md"
               >
@@ -84,6 +79,7 @@
             <router-link to="/wallet/masternode" class="box">
               <article
                 class="flex row alignItem-center justify-between menuList selected q-mt-md"
+                @click="doKeyImages()"
               >
                 <div class="flex row align-center justify-center a-center">
                   <svg
@@ -476,6 +472,7 @@ import StatusFooter from "components/footer";
 import MainMenu from "components/menus/mainmenu";
 import RightPane from "app/src/layouts/wallet/rightPane.vue";
 import { version } from "../../../package.json";
+import WalletPassword from "src/mixins/wallet_password";
 
 export default {
   name: "LayoutDefault",
@@ -485,8 +482,16 @@ export default {
     WalletDetails,
     RightPane
   },
+  mixins: [WalletPassword],
   data() {
-    return { version, step: 1 };
+    return {
+      version,
+      step: 1,
+      key_image: {
+        visible: false,
+        type: "Export"
+      }
+    };
   },
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
@@ -517,6 +522,40 @@ export default {
         timeout: 1000,
         message: this.$t("notification.positive.linkCopied")
       });
+    },
+    async doKeyImages() {
+      // const type = this.$t(
+      //   `dialog.keyImages.${this.key_image.type.toLowerCase()}`
+      // );
+      let passwordDialog = await this.showPasswordConfirmation({
+        title: "Show master node",
+        noPasswordMessage: "Do you want to continue?",
+        // this.$t("dialog.keyImages.message", {
+        //   type: type.toLocaleLowerCase(this.locale)
+        // })
+        ok: {
+          label: "Master node",
+          color: "primary"
+        },
+        cancel: {
+          color: "accent"
+        },
+        dark: this.theme == "dark",
+        color: this.theme == "dark" ? "white" : "dark"
+      });
+      passwordDialog
+        .onOk(password => {
+          // if no password set
+          password = password || "";
+          this.$gateway.send("wallet", "deregister_images", {
+            password: password
+            // path: this.modals.key_image.export_path
+          });
+        })
+        .onCancel(() => {
+          this.$router.go(-1);
+        })
+        .onDismiss(() => {});
     }
   }
 };

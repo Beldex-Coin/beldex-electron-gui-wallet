@@ -30,7 +30,7 @@
           @click="action(node, $event)"
         />
         <q-btn
-          v-if="can_open"
+          v-if="can_open && !deregisterDetail"
           color="accent"
           class="explorebtn"
           :label="$t('buttons.viewOnExplorer')"
@@ -56,7 +56,11 @@
           /> -->
       </q-toolbar>
     </q-header>
-    <q-page v-if="true" class="detail-page" style="min-height: unset">
+    <q-page
+      v-if="!deregisterDetail"
+      class="detail-page"
+      style="min-height: unset"
+    >
       <div lass="q-mt-lg ">
         <!-- <h6 class="q-mt-xs q-mb-none text-weight-light">
           {{ $t("strings.masterNodeDetails.masterNodeKey") }}
@@ -199,28 +203,26 @@
           <q-item-label class="ellipsis">
             <span class="label">Amount :</span
             ><span class="value"
-              ><FormatOxen :amount="node.staking_requirement"/></span
+              ><FormatOxen :amount="deregisterDetail.amount"/></span
           ></q-item-label>
         </div>
         <div class="q-mt-sm">
           <q-item-label class="ellipsis"
             ><span class="label">Unlock Height </span
-            ><span class="value">: 1418700</span>
+            ><span class="value">: {{ deregisterDetail.unlock_height }}</span>
           </q-item-label>
         </div>
         <div class="q-mt-sm">
           <q-item-label class="ellipsis">
             <span class="label">Key Image : </span
-            ><span class="value "
-              >bde711f12eb61c25f7b6a6fe52826c560f5f4919e45626ab93c243d646293e60</span
-            >
+            ><span class="value ">{{ deregisterDetail.key_image }}</span>
           </q-item-label>
         </div>
         <div class="q-mt-sm">
           <q-item-label class="ellipsis">
             <span class="label">Signature :</span
             ><span class="value ellipsis">
-              cb0c8caedb27eb06a87786a895f0c7d62ecda1923aee177b6d68620da8dafe04aa5402a8e0a5a678b6cd10aefd94c630f77ddbb6ab80f9dae1a60e54bcfdb80b</span
+              {{ deregisterDetail.signature }}</span
             >
           </q-item-label>
         </div>
@@ -256,8 +258,10 @@ export default {
       required: true
     },
     node: {
-      type: Object,
-      required: true
+      required: false
+    },
+    deregisterDetail: {
+      required: false
     }
   },
   data() {
@@ -274,7 +278,6 @@ export default {
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
     unlock_status: state => state.gateway.master_node_status.unlock,
-    nodedetails: state => state.gateway.mnDetails,
     is_ready() {
       return this.$store.getters["gateway/isReady"];
     },
@@ -321,7 +324,6 @@ export default {
       // });
     },
     openExplorer() {
-      // console.log('nodedetails::',this.nodedetails)
       this.$gateway.send("core", "open_explorer", {
         type: "master_node",
         id: this.node.master_node_pubkey
