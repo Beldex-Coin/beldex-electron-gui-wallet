@@ -1,7 +1,7 @@
 <template>
   <div class="bns-update-input-form q-pa-sm">
     <div
-      class="owner-updation q-pa-lg q-my-md"
+      class="owner-updation q-pa-md q-my-md"
       :class="[contentUpdate === 'Owner' ? 'radio-btn' : '']"
     >
       <div class="q-gutter-sm q-mb-md flex row">
@@ -31,7 +31,7 @@
     </div>
 
     <div
-      class="idSelectorWrapper owner-updation q-pa-lg q-my-md"
+      class="idSelectorWrapper owner-updation q-pa-md q-my-md"
       :class="[
         idsValidation ? 'errorborder' : '',
         contentUpdate === 'Values' ? 'radio-btn' : ''
@@ -196,6 +196,7 @@ export default {
       handler(val, old) {
         if (val === old) return;
         if (!val) {
+          this.$v.address.$reset();
           this.address = "";
         }
       }
@@ -204,6 +205,7 @@ export default {
       handler(val, old) {
         if (val === old) return;
         if (!val) {
+          this.$v.bchatId.$reset();
           this.bchatId = "";
         }
       }
@@ -212,6 +214,7 @@ export default {
       handler(val, old) {
         if (val === old) return;
         if (!val) {
+          this.$v.belnetId.$reset();
           this.belnetId = "";
         }
       }
@@ -371,19 +374,19 @@ export default {
   .errorborder {
     border: 1px solid red;
   }
+  .idSelectorWrapper {
+    .selectionBox {
+      background-color: #474766;
+      border-radius: 10px;
+      border: 2px solid #474766;
+    }
+    .selected {
+      border: 2px solid #00ad07;
+    }
+  }
 }
 .updatesNotes {
   font-weight: 400;
   color: #afafbe;
-}
-.idSelectorWrapper {
-  .selectionBox {
-    background-color: #474766;
-    border-radius: 10px;
-    border: 2px solid #474766;
-  }
-  .selected {
-    border: 2px solid #00ad07;
-  }
 }
 </style>

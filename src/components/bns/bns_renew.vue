@@ -287,49 +287,49 @@ export default {
     color: #20d030;
   }
   // }
-}
-.prices,
-.idSelectorWrapper {
-  // oxen-navy
-  margin-top: 20px;
-  background-color: #32324a;
-  padding: 15px;
-  color: white;
-  border-radius: 10px;
-
-  .selected {
-    border: 2px solid #00ad07;
-    background: #474764;
-  }
-}
-.pricelabel {
-  font-weight: 600;
-  font-size: 16px;
-}
-.tag {
-  width: 23.7%;
-  height: 50px;
-  background-color: #40405d;
-  border-radius: 10px;
-  padding: 10px;
-  font-weight: 500;
-  border: 2px solid #32324a;
-  font-size: 12px;
-  cursor: pointer;
-  .amount {
-    background-color: #484866;
-    color: #20d030;
-    padding: 3px 5px;
-    border-radius: 4px;
-    font-weight: 600;
-  }
-}
-
-.idSelectorWrapper {
-  .selectionBox {
-    background-color: #474766;
+  .prices,
+  .idSelectorWrapper {
+    // oxen-navy
+    margin-top: 20px;
+    background-color: #32324a;
+    padding: 15px;
+    color: white;
     border-radius: 10px;
-    border: 2px solid #474766;
+
+    .selected {
+      border: 2px solid #00ad07;
+      background: #474764;
+    }
+  }
+  .pricelabel {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .tag {
+    width: 23.7%;
+    height: 50px;
+    background-color: #40405d;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 500;
+    border: 2px solid #32324a;
+    font-size: 12px;
+    cursor: pointer;
+    .amount {
+      background-color: #484866;
+      color: #20d030;
+      padding: 3px 5px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+  }
+
+  .idSelectorWrapper {
+    .selectionBox {
+      background-color: #474766;
+      border-radius: 10px;
+      border: 2px solid #474766;
+    }
   }
 }
 </style>
