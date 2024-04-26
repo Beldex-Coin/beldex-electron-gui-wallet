@@ -68,6 +68,7 @@ export class Gateway extends EventEmitter {
   }
 
   open() {
+    console.log("open app ............");
     this.app.store.commit("gateway/set_app_data", {
       status: {
         code: 2 // Loading config

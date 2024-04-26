@@ -48,7 +48,7 @@
               </article>
             </router-link>
 
-            <router-link to="/wallet/bns" class="box">
+            <router-link to="/wallet/bns" class="box ">
               <article
                 class="flex row alignItem-center justify-between menuList selected q-mt-md"
               >

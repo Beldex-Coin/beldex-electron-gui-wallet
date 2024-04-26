@@ -51,7 +51,9 @@ export default {
     sweepAll: "ALLES BEREINIGEN",
     unlock: "UNLOCK",
     viewOnExplorer: "IN EXPLORER ANZEIGEN",
-    add: "Hinzufügen"
+    add: "Hinzufügen",
+    bnsUpdate: "BNS-Update",
+    bnsRenew: "BNS erneuern"
   },
   dialog: {
     // Generic buttons
@@ -239,7 +241,14 @@ export default {
     oldPassword: "Altes Passwort",
     rescanFullBlockchain: "Gesamte Blockchain erneut scannen",
     rescanSpentOutputs: "Spent Outputs erneut scannen",
-    transactionNotes: "Transaktionsnotizen"
+    transactionNotes: "Transaktionsnotizen",
+
+    // new design revamp
+
+    OwnerWalletaddress: " Besitzer-Wallet-Adresse",
+    backupOwnerWalletAddress: "Wallet-Adresse des Backup-Eigentümers",
+    updateOwner: "Besitzer aktualisieren",
+    updateValues: "Werte aktualisieren"
   },
   footer: {
     ready: "FERTIG",

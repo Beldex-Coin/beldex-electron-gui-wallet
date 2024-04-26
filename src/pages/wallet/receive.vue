@@ -44,7 +44,7 @@
           icon="content_copy"
           padding="md"
           class="q-px-md"
-          @click="copyAddress"
+          @click="copyAddress(info.address)"
         />
       </article>
       <div class="hr-separator" />
@@ -203,8 +203,8 @@ export default {
       let img = this.$refs.qr.$el.childNodes[0].toDataURL();
       this.$gateway.send("core", "save_png", { img, type: "QR Code" });
     },
-    copyAddress() {
-      clipboard.writeText(this.info.address);
+    copyAddress(value) {
+      clipboard.writeText(value);
       this.$q.notify({
         type: "positive",
         timeout: 1000,
