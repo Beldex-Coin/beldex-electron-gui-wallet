@@ -1,6 +1,6 @@
 <template>
   <!-- <q-dialog v-model="isVisible" class="masterNodeDetails" > -->
-  <q-layout class="masterNodeDetails" style="min-height:unset">
+  <q-layout class="masterNodeDetails" style="min-height: unset">
     <q-header>
       <q-toolbar color="dark" inverted class="q-pa-none">
         <div class="flex items-center back-arrow-btn" @click="goback()">
@@ -18,7 +18,7 @@
           </svg>
         </div>
         <q-toolbar-title class="ft-semibold">
-          {{ $t("strings.masterNodeDetails.masterNodeKey") }}
+          {{ $t("titles.masterNodeDetails") }}
         </q-toolbar-title>
 
         <q-btn
@@ -30,7 +30,7 @@
           @click="action(node, $event)"
         />
         <q-btn
-          v-if="can_open"
+          v-if="can_open && !deregisterDetail"
           color="accent"
           class="explorebtn"
           :label="$t('buttons.viewOnExplorer')"
@@ -56,14 +56,18 @@
           /> -->
       </q-toolbar>
     </q-header>
-    <q-page class="detail-page" style="min-height:unset;">
+    <q-page
+      v-if="!deregisterDetail"
+      class="detail-page"
+      style="min-height: unset"
+    >
       <div lass="q-mt-lg ">
         <!-- <h6 class="q-mt-xs q-mb-none text-weight-light">
           {{ $t("strings.masterNodeDetails.masterNodeKey") }}
         </h6>
         <p class="break-all">{{ node.master_node_pubkey }}</p> -->
 
-        <div class=" detailbox flex row justify-between">
+        <div class="detailbox flex row justify-between">
           <div class="mn-detail-wrapper">
             <div class="infoBoxContent">
               <div class="text ft-Light">
@@ -106,7 +110,7 @@
           </div>
           <div class="mn-detail-wrapper">
             <div class="infoBoxContent">
-              <div class="text ft-Light" style="padding-right: 25px;">
+              <div class="text ft-Light" style="padding-right: 25px">
                 <span>{{ $t("strings.masterNodeDetails.operatorFee") }}</span>
               </div>
               <div class="value ft-semibold">
@@ -158,7 +162,7 @@
             v-for="contributor in contributors"
             :key="contributor.address"
             class="oxen-list-item"
-            style="margin-right: 5px;"
+            style="margin-right: 5px"
             @click="openUserWalletInfo(contributor.address)"
           >
             <q-item-label>
@@ -192,6 +196,38 @@
         <q-spinner color="primary" size="30" />
       </q-inner-loading>
     </q-page>
+    <!-- --------------------------------deregister details------------------------- -->
+    <q-page v-else class="detail-page" style="min-height: unset">
+      <div class="deregister-wrapper q-pa-md">
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis">
+            <span class="label">Amount :</span
+            ><span class="value"
+              ><FormatOxen :amount="deregisterDetail.amount"/></span
+          ></q-item-label>
+        </div>
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis"
+            ><span class="label">Unlock Height </span
+            ><span class="value">: {{ deregisterDetail.unlock_height }}</span>
+          </q-item-label>
+        </div>
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis">
+            <span class="label">Key Image : </span
+            ><span class="value ">{{ deregisterDetail.key_image }}</span>
+          </q-item-label>
+        </div>
+        <div class="q-mt-sm">
+          <q-item-label class="ellipsis">
+            <span class="label">Signature :</span
+            ><span class="value ellipsis">
+              {{ deregisterDetail.signature }}</span
+            >
+          </q-item-label>
+        </div>
+      </div>
+    </q-page>
   </q-layout>
   <!-- </q-dialog> -->
 </template>
@@ -222,8 +258,10 @@ export default {
       required: true
     },
     node: {
-      type: Object,
-      required: true
+      required: false
+    },
+    deregisterDetail: {
+      required: false
     }
   },
   data() {
@@ -240,7 +278,6 @@ export default {
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
     unlock_status: state => state.gateway.master_node_status.unlock,
-    nodedetails: state => state.gateway.mnDetails,
     is_ready() {
       return this.$store.getters["gateway/isReady"];
     },
@@ -287,7 +324,6 @@ export default {
       // });
     },
     openExplorer() {
-      // console.log('nodedetails::',this.nodedetails)
       this.$gateway.send("core", "open_explorer", {
         type: "master_node",
         id: this.node.master_node_pubkey
@@ -331,6 +367,21 @@ export default {
 
   .info {
     margin-right: 30px;
+  }
+  .deregister-wrapper {
+    border: 2px solid #41415b;
+    border-radius: 10px;
+    .q-item__label {
+      line-height: 1.6em !important;
+    }
+    .label {
+      font-weight: 300;
+      font-size: 1rem;
+    }
+    .value {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
   }
 }
 </style>

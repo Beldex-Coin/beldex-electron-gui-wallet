@@ -1,9 +1,6 @@
 <template>
   <q-page class="master-node-page" style="min-height: unset">
-    <div
-      v-if="Object.keys(this.nodedetails).length === 0"
-      class="header row items-center justify-left "
-    >
+    <div v-if="toggleVisible" class="header row items-center justify-left ">
       <q-btn-toggle
         v-model="screen"
         toggle-color="primary"
@@ -24,14 +21,20 @@
         ]"
       />
     </div>
-    <MasterNodeUnlock v-if="screen === 'myStakes'" />
-    <MasterNodeStaking v-if="screen === 'staking'" />
+    <MasterNodeUnlock
+      v-if="screen === 'myStakes'"
+      @onChangeVisible="onChangeVisible"
+    />
+    <MasterNodeStaking
+      v-if="screen === 'staking'"
+      :toggle-visible="toggleVisible"
+      @onChangeVisible="onChangeVisible"
+    />
     <MasterNodeRegistration v-if="screen === 'registration'" />
   </q-page>
 </template>
 
 <script>
-import { mapState } from "vuex";
 import MasterNodeStaking from "components/master_node/master_node_staking";
 import MasterNodeRegistration from "components/master_node/master_node_registration";
 import MasterNodeUnlock from "components/master_node/master_node_unlock";
@@ -42,13 +45,17 @@ export default {
     MasterNodeRegistration,
     MasterNodeUnlock
   },
-  computed: mapState({
-    nodedetails: state => state.gateway.mnDetails
-  }),
+
   data() {
     return {
-      screen: "staking"
+      screen: "staking",
+      toggleVisible: true
     };
+  },
+  methods: {
+    onChangeVisible(value) {
+      this.toggleVisible = value;
+    }
   }
 };
 </script>
