@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <q-inner-loading :showing="bns_status.sending" :dark="theme == 'dark'">
+    <q-inner-loading v-else :showing="true" :dark="theme == 'dark'">
       <q-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
