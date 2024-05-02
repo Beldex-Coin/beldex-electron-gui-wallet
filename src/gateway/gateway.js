@@ -68,6 +68,7 @@ export class Gateway extends EventEmitter {
   }
 
   open() {
+    console.log("open app ............");
     this.app.store.commit("gateway/set_app_data", {
       status: {
         code: 2 // Loading config
@@ -327,10 +328,6 @@ export class Gateway extends EventEmitter {
           "gateway/set_sender_address",
           decrypted_data.data
         );
-        break;
-      case "set_mnDetails":
-        this.app.store.commit("gateway/set_mnDetails", decrypted_data.data);
-
         break;
       case "set_stepperPosition":
         this.app.store.commit(

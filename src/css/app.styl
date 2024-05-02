@@ -577,7 +577,7 @@ h1, h2, h3, h4, h5, h6, img, .q-list-header, .q-header, .q-menu .q-item-label, .
     .q-item
         cursor pointer
         color #fff
-        background #2f2f40
+        background #32324A
         -webkit-transition background-color .2s ease-in
         transition background-color .2s ease-in
         border 1px solid #3b3b3c
@@ -1100,7 +1100,7 @@ h1, h2, h3, h4, h5, h6, img, .q-list-header, .q-header, .q-menu .q-item-label, .
     a
         text-decoration none
 
-    .router-link-exact-active > .selected
+    .router-link-exact-active > .selected, .bnsService > .selected
         background-color $beldex-disable-grey
 
         span
@@ -1287,7 +1287,8 @@ body
         border-radius 0
 
 .master-node-staking, .master-node-stake-tab, .master-node-registration, .prove-transaction, .check-transaction, .sign-and-verify,.bns-purchase,.my-bns
-    height calc(100vh - 491px)
+    // height calc(100vh - 491px)
+    height calc(100vh - 479px);
     overflow-y auto
 
 .master-node-page, .advanced-page,.bns-page

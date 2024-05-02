@@ -246,7 +246,6 @@ export class WalletRPC {
 
   async handle(data) {
     let params = data.data;
-
     switch (data.method) {
       case "has_password":
         this.hasPassword();
@@ -258,6 +257,7 @@ export class WalletRPC {
 
       case "decrypt_record": {
         const record = await this.decryptBNSRecord(params.type, params.name);
+        this.startBnsHeartBeat();
         this.sendGateway("set_decrypt_record_result", {
           record,
           decrypted: !!record
@@ -371,15 +371,18 @@ export class WalletRPC {
         );
         break;
       case "bns_renew_mapping":
-        this.lnsRenewMapping(params.password, params.type, params.name);
+        this.bnsRenewMapping(params.password, params.years, params.name);
         break;
       case "update_bns_mapping":
         this.updateBNSMapping(
           params.password,
-          params.type,
+          // // params.type,
           params.name,
-          params.value,
           params.owner || "",
+          params.backup_owner || "",
+          params.value_bchat || "",
+          params.value_belnet || "",
+          params.value_wallet || "",
           params.backup_owner || ""
         );
         break;
@@ -461,10 +464,9 @@ export class WalletRPC {
         this.set_sender_address(params.data);
         break;
 
-      case "set_mnDetails":
-        this.set_mnDetails(params.data);
+      case "deregister_images":
+        this.deregisterImages(params.password);
         break;
-
       case "set_stepperPosition":
         this.set_stepperPosition(params.data);
         break;
@@ -945,15 +947,16 @@ export class WalletRPC {
       this.heartbeatAction();
     }, 8000);
     this.heartbeatAction(true);
-
+    this.startBnsHeartBeat();
+  }
+  startBnsHeartBeat() {
     clearInterval(this.bnsHeartbeat);
     this.bnsHeartbeat = setInterval(() => {
-      1000;
       this.updateLocalBNSRecords();
     }, 80000); // change from 30*1000 to 80000
+
     this.updateLocalBNSRecords();
   }
-
   heartbeatAction(extended = false) {
     Promise.all([
       this.sendRPC("get_address", { account_index: 0 }, 5000),
@@ -1150,14 +1153,14 @@ export class WalletRPC {
   type can be:
   belnet_1y, belnet_2y, belnet_5y, belnet_10y
   */
-  lnsRenewMapping(password, type, name) {
+  bnsRenewMapping(password, years, name) {
     let _name = name.trim().toLowerCase();
 
     // the RPC accepts names with the .bdx already appeneded only
     // can be belnet_1y, belnet_2y, belnet_5y, belnet_10y
-    if (type.startsWith("belnet")) {
-      _name = _name + ".bdx";
-    }
+    // if (type.startsWith("belnet")) {
+    //   _name = _name + ".bdx";
+    // }
 
     crypto.pbkdf2(
       password,
@@ -1182,12 +1185,10 @@ export class WalletRPC {
           });
           return;
         }
-
         const params = {
-          type,
+          years,
           name: _name
         };
-
         this.sendRPC("bns_renew_mapping", params).then(data => {
           if (data.hasOwnProperty("error")) {
             let error =
@@ -1201,13 +1202,14 @@ export class WalletRPC {
             return;
           }
 
-          this.purchasedNames[name.trim()] = type;
+          // this.purchasedNames[name.trim()] = type;
 
           setTimeout(() => this.updateLocalBNSRecords(), 5000);
 
           this.sendGateway("set_bns_status", {
             code: 0,
             i18n: "notification.positive.nameRenewed",
+            message: "notification.positive.nameRenewed",
             sending: false
           });
         });
@@ -1947,17 +1949,27 @@ export class WalletRPC {
     );
   }
 
-  updateBNSMapping(password, type, name, value, owner, backupOwner) {
-    let _name = name.trim().toLowerCase();
-    const _owner = owner.trim() === "" ? null : owner;
-    const backup_owner = backupOwner.trim() === "" ? null : backupOwner;
+  updateBNSMapping(
+    password,
+    name,
+    owner,
+    backupOwner,
+    value_bchat,
+    value_belnet,
+    value_wallet
+  ) {
+    // let _name = name.trim().toLowerCase();
+    // const _owner = owner.trim() === "" ? null : owner;
+    // const _owner = null
+
+    // const backup_owner = backupOwner.trim() === "" ? null : backupOwner;
 
     // updated records have type "belnet" or "bchat"
     // UI passes the values without the extension
-    if (type === "belnet") {
-      _name = _name + ".bdx";
-      value = value + ".bdx";
-    }
+    // if (type === "belnet") {
+    //   _name = _name + ".bdx";
+    //   value = value + ".bdx";
+    // }
 
     crypto.pbkdf2(
       password,
@@ -1983,14 +1995,24 @@ export class WalletRPC {
           return;
         }
 
-        const params = {
-          type,
-          owner: _owner,
-          backup_owner,
-          name: _name,
-          value
+        let params = {
+          name
         };
-
+        if (owner) {
+          params.owner = owner;
+        }
+        if (backupOwner) {
+          params.backupOwner = backupOwner;
+        }
+        if (value_bchat) {
+          params.value_bchat = value_bchat;
+        }
+        if (value_belnet) {
+          params.value_belnet = value_belnet;
+        }
+        if (value_wallet) {
+          params.value_wallet = value_wallet;
+        }
         this.sendRPC("bns_update_mapping", params).then(data => {
           if (data.hasOwnProperty("error")) {
             let error =
@@ -2011,24 +2033,22 @@ export class WalletRPC {
             return;
           }
 
-          this.purchasedNames[name.trim()] = type;
+          // this.purchasedNames[name.trim()] = type;
 
           // Fetch new records and then get the decrypted record for the one we just inserted
-          setTimeout(() => this.updateLocalBNSRecords(), 5000);
+          setTimeout(() => this.startBnsHeartBeat(), 5000);
 
           // Optimistically update our record
           const { bnsRecords } = this.wallet_state;
           const newRecords = bnsRecords.map(record => {
             if (
-              record.type === type &&
+              // record.type === type &&
               record.name &&
-              record.name.toLowerCase() === _name
+              record.name.toLowerCase() === name
             ) {
               return {
                 ...record,
-                owner: _owner,
-                backup_owner,
-                value
+                ...params
               };
             }
 
@@ -2039,8 +2059,9 @@ export class WalletRPC {
 
           this.sendGateway("set_bns_status", {
             code: 0,
-            i18n: "notification.positive.lnsRecordUpdated",
-            sending: false
+            i18n: "notification.positive.bnsRecordUpdated",
+            sending: false,
+            message: "notification.positive.bnsRecordUpdated"
           });
         });
       }
@@ -2439,11 +2460,56 @@ export class WalletRPC {
   set_sender_address(val) {
     this.sendGateway("set_sender_address", val);
   }
-  set_mnDetails(val) {
-    this.sendGateway("set_mnDetails", val);
-  }
+
   set_stepperPosition(val) {
     this.sendGateway("set_stepperPosition", val);
+  }
+
+  deregisterImages(password) {
+    console.log("deregister_images.....wallet-rpc");
+    crypto.pbkdf2(
+      password,
+      this.auth[2],
+      1000,
+      64,
+      "sha512",
+      (err, password_hash) => {
+        if (err) {
+          this.sendGateway("show_notification", {
+            type: "negative",
+            i18n: "notification.errors.internalError",
+            timeout: 2000
+          });
+          return;
+        }
+        if (!this.isValidPasswordHash(password_hash)) {
+          this.sendGateway("show_notification", {
+            type: "negative",
+            i18n: "notification.errors.invalidPassword",
+            timeout: 2000
+          });
+          return;
+        }
+        this.sendRPC("export_key_images")
+          .then(data => {
+            if (
+              data.hasOwnProperty("error") ||
+              !data.hasOwnProperty("result")
+            ) {
+              // onError();
+              return [];
+            }
+            if (data.result.signed_key_images) {
+              const signed_key_images = data.result.signed_key_images;
+              return this.sendGateway("set_daemon_data", { signed_key_images });
+              // return data.result.signed_key_images;
+            } else {
+              return [];
+            }
+          })
+          .catch();
+      }
+    );
   }
   exportKeyImages(password, filename = null) {
     crypto.pbkdf2(

@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <q-inner-loading v-else :showing="true">
+    <q-inner-loading v-else :showing="true" :dark="theme == 'dark'">
       <q-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
@@ -118,6 +118,7 @@ export default {
     bns_record(state) {
       return this.records_of_type(state);
     },
+    bns_status: state => state.gateway.bns_status,
     needsDecryption() {
       const records = [...this.bns_record];
       return records.find(r => this.isLocked(r));
@@ -126,6 +127,33 @@ export default {
       return this.$store.getters["gateway/isReady"];
     }
   }),
+  watch: {
+    bns_status: {
+      handler(val, old) {
+        if (val.code == old.code) return;
+        const { code, message } = val;
+        switch (code) {
+          case 0:
+            this.$q.notify({
+              type: "positive",
+              timeout: 1000,
+              message
+            });
+
+            break;
+          case -1:
+            this.$q.notify({
+              type: "negative",
+              timeout: 3000,
+              message
+            });
+
+            break;
+        }
+      },
+      deep: true
+    }
+  },
   methods: {
     records_of_type(state) {
       // receives the type and returns the records of that type

@@ -304,6 +304,9 @@ export default {
               .catch(() => resolve(false));
           });
         }
+      },
+      name: {
+        required
       }
     }
   },
@@ -318,6 +321,14 @@ export default {
           message: this.$t("notification.errors.invalidAddress")
         });
         return;
+      }
+
+      if (this.$v.newEntry.name.$error) {
+        return this.$q.notify({
+          type: "negative",
+          timeout: 1000,
+          message: "Please enter the name"
+        });
       }
       if (this.mode === "new") {
         let addressIsExist =
@@ -343,6 +354,7 @@ export default {
     },
     sendToAddress() {
       // this.close();
+
       this.$gateway.send("wallet", "set_sender_address", {
         data: this.entry.address
       });

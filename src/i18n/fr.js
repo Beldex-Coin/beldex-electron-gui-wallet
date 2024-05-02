@@ -52,7 +52,9 @@ export default {
     sweepAll: "TOUT BALAYER",
     unlock: "UNLOCK",
     viewOnExplorer: "VUE SUR L’EXPLORATEUR",
-    add: "Ajouter"
+    add: "Ajouter",
+    bnsUpdate: "Mise à jour du BNS",
+    bnsRenew: "BNS Renouveler"
   },
   dialog: {
     // Generic buttons
@@ -241,7 +243,15 @@ export default {
     rescanSpentOutputs: "Nouvelle analyse des sorties dépensées",
     transactionNotes: "Notes de transaction",
     chooseNetwork: "Choisir un réseau",
-    network: "Réseau"
+    network: "Réseau",
+
+    // new design revamp
+
+    OwnerWalletaddress: "Adresse du portefeuille du propriétaire",
+    backupOwnerWalletAddress:
+      "Adresse du portefeuille du propriétaire de sauvegarde",
+    updateOwner: "Mettre à jour le propriétaire",
+    updateValues: "Mettre à jour les valeurs"
   },
   footer: {
     ready: "PRÊT",

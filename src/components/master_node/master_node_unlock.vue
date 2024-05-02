@@ -1,19 +1,13 @@
 <template>
-  <div v-if="isVisible" class="master-node-stake-tab">
-    <div :class="`q-pa-md ${master_nodes.length === 0 ? 'd-center' : ''}`">
-      <div
-        class="q-pb-sm header items-center  "
-        style="font-family: Poppins-Regular;
-               font-size: 16px;
-               display: flex;
-              justify-content: center;"
-      >
+  <div v-if="isVisible" class="master-node-stake-tab q-pr-md">
+    <div :class="` ${master_nodes.length === 0 ? 'd-center' : ''}`">
+      <div class="q-my-md header items-center" style="font-size: 16px">
         <span v-if="master_nodes.length">{{
           $t("titles.currentlyStakedNodes")
         }}</span>
-        <span v-else style="color: #77778B;"
+        <span v-else style="color: #77778b"
           >{{ $t("strings.masterNodeStartStakingDescription") }}
-          <span style="font-family: Poppins-SemiBold;">{{
+          <span style="font-family: Poppins-SemiBold">{{
             $t("titles.masterNode.staking")
           }}</span
           >&nbsp;
@@ -29,6 +23,31 @@
           :action="unlockWarning"
         />
       </div>
+      <div v-if="deregister_master_nodes.length > 0">
+        <div class="deregister-header q-my-md">Deregistered Nodes</div>
+
+        <q-list class="master-node-list" no-border>
+          <q-item v-for="node in deregister_master_nodes" :key="node.key_image">
+            <q-item-section @click="assignDeregisterDetails(node)">
+              <q-item-label class="ellipsis">
+                <span style="font-weight: 600"
+                  >{{ $t("strings.masterNodeDetails.snKey") }} </span
+                >: {{ node.key_image }}</q-item-label
+              >
+            </q-item-section>
+            <q-item-section side>
+              <span>
+                <span class="contri-wrapper">
+                  Amount:
+                  <span class="amount">
+                    <FormatOxen :amount="node.amount" />
+                  </span>
+                </span>
+              </span>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
       <q-inner-loading
         :showing="unlock_status.sending || fetching"
         :dark="theme == 'dark'"
@@ -37,6 +56,7 @@
       </q-inner-loading>
     </div>
   </div>
+
   <MasterNodeDetails
     v-else
     ref="masterNodeDetailsUnlock"
@@ -44,6 +64,7 @@
     action-i18n="buttons.unlock"
     :node="this.nodeDetails"
     :goback="goback"
+    :deregister-detail="this.deregisterDetail"
   />
 </template>
 
@@ -55,14 +76,22 @@ import { master_node_key } from "src/validators/common";
 import WalletPassword from "src/mixins/wallet_password";
 import MasterNodeDetails from "./master_node_details";
 import MasterNodeList from "./master_node_list";
+import FormatOxen from "components/format_oxen";
 
 export default {
   name: "MasterNodeUnlock",
   components: {
     MasterNodeDetails,
-    MasterNodeList
+    MasterNodeList,
+    FormatOxen
   },
   mixins: [WalletPassword],
+  props: {
+    onChangeVisible: {
+      type: Function,
+      require: false
+    }
+  },
   data() {
     const menuItems = [
       { action: "copyMasterNodeKey", i18n: "menuItems.copyMasterNodeKey" },
@@ -71,7 +100,8 @@ export default {
     return {
       menuItems,
       isVisible: true,
-      nodeDetails: ""
+      nodeDetails: "",
+      deregisterDetail: ""
     };
   },
   computed: mapState({
@@ -81,21 +111,45 @@ export default {
       const primary = state.gateway.wallet.address_list.primary[0];
       return (primary && primary.address) || null;
     },
+    deregister_master_nodes: state => {
+      let master_nodes_deregister = state.gateway.daemon.master_nodes_deregister
+        ? state.gateway.daemon.master_nodes_deregister
+        : [];
+      let signed_key_images = state.gateway.daemon.signed_key_images
+        ? state.gateway.daemon.signed_key_images
+        : [];
+      let degisterList = [];
+      for (let i = 0; i < master_nodes_deregister.length; i++) {
+        for (let j = 0; j < signed_key_images.length; j++) {
+          if (
+            master_nodes_deregister[i].key_image ==
+            signed_key_images[j].key_image
+          ) {
+            degisterList.push(
+              Object.assign(signed_key_images[j], master_nodes_deregister[i])
+            );
+          }
+        }
+      }
+      return degisterList;
+    },
     // just SNs the user has contributed to
     master_nodes(state) {
       let nodes = state.gateway.daemon.master_nodes.nodes;
       // don't count reserved nodes in my stakes (where they are a contributor of amount 0)
+
       const getOurContribution = node =>
         node.contributors.find(
           c => c.address === this.our_address && c.amount > 0
         );
-      return nodes.filter(getOurContribution).map(n => {
+      let masterNodes = nodes.filter(getOurContribution).map(n => {
         const ourContribution = getOurContribution(n);
         return {
           ...n,
           ourContributionAmount: ourContribution.amount
         };
       });
+      return masterNodes;
     },
     fetching: state => state.gateway.daemon.master_nodes.fetching
   }),
@@ -165,19 +219,18 @@ export default {
     details(node) {
       this.nodeDetails = node;
       this.isVisible = false;
-
-      this.$gateway.send("wallet", "set_mnDetails", {
-        data: node
-      });
-
-      // this.$refs.masterNodeDetailsUnlock.isVisible = true;
-      // this.$refs.masterNodeDetailsUnlock.node = node;
+      this.deregisterDetail = "";
+      this.$emit("onChangeVisible", false);
+    },
+    assignDeregisterDetails(node) {
+      this.nodeDetails = "";
+      this.isVisible = false;
+      this.deregisterDetail = node;
+      this.$emit("onChangeVisible", false);
     },
     goback() {
       this.isVisible = true;
-      this.$gateway.send("wallet", "set_mnDetails", {
-        data: {}
-      });
+      this.$emit("onChangeVisible", true);
     },
     unlockWarning(node, event) {
       const key = node.master_node_pubkey;
@@ -276,6 +329,10 @@ export default {
 </script>
 
 <style lang="scss">
+.deregister-header {
+  color: white;
+  font-size: 1rem;
+}
 .d-center {
   display: flex;
   justify-content: center;
