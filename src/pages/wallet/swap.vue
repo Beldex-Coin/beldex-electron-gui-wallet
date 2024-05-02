@@ -147,15 +147,15 @@
             v-if="
               this.minMaxWarningContent === 'min' ||
                 this.minMaxWarningContent === 'max' ||
-                (this.pairsMinMax.from && !this.pairsMinMax.minAmountFloat)
+                (this.pairsMinMax?.from && !this.pairsMinMax?.minAmountFloat)
             "
             class="q-mt-sm validMinMaxAmount-wrapper"
           >
             <span
               v-if="
-                this.pairsMinMax.from &&
-                  this.pairsMinMax.to &&
-                  !this.pairsMinMax.minAmountFloat
+                this.pairsMinMax?.from &&
+                  this.pairsMinMax?.to &&
+                  !this.pairsMinMax?.minAmountFloat
               "
               >{{ this.$t("titles.swap.unsupportedpair") }}</span
             >
@@ -166,16 +166,16 @@
                 @click="
                   sendAmount =
                     exechangeRateType === 'float'
-                      ? pairsMinMax.minAmountFloat
-                      : pairsMinMax.minAmountFixed
+                      ? pairsMinMax?.minAmountFloat
+                      : pairsMinMax?.minAmountFixed
                 "
               >
                 {{
                   this.exechangeRateType === "float"
-                    ? this.pairsMinMax.minAmountFloat
-                    : this.pairsMinMax.minAmountFixed
+                    ? this.pairsMinMax?.minAmountFloat
+                    : this.pairsMinMax?.minAmountFixed
                 }}
-                {{ this.pairsMinMax.from }}
+                {{ this.pairsMinMax?.from }}
               </span>
             </span>
             <span
@@ -183,18 +183,18 @@
               @click="
                 sendAmount =
                   exechangeRateType === 'float'
-                    ? pairsMinMax.maxAmountFloat
-                    : pairsMinMax.maxAmountFixed
+                    ? pairsMinMax?.maxAmountFloat
+                    : pairsMinMax?.maxAmountFixed
               "
             >
               {{ this.$t("titles.swap.maximumAmt") }}
               <span class="validMinMaxAmount">
                 {{
                   this.exechangeRateType === "float"
-                    ? this.pairsMinMax.maxAmountFloat
-                    : this.pairsMinMax.maxAmountFixed
+                    ? this.pairsMinMax?.maxAmountFloat
+                    : this.pairsMinMax?.maxAmountFixed
                 }}
-                {{ this.pairsMinMax.from }}
+                {{ this.pairsMinMax?.from }}
               </span>
             </span>
           </div>
@@ -913,8 +913,7 @@ export default {
 
         filterCoin.unshift(toCoin);
         this.privacyCurrency = filterCoin;
-        // console.log("this.privacyCurrency ", this.privacyCurrency);
-        if (toCoin.enabled === true) {
+        if (toCoin.enabled && fromCoin.enabled) {
           this.bdxCoinDetails = toCoin;
           this.receiveAmountType = toCoin;
 
@@ -1002,7 +1001,6 @@ export default {
     pairsMinMax: state => {
       let data = state.gateway.pairsMinMax;
       let result = {};
-      // console.log("pairsMinMax", state.gateway.pairsMinMax);
       if (data.hasOwnProperty("result")) {
         result = state.gateway.pairsMinMax.result[0];
       }
