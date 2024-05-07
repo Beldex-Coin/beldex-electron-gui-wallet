@@ -1,6 +1,5 @@
 require("dotenv").config();
-const { notarize } = require("electron-notarize");
-
+const { notarize } = require("@electron/notarize");
 /*
  Pre-requisites: https://github.com/electron/electron-notarize#prerequisites
     1. Generate an app specific password
@@ -36,10 +35,12 @@ exports.default = async function notarizing(context) {
   }
 
   const options = {
-    appBundleId: "com.beldex.electron-wallet",
+    tool: "notarytool",
+    appBundleId: "com.beldex.electronwallet",
     appPath: `${appOutDir}/${appName}.app`,
     appleId: SIGNING_APPLE_ID,
-    appleIdPassword: SIGNING_APP_PASSWORD
+    appleIdPassword: SIGNING_APP_PASSWORD,
+    teamId: SIGNING_TEAM_ID
   };
   if (!isEmpty(SIGNING_TEAM_ID)) options.ascProvider = SIGNING_TEAM_ID;
   return notarize(options);
