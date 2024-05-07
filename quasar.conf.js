@@ -157,7 +157,7 @@ module.exports = function() {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: "com.beldex.electron-wallet",
+        appId: "com.beldex.electronwallet",
         productName: "Beldex Electron Wallet",
         copyright: "Copyright © 2018-2021 Beldex, 2018 Ryo Currency Project",
         afterSign: "build/notarize.js",
