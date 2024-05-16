@@ -50,9 +50,7 @@ export default {
       return this.config.daemons[this.config.app.net_type];
     },
     target_height() {
-      // if (this.config_daemon.type === "local")
       return Math.max(this.daemon.info.height, this.daemon.info.target_height);
-      // else return this.daemon.info.target_height;
     },
     daemon_pct() {
       if (this.config_daemon.type === "local") return this.daemon_local_pct;
@@ -73,23 +71,7 @@ export default {
     },
     wallet_pct() {
       let pct;
-      // if (this.config_daemon.type == "local_remote") {
-      // console.log('wallet.info.height ---->',this.wallet.info.height);
-      // console.log('this.target_height ---->',this.target_height);
-      // if (this.wallet.info.height == this.target_height) {
-      //   pct = ((100 * this.wallet.info.height) / this.target_height).toFixed(
-      //     1
-      //   );
-      // } else {
-      // pct = ((100 * this.target_height) / this.wallet.info.height).toFixed(
-      //   1
-      // );
       pct = ((100 * this.wallet.info.height) / this.target_height).toFixed(1);
-      // console.log("pct 0", pct);
-      // }
-      // } else {
-      //   pct = ((100 * this.wallet.info.height) / this.target_height).toFixed(1);
-      // }
       if (this.config_daemon.type == "local_remote") {
         pct = (
           (100 * Math.min(this.wallet.info.height, this.target_height)) /
@@ -108,8 +90,6 @@ export default {
         // i18n string and class of statusbar
         return "updateRequired";
       }
-
-      // if (daemonType === "local") {
       if (isScanning) {
         return "scanning";
       } else if (isSyncing) {
@@ -117,17 +97,6 @@ export default {
       } else {
         return "ready";
       }
-      // } else {
-      //   if (daemonType === "local_remote" && isSyncing) {
-      //     return "syncing";
-      //   }
-      //     else  if (isScanning) {
-      //     return "scanning";
-      //   }
-      //    else {
-      //     return "ready";
-      //   }
-      // }
     }
   })
 };
