@@ -359,8 +359,8 @@
         <q-dialog ref="aboutModal" minimized>
           <div class="about-modal">
             <p class="q-my-sm">
-              There is a new version of Beldex Electron Wallet is available.
-              Please update your wallet from Beldex Official Website.
+              There manual is a new version of Beldex Electron Wallet is
+              available. Please update your wallet from Beldex Official Website.
             </p>
 
             <div class="q-mt-md q-mb-lg external-links">

@@ -5,7 +5,11 @@
   "productName": "Beldex Electron Wallet",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Beldex-coin/beldex-electron-gui-wallet.git"
+    "url": "https://github.com/Beldex-Coin/beldex-electron-gui-wallet"
+  },
+  "publish": {
+    "provider": "github",
+    "releaseType": "release"
   },
   "cordovaId": "com.beldex.wallet",
   "author": {
@@ -31,6 +35,7 @@
     "https": "^1.0.0",
     "node-request-queue": "^1.0.2",
     "object-assign-deep": "^0.4.0",
+    "os": "^0.1.2",
     "portscanner": "^2.2.0",
     "promise-queue": "^2.2.5",
     "qrcode.vue": "^1.6.1",

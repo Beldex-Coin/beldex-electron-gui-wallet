@@ -166,9 +166,11 @@ function createWindow() {
 }
 
 app.on("ready", () => {
+  console.log("appp is readying....");
   checkForUpdate(
     () => mainWindow,
     autoUpdater => {
+      console.log("checkinngg.....");
       if (mainWindow) {
         mainWindow.webContents.send("showQuitScreen");
       }
@@ -177,6 +179,7 @@ app.on("ready", () => {
       promise.then(() => {
         installUpdate = true;
         backend = null;
+        console.log("quiteee.....");
         autoUpdater.quitAndInstall();
       });
     }

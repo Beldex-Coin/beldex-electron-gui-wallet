@@ -369,12 +369,15 @@ export class Backend {
       );
       // remove the 'v' from front of the version
       const latestVersion = data.tag_name.substring(1);
+      console.log("latestVersion:", latestVersion);
       // can return "major", "minor", "patch"
       const vSizeDiff = semver.diff(version, latestVersion);
+      console.log("vSizeDiff:", vSizeDiff);
       const updateAvailable = semver.ltr(version, latestVersion);
       const majorOrMinor = vSizeDiff === "major" || vSizeDiff == "minor";
       const updateRequired = updateAvailable && majorOrMinor;
-      this.send("set_update_required", updateRequired);
+      console.log(updateRequired);
+      // this.send("set_update_required", updateRequired);
     } catch (e) {
       this.send("set_updated_required", false);
     }
