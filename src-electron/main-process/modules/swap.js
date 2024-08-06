@@ -182,7 +182,7 @@ export class Swap {
         ca: `your pem key`
       });
       let signature = await axios.post(
-        "https://api.beldex.io/api/v1/swap",
+        "https://api.beldex.dev/api/v1/swap",
         body,
         { httpsAgent: agent }
       );

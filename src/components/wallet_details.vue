@@ -44,7 +44,7 @@
             color="primary"
             @click="get_balance()"
           >
-          </q-btn> -->
+          </q-btn>-->
         </div>
       </div>
       <article class="decoration q-pb-xs q-mt-sm">
@@ -55,7 +55,9 @@
             <div class="ft-semibold title q-mr-xs" style="padding: 0 10px">
               {{ this.$t("fieldLabels.address") }}
             </div>
-            <div class="address ft-regular">{{ info.address }}</div>
+            <div class="address ft-regular">
+              {{ addressTrim(info.address) }}
+            </div>
           </div>
           <div class="col-md-1 flex justify-end">
             <q-btn
@@ -70,16 +72,15 @@
                 anchor="bottom right"
                 self="top right"
                 :offset="[0, 5]"
+                >{{ $t("menuItems.copyAddress") }}</q-tooltip
               >
-                {{ $t("menuItems.copyAddress") }}
-              </q-tooltip>
             </q-btn>
           </div>
 
           <!-- <CopyIcon :content="info.address" /> -->
         </div>
 
-        <div class="">
+        <div class>
           <div class="funds flex row justify-between q-px-md balance">
             <article class="row items-center">
               <div>
@@ -97,7 +98,9 @@
                 </svg>
               </div>
               <div class="value ft-semibold">
-                <span><FormatOxen :amount="info.balance"/></span>
+                <span>
+                  <FormatOxen :amount="info.balance" />
+                </span>
               </div>
             </article>
             <article class="flex items-center">
@@ -108,10 +111,10 @@
             <div class="value">
               <span><FormatOxen :amount="info.balance"/></span>
             </div>
-          </div> -->
+              </div>-->
               <div class="row unlocked ft-semibold">
-                <span
-                  >{{ $t("strings.oxenUnlockedBalance") }}:
+                <span>
+                  {{ $t("strings.oxenUnlockedBalance") }}:
                   {{ (info.unlocked_balance / 1e9).toFixed(3) }}
                   <!-- <FormatOxen :amount="info.unlocked_balance" -->
                 </span>
@@ -135,7 +138,7 @@
                   @click="get_balance()"
                 >
                 </q-btn>
-              </div> -->
+                </div>-->
               </div>
             </article>
           </div>
@@ -303,6 +306,11 @@ export default {
         timeout: 2000,
         message: this.$t("notification.positive.addressCopied")
       });
+    },
+    addressTrim(address) {
+      const startingTrim = address.slice(0, 20);
+      const endingTrim = address.slice(address.length - 25, address.length);
+      return startingTrim + "......" + endingTrim;
     }
   }
 };
@@ -352,7 +360,6 @@ export default {
         width: 70%;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
         margin: 4px 0;
         padding: 15px 5px;
         color: #afafbe;
