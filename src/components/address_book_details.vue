@@ -65,7 +65,10 @@
       </q-header>
       <q-page style="padding-top: 59px; min-height: unset">
         <div class="address-book-modal">
-          <OxenField :label="$t('fieldLabels.name')">
+          <OxenField
+            :label="$t('fieldLabels.name')"
+            :error="$v.newEntry.name.$error"
+          >
             <q-input
               v-model.trim="newEntry.name"
               :placeholder="$t('placeholders.enterName')"
@@ -306,14 +309,31 @@ export default {
         }
       },
       name: {
-        required
+        required,
+        isSanitizedName(value) {
+          return /^[a-zA-Z\s]*$/.test(value);
+        }
       }
     }
   },
   methods: {
     save() {
       this.$v.newEntry.$touch();
-
+      if (this.$v.newEntry.name.$error) {
+        if (this.newEntry.name.trim() === "") {
+          return this.$q.notify({
+            type: "negative",
+            timeout: 1000,
+            message: "Please enter the name"
+          });
+        } else {
+          return this.$q.notify({
+            type: "negative",
+            timeout: 1000,
+            message: "Please enter the name correctly."
+          });
+        }
+      }
       if (this.$v.newEntry.address.$error) {
         this.$q.notify({
           type: "negative",
@@ -321,14 +341,6 @@ export default {
           message: this.$t("notification.errors.invalidAddress")
         });
         return;
-      }
-
-      if (this.$v.newEntry.name.$error) {
-        return this.$q.notify({
-          type: "negative",
-          timeout: 1000,
-          message: "Please enter the name"
-        });
       }
       if (this.mode === "new") {
         let addressIsExist =
