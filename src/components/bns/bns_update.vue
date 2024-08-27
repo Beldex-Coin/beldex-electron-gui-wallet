@@ -45,7 +45,8 @@
             v-if="
               this.confirmModal.record.value_wallet ||
                 this.confirmModal.record.value_bchat ||
-                this.confirmModal.record.value_belnet
+                this.confirmModal.record.value_belnet ||
+                this.confirmModal.record.value_eth_addr
             "
             class="q-pt-none ownerDetails q-mx-lg q-my-md q-pa-md"
           >
@@ -75,6 +76,15 @@
                 <div class="label">Belnet ID</div>
                 <div class="address">
                   {{ this.confirmModal.record.value_belnet }}
+                </div>
+              </div>
+              <div
+                v-if="this.confirmModal.record.value_eth_addr"
+                class="tablewrapper flex row q-mt-md"
+              >
+                <div class="label">Ethereum Address</div>
+                <div class="address">
+                  {{ this.confirmModal.record.value_eth_addr }}
                 </div>
               </div>
             </section>

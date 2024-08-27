@@ -111,6 +111,29 @@
             />
           </OxenField>
         </div>
+        <div
+          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
+          :class="[ethAddressRef ? 'selected' : '']"
+        >
+          <q-checkbox
+            v-model="ethAddressRef"
+            size="sm"
+            color="green"
+            :disable="contentUpdate === 'Owner'"
+          />
+          <div style="width: 100px; color: white">Ethereum Address</div>
+          <OxenField class="full-width" optional :error="$v.ethAddress.$error">
+            <q-input
+              v-model="ethAddress"
+              :disable="!ethAddressRef || contentUpdate === 'Owner'"
+              :dark="theme == 'dark'"
+              :placeholder="this.record.value_eth_addr || 'Bchat ID'"
+              borderless
+              dense
+              @blur="$v.ethAddress.$touch"
+            />
+          </OxenField>
+        </div>
       </section>
     </div>
     <div class="updatesNotes flex row q-px-md">
@@ -129,7 +152,9 @@
             is_ready &&
             record.name &&
             (contentUpdate === 'Owner' ? ownerAddress : true) &&
-            (contentUpdate === 'Values' ? address || bchatId || belnetId : true)
+            (contentUpdate === 'Values'
+              ? address || bchatId || ethAddress || belnetId
+              : true)
           )
         "
         @click="submit()"
@@ -148,7 +173,12 @@
 import { ref } from "vue";
 import { mapState } from "vuex";
 
-import { address, bchat_id, belnet_address } from "src/validators/common";
+import {
+  address,
+  bchat_id,
+  belnet_address,
+  eth_address
+} from "src/validators/common";
 import OxenField from "components/oxen_field";
 import WalletPassword from "src/mixins/wallet_password";
 
@@ -161,7 +191,8 @@ export default {
     return {
       bchatIdRef: ref(false),
       belnetIdRef: ref(false),
-      addressRef: ref(false)
+      addressRef: ref(false),
+      ethAddressRef: ref(false)
     };
   },
   mixins: [WalletPassword],
@@ -181,6 +212,7 @@ export default {
       bchatId: "",
       belnetId: "",
       address: "",
+      ethAddress: "",
       idsValidation: false,
       contentUpdate: "Values"
     };
@@ -216,6 +248,15 @@ export default {
         if (!val) {
           this.$v.belnetId.$reset();
           this.belnetId = "";
+        }
+      }
+    },
+    ethAddressRef: {
+      handler(val, old) {
+        if (val === old) return;
+        if (!val) {
+          this.$v.ethAddress.$reset();
+          this.ethAddress = "";
         }
       }
     }
@@ -309,7 +350,8 @@ export default {
           name: this.record.name,
           value_bchat: this.bchatId,
           value_belnet: this.belnetId,
-          value_wallet: this.address
+          value_wallet: this.address,
+          value_eth_addr: this.ethAddress
         };
       }
       // Send up the submission with the record
@@ -339,6 +381,12 @@ export default {
       validate: function(value) {
         const _value = value.toLowerCase();
         return belnet_address(_value.replace(".bdx", ""));
+      }
+    },
+
+    ethAddress: {
+      validate: function(value) {
+        return eth_address(value);
       }
     }
   }

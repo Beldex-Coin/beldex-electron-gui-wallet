@@ -17,7 +17,7 @@
             {{ record.name ? record.name : record.name_hash }}
             <!-- <span class="namehash">
               {{ record.name || record.name_hash }}
-            </span> -->
+            </span>-->
           </q-item-label>
         </q-item-section>
         <q-item-section
@@ -153,9 +153,19 @@
           <div class="address">{{ record.value_belnet }}</div>
         </div>
         <div
+          v-if="record.value_eth_addr"
+          class="tablewrapper flex row q-mt-md no-wrap"
+        >
+          <div class="label">Ethereum Address</div>
+          <div class="address">{{ record.value_eth_addr }}</div>
+        </div>
+        <div
           v-if="
             record.name &&
-              (record.value_wallet || record.value_bchat || record.value_belnet)
+              (record.value_wallet ||
+                record.value_bchat ||
+                record.value_belnet ||
+                record.value_eth_addr)
           "
           class="flex row justify-end"
         >
@@ -174,7 +184,7 @@
 
           <q-btn
             color="primary"
-            class="q-mt-lg q-ml-sm updation-btn "
+            class="q-mt-lg q-ml-sm updation-btn"
             @click="onRenew(record)"
           >
             <img

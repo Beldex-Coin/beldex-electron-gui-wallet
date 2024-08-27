@@ -126,7 +126,7 @@
           </OxenField>
         </div>
         <div
-          class="flex row items-center no-wrap q-pa-sm selectionBox"
+          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
           :class="[belnetIdRef ? 'selected' : '']"
         >
           <q-checkbox v-model="belnetIdRef" size="sm" color="green" />
@@ -143,6 +143,25 @@
             />
           </OxenField>
         </div>
+
+        <div
+          class="flex row items-center no-wrap q-pa-sm selectionBox"
+          :class="[ethAddressRef ? 'selected' : '']"
+        >
+          <q-checkbox v-model="ethAddressRef" size="sm" color="green" />
+          <div style="width: 100px">Ethereum Address</div>
+          <OxenField class="full-width" optional :error="$v.ethAddress.$error">
+            <q-input
+              v-model="ethAddress"
+              :disable="!ethAddressRef"
+              :dark="theme == 'dark'"
+              placeholder="Ethereum Address"
+              borderless
+              dense
+              @blur="$v.ethAddress.$touch"
+            />
+          </OxenField>
+        </div>
       </section>
     </div>
 
@@ -150,7 +169,11 @@
       <q-btn
         color="primary"
         :disable="
-          !(is_ready && record.name && (address || bchatId || belnetId))
+          !(
+            is_ready &&
+            record.name &&
+            (address || bchatId || belnetId || ethAddress)
+          )
         "
         :label="submitLabel"
         @click="submit()"
@@ -172,6 +195,7 @@ import {
   address,
   bchat_id,
   belnet_address,
+  eth_address,
   bns_name
 } from "src/validators/common";
 import OxenField from "components/oxen_field";
@@ -186,7 +210,8 @@ export default {
     return {
       bchatIdRef: ref(false),
       belnetIdRef: ref(false),
-      addressRef: ref(true)
+      addressRef: ref(true),
+      ethAddressRef: ref(false)
     };
   },
   mixins: [WalletPassword],
@@ -268,6 +293,7 @@ export default {
       bchatId: "",
       belnetId: "",
       address: "",
+      ethAddress: "",
       idsValidation: false
     };
   },
@@ -293,6 +319,14 @@ export default {
         if (val === old) return;
         if (!val) {
           this.belnetId = "";
+        }
+      }
+    },
+    ethAddressRef: {
+      handler(val, old) {
+        if (val === old) return;
+        if (!val) {
+          this.ethAddress = "";
         }
       }
     }
@@ -379,10 +413,14 @@ export default {
     reset() {
       this.initialRecord = { ...this.cleanRecord };
       this.record = { ...this.cleanRecord };
-      (this.bchatId = ""), (this.belnetId = ""), (this.address = "");
+      (this.bchatId = ""),
+        (this.belnetId = ""),
+        (this.address = ""),
+        (this.ethAddress = "");
       (this.bchatIdRef = false),
         (this.belnetIdRef = false),
-        (this.addressRef = false);
+        (this.addressRef = false),
+        (this.ethAddressRef = false);
       this.$v.$reset();
     },
     submit() {
@@ -458,6 +496,17 @@ export default {
           return;
         }
       }
+      if (this.ethAddressRef) {
+        this.$v.ethAddress.$touch();
+        if (this.$v.ethAddress.$error) {
+          this.$q.notify({
+            type: "negative",
+            timeout: 3000,
+            message: "Invalid Etherum address"
+          });
+          return;
+        }
+      }
 
       // The validators validate on lowercase, need to submit as lowercase too
       const submitRecord = {
@@ -468,7 +517,8 @@ export default {
         value: this.record.value.toLowerCase(),
         value_bchat: this.bchatId,
         value_belnet: this.belnetId,
-        value_wallet: this.address
+        value_wallet: this.address,
+        value_eth_addr: this.ethAddress
       };
       // Send up the submission with the record
       this.$emit("onSubmit", submitRecord);
@@ -527,6 +577,12 @@ export default {
       validate: function(value) {
         const _value = value.toLowerCase();
         return belnet_address(_value.replace(".bdx", ""));
+      }
+    },
+
+    ethAddress: {
+      validate: function(value) {
+        return eth_address(value);
       }
     }
   }
