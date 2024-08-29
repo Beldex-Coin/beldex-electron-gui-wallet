@@ -114,50 +114,53 @@
           v-if="!record.name && record.encrypted_bchat_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">Encrypted Bchat ID</div>
+          <div class="label">Encrypted Bchat Value</div>
           <div class="address">{{ record.encrypted_bchat_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_belnet_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">Encrypted Belnet ID</div>
+          <div class="label">Encrypted Belnet Value</div>
           <div class="address">{{ record.encrypted_belnet_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_wallet_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">Encrypted Wallet Address</div>
+          <div class="label">Encrypted Wallet Value</div>
           <div class="address">{{ record.encrypted_wallet_value }}</div>
         </div>
         <div
-          v-if="record.value_wallet"
+          v-if="!record.name && record.encrypted_eth_addr_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
+          <div class="label">Encrypted ETH Value</div>
+          <div class="address">{{ record.encrypted_eth_addr_value }}</div>
+        </div>
+        <div v-if="record.name" class="tablewrapper flex row q-mt-md no-wrap">
           <div class="label">Wallet Address</div>
-          <div class="address">{{ record.value_wallet }}</div>
+          <div class="address">
+            {{ record.value_wallet ? record.value_wallet : "None" }}
+          </div>
         </div>
-        <div
-          v-if="record.value_bchat"
-          class="tablewrapper flex row q-mt-md no-wrap"
-        >
+        <div v-if="record.name" class="tablewrapper flex row q-mt-md no-wrap">
           <div class="label">BChat ID</div>
-          <div class="address">{{ record.value_bchat }}</div>
+          <div class="address">
+            {{ record.value_bchat ? record.value_bchat : "None" }}
+          </div>
         </div>
-        <div
-          v-if="record.value_belnet"
-          class="tablewrapper flex row q-mt-md no-wrap"
-        >
+        <div v-if="record.name" class="tablewrapper flex row q-mt-md no-wrap">
           <div class="label">Belnet ID</div>
-          <div class="address">{{ record.value_belnet }}</div>
+          <div class="address">
+            {{ record.value_belnet ? record.value_belnet : "None" }}
+          </div>
         </div>
-        <div
-          v-if="record.value_eth_addr"
-          class="tablewrapper flex row q-mt-md no-wrap"
-        >
-          <div class="label">Ethereum Address</div>
-          <div class="address">{{ record.value_eth_addr }}</div>
+        <div v-if="record.name" class="tablewrapper flex row q-mt-md no-wrap">
+          <div class="label">ETH Address</div>
+          <div class="address">
+            {{ record.value_eth_addr ? record.value_eth_addr : "None" }}
+          </div>
         </div>
         <div
           v-if="
@@ -246,6 +249,7 @@ export default {
       return !record.name || !record.value;
     },
     bindClass(record) {
+      console.log("recordList:", record);
       return [this.isLocked(record) ? "locked" : "unlocked"];
     },
     onUpdate(record) {

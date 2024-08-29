@@ -121,7 +121,7 @@
             color="green"
             :disable="contentUpdate === 'Owner'"
           />
-          <div style="width: 100px; color: white">Ethereum Address</div>
+          <div style="width: 100px; color: white">ETH</div>
           <OxenField class="full-width" optional :error="$v.ethAddress.$error">
             <q-input
               v-model="ethAddress"

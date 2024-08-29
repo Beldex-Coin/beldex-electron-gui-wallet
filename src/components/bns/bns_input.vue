@@ -86,7 +86,7 @@
               v-if="this.confirmModal.record.value_eth_addr"
               class="tablewrapper flex row q-mt-md"
             >
-              <div class="label">Ethereum Address</div>
+              <div class="label">ETH</div>
               <div class="address">
                 {{ this.confirmModal.record.value_eth_addr }}
               </div>

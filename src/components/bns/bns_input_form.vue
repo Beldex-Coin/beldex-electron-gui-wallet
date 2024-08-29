@@ -100,7 +100,7 @@
               v-model="address"
               :disable="!addressRef"
               :dark="theme == 'dark'"
-              placeholder="Address"
+              placeholder="Enter your Wallet Address"
               borderless
               dense
               @blur="$v.address.$touch"
@@ -118,7 +118,7 @@
               v-model="bchatId"
               :disable="!bchatIdRef"
               :dark="theme == 'dark'"
-              placeholder="BChat ID"
+              placeholder="Enter your BChat ID"
               borderless
               dense
               @blur="$v.bchatId.$touch"
@@ -136,7 +136,7 @@
               v-model="belnetId"
               :disable="!belnetIdRef"
               :dark="theme == 'dark'"
-              placeholder="Belnet ID"
+              placeholder="Enter your Belnet ID"
               borderless
               dense
               @blur="$v.belnetId.$touch"
@@ -149,13 +149,13 @@
           :class="[ethAddressRef ? 'selected' : '']"
         >
           <q-checkbox v-model="ethAddressRef" size="sm" color="green" />
-          <div style="width: 100px">Ethereum Address</div>
+          <div style="width: 100px">ETH</div>
           <OxenField class="full-width" optional :error="$v.ethAddress.$error">
             <q-input
               v-model="ethAddress"
               :disable="!ethAddressRef"
               :dark="theme == 'dark'"
-              placeholder="Ethereum Address"
+              placeholder="Enter your ETH Address"
               borderless
               dense
               @blur="$v.ethAddress.$touch"
@@ -163,6 +163,9 @@
           </OxenField>
         </div>
       </section>
+      <div class="q-mt-md q-mb-xs">
+        Note : Our eth address is compatible across all EVM chains
+      </div>
     </div>
 
     <div class="buttons flex justify-center q-mt-sm">
