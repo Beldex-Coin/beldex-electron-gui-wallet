@@ -89,7 +89,7 @@
           </OxenField>
         </div>
         <div
-          class="flex row items-center no-wrap q-pa-sm selectionBox"
+          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
           :class="[belnetIdRef ? 'selected' : '']"
         >
           <q-checkbox
@@ -334,6 +334,19 @@ export default {
         }
         if (this.belnetId === this.record.value_belnet) {
           this.toastmsg("same Belnet id");
+          return;
+        }
+      }
+
+      if (this.contentUpdate === "Values" && this.ethAddressRef) {
+        this.$v.ethAddress.$touch();
+        // console.log("this.$v.ethAddress.$error:",this.$v.ethAddress.$error)
+        if (this.$v.ethAddress.$error) {
+          this.toastmsg("Invalid ETH Address");
+          return;
+        }
+        if (this.ethAddress === this.record.value_eth_addr) {
+          this.toastmsg("same ETH Address");
           return;
         }
       }
