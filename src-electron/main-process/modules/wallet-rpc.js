@@ -367,7 +367,8 @@ export class WalletRPC {
           params.backup_owner || "",
           params.value_bchat || "",
           params.value_belnet || "",
-          params.value_wallet || ""
+          params.value_wallet || "",
+          params.value_eth_addr || ""
         );
         break;
       case "bns_renew_mapping":
@@ -383,6 +384,7 @@ export class WalletRPC {
           params.value_bchat || "",
           params.value_belnet || "",
           params.value_wallet || "",
+          params.value_eth_addr || "",
           params.backup_owner || ""
         );
         break;
@@ -1118,6 +1120,7 @@ export class WalletRPC {
             r["value_wallet"] = k.value_wallet ? k.value_wallet : "";
             r["value_bchat"] = k.value_bchat ? k.value_bchat : "";
             r["value_belnet"] = k.value_belnet ? k.value_belnet : "";
+            r["value_eth_addr"] = k.value_eth_addr ? k.value_eth_addr : "";
           }
         }
       }
@@ -1863,7 +1866,8 @@ export class WalletRPC {
     backupOwner,
     bchatId,
     belnetId,
-    walletAddress
+    walletAddress,
+    ethAddress
   ) {
     let _name = name.trim().toLowerCase();
     const _owner = owner.trim() === "" ? null : owner;
@@ -1909,7 +1913,8 @@ export class WalletRPC {
           value_bchat: bchatId,
 
           value_belnet: belnetId,
-          value_wallet: walletAddress
+          value_wallet: walletAddress,
+          value_eth_addr: ethAddress
         };
         this.sendRPC("bns_buy_mapping", params).then(data => {
           if (data.hasOwnProperty("error")) {
@@ -1956,7 +1961,8 @@ export class WalletRPC {
     backupOwner,
     value_bchat,
     value_belnet,
-    value_wallet
+    value_wallet,
+    value_eth_addr
   ) {
     // let _name = name.trim().toLowerCase();
     // const _owner = owner.trim() === "" ? null : owner;
@@ -2012,6 +2018,9 @@ export class WalletRPC {
         }
         if (value_wallet) {
           params.value_wallet = value_wallet;
+        }
+        if (value_eth_addr) {
+          params.value_eth_addr = value_eth_addr;
         }
         this.sendRPC("bns_update_mapping", params).then(data => {
           if (data.hasOwnProperty("error")) {
