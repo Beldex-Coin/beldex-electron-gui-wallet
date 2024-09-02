@@ -320,7 +320,9 @@ export default {
           return;
         }
 
-        if (this.bchatId === this.record.value_bchat) {
+        if (
+          this.bchatId.toLowerCase() === this.record.value_bchat.toLowerCase()
+        ) {
           this.toastmsg("same Bchat id");
           return;
         }
@@ -332,7 +334,9 @@ export default {
           this.toastmsg("Invalid Belnet Id");
           return;
         }
-        if (this.belnetId === this.record.value_belnet) {
+        if (
+          this.belnetId.toLowerCase() === this.record.value_belnet.toLowerCase()
+        ) {
           this.toastmsg("same Belnet id");
           return;
         }
@@ -345,7 +349,10 @@ export default {
           this.toastmsg("Invalid ETH Address");
           return;
         }
-        if (this.ethAddress === this.record.value_eth_addr) {
+        if (
+          this.ethAddress.toLowerCase() ===
+          this.record.value_eth_addr.toLowerCase()
+        ) {
           this.toastmsg("same ETH Address");
           return;
         }
