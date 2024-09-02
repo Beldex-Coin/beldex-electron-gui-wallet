@@ -82,6 +82,15 @@
                 {{ this.confirmModal.record.value_belnet }}
               </div>
             </div>
+            <div
+              v-if="this.confirmModal.record.value_eth_addr"
+              class="tablewrapper flex row q-mt-md"
+            >
+              <div class="label">ETH</div>
+              <div class="address">
+                {{ this.confirmModal.record.value_eth_addr }}
+              </div>
+            </div>
           </section>
         </q-card-section>
         <div class="buttons flex justify-center q-mt-sm q-mb-md">

@@ -73,6 +73,10 @@ export const bns_name = input => {
   );
 };
 
+export const eth_address = input => {
+  return /^(0x)?[0-9a-fA-F]{40}$/.test(input);
+};
+
 export const address = (input, gateway) => {
   // Validate the address
   return new Promise((resolve, reject) => {
