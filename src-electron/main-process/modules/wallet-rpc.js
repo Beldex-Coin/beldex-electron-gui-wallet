@@ -27,7 +27,8 @@ export class WalletRPC {
       password_hash: null,
       balance: null,
       unlocked_balance: null,
-      bnsRecords: []
+      bnsRecords: [],
+      view_only: false
     };
     this.isRPCSyncing = false;
     this.dirs = null;
@@ -303,6 +304,21 @@ export class WalletRPC {
         );
         break;
 
+      case "restore_wallet_with_keys":
+        // TODO: Decide if we want this for Beldex
+        this.restoreWalletWithKeys(
+          params.name,
+          params.password,
+          params.address,
+          params.viewkey,
+          params.spendkey,
+          params.refresh_type,
+          params.refresh_type == "date"
+            ? params.refresh_start_date
+            : params.refresh_start_height
+        );
+        break;
+
       case "import_wallet":
         this.importWallet(params.name, params.password, params.path);
         break;
@@ -505,7 +521,7 @@ export class WalletRPC {
             address: response.result.per_subaddress[0].address,
             balance: response.result.balance,
             unlocked_balance: response.result.unlocked_balance,
-            view_only: false,
+            view_only: this.wallet_state.view_only,
             load_balance: false
           }
         };
@@ -738,6 +754,73 @@ export class WalletRPC {
     });
   }
 
+  restoreWalletWithKeys(
+    filename,
+    password,
+    address,
+    viewkey,
+    spendkey,
+    refresh_type,
+    refresh_start_timestamp_or_height
+  ) {
+    if (refresh_type == "date") {
+      // Convert timestamp to 00:00 and move back a day
+      // Core code also moved back some amount of blocks
+      let timestamp = refresh_start_timestamp_or_height;
+      timestamp = timestamp - (timestamp % 86400000) - 86400000;
+
+      this.backend.daemon.timestampToHeight(timestamp).then(height => {
+        if (height === false) {
+          this.sendGateway("set_wallet_error", {
+            status: {
+              code: -1,
+              i18n: "notification.errors.invalidRestoreDate"
+            }
+          });
+        } else {
+          this.restoreWalletWithKeys(
+            filename,
+            password,
+            address,
+            viewkey,
+            spendkey,
+            "height",
+            height
+          );
+        }
+      });
+      return;
+    }
+
+    let restore_height = refresh_start_timestamp_or_height;
+
+    if (!Number.isInteger(restore_height)) {
+      restore_height = 0;
+    }
+    this.sendRPC("generate_from_keys", {
+      filename,
+      password,
+      address,
+      viewkey,
+      spendkey,
+      restore_height
+    }).then(data => {
+      if (data.hasOwnProperty("error")) {
+        this.sendGateway("set_wallet_error", { status: data.error });
+        return;
+      }
+
+      // store hash of the password so we can check against it later when requesting private keys, or for sending txs
+      this.wallet_state.password_hash = crypto
+        .pbkdf2Sync(password, this.auth[2], 1000, 64, "sha512")
+        .toString("hex");
+      this.wallet_state.name = filename;
+      this.wallet_state.open = true;
+
+      this.finalizeNewWallet(filename);
+    });
+  }
+
   importWallet(wallet_name, password, import_path) {
     // Reset the status error
     this.sendGateway("reset_wallet_error");
@@ -851,6 +934,12 @@ export class WalletRPC {
       };
       for (let n of data) {
         if (n.hasOwnProperty("error") || !n.hasOwnProperty("result")) {
+          if (n.params.key_type == "spend_key") {
+            if (n.error?.code == -29) {
+              wallet.info.view_only = true;
+              this.wallet_state.view_only = true;
+            }
+          }
           continue;
         }
         if (n.method == "get_address") {
@@ -865,6 +954,7 @@ export class WalletRPC {
           if (n.params.key_type == "spend_key") {
             if (/^0*$/.test(n.result.key)) {
               wallet.info.view_only = true;
+              this.wallet_state.view_only = true;
             }
           }
         }
@@ -930,6 +1020,17 @@ export class WalletRPC {
       // Check if we have a view only wallet by querying the spend key
       this.sendRPC("query_key", { key_type: "spend_key" }).then(data => {
         if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+          if (data.params.key_type == "spend_key") {
+            if (data.error?.code == -29) {
+              // wallet.info.view_only = true;
+              this.wallet_state.view_only = true;
+              this.sendGateway("set_wallet_data", {
+                info: {
+                  view_only: true
+                }
+              });
+            }
+          }
           return;
         }
         if (/^0*$/.test(data.result.key)) {
