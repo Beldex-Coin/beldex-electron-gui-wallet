@@ -481,13 +481,13 @@ export default {
           if (value === "") return true;
           console.log("walletKeys address:", value);
           // eslint-disable-next-line
-          const addressLength = "mainnet" == "testnet" ? 97 : 95;
+          const addressLength = 95;
           console.log(
             "addressLength == value.length:",
             addressLength,
-            addressLength == value.length
+            value.length
           );
-          return addressLength == value.length ? true : false;
+          return addressLength <= value.length ? true : false;
         }
       },
       viewkey: { required, privkey },
