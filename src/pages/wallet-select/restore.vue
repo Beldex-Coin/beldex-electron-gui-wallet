@@ -480,15 +480,14 @@ export default {
         isAddress(value) {
           if (value === "") return true;
           console.log("walletKeys address:", value);
-          /* eslint-disable no-constant-condition */
-          const addressLength = "mainnet" === "testnet" ? 97 : 95;
-          /* eslint-enable no-constant-condition */
+          // eslint-disable-next-line
+          const addressLength = "mainnet" == "testnet" ? 97 : 95;
           console.log(
             "addressLength == value.length:",
             addressLength,
-            addressLength === value.length
+            addressLength == value.length
           );
-          return addressLength === value.length ? true : false;
+          return addressLength == value.length ? true : false;
         }
       },
       viewkey: { required, privkey },
@@ -515,14 +514,14 @@ export default {
         });
         return;
       }
-      // eslint-disable-next-line no-constant-condition
+      /* eslint-disable no-constant-condition */
       let seed = this.wallet.seed
         .trim()
         .replace(/\n/g, " ")
         .replace(/\t/g, " ")
         .replace(/\s{2,}/g, " ")
         .split(" ");
-
+      /* eslint-enable no-constant-condition */
       if (
         seed.length !== 14 &&
         seed.length !== 24 &&
@@ -536,7 +535,7 @@ export default {
         });
         return;
       }
-      // eslint-disable-next-line no-constant-condition
+
       if (this.$v.wallet.refresh_start_height.$error) {
         this.$q.notify({
           type: "negative",
