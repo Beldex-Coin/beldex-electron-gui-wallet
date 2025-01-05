@@ -479,15 +479,8 @@ export default {
         required,
         isAddress(value) {
           if (value === "") return true;
-          console.log("walletKeys address:", value);
           // eslint-disable-next-line
-          const addressLength = 95;
-          console.log(
-            "addressLength == value.length:",
-            addressLength,
-            value.length
-          );
-          return addressLength <= value.length ? true : false;
+          return 97 >= value.length && 95 <= value.length;
         }
       },
       viewkey: { required, privkey },
@@ -567,7 +560,6 @@ export default {
         .getTime();
 
       wallet_data["refresh_start_date"] = dateSeconds;
-      console.log("wallet_data:", wallet_data);
       this.$gateway.send("wallet", "restore_wallet", wallet_data);
     },
     restore_wallet_with_keys() {
@@ -621,7 +613,6 @@ export default {
       });
 
       const wallet_data = _.cloneDeep(this.walletKeys);
-      console.log("wallet_data:", wallet_data);
       // we want the date in javascript ms format
       const dateSeconds = date
         .extractDate(this.walletKeys.refresh_start_date, "YYYY/MM/DD")
