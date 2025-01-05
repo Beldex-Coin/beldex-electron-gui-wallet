@@ -66,22 +66,23 @@
         </div>
       </div>
 
-      <div class="col wallet ">
-        <h6 style="font-family: Poppins-Regular">
-          <span
-            class="ft-bold"
-            style="color: white; font-size: 16px; margin-left: 20px"
-            >{{ $t("strings.seedWords") }}</span
-          >
-          <span style="color: #00e509;font-size: 12px;">
-            - {{ $t("strings.saveSeedWarning") }}</span
-          >
-        </h6>
-      </div>
+      <template v-if="secret.mnemonic.length > 0">
+        <div class="col wallet ">
+          <h6 style="font-family: Poppins-Regular">
+            <span
+              class="ft-bold"
+              style="color: white; font-size: 16px; margin-left: 20px"
+              >{{ $t("strings.seedWords") }}</span
+            >
+            <span style="color: #00e509;font-size: 12px;">
+              - {{ $t("strings.saveSeedWarning") }}</span
+            >
+          </h6>
+        </div>
 
-      <div
-        class="row items-center"
-        style="
+        <div
+          class="row items-center"
+          style="
           border: 1px #484856 solid;
           border-radius: 12px;
           font-family: Poppins-Regular;
@@ -89,27 +90,28 @@
           margin-left: 20px;
 
         "
-      >
-        <div class="col" style="color: white; padding: 0px 10px 0px 0px">
-          {{ secret.mnemonic }}
-        </div>
-        <div class="q-item-side">
-          <q-btn
-            color="secondary"
-            size="md"
-            :label="this.$t('buttons.copy')"
-            icon-right="content_copy"
-            @click="copyPrivateKey('mnemonic', $event)"
-          >
-            <q-tooltip
-              anchor="center left"
-              self="center right"
-              :offset="[5, 10]"
-              >{{ $t("menuItems.copySeed") }}</q-tooltip
+        >
+          <div class="col" style="color: white; padding: 0px 10px 0px 0px">
+            {{ secret.mnemonic }}
+          </div>
+          <div class="q-item-side">
+            <q-btn
+              color="secondary"
+              size="md"
+              :label="this.$t('buttons.copy')"
+              icon-right="content_copy"
+              @click="copyPrivateKey('mnemonic', $event)"
             >
-          </q-btn>
+              <q-tooltip
+                anchor="center left"
+                self="center right"
+                :offset="[5, 10]"
+                >{{ $t("menuItems.copySeed") }}</q-tooltip
+              >
+            </q-btn>
+          </div>
         </div>
-      </div>
+      </template>
 
       <div style="margin-top: 18px; padding: 10px 20px">
         <template v-if="secret.view_key != secret.spend_key">

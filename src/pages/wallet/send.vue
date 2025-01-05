@@ -1,7 +1,28 @@
 <template>
   <q-page class="send" style="min-height: unset">
     <template v-if="view_only">
-      <div class="q-pa-md">{{ $t("strings.viewOnlyMode") }}</div>
+      <div class="flex" style="height: 550px;">
+        <section
+          class="flex column justify-center no-wrap items-center empty-txn-wrapper"
+          style="width: 100%;"
+        >
+          <div class="view-only-header">
+            <div class="view-only">
+              <img src="../../assets/images/viewOnlyMode.svg" height="40px" />
+            </div>
+          </div>
+          <div class="hint-txt" style="margin-top: 10px;">
+            <!-- {{ this.$t("titles.swap.afterYourFirstTxn") }}, -->
+            Your wallet is currently in
+          </div>
+          <div class="hint-txt">
+            <span style="font-family:Poppins-Bold;">view-only mode.</span>
+            Please load the full
+          </div>
+
+          <div class="hint-txt">wallet to enable sending coins.</div>
+        </section>
+      </div>
     </template>
     <template v-else>
       <div v-if="!contact" style="padding: 0px 2px 15px">
@@ -599,5 +620,21 @@ export default {
   .priority {
     padding-left: unset;
   }
+}
+.view-only-header {
+  background-color: #1c1c26;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.view-only {
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #242433;
+  border-radius: 10px;
+  border: 1px solid #484856;
 }
 </style>

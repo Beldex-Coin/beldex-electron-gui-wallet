@@ -17,7 +17,11 @@
       <!-- <router-link to="/wallet/send"> -->
       <div :class="[this.routes === 'send' ? 'active' : '']">
         <!-- <q-btn class="large-btn send-btn" size="md" @click="router('send')"> -->
-        <q-btn class="large-btn send-btn" @click="router('send')">
+        <q-btn
+          class="large-btn send-btn"
+          :disable="view_only"
+          @click="router('send')"
+        >
           <!-- width="16"
             height="20" -->
           <svg
@@ -110,6 +114,7 @@ export default {
   },
   computed: mapState({
     info: state => state.gateway.wallet.info,
+    view_only: state => state.gateway.wallet.info.view_only,
     routes: state => state.gateway.router_path_rightpane
   }),
   data() {
