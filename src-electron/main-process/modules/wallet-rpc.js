@@ -725,9 +725,12 @@ export class WalletRPC {
       return;
     }
 
-    let refresh_start_height = refresh_start_timestamp_or_height;
+    let refresh_start_height = Number.parseInt(
+      refresh_start_timestamp_or_height
+    );
 
-    if (!Number.isInteger(refresh_start_height)) {
+    // if the height can't be parsed just start from block 0
+    if (!refresh_start_height) {
       refresh_start_height = 0;
     }
 
@@ -792,9 +795,10 @@ export class WalletRPC {
       return;
     }
 
-    let restore_height = refresh_start_timestamp_or_height;
+    let restore_height = Number.parseInt(refresh_start_timestamp_or_height);
 
-    if (!Number.isInteger(restore_height)) {
+    // if the height can't be parsed just start from block 0
+    if (!restore_height) {
       restore_height = 0;
     }
     this.sendRPC("generate_from_keys", {
@@ -2576,7 +2580,6 @@ export class WalletRPC {
   }
 
   deregisterImages(password) {
-    console.log("deregister_images.....wallet-rpc");
     crypto.pbkdf2(
       password,
       this.auth[2],
