@@ -667,7 +667,11 @@ export default {
       payment: "Zahlung",
       paymentDisc: "Zahlen Sie den für den Umtausch erforderlichen Betrag ein",
       exchangeDisc: "Warten Sie, bis Ihre Transaktion abgeschlossen ist",
-      paymentConfirm: "Bestätigen und Zahlung durchführen"
+      paymentConfirm: "Bestätigen und Zahlung durchführen",
+      minimumAmtChanged:
+        "Der Mindestbetragswert wird geändert, der neue Wert ist ",
+      maximumAmtChanged:
+        "Der Höchstbetragswert wird geändert, der neue Wert ist "
     }
   }
 };

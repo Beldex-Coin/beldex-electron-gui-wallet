@@ -667,7 +667,11 @@ export default {
       payment: "Pago",
       paymentDisc: "Deposite el monto requerido para el cambio.",
       exchangeDisc: "Espere a que se complete su transacción",
-      paymentConfirm: "Confirm & Make payment"
+      paymentConfirm: "Confirm & Make payment",
+      minimumAmtChanged:
+        "Se cambia el valor del importe mínimo, el nuevo valor es ",
+      maximumAmtChanged:
+        "Se cambia el valor del importe máximo, el nuevo valor es "
     }
   }
 };

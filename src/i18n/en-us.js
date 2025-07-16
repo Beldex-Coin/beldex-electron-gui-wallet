@@ -795,7 +795,9 @@ export default {
       payment: "Payment",
       paymentDisc: "Deposit the amount required for the exchange",
       exchangeDisc: "Wait for your transaction to be completed",
-      paymentConfirm: "Confirm & Make payment"
+      paymentConfirm: "Confirm & Make payment",
+      minimumAmtChanged: "Minimum amount value is changed, the new value is ",
+      maximumAmtChanged: "Maximum amount value is changed, the new value is "
     }
   }
 };

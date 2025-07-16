@@ -671,7 +671,11 @@ export default {
       payment: "Paiement",
       paymentDisc: "Déposez le montant requis pour l’échange",
       exchangeDisc: "Attendez que votre transaction soit terminée",
-      paymentConfirm: "Confirmer et effectuer le paiement"
+      paymentConfirm: "Confirmer et effectuer le paiement",
+      minimumAmtChanged:
+        "La valeur du montant minimum est modifiée, la nouvelle valeur est ",
+      maximumAmtChanged:
+        "La valeur du montant maximum est modifiée, la nouvelle valeur est "
     }
   }
 };

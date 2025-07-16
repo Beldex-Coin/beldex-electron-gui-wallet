@@ -102,7 +102,7 @@
               {{ receiveChainDetails.blockchain }}</span
             >
           </div>
-          <div>
+          <div class="q-mt-sm">
             <q-btn
               :label="$t('buttons.copyAddress')"
               color="primary"
@@ -235,11 +235,11 @@
           <tr>
             <td>{{ this.$t("titles.swap.youGet") }}</td>
             <td v-if="createdTxnDetails.type == 'float'" class="uppercase">
-              ~ {{ floatingRate.amountTo }}
+              ~ {{ Number(floatingRate.amountTo).toFixed(8) }}
               {{ floatingRate.to ? floatingRate.to : "" }}
             </td>
             <td v-else class="uppercase">
-              {{ fixedRate.amountTo }}
+              {{ Number(fixedRate.amountTo).toFixed(8) }}
               {{ fixedRate.to }}
             </td>
           </tr>
