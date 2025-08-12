@@ -351,7 +351,8 @@ export default {
       unknownError: "Произошла неизвестная ошибка",
       walletAlreadyExists: "Кошелек с таким именем уже существует",
       walletPathNotFound: "Путь к хранилищу данных кошелька не найден",
-      zeroAmount: "Сумма должна быть больше нуля"
+      zeroAmount: "Сумма должна быть больше нуля",
+      greaterHeight: "Введенное значение больше текущей высоты блока"
     },
     warnings: {
       noKeyImageExport: "Не найдено ключевых образов для экспорта",

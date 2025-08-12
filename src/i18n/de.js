@@ -356,7 +356,9 @@ export default {
       unknownError: "Ein unbekannter Fehler ist aufgetreten ",
       walletAlreadyExists: "Wallet mit diesem Namen existiert bereits",
       walletPathNotFound: "Wallet Daten Pfad nicht gefunden",
-      zeroAmount: "Betrag muss grösser als null sein"
+      zeroAmount: "Betrag muss grösser als null sein",
+      greaterHeight:
+        "Der eingegebene Wert ist größer als die aktuelle Blockhöhe"
     },
     warnings: {
       noKeyImageExport: "Keine Key Images zum Exportieren gefunden",

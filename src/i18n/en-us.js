@@ -427,7 +427,8 @@ export default {
       unknownError: "An unknown error occurred",
       walletAlreadyExists: "Wallet with name already exists",
       walletPathNotFound: "Wallet data storage path not found",
-      zeroAmount: "Amount must be greater than zero"
+      zeroAmount: "Amount must be greater than zero",
+      greaterHeight: "Entered value is greater than current block height"
     },
     warnings: {
       noKeyImageExport: "No key images found to export",

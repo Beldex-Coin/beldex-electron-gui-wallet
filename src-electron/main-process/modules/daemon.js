@@ -61,7 +61,7 @@ export class Daemon {
   }
 
   checkRemote(daemon) {
-    if (daemon.type === "local") {
+    if (daemon && daemon.type === "local") {
       return Promise.resolve({});
     }
 
@@ -240,8 +240,10 @@ export class Daemon {
 
   handle(data) {
     let params = data.data;
-
     switch (data.method) {
+      case "get_info":
+        this.checkRemote({});
+        break;
       case "ban_peer":
         this.banPeer(params.host, params.seconds);
         break;

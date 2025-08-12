@@ -355,7 +355,8 @@ export default {
       walletAlreadyExists: "Carteira com esse nome já existe",
       walletPathNotFound:
         "Caminho de armazenamento dos dados da carteira não encontrado",
-      zeroAmount: "Quantidade tem de ser superior a zero"
+      zeroAmount: "Quantidade tem de ser superior a zero",
+      greaterHeight: "O valor inserido é maior que a altura do bloco atual"
     },
     warnings: {
       noKeyImageExport: "Nenhuma chave de imagem encontrada para exportar",
