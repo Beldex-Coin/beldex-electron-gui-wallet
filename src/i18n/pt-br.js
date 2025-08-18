@@ -355,7 +355,8 @@ export default {
       walletAlreadyExists: "Carteira com esse nome já existe",
       walletPathNotFound:
         "Caminho de armazenamento dos dados da carteira não encontrado",
-      zeroAmount: "Quantidade tem de ser superior a zero"
+      zeroAmount: "Quantidade tem de ser superior a zero",
+      greaterHeight: "O valor inserido é maior que a altura do bloco atual"
     },
     warnings: {
       noKeyImageExport: "Nenhuma chave de imagem encontrada para exportar",
@@ -661,7 +662,9 @@ export default {
       payment: "Pagamento",
       paymentDisc: "Deposite o valor necessário para a troca",
       exchangeDisc: "Aguarde até que sua transação seja concluída",
-      paymentConfirm: "Confirmar y realizar el pago"
+      paymentConfirm: "Confirmar y realizar el pago",
+      minimumAmtChanged: "O valor mínimo é alterado, o novo valor é ",
+      maximumAmtChanged: "O valor máximo é alterado, o novo valor é "
     }
   }
 };

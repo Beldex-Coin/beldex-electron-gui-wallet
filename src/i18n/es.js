@@ -357,7 +357,9 @@ export default {
       unknownError: "Ha ocurrido un error inesperado",
       walletAlreadyExists: "Ya existe un monedero con este nombre",
       walletPathNotFound: "Ruta no encontrada",
-      zeroAmount: "La cantidad debe ser mayor que cero"
+      zeroAmount: "La cantidad debe ser mayor que cero",
+      greaterHeight:
+        "El valor ingresado es mayor que la altura del bloque actual"
     },
     warnings: {
       noKeyImageExport: "No se han encontrado claves para exportar",
@@ -667,7 +669,11 @@ export default {
       payment: "Pago",
       paymentDisc: "Deposite el monto requerido para el cambio.",
       exchangeDisc: "Espere a que se complete su transacción",
-      paymentConfirm: "Confirm & Make payment"
+      paymentConfirm: "Confirm & Make payment",
+      minimumAmtChanged:
+        "Se cambia el valor del importe mínimo, el nuevo valor es ",
+      maximumAmtChanged:
+        "Se cambia el valor del importe máximo, el nuevo valor es "
     }
   }
 };

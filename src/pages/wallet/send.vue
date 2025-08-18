@@ -102,11 +102,13 @@
           <OxenField :error="$v.newTx.address.$error">
             <q-input
               v-model="newTx.address"
+              class="address-textarea full-width text-area-oxen"
+              type="textarea"
               :placeholder="address_placeholder"
               borderless
               dense
-              @input="applyAlphanumericMask"
               @blur="$v.newTx.address.$touch"
+              @input="applyAlphanumericMask"
             />
             <!-- <q-btn color="secondary"  to="addressbook">
               {{ $t("buttons.contacts") }}
@@ -574,6 +576,11 @@ export default {
   .bg-primary {
     width: unset;
     color: red($color: #000000);
+  }
+}
+.address-textarea {
+  textarea {
+    min-height: 70px !important;
   }
 }
 .label-txt {

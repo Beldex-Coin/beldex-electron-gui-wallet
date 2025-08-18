@@ -143,9 +143,9 @@
         </div>
       </div>
 
-      <div class="absolute-bottom version">
+      <!-- <div class="absolute-bottom version">
         {{ version }}
-      </div>
+      </div> -->
     </div>
   </q-page>
 </template>
