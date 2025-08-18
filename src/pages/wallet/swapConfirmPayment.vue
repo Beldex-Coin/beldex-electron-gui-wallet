@@ -56,9 +56,9 @@
           @click="this.sendAmounts"
         >
           {{ this.$t("titles.swap.maximumAmtChanged") }}
-          <span class="validMinMaxAmount">
+          <span class="validMinMaxAmount" @click="this.sendAmounts">
             {{
-              exechangeRateType === "float"
+              exchangeType === "float"
                 ? pairsMinMax?.maxAmountFloat
                 : pairsMinMax?.maxAmountFixed
             }}
@@ -129,7 +129,7 @@
             {{
               (this.floatingRate.networkFee
                 ? Number(this.floatingRate.networkFee).toFixed(8) + " "
-                : "--  ") + receiveChainDtails.name
+                : "-- ") + receiveChainDtails.name
             }}
           </div>
           <div class="ft-regular hint-txt">
@@ -205,6 +205,7 @@
       <q-btn
         color="primary"
         :label="$t('titles.swap.paymentConfirm')"
+        :disable="this.disableValidation()"
         @click="this.makePayment"
       />
     </div>
@@ -282,6 +283,36 @@ export default {
     },
     sendAmounts() {
       this.$emit("sending", this.pairsMinMax?.minAmountFloat);
+    },
+    disableValidation() {
+      let fixed_validation;
+      if (this.exchangeType === "fixed") {
+        fixed_validation = this.isValidRefundAddress.result;
+      } else {
+        fixed_validation = true;
+      }
+
+      let receiveFund = "";
+      let refundAdd = "";
+      if (this.exchangeType === "float") {
+        receiveFund = this.floatingRate.amountTo;
+        refundAdd = true;
+      } else {
+        refundAdd = this.refundAddress;
+        receiveFund = this.fixedRate.amountTo;
+      }
+      return (
+        this.minMaxWarningContent === "min" ||
+        this.minMaxWarningContent === "max" ||
+        (this.pairsMinMax?.from &&
+          !this.pairsMinMax?.minAmountFloat &&
+          receiveFund > 0 &&
+          refundAdd &&
+          this.recipientAddress &&
+          this.refundAddress &&
+          fixed_validation &&
+          this.floatingRate.amountFrom)
+      );
     }
   }
 };
