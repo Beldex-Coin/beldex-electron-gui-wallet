@@ -205,7 +205,7 @@
       <q-btn
         color="primary"
         :label="$t('titles.swap.paymentConfirm')"
-        :disable="this.disableValidation()"
+        :disable="!this.disableValidation()"
         @click="this.makePayment"
       />
     </div>
@@ -301,17 +301,17 @@ export default {
         refundAdd = this.refundAddress;
         receiveFund = this.fixedRate.amountTo;
       }
+
       return (
-        this.minMaxWarningContent === "min" ||
-        this.minMaxWarningContent === "max" ||
-        (this.pairsMinMax?.from &&
-          !this.pairsMinMax?.minAmountFloat &&
-          receiveFund > 0 &&
-          refundAdd &&
-          this.recipientAddress &&
-          this.refundAddress &&
-          fixed_validation &&
-          this.floatingRate.amountFrom)
+        !(
+          this.minMaxWarningContent === "min" ||
+          this.minMaxWarningContent === "max"
+        ) &&
+        this.pairsMinMax?.minAmountFloat &&
+        receiveFund > 0 &&
+        refundAdd &&
+        fixed_validation &&
+        this.floatingRate.amountFrom > 0
       );
     }
   }
