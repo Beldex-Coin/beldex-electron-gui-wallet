@@ -798,7 +798,8 @@ export default {
       exchangeDisc: "Wait for your transaction to be completed",
       paymentConfirm: "Confirm & Make payment",
       minimumAmtChanged: "Minimum amount value is changed, the new value is ",
-      maximumAmtChanged: "Maximum amount value is changed, the new value is "
+      maximumAmtChanged: "Maximum amount value is changed, the new value is ",
+      network: "NETWORK"
     }
   }
 };

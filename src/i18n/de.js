@@ -673,7 +673,8 @@ export default {
       minimumAmtChanged:
         "Der Mindestbetragswert wird geändert, der neue Wert ist ",
       maximumAmtChanged:
-        "Der Höchstbetragswert wird geändert, der neue Wert ist "
+        "Der Höchstbetragswert wird geändert, der neue Wert ist ",
+      network: "NETZWERK"
     }
   }
 };

@@ -91,7 +91,7 @@
             <span class="ft-medium">{{ txnDetails.payinAddress }}</span
             ><br />
             <span class="ft-semibold uppercase" style="color: #00ad07"
-              >{{ this.$t("titles.swap.blockchain") }} :
+              >{{ this.$t("titles.swap.network") }} :
               {{ this.chainDetails.receive }}</span
             >
           </div>

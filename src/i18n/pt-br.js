@@ -664,7 +664,8 @@ export default {
       exchangeDisc: "Aguarde até que sua transação seja concluída",
       paymentConfirm: "Confirmar y realizar el pago",
       minimumAmtChanged: "O valor mínimo é alterado, o novo valor é ",
-      maximumAmtChanged: "O valor máximo é alterado, o novo valor é "
+      maximumAmtChanged: "O valor máximo é alterado, o novo valor é ",
+      network: "Espanhola"
     }
   }
 };
