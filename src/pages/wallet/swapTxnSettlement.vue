@@ -137,7 +137,7 @@
             }}</span
             ><br />
             <span class="ft-semibold uppercase" style="color: #00ad07"
-              >{{ this.$t("titles.swap.network") }}:
+              >{{ this.$t("titles.swap.network") }} :
               {{ receiveChainDetails.blockchain.replaceAll("_", " ") }}</span
             >
           </div>

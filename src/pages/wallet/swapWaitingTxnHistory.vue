@@ -104,11 +104,13 @@
         <div class="label">{{ this.$t("fieldLabels.recipientAddress") }}</div>
         <div class="flex row justify-between q-mt-sm">
           <div>
-            <span class="ft-medium">{{ txnDetails.payinAddress }}</span
+            <span class="ft-medium" style="word-break: break-all">{{
+              txnDetails.payinAddress
+            }}</span
             ><br />
             <span class="ft-semibold uppercase" style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
-              {{ this.chainDetails.receive }}</span
+              {{ this.chainDetails.receive.replaceAll("_", " ") }}</span
             >
           </div>
           <div>

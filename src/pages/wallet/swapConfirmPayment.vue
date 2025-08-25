@@ -95,7 +95,7 @@
             }}
           </div>
           <div class="ft-semibold expand-txt uppercase">
-            {{ this.$t("titles.swap.network") }}:
+            {{ this.$t("titles.swap.network") }} :
             <span>{{ sendChainDetails.blockchain.replaceAll("_", " ") }}</span>
           </div>
         </div>
@@ -120,7 +120,7 @@
             }}
           </div>
           <div class="ft-semibold expand-txt uppercase">
-            {{ this.$t("titles.swap.network") }}:
+            {{ this.$t("titles.swap.network") }} :
             <span>{{
               receiveChainDtails.blockchain.replaceAll("_", " ")
             }}</span>
