@@ -677,7 +677,8 @@ export default {
       minimumAmtChanged:
         "La valeur du montant minimum est modifiée, la nouvelle valeur est ",
       maximumAmtChanged:
-        "La valeur du montant maximum est modifiée, la nouvelle valeur est "
+        "La valeur du montant maximum est modifiée, la nouvelle valeur est ",
+      network: "Französisch"
     }
   }
 };

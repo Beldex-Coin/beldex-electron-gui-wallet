@@ -674,6 +674,7 @@ export default {
         "Se cambia el valor del importe mínimo, el nuevo valor es ",
       maximumAmtChanged:
         "Se cambia el valor del importe máximo, el nuevo valor es "
-    }
+    },
+    network: "Spanisch"
   }
 };

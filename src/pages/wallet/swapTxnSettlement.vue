@@ -47,7 +47,23 @@
           <div class="ft-semibold title">
             {{ this.$t("titles.swap.sendFundDisc") }}
           </div>
-          <div class="label q-mt-lg">{{ this.$t("fieldLabels.amount") }}</div>
+          <div class="header-pair uppercase">
+            <span class="from">{{ floatingRate.from }}</span>
+            <svg
+              width="10"
+              height="11"
+              viewBox="0 0 10 11"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7.26028 0C7.0382 0 6.83961 0.126033 6.75419 0.318084C6.67091 0.512136 6.72003 0.732194 6.88018 0.878233L8.13366 2.05255H0.16008V3.07682H8.13366L6.88018 4.25113C6.73711 4.37916 6.67945 4.57122 6.7307 4.74926C6.77982 4.92931 6.9293 5.06935 7.12148 5.11536C7.31153 5.16337 7.51653 5.10936 7.6532 4.97532L9.83985 2.92678C10.0534 2.72672 10.0534 2.40264 9.83985 2.20259L7.6532 0.154041C7.5507 0.054014 7.40976 0 7.26028 0ZM2.72263 5.11536C2.57956 5.11936 2.44503 5.17538 2.3468 5.2714L0.160155 7.31995C-0.053385 7.52 -0.053385 7.84408 0.160155 8.04414L2.3468 10.0927C2.48347 10.2267 2.68847 10.2807 2.87852 10.2327C3.0707 10.1867 3.22018 10.0467 3.2693 9.86662C3.32055 9.68858 3.26289 9.49652 3.11982 9.36849L1.86634 8.19418H9.83992V7.16991H1.86634L3.11982 5.99559C3.28211 5.84755 3.32909 5.62349 3.24154 5.42944C3.15398 5.23339 2.94899 5.10936 2.72263 5.11536Z"
+                fill="#20D030"
+              />
+            </svg>
+            <span class="to"> {{ floatingRate.to }}</span>
+          </div>
+          <div class="label">{{ this.$t("fieldLabels.amount") }}</div>
           <div class="amount ft-semibold uppercase">
             {{
               createdTxnDetails.amountExpectedFrom +
@@ -121,8 +137,8 @@
             }}</span
             ><br />
             <span class="ft-semibold uppercase" style="color: #00ad07"
-              >{{ this.$t("titles.swap.blockchain") }}:
-              {{ receiveChainDetails.blockchain }}</span
+              >{{ this.$t("titles.swap.network") }} :
+              {{ receiveChainDetails.blockchain.replaceAll("_", " ") }}</span
             >
           </div>
           <div class="q-mt-sm">
