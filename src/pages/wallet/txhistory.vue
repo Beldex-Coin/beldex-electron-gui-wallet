@@ -113,7 +113,7 @@ import { mapState } from "vuex";
 import TxList from "components/tx_list";
 import OxenField from "components/oxen_field";
 import TxDetails from "components/tx_details";
-import { date } from "quasar";
+const moment = require("moment");
 
 export default {
   components: {
@@ -175,18 +175,44 @@ export default {
       // this.$ref.txDetails.tx = details;
       this.txnDetails = details;
     },
+    filterTxList(type) {
+      const all_in = ["in", "pool", "miner", "mnode", "gov", "bns"];
+      const all_out = ["out", "pending", "stake"];
+      const all_pending = ["pending", "pool"];
+      this.tx_list_filtered = this.tx_list.filter(tx => {
+        let valid = true;
+        if (type === "all_in" && !all_in.includes(tx.type)) {
+          return false;
+        }
+
+        if (type === "all_out" && !all_out.includes(tx.type)) {
+          return false;
+        }
+
+        if (type === "all_pending" && !all_pending.includes(tx.type)) {
+          return false;
+        }
+
+        if (!type.startsWith("all") && type !== tx.type) {
+          valid = false;
+          return valid;
+        }
+        return valid;
+      });
+      return this.tx_list_filtered;
+    },
     goback(data) {
       this.txnDetails = data;
     },
     downloadCsv() {
+      let tx_list_filtered = this.filterTxList(this.tx_type);
       let customizeCsv = [];
       let csv = "";
-      this.tx_list.length > 0 &&
-        this.tx_list.map(item => {
+      tx_list_filtered.length > 0 &&
+        tx_list_filtered.map(item => {
           let csvObj = {};
-          csvObj.Date = date.formatDate(
-            item.timestamp * 1000,
-            "YYYY-MM-DD hh:mm a"
+          csvObj.Date = moment(item.timestamp * 1000).format(
+            "DD MMM YYYY-h:mm:ss"
           );
           csvObj.Transaction_type = item.type;
           csvObj.Amount = item.amount / 1e9;
