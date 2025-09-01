@@ -799,7 +799,9 @@ export default {
       paymentConfirm: "Confirm & Make payment",
       minimumAmtChanged: "Minimum amount value is changed, the new value is ",
       maximumAmtChanged: "Maximum amount value is changed, the new value is ",
-      network: "NETWORK"
+      network: "NETWORK",
+      giveCorrectAddress:
+        "Please make sure to enter the correct address for the selected chain - ({type}). Otherwise you will lose your funds."
     }
   }
 };

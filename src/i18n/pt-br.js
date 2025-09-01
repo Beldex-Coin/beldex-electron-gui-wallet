@@ -665,7 +665,9 @@ export default {
       paymentConfirm: "Confirmar y realizar el pago",
       minimumAmtChanged: "O valor mínimo é alterado, o novo valor é ",
       maximumAmtChanged: "O valor máximo é alterado, o novo valor é ",
-      network: "Espanhola"
+      network: "Espanhola",
+      giveCorrectAddress:
+        "Certifique-se de inserir o endereço correto da rede selecionada - ({type}). Caso contrário, você perderá seus fundos."
     }
   }
 };

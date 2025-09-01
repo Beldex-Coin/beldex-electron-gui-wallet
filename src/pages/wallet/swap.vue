@@ -612,6 +612,18 @@
         />
         <q-spinner v-if="this.recipientLoader" color="primary" size="2em" />
       </OxenField>
+      <div class="flex row info-wrapper q-mt-md">
+        <div style="width: 4%; padding-top: 5px" class="flex justify-center">
+          <q-icon name="o_info" size="14px" />
+        </div>
+        <div style="width: 95%">
+          {{
+            this.$t("titles.swap.giveCorrectAddress", {
+              type: this.receiveAmountType.blockchain.replaceAll("_", " ")
+            })
+          }}
+        </div>
+      </div>
       <div
         v-if="
           // this.exechangeRateType === 'float' &&
@@ -1226,7 +1238,6 @@ export default {
       this.clearAllintervals();
       this.getExchangeRate();
       this.validateFixedIsEnabled();
-
       // } else {
       // this.getFixedExchangeAmount();
       // }
