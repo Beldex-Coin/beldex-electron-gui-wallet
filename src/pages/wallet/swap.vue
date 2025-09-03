@@ -616,7 +616,10 @@
         <div style="width: 4%; padding-top: 5px" class="flex justify-center">
           <q-icon name="o_info" size="14px" />
         </div>
-        <div style="width: 95%">
+        <div
+          v-if="this.receiveAmountType.hasOwnProperty('blockchain')"
+          style="width: 95%"
+        >
           {{
             this.$t("titles.swap.giveCorrectAddress", {
               type: this.receiveAmountType.blockchain.replaceAll("_", " ")
@@ -929,6 +932,7 @@ export default {
         filterCoin.unshift(toCoin);
         this.privacyCurrency = filterCoin;
         if (toCoin.enabled && fromCoin.enabled) {
+          // clearInterval(this.refreshMinMax);
           this.bdxCoinDetails = toCoin;
           this.receiveAmountType = toCoin;
 
@@ -991,9 +995,12 @@ export default {
       let data = state.gateway.exchangeAmount;
       let result = {};
       if (data.hasOwnProperty("result")) {
+        // this.swaploading = false;
         if (state.gateway.exchangeAmount.status) {
           result = state.gateway.exchangeAmount.result[0];
         }
+      } else {
+        result = data;
       }
       return result;
     },
@@ -1223,8 +1230,11 @@ export default {
         this.receiveAmountType,
         this.sendAmounType
       ];
+      this.swaploading = true;
       // this.recipientAddress.val = '';
       // this.recipientAddress.error = false;
+      clearInterval(this.refreshMinMax);
+      this.clearAllintervals();
       this.destinationTagValue = "";
       this.refundDestinationTagValue = "";
       this.recipientAddress = { val: "", error: false };
@@ -1235,7 +1245,6 @@ export default {
       });
       this.minMaxPair();
       // if (this.exechangeRateType === "float") {
-      this.clearAllintervals();
       this.getExchangeRate();
       this.validateFixedIsEnabled();
       // } else {
@@ -1244,18 +1253,23 @@ export default {
       // this.getExchangeRate();
     },
     minMaxAmoutValidator(amount) {
-      // console.log("this.pairsMinMax", this.pairsMinMax);
+      if (this.exchange_amount.hasOwnProperty("error")) {
+        this.minMaxWarningContent = "min";
+        this.swaploading = false;
+      }
       if (this.exechangeRateType === "float") {
         if (
           this.pairsMinMax.minAmountFloat &&
           Number(amount) < Number(this.pairsMinMax.minAmountFloat)
         ) {
           this.minMaxWarningContent = "min";
+          this.swaploading = false;
         } else if (
           this.pairsMinMax.maxAmountFloat &&
           Number(amount) > Number(this.pairsMinMax.maxAmountFloat)
         ) {
           this.minMaxWarningContent = "max";
+          this.swaploading = false;
         } else {
           this.minMaxWarningContent = "";
         }
@@ -1265,11 +1279,13 @@ export default {
           Number(amount) < Number(this.pairsMinMax.minAmountFixed)
         ) {
           this.minMaxWarningContent = "min";
+          this.swaploading = false;
         } else if (
           this.pairsMinMax.maxAmountFixed &&
           Number(amount) > Number(this.pairsMinMax.maxAmountFixed)
         ) {
           this.minMaxWarningContent = "max";
+          this.swaploading = false;
         } else {
           this.minMaxWarningContent = "";
         }
@@ -1285,6 +1301,7 @@ export default {
       // else{
       //   this.pairStatusContent=''
       // }
+      this.swaploading = false;
     },
     clearState() {
       this.recipientAddress = { val: "", error: false };
@@ -1362,6 +1379,7 @@ export default {
       } else {
         refundDestiniTag = true;
       }
+      //  this.swaploading = false;
 
       return (
         this.sendAmount > 0 &&
