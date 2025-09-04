@@ -144,98 +144,109 @@
           </div>-->
 
           <div
-            v-if="
+            class="flex"
+            :style="
               this.minMaxWarningContent === 'min' ||
-                this.minMaxWarningContent === 'max' ||
-                (this.pairsMinMax?.from && !this.pairsMinMax?.minAmountFloat)
+              this.minMaxWarningContent === 'max' ||
+              (this.pairsMinMax?.from && !this.pairsMinMax?.minAmountFloat)
+                ? 'justify-content: space-between;'
+                : 'justify-content: flex-end;'
             "
-            class="q-mt-sm validMinMaxAmount-wrapper"
           >
-            <span
+            <div
               v-if="
-                this.pairsMinMax?.from &&
-                  this.pairsMinMax?.to &&
-                  !this.pairsMinMax?.minAmountFloat
+                this.minMaxWarningContent === 'min' ||
+                  this.minMaxWarningContent === 'max' ||
+                  (this.pairsMinMax?.from && !this.pairsMinMax?.minAmountFloat)
               "
-              >{{ this.$t("titles.swap.unsupportedpair") }}</span
+              class="q-mt-sm validMinMaxAmount-wrapper"
             >
-            <span v-if="this.minMaxWarningContent === 'min'">
-              {{ this.$t("titles.swap.minimumAmt") }}
               <span
-                class="validMinMaxAmount"
+                v-if="
+                  this.pairsMinMax?.from &&
+                    this.pairsMinMax?.to &&
+                    !this.pairsMinMax?.minAmountFloat
+                "
+                >{{ this.$t("titles.swap.unsupportedpair") }}</span
+              >
+              <span v-if="this.minMaxWarningContent === 'min'">
+                {{ this.$t("titles.swap.minimumAmt") }}
+                <span
+                  class="validMinMaxAmount"
+                  @click="
+                    sendAmount =
+                      exechangeRateType === 'float'
+                        ? pairsMinMax?.minAmountFloat
+                        : pairsMinMax?.minAmountFixed
+                  "
+                >
+                  {{
+                    this.exechangeRateType === "float"
+                      ? this.pairsMinMax?.minAmountFloat
+                      : this.pairsMinMax?.minAmountFixed
+                  }}
+                  {{ this.pairsMinMax?.from }}
+                </span>
+              </span>
+              <span
+                v-if="this.minMaxWarningContent === 'max'"
                 @click="
                   sendAmount =
                     exechangeRateType === 'float'
-                      ? pairsMinMax?.minAmountFloat
-                      : pairsMinMax?.minAmountFixed
+                      ? pairsMinMax?.maxAmountFloat
+                      : pairsMinMax?.maxAmountFixed
                 "
               >
-                {{
-                  this.exechangeRateType === "float"
-                    ? this.pairsMinMax?.minAmountFloat
-                    : this.pairsMinMax?.minAmountFixed
-                }}
-                {{ this.pairsMinMax?.from }}
+                {{ this.$t("titles.swap.maximumAmt") }}
+                <span class="validMinMaxAmount">
+                  {{
+                    this.exechangeRateType === "float"
+                      ? this.pairsMinMax?.maxAmountFloat
+                      : this.pairsMinMax?.maxAmountFixed
+                  }}
+                  {{ this.pairsMinMax?.from }}
+                </span>
               </span>
-            </span>
-            <span
-              v-if="this.minMaxWarningContent === 'max'"
-              @click="
-                sendAmount =
-                  exechangeRateType === 'float'
-                    ? pairsMinMax?.maxAmountFloat
-                    : pairsMinMax?.maxAmountFixed
-              "
-            >
-              {{ this.$t("titles.swap.maximumAmt") }}
-              <span class="validMinMaxAmount">
-                {{
-                  this.exechangeRateType === "float"
-                    ? this.pairsMinMax?.maxAmountFloat
-                    : this.pairsMinMax?.maxAmountFixed
-                }}
-                {{ this.pairsMinMax?.from }}
-              </span>
-            </span>
-          </div>
-          <div v-else class="flex justify-end">
-            <q-btn
-              color="accent"
-              class="swap-btn q-mt-sm"
-              :disable="
-                !sendAmounType.enabledTo || !receiveAmountType.enabledFrom
-              "
-              @click="swapCurrencyType"
-            >
-              <svg
-                width="18px"
-                height="18px"
-                viewBox="0 0 22 22"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            </div>
+            <div class="flex justify-end">
+              <q-btn
+                color="accent"
+                class="swap-btn q-mt-sm"
+                :disable="
+                  !sendAmounType.enabledTo || !receiveAmountType.enabledFrom
+                "
+                @click="swapCurrencyType"
               >
-                <g
-                  id="icons8-sorting_arrows_horizontal 1"
-                  clip-path="url(#clip0_81_8938)"
+                <svg
+                  width="18px"
+                  height="18px"
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path
-                    id="Vector"
-                    d="M2.53125 4.24068C2.53125 4.58443 2.73948 4.89183 3.05679 5.02404C3.3774 5.15294 3.74098 5.07692 3.98227 4.82903L5.92247 2.88882L5.92248 15.2308L7.61478 15.2308L7.61478 2.88882L9.55499 4.82903C9.76653 5.05048 10.0838 5.13972 10.378 5.0604C10.6755 4.98437 10.9069 4.753 10.9829 4.45553C11.0622 4.16136 10.973 3.84405 10.7515 3.63251L7.36689 0.247896C7.03636 -0.0826323 6.5009 -0.0826322 6.17037 0.247896L2.78576 3.63251C2.62049 3.79117 2.53125 4.00931 2.53125 4.24068ZM5.92248 22L7.61478 22L7.61478 20.3077L5.92248 20.3077L5.92248 22ZM5.92248 18.6154L7.61478 18.6154L7.61478 16.9231L5.92248 16.9231L5.92248 18.6154ZM10.9895 17.7858C10.9961 18.0072 11.0886 18.2154 11.2473 18.3675L14.6319 21.7521C14.9624 22.0826 15.4979 22.0826 15.8284 21.7521L19.213 18.3675C19.4345 18.1559 19.5237 17.8386 19.4444 17.5445C19.3684 17.247 19.137 17.0156 18.8395 16.9396C18.5454 16.8603 18.2281 16.9495 18.0165 17.171L16.0763 19.1112L16.0763 6.76923L14.384 6.76923L14.384 19.1112L12.4438 17.171C12.1992 16.9198 11.829 16.8471 11.5084 16.9826C11.1845 17.1181 10.9796 17.4354 10.9895 17.7858ZM14.384 5.07692L16.0763 5.07692L16.0763 3.38461L14.384 3.38461L14.384 5.07692ZM14.384 1.69231L16.0763 1.69231L16.0763 -5.92074e-07L14.384 -5.18101e-07L14.384 1.69231Z"
-                    fill="#A9A9CD"
-                  />
-                </g>
-                <defs>
-                  <clipPath id="clip0_81_8938">
-                    <rect
-                      width="22"
-                      height="22"
-                      fill="white"
-                      transform="translate(0 22) rotate(-90)"
+                  <g
+                    id="icons8-sorting_arrows_horizontal 1"
+                    clip-path="url(#clip0_81_8938)"
+                  >
+                    <path
+                      id="Vector"
+                      d="M2.53125 4.24068C2.53125 4.58443 2.73948 4.89183 3.05679 5.02404C3.3774 5.15294 3.74098 5.07692 3.98227 4.82903L5.92247 2.88882L5.92248 15.2308L7.61478 15.2308L7.61478 2.88882L9.55499 4.82903C9.76653 5.05048 10.0838 5.13972 10.378 5.0604C10.6755 4.98437 10.9069 4.753 10.9829 4.45553C11.0622 4.16136 10.973 3.84405 10.7515 3.63251L7.36689 0.247896C7.03636 -0.0826323 6.5009 -0.0826322 6.17037 0.247896L2.78576 3.63251C2.62049 3.79117 2.53125 4.00931 2.53125 4.24068ZM5.92248 22L7.61478 22L7.61478 20.3077L5.92248 20.3077L5.92248 22ZM5.92248 18.6154L7.61478 18.6154L7.61478 16.9231L5.92248 16.9231L5.92248 18.6154ZM10.9895 17.7858C10.9961 18.0072 11.0886 18.2154 11.2473 18.3675L14.6319 21.7521C14.9624 22.0826 15.4979 22.0826 15.8284 21.7521L19.213 18.3675C19.4345 18.1559 19.5237 17.8386 19.4444 17.5445C19.3684 17.247 19.137 17.0156 18.8395 16.9396C18.5454 16.8603 18.2281 16.9495 18.0165 17.171L16.0763 19.1112L16.0763 6.76923L14.384 6.76923L14.384 19.1112L12.4438 17.171C12.1992 16.9198 11.829 16.8471 11.5084 16.9826C11.1845 17.1181 10.9796 17.4354 10.9895 17.7858ZM14.384 5.07692L16.0763 5.07692L16.0763 3.38461L14.384 3.38461L14.384 5.07692ZM14.384 1.69231L16.0763 1.69231L16.0763 -5.92074e-07L14.384 -5.18101e-07L14.384 1.69231Z"
+                      fill="#A9A9CD"
                     />
-                  </clipPath>
-                </defs>
-              </svg>
-            </q-btn>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_81_8938">
+                      <rect
+                        width="22"
+                        height="22"
+                        fill="white"
+                        transform="translate(0 22) rotate(-90)"
+                      />
+                    </clipPath>
+                  </defs>
+                </svg>
+              </q-btn>
+            </div>
           </div>
 
           <OxenField class="ft-regular" :label="$t('titles.swap.youGet')">
