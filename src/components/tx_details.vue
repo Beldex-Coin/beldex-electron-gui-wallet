@@ -463,7 +463,7 @@ export default {
         if (used_addresses[i].address_index == this.tx.subaddr_index.minor) {
           let address_index_text = "";
           if (used_addresses[i].address_index === 0) {
-            address_index_text = this.$t("strings.addresses.primaryAddress");
+            address_index_text = this.$t("strings.addresses.myPrimaryAddress");
           } else {
             address_index_text =
               this.$t("strings.addresses.subAddress") +

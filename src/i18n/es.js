@@ -675,6 +675,8 @@ export default {
       maximumAmtChanged:
         "Se cambia el valor del importe máximo, el nuevo valor es "
     },
-    network: "Spanisch"
+    network: "Spanisch",
+    giveCorrectAddress:
+      "Asegúrate de introducir la dirección correcta de la cadena seleccionada ({type}). De lo contrario, perderás tus fondos."
   }
 };

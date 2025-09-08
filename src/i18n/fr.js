@@ -678,7 +678,9 @@ export default {
         "La valeur du montant minimum est modifiée, la nouvelle valeur est ",
       maximumAmtChanged:
         "La valeur du montant maximum est modifiée, la nouvelle valeur est ",
-      network: "Französisch"
+      network: "Französisch",
+      giveCorrectAddress:
+        "Veuillez vous assurer de saisir l'adresse correcte pour la chaîne sélectionnée ({type}). Sinon, vous perdrez vos fonds."
     }
   }
 };

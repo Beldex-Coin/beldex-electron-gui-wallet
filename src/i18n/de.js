@@ -674,7 +674,9 @@ export default {
         "Der Mindestbetragswert wird geändert, der neue Wert ist ",
       maximumAmtChanged:
         "Der Höchstbetragswert wird geändert, der neue Wert ist ",
-      network: "NETZWERK"
+      network: "NETZWERK",
+      giveCorrectAddress:
+        "Bitte stellen Sie sicher, dass Sie die richtige Adresse für die ausgewählte Kette eingeben ({type}). Andernfalls verlieren Sie Ihr Guthaben."
     }
   }
 };
