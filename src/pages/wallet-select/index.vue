@@ -323,6 +323,7 @@ export default {
       this.$router.replace({ path: "wallet-select/create" });
     },
     restoreWallet() {
+      this.$gateway.send("daemon", "get_info");
       this.$router.replace({ path: "wallet-select/restore" });
     },
     restoreViewWallet() {

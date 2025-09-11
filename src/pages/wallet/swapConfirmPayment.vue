@@ -21,24 +21,82 @@
         </svg>
       </div>
 
-      <div class="ft-semibold q-ml-md header-txt">
-        {{ this.$t("titles.swap.checkout") }}
+      <div class="header">
+        <div class="ft-semibold q-ml-md header-txt">
+          {{ this.$t("titles.swap.checkout") }}
+        </div>
+        <div class="header-pair">
+          <span class="from">{{ sendChainDetails.name }}</span>
+          <svg
+            width="10"
+            height="11"
+            viewBox="0 0 10 11"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M7.26028 0C7.0382 0 6.83961 0.126033 6.75419 0.318084C6.67091 0.512136 6.72003 0.732194 6.88018 0.878233L8.13366 2.05255H0.16008V3.07682H8.13366L6.88018 4.25113C6.73711 4.37916 6.67945 4.57122 6.7307 4.74926C6.77982 4.92931 6.9293 5.06935 7.12148 5.11536C7.31153 5.16337 7.51653 5.10936 7.6532 4.97532L9.83985 2.92678C10.0534 2.72672 10.0534 2.40264 9.83985 2.20259L7.6532 0.154041C7.5507 0.054014 7.40976 0 7.26028 0ZM2.72263 5.11536C2.57956 5.11936 2.44503 5.17538 2.3468 5.2714L0.160155 7.31995C-0.053385 7.52 -0.053385 7.84408 0.160155 8.04414L2.3468 10.0927C2.48347 10.2267 2.68847 10.2807 2.87852 10.2327C3.0707 10.1867 3.22018 10.0467 3.2693 9.86662C3.32055 9.68858 3.26289 9.49652 3.11982 9.36849L1.86634 8.19418H9.83992V7.16991H1.86634L3.11982 5.99559C3.28211 5.84755 3.32909 5.62349 3.24154 5.42944C3.15398 5.23339 2.94899 5.10936 2.72263 5.11536Z"
+              fill="#20D030"
+            />
+          </svg>
+          <span class="to">{{ receiveChainDtails.name }}</span>
+        </div>
       </div>
     </header>
     <section class="q-mt-lg">
+      <div
+        v-if="
+          minMaxWarningContent === 'min' ||
+            minMaxWarningContent === 'max' ||
+            (pairsMinMax?.from && !pairsMinMax?.minAmountFloat)
+        "
+        class="q-mt-sm validMinMaxAmount-wrapper"
+      >
+        <span
+          v-if="
+            pairsMinMax?.from && pairsMinMax?.to && !pairsMinMax?.minAmountFloat
+          "
+          >{{ this.$t("titles.swap.unsupportedpair") }}</span
+        >
+        <span v-if="minMaxWarningContent === 'min'">
+          {{ this.$t("titles.swap.minimumAmtChanged") }}
+          <span class="validMinMaxAmount" @click="this.sendAmounts">
+            {{
+              exchangeType === "float"
+                ? pairsMinMax?.minAmountFloat
+                : pairsMinMax?.minAmountFixed
+            }}
+            {{ pairsMinMax?.from }}
+          </span>
+        </span>
+        <span
+          v-if="this.minMaxWarningContent === 'max'"
+          @click="this.sendAmounts"
+        >
+          {{ this.$t("titles.swap.maximumAmtChanged") }}
+          <span class="validMinMaxAmount" @click="this.sendAmounts">
+            {{
+              exchangeType === "float"
+                ? pairsMinMax?.maxAmountFloat
+                : pairsMinMax?.maxAmountFixed
+            }}
+            {{ pairsMinMax?.from }}
+          </span>
+        </span>
+      </div>
       <article class="flex row">
         <div class="col-6">
           <div class="q-mb-sm">{{ this.$t("titles.swap.youSend") }}</div>
           <div class="ft-semibold amount-txt uppercase">
             {{
-              Number(this.floatingRate.amountFrom) +
-                " " +
-                this.floatingRate.from
+              (this.floatingRate.amountFrom
+                ? Number(this.floatingRate.amountFrom).toFixed(8) + " "
+                : "-- ") + sendChainDetails.name
             }}
           </div>
-          <div class="ft-semibold expand-txt">
-            {{ this.$t("titles.swap.blockchain") }}:
-            <span>{{ sendChainDetails.blockchain }}</span>
+          <div class="ft-semibold expand-txt uppercase">
+            {{ this.$t("titles.swap.network") }} :
+            <span>{{ sendChainDetails.blockchain.replaceAll("_", " ") }}</span>
           </div>
         </div>
         <div class="col-6">
@@ -49,34 +107,36 @@
           >
             ~
             {{
-              Number(this.floatingRate.amountTo).toFixed(8) +
-                " " +
-                this.floatingRate.to
+              (this.floatingRate.amountTo
+                ? Number(this.floatingRate.amountTo).toFixed(8) + " "
+                : "-- ") + receiveChainDtails.name
             }}
           </div>
           <div v-else class="ft-semibold amount-txt uppercase">
             {{
-              Number(this.fixedRate.amountTo).toFixed(8) +
-                " " +
-                this.fixedRate.to
+              (this.floatingRate.amountTo
+                ? Number(this.fixedRate.amountTo).toFixed(8) + " "
+                : "-- ") + this.fixedRate.to
             }}
           </div>
-          <div class="ft-semibold expand-txt">
-            {{ this.$t("titles.swap.blockchain") }}:
-            <span>{{ receiveChainDtails.blockchain }}</span>
+          <div class="ft-semibold expand-txt uppercase">
+            {{ this.$t("titles.swap.network") }} :
+            <span>{{
+              receiveChainDtails.blockchain.replaceAll("_", " ")
+            }}</span>
           </div>
         </div>
       </article>
       <div class="hr-seperator"></div>
 
       <article v-if="!this.refundAddress" class="flex row">
-        <div v-if="this.floatingRate.fee" class="col-6">
+        <div class="col-6">
           <div class="q-mb-sm">{{ this.$t("titles.swap.exchangefee") }}</div>
           <div class="ft-semibold amount-txt uppercase">
             {{
-              Number(this.floatingRate.fee).toFixed(8) +
-                " " +
-                this.floatingRate.to
+              (this.floatingRate.fee
+                ? Number(this.floatingRate.fee).toFixed(8) + " "
+                : "-- ") + receiveChainDtails.name
             }}
           </div>
           <div class="ft-regular hint-txt">
@@ -87,9 +147,9 @@
           <div class="q-mb-sm">{{ this.$t("titles.swap.networkFee") }}</div>
           <div class="ft-semibold amount-txt uppercase">
             {{
-              Number(this.floatingRate.networkFee).toFixed(8) +
-                " " +
-                this.floatingRate.to
+              (this.floatingRate.networkFee
+                ? Number(this.floatingRate.networkFee).toFixed(8) + " "
+                : "-- ") + receiveChainDtails.name
             }}
           </div>
           <div class="ft-regular hint-txt">
@@ -108,15 +168,15 @@
               {{
                 this.fixedRate.from +
                   " = " +
-                  Number(this.fixedRate.result).toFixed(8) +
+                  (this.fixedRate.result
+                    ? Number(this.fixedRate.result).toFixed(8)
+                    : "-- ") +
                   " " +
-                  this.fixedRate.to
+                  receiveChainDtails.name
               }}
             </div>
           </div>
-          <div class="q-mt-sm">
-            {{ this.$t("fieldLabels.recipientAddress") }}
-          </div>
+          <div>{{ this.$t("fieldLabels.recipientAddress") }}</div>
           <div
             :class="[
               this.refundAddress
@@ -145,11 +205,13 @@
           <div class="ft-semibold amount-txt uppercase">
             1
             {{
-              this.floatingRate.from +
+              sendChainDetails.name +
                 " ~ " +
-                Number(this.floatingRate.rate).toFixed(8) +
+                (this.floatingRate.rate
+                  ? Number(this.floatingRate.rate).toFixed(8)
+                  : "-- ") +
                 " " +
-                this.floatingRate.to
+                receiveChainDtails.name
             }}
           </div>
         </div>
@@ -163,6 +225,7 @@
       <q-btn
         color="primary"
         :label="$t('titles.swap.paymentConfirm')"
+        :disable="!this.disableValidation()"
         @click="this.makePayment"
       />
     </div>
@@ -212,6 +275,18 @@ export default {
     receiveChainDtails: {
       type: Object,
       required: true
+    },
+    pairsMinMax: {
+      type: Object,
+      required: true
+    },
+    minMaxWarningContent: {
+      type: String,
+      required: true
+    },
+    sending: {
+      type: Function,
+      required: false
     }
   },
 
@@ -225,6 +300,39 @@ export default {
     },
     makePayment() {
       this.$emit("submit");
+    },
+    sendAmounts() {
+      this.$emit("sending", this.pairsMinMax?.minAmountFloat);
+    },
+    disableValidation() {
+      let fixed_validation;
+      if (this.exchangeType === "fixed") {
+        fixed_validation = this.isValidRefundAddress.result;
+      } else {
+        fixed_validation = true;
+      }
+
+      let receiveFund = "";
+      let refundAdd = "";
+      if (this.exchangeType === "float") {
+        receiveFund = this.floatingRate.amountTo;
+        refundAdd = true;
+      } else {
+        refundAdd = this.refundAddress;
+        receiveFund = this.fixedRate.amountTo;
+      }
+
+      return (
+        !(
+          this.minMaxWarningContent === "min" ||
+          this.minMaxWarningContent === "max"
+        ) &&
+        this.pairsMinMax?.minAmountFloat &&
+        receiveFund > 0 &&
+        refundAdd &&
+        fixed_validation &&
+        this.floatingRate.amountFrom > 0
+      );
     }
   }
 };

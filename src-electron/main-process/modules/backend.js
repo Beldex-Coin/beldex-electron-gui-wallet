@@ -128,10 +128,6 @@ export class Backend {
         port: "29095"
       },
       {
-        host: "explorer.beldex.io",
-        port: "19091"
-      },
-      {
         host: "publicnode1.rpcnode.stream",
         port: "29095"
       },

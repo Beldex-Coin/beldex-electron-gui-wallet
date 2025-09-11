@@ -435,7 +435,8 @@ export default {
   },
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
-    status: state => state.gateway.wallet.status
+    status: state => state.gateway.wallet.status,
+    daemon: state => state.gateway.daemon
   }),
   watch: {
     status: {
@@ -537,6 +538,18 @@ export default {
         });
         return;
       }
+
+      if (
+        this.wallet.refresh_start_height > this.daemon.info.target_height &&
+        this.daemon.info.target_height !== 0
+      ) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 1000,
+          message: this.$t("notification.errors.greaterHeight")
+        });
+        return;
+      }
       if (this.wallet.password != this.wallet.password_confirm) {
         this.$q.notify({
           type: "negative",
@@ -598,6 +611,19 @@ export default {
         });
         return;
       }
+
+      if (
+        this.wallet.refresh_start_height > this.daemon.info.target_height &&
+        this.daemon.info.target_height !== 0
+      ) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 1000,
+          message: this.$t("notification.errors.greaterHeight")
+        });
+        return;
+      }
+
       if (this.walletKeys.password != this.walletKeys.password_confirm) {
         this.$q.notify({
           type: "negative",

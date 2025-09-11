@@ -360,7 +360,9 @@ export default {
       walletAlreadyExists: "Un portefeuille avec ce nom existe déjà",
       walletPathNotFound:
         "Chemin de stockage des données du portefeuille introuvable",
-      zeroAmount: "Le montant doit être supérieur à zéro"
+      zeroAmount: "Le montant doit être supérieur à zéro",
+      greaterHeight:
+        "La valeur saisie est supérieure à la hauteur actuelle du bloc"
     },
     warnings: {
       noKeyImageExport: "Aucune clé image n'a été trouvé pour l'export",
@@ -671,7 +673,14 @@ export default {
       payment: "Paiement",
       paymentDisc: "Déposez le montant requis pour l’échange",
       exchangeDisc: "Attendez que votre transaction soit terminée",
-      paymentConfirm: "Confirmer et effectuer le paiement"
+      paymentConfirm: "Confirmer et effectuer le paiement",
+      minimumAmtChanged:
+        "La valeur du montant minimum est modifiée, la nouvelle valeur est ",
+      maximumAmtChanged:
+        "La valeur du montant maximum est modifiée, la nouvelle valeur est ",
+      network: "Französisch",
+      giveCorrectAddress:
+        "Veuillez vous assurer de saisir l'adresse correcte pour la chaîne sélectionnée ({type}). Sinon, vous perdrez vos fonds."
     }
   }
 };

@@ -1284,6 +1284,13 @@ body
         border unset
         border-bottom 1px solid #40405E
         border-radius 0
+        
+    .downloadCsv-btn
+        height 55px
+        font-size 15px
+        width 55px 
+        min-width 55px
+        margin-left 8px
 
 .master-node-staking, .master-node-stake-tab, .master-node-registration, .prove-transaction, .check-transaction, .sign-and-verify,.bns-purchase,.my-bns
     // height calc(100vh - 491px)
@@ -1748,9 +1755,24 @@ body
 
 .confirmPayment
     padding 13px 25px
+    
+    .header
+      display: flex;
+      justify-content: space-between;
+      width: 95.6%;
 
     .header-txt
         font-size 18px
+    .header-pair
+        background-color: #40405E
+        padding: 3px 10px
+        border: 0.5px solid #00ad07
+        border-radius: 6px
+        font-weight: 600  
+        .from
+           margin-right: 6px
+        .to 
+           margin-left: 6px             
 
     .amount-txt
         font-size 16px
@@ -1901,6 +1923,19 @@ body
     .header-txt
         font-size 18px
 
+    .header-pair
+        background-color: #40405E;
+        padding: 3px 10px;
+        border: 0.5px solid #00ad07;
+        border-radius: 6px;
+        font-weight: 600;  
+        width: max-content ;
+        margin-top: 18px;  
+        .from
+           margin-right: 6px
+        .to 
+           margin-left: 2px   
+            
     .fund-details-wrapper
         .title
             font-size 1rem
@@ -1908,6 +1943,7 @@ body
         .label
             color $beldex-font-grey
             font-size 1rem
+            margin-top: 18px
 
         .amount
             font-size 1.3rem
@@ -2069,7 +2105,20 @@ body
     .header-txt
         color #20D030
         font-size 20px
-
+    
+    .header 
+       width: 100%
+       justify-content: space-between
+    .header-pair
+        background-color: #40405E;
+        padding: 3px 10px;
+        border: 0.5px solid #00ad07;
+        border-radius: 6px;
+        font-weight: 600;  
+        .from
+           margin-right: 6px
+        .to 
+           margin-left: 6px   
     .copy-btn
         width 30px
         height 30px

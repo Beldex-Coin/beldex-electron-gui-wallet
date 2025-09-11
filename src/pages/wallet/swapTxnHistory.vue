@@ -329,10 +329,10 @@ export default {
       this.txnHistory.length > 0 &&
         this.txnHistory.map(item => {
           let csvObj = {};
-          csvObj.Status = item.status;
           csvObj.Date = moment(item.createdAt / 1000).format(
             "DD MMM YYYY-h:mm:ss"
           );
+          csvObj.Status = item.status;
           csvObj.Exchange_Amount = item.amountExpectedFrom;
           csvObj.Exchange_rate = item.rate;
           csvObj.Receiver = item.payoutAddress;
@@ -340,34 +340,34 @@ export default {
           customizeCsv.push(csvObj);
         });
       // Loop the array of objects
+      let header = true;
       for (let row = 0; row < customizeCsv.length; row++) {
         let keysAmount = Object.keys(customizeCsv[row]).length;
         let keysCounter = 0;
         // If this is the first row, generate the headings
-        if (row === 0) {
+        if (header) {
           // Loop each property of the object
           for (let key in customizeCsv[row]) {
             // This is to not add a comma at the last cell
             // The '\r\n' adds a new line
             csv += key + (keysCounter + 1 < keysAmount ? "," : "\r\n");
-            keysCounter++;
+            header = false;
           }
-        } else {
-          for (let key in customizeCsv[row]) {
-            csv +=
-              customizeCsv[row][key] +
-              (keysCounter + 1 < keysAmount ? "," : "\r\n");
-            keysCounter++;
-          }
+          csv += "\r\n";
         }
-
+        for (let key in customizeCsv[row]) {
+          csv +=
+            customizeCsv[row][key] +
+            (keysCounter + 1 < keysAmount ? "," : "\r\n");
+          keysCounter++;
+        }
         keysCounter = 0;
       }
 
       const anchor = document.createElement("a");
       anchor.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
       anchor.target = "_blank";
-      anchor.download = "Transaction_report.csv";
+      anchor.download = "Beldex_wallet_swap_transaction_report.csv";
       anchor.click();
     },
     get_transaction_History() {
