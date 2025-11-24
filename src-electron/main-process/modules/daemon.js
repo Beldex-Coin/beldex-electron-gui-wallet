@@ -578,7 +578,7 @@ export class Daemon {
       method: "POST",
       json: {
         jsonrpc: "2.0",
-        id: id,
+        id: `${id}`,
         method: method
       },
       agent: this.agent

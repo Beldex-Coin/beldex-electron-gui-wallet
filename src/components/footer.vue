@@ -14,8 +14,9 @@
       <div class="row ft-medium">
         <template v-if="config_daemon.type !== 'remote'">
           <div>
-            Daemon: {{ daemon.info.height_without_bootstrap }} /
-            {{ target_height }} ({{ daemon_local_pct }}%)
+            Daemon: {{ daemon_height }} / {{ target_height }} ({{
+              daemon_local_pct
+            }}%)
           </div>
         </template>
 
@@ -61,17 +62,15 @@ export default {
       if (this.config_daemon.type === "local") return this.daemon_local_pct;
       return 0;
     },
+    daemon_height() {
+      if (this.config_daemon.type === "local_remote")
+        return this.daemon.info.height_without_bootstrap;
+      return this.daemon.info.height;
+    },
     daemon_local_pct() {
       if (this.config_daemon.type === "remote") return 0;
-      let pct = (
-        (100 * this.daemon.info.height_without_bootstrap) /
-        this.target_height
-      ).toFixed(1);
-      if (
-        pct == 100.0 &&
-        this.daemon.info.height_without_bootstrap < this.target_height
-      )
-        return 99.9;
+      let pct = ((100 * this.daemon_height) / this.target_height).toFixed(1);
+      if (pct == 100.0 && this.daemon_height < this.target_height) return 99.9;
       else return pct;
     },
     wallet_pct() {
@@ -99,8 +98,7 @@ export default {
     },
     status() {
       const daemonType = this.config_daemon.type;
-      const isSyncing =
-        this.daemon.info.height_without_bootstrap < this.target_height;
+      const isSyncing = this.daemon.info.height < this.target_height;
       const isScanning =
         this.wallet.info.height < this.target_height - 1 &&
         this.wallet.info.height != 0;
