@@ -65,6 +65,31 @@ export class Gateway extends EventEmitter {
         this.router.replace({ path: "/quit" });
       }
     });
+
+    ipcRenderer.on("appSuspend", () => {
+      if (this.ws) {
+        this.ws.close();
+      }
+      // this.token = null;
+    });
+
+    ipcRenderer.on("appResumed", (event, data) => {
+      this.token = data.token;
+      setTimeout(() => {
+        this.ws = new WebSocket("ws://127.0.0.1:" + data.port);
+        this.ws.addEventListener("open", () => {
+          console.log("WS reconnected");
+        });
+
+        this.ws.addEventListener("message", e => {
+          this.receive(e.data);
+        });
+
+        this.ws.addEventListener("close", () => {
+          console.log("WS closed after resume");
+        });
+      }, 1000);
+    });
   }
 
   open() {
