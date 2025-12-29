@@ -1,4 +1,11 @@
-import { app, ipcMain, BrowserWindow, Menu, dialog } from "electron";
+import {
+  app,
+  ipcMain,
+  BrowserWindow,
+  Menu,
+  dialog,
+  powerMonitor
+} from "electron";
 import { version, productName } from "../../package.json";
 import { Backend } from "./modules/backend";
 import { checkForUpdate } from "./auto-updater";
@@ -23,6 +30,7 @@ let mainWindow, backend;
 let showConfirmClose = true;
 let forceQuit = false;
 let installUpdate = false;
+let startingToken = null;
 
 const title = `${productName} v${version}`;
 
@@ -49,7 +57,6 @@ function createWindow() {
     defaultWidth: 900,
     defaultHeight: 700
   });
-
   mainWindow = new BrowserWindow({
     x: mainWindowState.x,
     y: mainWindowState.y,
@@ -132,6 +139,7 @@ function createWindow() {
         if (status === "closed") {
           backend = new Backend(mainWindow);
           backend.init(config);
+          startingToken = config.token;
           mainWindow.webContents.send("initialize", config);
         } else {
           dialog.showMessageBox(
@@ -160,10 +168,21 @@ function createWindow() {
       selectionMenu.popup(mainWindow);
     }
   });
-
   mainWindow.loadURL(process.env.APP_URL);
   mainWindowState.manage(mainWindow);
 }
+
+powerMonitor.on("suspend", () => {
+  mainWindow.webContents.send("appSuspend");
+});
+
+powerMonitor.on("resume", () => {
+  let config = {
+    port: 12313,
+    token: startingToken
+  };
+  mainWindow.webContents.send("appResumed", config);
+});
 
 app.on("ready", () => {
   checkForUpdate(
