@@ -335,8 +335,8 @@
           <article class="version-wrapper">
             <div class="version ft-regular">
               <svg
-                width="18"
-                height="18"
+                width="15"
+                height="15"
                 viewBox="0 0 26 26"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -527,7 +527,7 @@ export default {
       // const type = this.$t(
       //   `dialog.keyImages.${this.key_image.type.toLowerCase()}`
       // );
-      let passwordDialog = await this.showPasswordConfirmation({
+      let passwordDialog = this.showPasswordConfirmation({
         title: "Show master node",
         noPasswordMessage: "Do you want to continue?",
         // this.$t("dialog.keyImages.message", {
@@ -616,8 +616,8 @@ export default {
     span {
       color: #77778b;
       font-family: "Poppins-Medium";
-      font-size: 18px;
-      margin-left: 10px;
+      font-size: 14px;
+      margin-left: 6px;
     }
   }
 }
