@@ -219,6 +219,8 @@ export default {
     address: "Address",
     recipientAddress: "Recipient Address",
     amount: "Amount",
+    belnetId: "Belnet ID",
+    eth: "ETH",
     backupOwner: "Backup Owner",
     confirmPassword: "Confirm Password (optional)",
     daemonLogLevel: "Daemon Log Level",
@@ -248,8 +250,7 @@ export default {
     notes: "Notes",
     addressBookNotes: "Address Book Notes",
     optional: "optional",
-
-    owner: "Owner",
+    owner: "Владелец",
     password: "Password (optional)",
     paymentId: "PAYMENT ID",
     priority: "Priority",
@@ -468,7 +469,11 @@ export default {
     unsignedData: "The data as it should look before it was signed",
     walletName: "Enter your Wallet Name",
     walletPassword: "Enter Password",
-    reEnterWalletPassword: "Re-Enter Password"
+    reEnterWalletPassword: "Re-Enter Password",
+    enterEthAddress: "Enter your ETH Address",
+    enterBelnetId: "Enter your Belnet ID",
+    enterBchatId: "Enter your BChat ID",
+    enterWalletAddress: "Enter your Wallet Address"
   },
   strings: {
     addAddressBookEntry: "Add Address ",
@@ -536,7 +541,15 @@ export default {
       bchatID: "Bchat ID",
       belnetName1Year: "Belnet Name 1 year",
       belnetNameXYears: "Belnet Name {years} years",
-      prices: "Prices :"
+      prices: "Prices :",
+      note: "Note",
+      bnsRegistration: "BNS Name for registration",
+      ownerNotes:
+        "Use current address (leave blank if same wallet) or specify the address if it is a different wallet",
+      ethNotes: "Our eth address is compatible across all EVM chains",
+      records: "BNS Records",
+      addRecord: "Add Record",
+      fetchNewRecord: "Fetching BNS record from the network..."
     },
     bnsPurchaseDescription:
       "Purchase or update an BNS record. If you purchase a name, it may take a minute or two for it to show up in the list.",
@@ -579,7 +592,7 @@ export default {
     walletCreated: "Wallet Created",
     selectLanguage: "Select a language",
     masterNodeContributionDescription:
-      "Staking contributes to the safety of the Beldex network. For your contribution, you earn BDX. Once staked, you will have to wait either 15 or 30 days to have your BDX unlocked, depending on if a stake was unlocked by a contributor or the node was deregistered. To learn more about staking, please visit the documentation on the",
+      "Стейкинг способствует безопасности сети Beldex. За ваш вклад вы получаете BDX. После размещения стейкинга вам придется подождать 15 или 30 дней, пока ваши BDX будут разблокированы, в зависимости от того, был ли стейкинг разблокирован участником сети или узел был дерегистрирован. Для получения дополнительной информации о стейкинге, пожалуйста, ознакомьтесь с документацией",
     masterNodeRegistrationDescription:
       'Enter the {registerCommand} command produced by the daemon that is registering to become a Master Node using the "{prepareCommand}" command',
     masterNodeStartStakingDescription: "To start Staing, Please visit",

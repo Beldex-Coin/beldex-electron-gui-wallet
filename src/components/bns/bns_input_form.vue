@@ -39,7 +39,9 @@
         />
       </OxenField>
     </div>
-    <div class="notes q-mt-xs">Note: BNS Name for registration</div>
+    <div class="notes q-mt-xs">
+      {{ $t("strings.bns.note") }} : {{ $t("strings.bns.bnsRegistration") }}
+    </div>
 
     <!-- Owner -->
     <div class="col q-mt-sm">
@@ -61,8 +63,7 @@
       </OxenField>
     </div>
     <div class="notes q-mt-xs">
-      Note: Use current address (leave blank if same wallet) or specify the
-      address if it is a different wallet
+      {{ $t("strings.bns.note") }} : {{ $t("strings.bns.ownerNotes") }}
     </div>
 
     <!-- Backup owner -->
@@ -94,13 +95,13 @@
           :class="[addressRef ? 'selected' : '']"
         >
           <q-checkbox v-model="addressRef" size="sm" color="green" />
-          <div style="width: 100px">Address</div>
+          <div style="width: 100px">{{ $t("fieldLabels.address") }}</div>
           <OxenField class="full-width" optional :error="$v.address.$error">
             <q-input
               v-model="address"
               :disable="!addressRef"
               :dark="theme == 'dark'"
-              placeholder="Enter your Wallet Address"
+              :placeholder="$t('placeholders.enterWalletAddress')"
               borderless
               dense
               @blur="$v.address.$touch"
@@ -112,13 +113,13 @@
           :class="[bchatIdRef ? 'selected' : '']"
         >
           <q-checkbox v-model="bchatIdRef" size="sm" color="green" />
-          <div style="width: 100px">BChat ID</div>
+          <div style="width: 100px">{{ $t("strings.bns.bchatID") }}</div>
           <OxenField class="full-width" optional :error="$v.bchatId.$error">
             <q-input
               v-model="bchatId"
               :disable="!bchatIdRef"
               :dark="theme == 'dark'"
-              placeholder="Enter your BChat ID"
+              :placeholder="$t('placeholders.enterBchatId')"
               borderless
               dense
               @blur="$v.bchatId.$touch"
@@ -130,13 +131,13 @@
           :class="[belnetIdRef ? 'selected' : '']"
         >
           <q-checkbox v-model="belnetIdRef" size="sm" color="green" />
-          <div style="width: 100px">Belnet ID</div>
+          <div style="width: 100px">{{ $t("fieldLabels.belnetId") }}</div>
           <OxenField class="full-width" optional :error="$v.belnetId.$error">
             <q-input
               v-model="belnetId"
               :disable="!belnetIdRef"
               :dark="theme == 'dark'"
-              placeholder="Enter your Belnet ID"
+              :placeholder="$t('placeholders.enterBelnetId')"
               borderless
               dense
               @blur="$v.belnetId.$touch"
@@ -149,13 +150,13 @@
           :class="[ethAddressRef ? 'selected' : '']"
         >
           <q-checkbox v-model="ethAddressRef" size="sm" color="green" />
-          <div style="width: 100px">ETH</div>
+          <div style="width: 100px">{{ $t("fieldLabels.eth") }}</div>
           <OxenField class="full-width" optional :error="$v.ethAddress.$error">
             <q-input
               v-model="ethAddress"
               :disable="!ethAddressRef"
               :dark="theme == 'dark'"
-              placeholder="Enter your ETH Address"
+              :placeholder="$t('placeholders.enterEthAddress')"
               borderless
               dense
               @blur="$v.ethAddress.$touch"
@@ -164,7 +165,7 @@
         </div>
       </section>
       <div class="q-mt-md q-mb-xs">
-        Note : Our eth address is compatible across all EVM chains
+        {{ $t("strings.bns.note") }} : {{ $t("strings.bns.ethNotes") }}
       </div>
     </div>
 

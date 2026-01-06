@@ -188,10 +188,13 @@ export default {
     address: "Dirección",
     recipientAddress: "Dirección de la destinataria",
     amount: "CANTIDAD",
+    belnetId: "ID de Belnet",
+    eth: "ETH",
     confirmPassword: "CONFIRMAR CONTRASEÑA",
     daemonLogLevel: "NIVEL LOG PARA EL SERVICIO",
     daemonP2pPort: "PUERTO P2P SERVICIO",
     dataStoragePath: "RUTA DE ALMACENAMIENTO DE DATOS",
+    decryptRecord: "Agregar registro",
     data: "Datos",
 
     filter: "Filtro",
@@ -214,6 +217,7 @@ export default {
     notes: "NOTAS",
     addressBookNotes: "Notas de la libreta de direcciones",
     optional: "OPCIONAL",
+    owner: "Dueña",
     password: "CONTRASEÑA",
     paymentId: "ID DE PAGO",
     priority: "PRIORIDAD",
@@ -372,8 +376,16 @@ export default {
     additionalNotes: "Notas adicionales",
     addNotesOptional: "Añadir notas (opcional)",
     addressBookName: "Nombre asociado a esta dirección",
-    addressOfSigner: "Public wallet address of signer",
-    beldexAddress: "Enter Address or BNS Name",
+    addressOfSigner: "Dirección de billetera pública de la firmante",
+    beldexAddress: "Ingrese la dirección o el nombre del BNS",
+    bnsName:
+      "El nombre que se comprará a través del servicio de nombres Beldex",
+    bnsOwner: "La dirección de la billetera de la propietaria",
+    bnsBackupOwner:
+      "La dirección de la billetera del propietario de la copia de seguridad",
+    bnsDecryptName: "Un nombre BNS que te pertenece",
+    belnetFullAddress:
+      "Dirección belnet completa a la que se asignará el nombre BNS (sin .bdx)",
     enterName: "Ingrese su nombre",
     enterAddress: "Ingresa la direccion",
     enteroldPassword: "Ingrese la contraseña anterior",
@@ -388,14 +400,18 @@ export default {
     pasteTransactionProof: "Pegar prueba de la transacción",
     proveOptionalMessage: "Mensaje opcional contra el qué se firma la firma",
     recipientWalletAddress: "Dirección del monedero de destino",
-    reEnterWalletPassword: "Escriba la contraseña otra vez",
     selectAFile: "Seleccione un archivo por favor",
     transactionNotes: "Notas adicionales para agregar a la transacción",
     signature: "Signature to verify",
     unsignedData: "Los datos como deberían verse antes de ser firmados",
 
     walletName: "Nombre para identificar su monedero",
-    walletPassword: "Contraseña opcional para proteger su monedero"
+    walletPassword: "Contraseña opcional para proteger su monedero",
+    reEnterWalletPassword: "Escriba la contraseña otra vez",
+    enterEthAddress: "Ingrese su dirección ETH",
+    enterBelnetId: "Ingrese su ID de Belnet",
+    enterBchatId: "Ingrese su ID de BChat",
+    enterWalletAddress: "Ingrese su dirección de billetera"
   },
   strings: {
     addAddressBookEntry: "Agregar registro a la libreta de direcciones",
@@ -452,6 +468,25 @@ export default {
     },
     destinationUnknown: "Destino Desconocido",
     editAddressBookEntry: "Modificar un registro de la libreta de direcciones",
+    expirationHeight: "altura de espiración",
+    bns: {
+      bchatID: "ID de chat",
+      belnetName1Year: "Nombre Belnet 1 año",
+      belnetNameXYears: "Nombre Belnet {years} años",
+      prices: "Precios :",
+      note: "Nota",
+      bnsRegistration: "Nombre BNS para registro",
+      ownerNotes:
+        "Utilice la dirección actual (déjelo en blanco si es la misma billetera) o especifique la dirección si es una billetera diferente",
+      ethNotes: "Nuestra dirección eth es compatible con todas las cadenas EVM",
+      records: "Registros BNS",
+      addRecord: "Agregar registro",
+      fetchNewRecord: "Obteniendo registro BNS de la red..."
+    },
+    bnsPurchaseDescription:
+      "Compre o actualice un registro BNS. Si compra un nombre, puede tardar uno o dos minutos en aparecer en la lista",
+    bnsDescription:
+      "Aquí puedes encontrar todos los nombres BNS de esta billetera. Al descifrar un registro de tu propiedad, se recuperará el nombre y el valor de ese registro BNS.",
     loadingSettings: "Cargando configuración",
     oxenBalance: "Saldo",
     oxenUnlockedBalance: "Saldo libre",
@@ -481,6 +516,8 @@ export default {
     saveToAddressBook: "Guardar en la libreta de direcciones",
     seedWords: "Palabras semilla",
     selectLanguage: "Escoja un idioma",
+    masterNodeContributionDescription:
+      "El staking contribuye a la seguridad de la red Beldex. Por tu contribución, ganas BDX. Una vez depositado, tendrás que esperar entre 15 y 30 días para que se desbloqueen tus BDX, dependiendo de si un contribuyente desbloqueó el staking o si el nodo fue dado de baja. Para obtener más información sobre el staking, consulta la documentación en",
     masterNodeRegistrationDescription:
       'Introduzca la orden {registerCommand} generada por el servicio (beldexd) que se está intentado registrar como Nodo de Servicio usando la instrucción "{prepareCommand}"',
     spendKey: "Clave de gasto",
@@ -537,6 +574,7 @@ export default {
       sign: "firmar",
       verify: "Verificar"
     },
+    availableForContribution: "Nodos maestros disponibles para contribución",
     changePassword: "Modificar contraseña",
     configure: "Ajustes de configuración",
     currentlyStakedNodes: "Nodos en los que actualmente participa",
@@ -544,7 +582,10 @@ export default {
     privateKeys: "Claves privadas",
     rescanWallet: "Volver a examinar monedero",
     restoreFromSeed: "Restaurar desde semilla",
-
+    bns: {
+      purchase: "Comprar BNS",
+      myBns: "Mi BNS"
+    },
     masterNode: {
       registration: "REGISTRO",
       staking: "PARTICIPACIÓN",

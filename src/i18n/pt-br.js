@@ -1,7 +1,7 @@
 export default {
   buttons: {
     // All button text is uppercased in the gui
-    advanced: "ADVANCED",
+    advanced: "Avançado",
     addAddressBook: "Adicionar ao catálogo de endereços",
     addWallet: "Adicionar Carteira",
 
@@ -187,12 +187,15 @@ export default {
     address: "Endereço",
     recipientAddress: "Endereço do destinatário",
     amount: "QUANTIDADE",
+    belnetId: "ID Belnet",
+    eth: "ETH",
     confirmPassword: "CONFIRMAR PALAVRA-PASSE",
     daemonLogLevel: "NÍVEL DE LOG PARA O SERVIÇO",
     daemonP2pPort: "PORTA P2P DO SERVIÇO",
     dataStoragePath: "DIRECTÓRIO DE ARMAZENAMENTO DOS DADOS",
-    data: "Data",
-    filter: "Filter",
+    decryptRecord: "Adicionar registro",
+    data: "Dados",
+    filter: "Filtro",
     filterTransactionType: "FILTRAR POR TIPO DE TRANSAÇÃO",
     internalWalletPort: "PORTA INTERNA DA CARTEIRA",
     keyImages: {
@@ -212,6 +215,7 @@ export default {
     notes: "NOTAS",
     addressBookNotes: "Notas do livro de endereços",
     optional: "OPCIONAL",
+    owner: "Proprietário",
     password: "PALAVRA-PASSE",
     paymentId: "ID DE PAGAMENTO",
     priority: "PRIORIDADE",
@@ -371,6 +375,11 @@ export default {
     addressBookName: "Nome que pertence a este endereço",
     addressOfSigner: "Endereço público da carteira do signatário",
     beldexAddress: "Enter Address or BNS Name",
+    bnsName: "The name to purchase via Beldex Name Service",
+    bnsOwner: "The wallet address of the owner",
+    bnsBackupOwner: "The wallet address of the backup owner",
+    bnsDecryptName: "A BNS name that belongs to you",
+    belnetFullAddress: "Full belnet address to map BNS name to (without .bdx)",
     enterAddress: "Insira o endereço",
     enterName: "Insira o nome",
     enteroldPassword: "Digite a senha antiga",
@@ -386,13 +395,17 @@ export default {
     proveOptionalMessage:
       "Mensagem opcional contra a qual a assinatura é assinada",
     recipientWalletAddress: "Endereço da carteira do destinatário",
-    reEnterWalletPassword: "Digite novamente a senha",
     selectAFile: "Por favor selecione um ficheiro",
     signature: "Assinatura para verificar",
 
     transactionNotes: "Notas adicionais para anexar à transação",
     walletName: "Um nome para a sua carteira",
-    walletPassword: "Uma palavra-passe opcional para a carteira"
+    walletPassword: "Uma palavra-passe opcional para a carteira",
+    reEnterWalletPassword: "Digite novamente a senha",
+    enterEthAddress: "Insira seu endereço ETH",
+    enterBelnetId: "Insira seu ID da Belnet",
+    enterBchatId: "Insira seu ID do BChat",
+    enterWalletAddress: "Insira o endereço da sua carteira"
   },
   strings: {
     addAddressBookEntry: "Adicionar registo ao livro de endereços",
@@ -449,6 +462,26 @@ export default {
     },
     destinationUnknown: "Destino Desconhecido",
     editAddressBookEntry: "Editar registo do livro de endereços",
+    expirationHeight: "Altura de expiração",
+    bns: {
+      bchatID: "ID do bate-papo",
+      belnetName1Year: "Nome Belnet 1 ano",
+      belnetNameXYears: "Nome Belnet {years} anos",
+      prices: "Preços :",
+      note: "Observação",
+      bnsRegistration: "Nome BNS para registro",
+      ownerNotes:
+        "Use o endereço atual (deixe em branco se for a mesma carteira) ou especifique o endereço se for uma carteira diferente",
+      ethNotes:
+        "Nosso endereço Ethereum é compatível com todas as blockchains da EVM",
+      records: "Registros BNS",
+      addRecord: "Adicionar registro",
+      fetchNewRecord: "Obtendo o registro BNS da rede..."
+    },
+    bnsPurchaseDescription:
+      "Adquira ou atualize um registro do BNS. Se você adquirir um nome, pode levar um ou dois minutos para que ele apareça na lista.",
+    bnsDescription:
+      "Aqui você encontra todos os nomes BNS pertencentes a esta carteira. Ao descriptografar um registro de sua propriedade, você obterá o nome e o valor desse registro BNS.",
     loadingSettings: "Carregando configurações",
     oxenBalance: "Saldo",
     oxenUnlockedBalance: "Saldo desbloqueado",
@@ -477,6 +510,8 @@ export default {
     saveToAddressBook: "Salvar para o livro de endereço",
     seedWords: "Palavras semente",
     selectLanguage: "Selecione língua",
+    masterNodeContributionDescription:
+      "O staking contribui para a segurança da rede Beldex. Ao contribuir, você ganha BDX. Após o staking, você precisará aguardar 15 ou 30 dias para que seus BDX sejam desbloqueados, dependendo se o staking foi desbloqueado por um contribuinte ou se o nó foi desativado. Para saber mais sobre staking, consulte a documentação em [link para a documentação]",
     masterNodeRegistrationDescription:
       'Introduza o {registerCommand} commando produzido pelo serviço que está se registando para se tornar un Nódulo de Serviço utilizando o commando "{prepareCommand}" ',
     spendKey: "Chave de gasto",
@@ -530,6 +565,7 @@ export default {
       sign: "Sinal",
       verify: "Verificar"
     },
+    availableForContribution: "Nós mestres disponíveis para contribuição",
     changePassword: "Mudar palavra-passe",
     configure: "Definições de configuração",
     currentlyStakedNodes: "Currently staked nodes",
@@ -537,7 +573,10 @@ export default {
     privateKeys: "Chaves privadas",
     rescanWallet: "Reexaminar carteira",
     restoreFromSeed: "Restaurar da semente",
-
+    bns: {
+      purchase: "Comprar BNS",
+      myBns: "Meu BNS"
+    },
     masterNode: {
       registration: "REGISTO",
       staking: "PARTICIPAÇÃO",

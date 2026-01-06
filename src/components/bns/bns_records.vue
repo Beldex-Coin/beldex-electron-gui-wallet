@@ -34,11 +34,11 @@
       </div>
 
       <div v-if="decrypting" class="q-mb-md" style="color: #20d030">
-        Fetching BNS record from the network...
+        {{ $t("strings.bns.fetchNewRecord") }}
       </div>
 
       <div class="records-group">
-        <span class="record-type-title">BNS Records </span>
+        <span class="record-type-title">{{ $t("strings.bns.records") }} </span>
         <BNSRecordList
           :record-list="bns_record"
           :is-belnet="true"

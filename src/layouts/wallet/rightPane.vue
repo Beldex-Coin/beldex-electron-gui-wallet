@@ -41,7 +41,7 @@
               />
             </svg>
             <!-- <span class="btn-txt">{{ $t("buttons.send") }}</span> -->
-            <span class="btn-txt">Send</span>
+            <span class="btn-txt">{{ $t("buttons.send") }}</span>
           </div>
         </div>
         <!-- </router-link> -->
@@ -59,7 +59,7 @@
               />
             </svg>
             <!-- <span class="btn-txt">{{ $t("buttons.receive") }}</span> -->
-            <span class="btn-txt">Receive</span>
+            <span class="btn-txt">{{ $t("buttons.receive") }}</span>
           </div>
         </div>
       </div>

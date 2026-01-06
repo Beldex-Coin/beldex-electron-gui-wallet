@@ -182,7 +182,7 @@
               class="send-btn"
               :disable="!is_able_to_send"
               icon="replay"
-              label="clear"
+              :label="$t('buttons.clear')"
               @click="clearStateValues()"
             />
             <!-- :label="$t('buttons.send')" -->
@@ -192,7 +192,7 @@
               :disable="!is_able_to_send"
               color="primary"
               icon="north_east"
-              label="Send"
+              :label="$t('buttons.send')"
               @click="send()"
             />
           </div>
@@ -571,6 +571,7 @@ export default {
     margin-top: 6px;
     width: 9vw;
     min-width: unset;
+    height: 50px;
   }
   .contact-btn {
     width: 31px;

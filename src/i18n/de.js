@@ -1,7 +1,7 @@
 export default {
   buttons: {
     // All button text is uppercased in the gui
-    advanced: "ADVANCED",
+    advanced: "Fortschrittlich",
     addAddressBook: "Zum Adressbuch hinzufügen",
     addWallet: "Geldbörse hinzufügen",
 
@@ -81,8 +81,8 @@ export default {
       message:
         "Sei vorsichtig, wem du deine Private Keys sendest, denn derjenige erhält dadurch die Kontrolle über deine Einlagen",
       seedWords: "Seed Wörter",
-      viewKey: "View Key",
-      spendKey: "Spend Key"
+      viewKey: "Schlüssel anzeigen",
+      spendKey: "Schlüssel ausgeben"
     },
     deleteWallet: {
       title: "Wallet löschen",
@@ -143,7 +143,7 @@ export default {
       ok: "ALLES BEREINIGEN"
     },
     sweepAllWarning: {
-      title: "Sweep all warning",
+      title: "Alle Warnungen durchwischen",
       message:
         "You are about to combine all of your unspent funds by sending a transaction to yourself, your wallet may show a balance of 0 temporarily, after 10 blocks your funds will unlock and you may stake normally.",
       ok: "CONTINUE"
@@ -188,12 +188,15 @@ export default {
     address: "Adresse",
     recipientAddress: "Empfängeradresse",
     amount: "BETRAG",
+    belnetId: "Belnet-ID",
+    eth: "ETH",
     awardRecepientAddress: "EMPFÄNGER ADRESSE FÜR DIE VERGÜTUNG",
     confirmPassword: "PASSWORT BESTÄTIGEN",
     chooseNetwork: "NETZWERK AUSWÄHLEN",
     daemonLogLevel: "DAEMON LOG LEVEL",
     daemonP2pPort: "DAEMON P2P PORT",
     dataStoragePath: "DATENSICHERUNGSPFAD",
+    decryptRecord: "Datensatz hinzufügen",
     data: "Daten",
     filter: "Filter",
     filterTransactionType: "FILTERN NACH TRANSAKTIONSTYP",
@@ -216,18 +219,19 @@ export default {
     notes: "NOTIZEN",
     addressBookNotes: "Adressbuchnotizen",
     optional: "OPTIONAL",
+    owner: "Eigentümer",
     password: "PASSWORT",
-    paymentId: "PAYMENT ID",
+    paymentId: "ZAHLUNGS-ID",
     priority: "PRIORITÄT",
-    remoteNodeHost: "REMOTE NODE HOST",
-    remoteNodePort: "REMOTE NODE PORT",
+    remoteNodeHost: "Remote-Knoten-Host",
+    remoteNodePort: "REMOTE-NODE-PORT",
     restoreFromBlockHeight: "WIEDERHERSTELLUNG VON BLOCKHÖHE",
     restoreFromDate: "WIEDERHERSTELLUNG VON DATUM",
     seedLanguage: "SEED SPRACHE",
     totalBalance: "Gesamtsaldo",
     to: "Zu",
     masterNodeCommand: "MASTER NODE COMMAND",
-    masterNodeKey: "MASTER NODE KEY",
+    masterNodeKey: "MASTER-NOTE-SCHLÜSSEL",
     signature: "Unterschrift",
     transactionId: "Transaktions-ID",
     walletFile: "WALLET FILE",
@@ -372,8 +376,13 @@ export default {
     addNotesOptional: "Notizen hinzufügen (optional)",
     addressBookName: "Zugehörige Namen zu dieser Adresse",
     addressOfSigner: "Öffentliche Wallet-Adresse des Unterzeichners",
-
-    beldexAddress: "Enter Address or BNS Name",
+    beldexAddress: "Adresse oder BNS-Namen eingeben",
+    bnsName: "Der Name, der über den Beldex Namensservice erworben werden soll",
+    bnsOwner: "Die Wallet-Adresse des Besitzers",
+    bnsBackupOwner: "Die Wallet-Adresse des Backup-Inhabers",
+    bnsDecryptName: "Ein BNS-Name, der Ihnen gehört",
+    belnetFullAddress:
+      "Vollständige Belnet-Adresse zur Zuordnung des BNS-Namens (ohne .bdx)",
     enterName: "Name eingeben",
     enterAddress: "Adresse eingeben",
     enteroldPassword: "Geben Sie das alte Passwort ein",
@@ -390,15 +399,18 @@ export default {
     proveOptionalMessage:
       "Optionale Nachricht, gegen die die Signatur signiert wird",
     recipientWalletAddress: "Wallet-Adresse des Empfängers",
-    reEnterWalletPassword: "Kennwort erneut eingeben",
-
     selectAFile: "Bitte Datei auswählen",
     signature: "Unterschrift zur Überprüfung",
     unsignedData: "Die Daten, wie sie vor dem Signieren aussehen sollten",
     transactionNotes:
       "Zusätzliche Notizen die an die Transaktions gehängt werden sollen",
     walletName: "Ein Name für deine Wallet",
-    walletPassword: "Ein optionales Passwort für die Wallet"
+    walletPassword: "Ein optionales Passwort für die Wallet",
+    reEnterWalletPassword: "Kennwort erneut eingeben",
+    enterEthAddress: "Geben Sie Ihre ETH-Adresse ein",
+    enterBelnetId: "Geben Sie Ihre Belnet-ID ein",
+    enterBchatId: "Gib deine BChat-ID ein",
+    enterWalletAddress: "Geben Sie Ihre Wallet-Adresse ein"
   },
   strings: {
     addAddressBookEntry: "Adressbuch Eintrag hinzufügen",
@@ -456,6 +468,25 @@ export default {
     },
     destinationUnknown: "Ziel unbekannt",
     editAddressBookEntry: "Adressbucheintrag bearbeiten",
+    expirationHeight: "Expiration height",
+    bns: {
+      bchatID: "Bchat-ID",
+      belnetName1Year: "Belnet Name 1 Jahr",
+      belnetNameXYears: "Belnet Name {years} Jahre",
+      prices: "Preise :",
+      note: "Notiz",
+      bnsRegistration: "BNS Name für die Registrierung",
+      ownerNotes:
+        "Verwenden Sie die aktuelle Adresse (lassen Sie das Feld leer, falls es sich um dieselbe Wallet handelt) oder geben Sie die Adresse an, falls es sich um eine andere Wallet handelt",
+      ethNotes: "Unsere ETH-Adresse ist mit allen EVM-Chains kompatibel",
+      records: "BNS-Aufzeichnungen",
+      addRecord: "Datensatz hinzufügen",
+      fetchNewRecord: "BNS-Datensatz wird aus dem Netzwerk abgerufen..."
+    },
+    bnsPurchaseDescription:
+      "Kaufen oder aktualisieren Sie einen BNS-Datensatz. Wenn Sie einen Namen kaufen, kann es ein bis zwei Minuten dauern, bis er in der Liste erscheint.",
+    bnsDescription:
+      "Hier finden Sie alle BNS-Namen, die dieser Wallet zugeordnet sind. Durch Entschlüsseln eines Ihrer Datensätze werden Name und Wert dieses BNS-Datensatzes angezeigt.",
     loadingSettings: "Einstellungen werden geladen",
     oxenBalance: "Guthaben",
     oxenUnlockedBalance: "frei verfügbares Guthaben",
@@ -486,6 +517,8 @@ export default {
     saveToAddressBook: "In Adressbuch speichern",
     seedWords: "Seed Wörter",
     selectLanguage: "Sprache auswählen",
+    masterNodeContributionDescription:
+      "Durch Staking wird die Sicherheit des Beldex-Netzwerks erhöht. Für Ihren Beitrag erhalten Sie BDX. Nach dem Staking müssen Sie je nach Art der Freigabe (durch einen anderen Teilnehmer oder durch die Abmeldung des Knotens) 15 oder 30 Tage warten, bis Ihre BDX freigegeben werden. Weitere Informationen zum Staking finden Sie in der Dokumentation auf der Beldex-Website",
     masterNodeRegistrationDescription:
       "Hier den {registerComand} Befehl, der mit Hilfe des Daemons durch das Kommando {prepareCommand} erzeugt wurde, eingeben, um eine Master Node zu aktivieren",
     spendKey: "Spend key",
@@ -538,6 +571,7 @@ export default {
       sign: "Zeichen",
       verify: "Verifizieren"
     },
+    availableForContribution: "Für Beiträge verfügbare Masterknoten",
     changePassword: "Passwort ändern",
     configure: "Konfigurationseinstellungen",
     currentlyStakedNodes: "Currently staked nodes",
@@ -545,7 +579,10 @@ export default {
     privateKeys: "Private Keys",
     rescanWallet: "Wallet erneut scannen",
     restoreFromSeed: "Aus Seed wiederherstellen",
-
+    bns: {
+      purchase: "BNS kaufen",
+      myBns: "Mein BNS"
+    },
     masterNode: {
       registration: "REGISTRIERUNG",
       staking: "STAKING",
