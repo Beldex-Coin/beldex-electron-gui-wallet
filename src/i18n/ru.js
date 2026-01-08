@@ -18,6 +18,8 @@ export default {
     copyAddress: "КОПИРОВАТЬ АДРЕС",
     copySignature: "COPY SIGNATURE",
     createWallet: "СОЗДАТЬ КОШЕЛЕК",
+    decrypt: "РАСШИФРОВАТЬ",
+    addRecord: "Добавить БНС",
     delete: "УДАЛИТЬ",
     edit: "РЕДАКТИРОВАТЬ",
     editNotes: "Редактировать примечания",
@@ -82,6 +84,19 @@ export default {
       seedWords: "Seed-фраза",
       viewKey: "Ключ Просмотра",
       spendKey: "Ключ Отправки"
+    },
+    deleteAddress: {
+      title: "Удалить адрес",
+      message: "Вы уверены, что хотите удалить этот адрес?"
+    },
+    discardEdit: {
+      title: "Вы уверены?",
+      message: "Вы уверены, что хотите отменить редактирование?"
+    },
+    showMasterNode: {
+      title: "Показать главный узел",
+      message: "Вы хотите продолжить?",
+      masterNode: "Главный узел"
     },
     deleteWallet: {
       title: "Удалить кошелек",
@@ -580,8 +595,8 @@ export default {
     restoreFromSeed: "Восстановить из семян",
     bnsServices: "БНС Сервис",
     bns: {
-      purchase: "Buy BNS",
-      myBns: "My BNS"
+      purchase: "Купить БНС",
+      myBns: "Мой БНС"
     },
     masterNode: {
       registration: "РЕГИСТРАЦИЯ",
@@ -597,6 +612,7 @@ export default {
       }
     },
     transactionDetails: "Данные транзакции",
+    details: "Подробности",
     transactions: "Транзакции",
     wallet: {
       createNew: "Создать новый кошелек",

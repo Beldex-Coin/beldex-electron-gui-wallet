@@ -528,13 +528,13 @@ export default {
       //   `dialog.keyImages.${this.key_image.type.toLowerCase()}`
       // );
       let passwordDialog = this.showPasswordConfirmation({
-        title: "Show master node",
-        noPasswordMessage: "Do you want to continue?",
+        title: this.$t("dialog.showMasterNode.title"),
+        noPasswordMessage: this.$t("dialog.showMasterNode.message"),
         // this.$t("dialog.keyImages.message", {
         //   type: type.toLocaleLowerCase(this.locale)
         // })
         ok: {
-          label: "Master node",
+          label: this.$t("dialog.showMasterNode.masterNode"),
           color: "primary"
         },
         cancel: {

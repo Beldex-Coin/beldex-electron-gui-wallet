@@ -19,6 +19,8 @@ export default {
     copyAddress: "ADRESSE KOPIEREN",
     copySignature: "COPY SIGNATURE",
     createWallet: "WALLET ERSTELLEN",
+    decrypt: "ENTSCHLÜSSELN",
+    addRecord: "BNS hinzufügen",
     delete: "LÖSCHEN",
     edit: "BEARBEITEN",
     editNotes: "Notizen bearbeiten",
@@ -83,6 +85,19 @@ export default {
       seedWords: "Seed Wörter",
       viewKey: "Schlüssel anzeigen",
       spendKey: "Schlüssel ausgeben"
+    },
+    deleteAddress: {
+      title: "Adresse löschen",
+      message: "Möchten Sie diese Adresse wirklich löschen?"
+    },
+    discardEdit: {
+      title: "Bist du sicher?",
+      message: "Möchten Sie die Bearbeitung wirklich verwerfen?"
+    },
+    showMasterNode: {
+      title: "Masterknoten anzeigen",
+      message: "Möchten Sie fortfahren?",
+      masterNode: "Masterknoten"
     },
     deleteWallet: {
       title: "Wallet löschen",
@@ -598,6 +613,7 @@ export default {
     },
 
     transactionDetails: "Transaktionsdetails",
+    details: "Einzelheiten",
     transactions: "Transaktionen",
 
     wallet: {

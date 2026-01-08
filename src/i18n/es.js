@@ -17,9 +17,10 @@ export default {
     contacts: "CONTACTOS",
     copyAddress: "COPIAR DIRECCIÓN",
     copy: "Copiar",
-
     copySignature: "COPIAR FIRMA",
     createWallet: "CREAR MONEDERO",
+    decrypt: "DESCIFRAR",
+    addRecord: "Agregar BNS",
     delete: "ELIMINAR",
     edit: "EDITAR",
     editNotes: "Editar notas",
@@ -85,6 +86,19 @@ export default {
       seedWords: "Palabras Semilla",
       viewKey: "Clave de Visualización",
       spendKey: "Clave de Gasto"
+    },
+    deleteAddress: {
+      title: "Eliminar dirección",
+      message: "¿Estás seguro que deseas eliminar esta dirección?"
+    },
+    discardEdit: {
+      title: "Estas segura",
+      message: "¿Estás segura de que quieres descartar la edición?"
+    },
+    showMasterNode: {
+      title: "Mostrar nodo maestro",
+      message: "¿Quieres continuar?",
+      masterNode: "Nodo maestro"
     },
     deleteWallet: {
       title: "Eliminar monedero",
@@ -600,6 +614,7 @@ export default {
       }
     },
     transactionDetails: "Detalles de la transacción",
+    details: "Detalles",
     transactions: "Transacciones",
     wallet: {
       createNew: "Crear un monedero nuevo",

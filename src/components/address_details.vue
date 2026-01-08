@@ -59,7 +59,7 @@
             /> -->
             <div class="address-section">
               <div class="ft-medium label q-mt-md q-mb-xs">
-                Address
+                {{ $t("fieldLabels.address") }}
                 <q-btn
                   class="q-ml-sm address-copy-btn"
                   flat

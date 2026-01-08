@@ -19,6 +19,8 @@ export default {
     copyAddress: "ADRESSE DE COPIE",
     copySignature: "COPY SIGNATURE",
     createWallet: "CRÉER UN PORTEFEUILLE",
+    decrypt: "DÉCRYPTER",
+    addRecord: "Ajouter un BNS",
     delete: "SUPPRIMER",
     edit: "MODIFIER",
     editNotes: "Modifier les notes",
@@ -85,6 +87,19 @@ export default {
       seedWords: "mots-clés",
       viewKey: "Clé d’affichage",
       spendKey: "Clé de dépenses"
+    },
+    deleteAddress: {
+      title: "Supprimer l'adresse",
+      message: "Êtes-vous sûr de vouloir supprimer cette adresse ?"
+    },
+    discardEdit: {
+      title: "Es-tu sûr?",
+      message: "Êtes-vous sûr de vouloir supprimer la modification ?"
+    },
+    showMasterNode: {
+      title: "Afficher le nœud maître",
+      message: "Voulez-vous continuer ?",
+      masterNode: "Nœud maître"
     },
     deleteWallet: {
       title: "Supprimer le portefeuille",
@@ -603,6 +618,7 @@ export default {
       }
     },
     transactionDetails: "Détails de la transaction",
+    details: "Détails",
     transactions: "Transactions",
     wallet: {
       createNew: "Créer un nouveau portefeuille",

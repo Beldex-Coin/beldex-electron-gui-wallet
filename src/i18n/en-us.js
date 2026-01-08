@@ -93,6 +93,19 @@ export default {
       viewKey: "View Key",
       spendKey: "Spend Key"
     },
+    deleteAddress: {
+      title: "Delete Address",
+      message: "Are you sure you want to delete this address?"
+    },
+    discardEdit: {
+      title: "Are you Sure?",
+      message: "Are you sure you want to Discard the editing?"
+    },
+    showMasterNode: {
+      title: "Show master node",
+      message: "Do you want to continue?",
+      masterNode: "Master node"
+    },
     deleteWallet: {
       title: "Delete Wallet",
       message: "Are you sure you want to delete the current wallet?",

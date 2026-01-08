@@ -19,6 +19,8 @@ export default {
     copyAddress: "COPIAR ENDEREÇO",
     copySignature: "COPY SIGNATURE",
     createWallet: "CRIAR CARTEIRA",
+    decrypt: "DESCRIPTO",
+    addRecord: "Adicionar BNS",
     delete: "APAGAR",
     edit: "EDITAR",
     editNotes: "Editar notas",
@@ -85,6 +87,19 @@ export default {
       seedWords: "Palavras Semente",
       viewKey: "Chave de Visualização",
       spendKey: "Chave de Gasto"
+    },
+    deleteAddress: {
+      title: "Excluir endereço",
+      message: "Tem certeza de que deseja excluir este endereço?"
+    },
+    discardEdit: {
+      title: "Tem certeza?",
+      message: "Tem certeza de que deseja descartar a edição?"
+    },
+    showMasterNode: {
+      title: "Mostrar nó mestre",
+      message: "Deseja continuar?",
+      masterNode: "Nó mestre"
     },
     deleteWallet: {
       title: "Apagar carteira",
@@ -591,6 +606,7 @@ export default {
       }
     },
     transactionDetails: "Detalhes das transações",
+    details: "Detalhes",
     transactions: "Transações",
     wallet: {
       createNew: "Criar nova carteira",
