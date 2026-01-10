@@ -30,7 +30,6 @@ export default {
     import: "Import",
     importWallet: "Import Wallet | Import Wallets",
     bns: "BELDEX Name Service",
-
     min: "Min",
     next: "Next",
     openWallet: "Open Wallet",
@@ -54,11 +53,10 @@ export default {
     sign: "Sign",
     stake: "Stake",
     sweepAll: "Sweep All",
-    unlock: "unlock",
+    unlock: "Unlock",
     update: "Update",
     verify: "Verify",
     viewOnExplorer: "View in explorer",
-    //new wamp
     add: "Add",
     max: "Max",
     bnsUpdate: "BNS Update",
@@ -344,8 +342,6 @@ export default {
     showQRCode: "Show QR Code",
     switchWallet: "Switch Wallet",
     viewOnExplorer: "View on explorer",
-
-    // new vamp
     favourite: "Favourite"
   },
   notification: {
@@ -589,7 +585,6 @@ export default {
       fastest: "Fastest",
       flash: "Flash"
     },
-
     proveTransactionDescription:
       "Generate a proof of your incoming/outgoing payment by supplying the transaction ID, the recipient address and an optional message.\nFor the case of outgoing payments, you can get a 'Spend Proof' that proves the authorship of a transaction. In this case, you don't need to specify the recipient address.",
     readingWalletList: "Reading wallet list",
@@ -600,7 +595,6 @@ export default {
       "Select full rescan or rescan of spent outputs only.",
     saveSeedWarning: "Please copy and save these in a secure location!",
     saveToAddressBook: "Save to address book",
-
     seedWords: "Recovery Seed",
     walletCreated: "Wallet Created",
     selectLanguage: "Select a language",
