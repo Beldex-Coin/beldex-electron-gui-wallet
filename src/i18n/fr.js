@@ -14,7 +14,7 @@ export default {
     clear: "clear",
     clearAll: "Tout effacer",
     close: "FERMER",
-    contacts: "CONTACTS",
+    contacts: "Contacts",
     copy: "copie",
     copyAddress: "ADRESSE DE COPIE",
     copyData: "Copier les données",
@@ -85,7 +85,6 @@ export default {
         "Un identifiant de paiement est associé à cette adresse.\nAssurez-vous de copier l'identifiant de paiement séparément."
     },
     copyPrivateKeys: {
-      // Copy {seedWords/viewKey/spendKey}
       title: "Copier {type}",
       message:
         "Faites attention à qui vous envoyez vos clés privées, car ils peuvent contrôler vos fonds.",
@@ -209,19 +208,19 @@ export default {
     },
     unlockConfirm: {
       title: "Confirmer le déverrouillage",
-      ok: "DÉVERROUILLER"
+      ok: "Desbloquear"
     },
     unlockMasterNode: {
       title: "Déverrouiller le nœud de master",
       confirmTitle: "Confirmer le déverrouillage",
       message: "Voulez-vous déverrouiller le nœud de master ?",
-      ok: "DÉVERROUILLER"
+      ok: "Desbloquear"
     },
     unlockMasterNodeWarning: {
-      title: "Unlock master node warning",
+      title: "Avertissement de déverrouillage du nœud maître",
       message:
-        "Unlocking a partial stake in a node will also unstake for any other participants, if staking in a shared node its best to let the operator and other participants know you are unstaking.",
-      ok: "CONTINUE"
+        "Débloquer une participation partielle dans un nœud entraînera également le déblocage pour tous les autres participants. Si vous participez à un nœud partagé, il est préférable d'informer l'opérateur et les autres participants de votre intention de débloquer votre participation.",
+      ok: "Continuer"
     }
   },
   fieldLabels: {
@@ -726,7 +725,7 @@ export default {
       walletCreated: "Portefeuille créé",
       walletImported: "Portefeuille importé",
       importFromFile: "Importer un portefeuille à partir d'un fichier",
-      useExistingWallet: "Use Existing Wallet",
+      useExistingWallet: "Utiliser un portefeuille existant",
       importFromLegacyGUI:
         "Importer un portefeuille à partir d'un héritage GUI",
       importFromOldGUI: "Importer un portefeuille à partir d'un ancien GUI",

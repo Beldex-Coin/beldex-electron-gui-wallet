@@ -760,7 +760,7 @@ export default {
       and: "and",
       privacyPolicy: "Privacy Policy",
       checkout: "Checkout",
-      blockchain: "blockchain",
+      blockchain: "Blockchain",
       exchangefee: "Exchange fee",
       exchangeFeeIncluded:
         " The exchange fee is already included in the displayed amount you’ll get",

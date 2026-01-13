@@ -1,6 +1,5 @@
 export default {
   buttons: {
-    // All button text is uppercased in the gui
     advanced: "Avançado",
     addAddressBook: "Adicionar ao catálogo de endereços",
     addWallet: "Adicionar Carteira",
@@ -66,8 +65,8 @@ export default {
     // Generic buttons
     buttons: {
       ok: "OK",
-      cancel: "CANCELAR",
-      open: "ABRIR"
+      cancel: "Cancelar",
+      open: "Abrir"
     },
 
     // Dialogs
@@ -84,7 +83,6 @@ export default {
         "Existe um id de pagamento associado a este endereço.\nTenha a certeza de copiar este id de pagamanto separadamente."
     },
     copyPrivateKeys: {
-      // Copy {seedWords/viewKey/spendKey}
       title: "Copiar {type}",
       message:
         "Tenha cuidado a quem envia as suas chaves privadas, pois elas controlam os seus fundos.",
@@ -108,12 +106,12 @@ export default {
     deleteWallet: {
       title: "Apagar carteira",
       message: "Tem certeza de que deseja excluir a carteira atual?",
-      ok: "APAGAR"
+      ok: "Excluir"
     },
     exit: {
       title: "Sair",
       message: "Tem certeza de que deseja sair da carteira?",
-      ok: "SAIR"
+      ok: "Sair da carteira"
     },
     keyImages: {
       title: "{type} imagens chave",
@@ -148,13 +146,13 @@ export default {
     registerMasterNode: {
       title: "Registar um nódulo de serviço",
       message: "Pretende registar um nódulo de serviço?",
-      ok: "REGISTAR"
+      ok: "Cadastre-se"
     },
     rescan: {
       title: "Reexaminar carteira",
       message:
         "Aviso: Algumas informações acerca de transações passadas serão perdidas,\ntal como o endereço dos recipientes que serão perdidos.",
-      ok: "REEXAMINAR"
+      ok: "Digitalizar novamente"
     },
     restart: {
       title: "Reiniciar",
@@ -164,7 +162,7 @@ export default {
     showPrivateKeys: {
       title: "Mostrar chaves privadas",
       message: "Deseja ver as suas chaves privadas?",
-      ok: "MOSTRAR"
+      ok: "Mostrar"
     },
     stake: {
       title: "Participação num nódulo de serviço",
@@ -174,13 +172,13 @@ export default {
     sweepAll: {
       title: "Varrer Tudo",
       message: "Quer realmente varrer tudo?",
-      ok: "VARRER TUDO"
+      ok: "Varrer tudo"
     },
     sweepAllWarning: {
-      title: "Sweep all warning",
+      title: "Varrer todos os avisos",
       message:
-        "You are about to combine all of your unspent funds by sending a transaction to yourself, your wallet may show a balance of 0 temporarily, after 10 blocks your funds will unlock and you may stake normally.",
-      ok: "CONTINUE"
+        "Você está prestes a consolidar todos os seus fundos não gastos enviando uma transação para si mesmo. Sua carteira pode mostrar um saldo de 0 temporariamente. Após 10 blocos, seus fundos serão desbloqueados e você poderá fazer staking normalmente.",
+      ok: "Continuar"
     },
     switchWallet: {
       title: "Mudar de carteira",
@@ -192,12 +190,12 @@ export default {
     },
     transactionDetails: {
       title: "Detalhes das transações",
-      ok: "FECHAR"
+      ok: "Fechar"
     },
     transfer: {
       title: "Transferir",
       message: "Deseja enviar a transação?",
-      ok: "ENVIAR"
+      ok: "Enviar"
     },
     confirmTransaction: {
       title: "Confirmar envio",
@@ -215,10 +213,10 @@ export default {
       ok: "DESBLOQUEAR"
     },
     unlockMasterNodeWarning: {
-      title: "Unlock master node warning",
+      title: "Aviso de desbloqueio do nó mestre",
       message:
-        "Unlocking a partial stake in a node will also unstake for any other participants, if staking in a shared node its best to let the operator and other participants know you are unstaking.",
-      ok: "CONTINUE"
+        "Desbloquear uma participação parcial em um nó também removerá a participação de todos os outros participantes. Se estiver participando de um nó compartilhado, é melhor informar o operador e os outros participantes que você está removendo a participação.",
+      ok: "Continuar"
     }
   },
   fieldLabels: {
@@ -278,8 +276,6 @@ export default {
     walletName: "NOME DA CARTEIRA",
     walletRPCPort: "PORTA RPC DA CARTEIRA",
     walletStoragePath: "DIRECTORIA DE SALVAMENTO DA CARTEIRA",
-
-    // These are specific labels which do not get uppercased
     confirmNewPassword: "Confirmar Nova Palavra-Passe",
     newPassword: "Nova Palavra-Passe",
     oldPassword: "Antiga Palavra-Passe",
@@ -288,9 +284,6 @@ export default {
     transactionNotes: "Notas de Transações",
     chooseNetwork: "Seleccione uma Rede",
     network: "Rede",
-
-    // new design revamp
-
     OwnerWalletaddress: "Endereço da carteira do proprietário",
     backupOwnerWalletAddress: "Endereço da carteira do proprietário de backup",
     updateOwner: "Atualizar proprietário",
@@ -450,12 +443,13 @@ export default {
     addNotesOptional: "Adicionar notas (opcional)",
     addressBookName: "Nome que pertence a este endereço",
     addressOfSigner: "Endereço público da carteira do signatário",
-    beldexAddress: "Enter Address or BNS Name",
-    bnsName: "The name to purchase via Beldex Name Service",
-    bnsOwner: "The wallet address of the owner",
-    bnsBackupOwner: "The wallet address of the backup owner",
-    bnsDecryptName: "A BNS name that belongs to you",
-    belnetFullAddress: "Full belnet address to map BNS name to (without .bdx)",
+    beldexAddress: "Insira o endereço ou o nome BNS",
+    bnsName: "O nome a ser adquirido através do serviço de nomes Beldex",
+    bnsOwner: "O endereço da carteira do proprietário",
+    bnsBackupOwner: "O endereço da carteira do proprietário do backup",
+    bnsDecryptName: "Um nome BNS que lhe pertence",
+    belnetFullAddress:
+      "Endereço belnet completo para mapear o nome BNS (sem .bdx)",
     enterAddress: "Insira o endereço",
     enterName: "Insira o nome",
     enteroldPassword: "Digite a senha antiga",
@@ -507,12 +501,12 @@ export default {
       "Não é possível fazer login com uma carteira somente para visualização.",
     checkTransaction: {
       description:
-        "Verify that funds were paid to an address by supplying the transaction ID, the recipient address, the message used for signing and the signature.\nFor a 'Spend Proof' you dont need to provide the recipient address.",
+        "Verifique se os fundos foram pagos para um endereço fornecendo o ID da transação, o endereço do destinatário, a mensagem usada para assinatura e a assinatura. Para um comprovante de pagamento, não é necessário fornecer o endereço do destinatário.",
       infoTitles: {
-        confirmations: "Confirmations",
-        inPool: "In pool",
-        validTransaction: "Valid transaction",
-        received: "Received amount"
+        confirmations: "Confirmações",
+        inPool: "Na piscina",
+        validTransaction: "Transação válida",
+        received: "Valor recebido"
       },
       validTransaction: {
         no: "NÃO",
@@ -584,7 +578,7 @@ export default {
       flash: "clarão"
     },
     proveTransactionDescription:
-      "Generate a proof of your incoming/outgoing payment by supplying the transaction ID, the recipient address and an optional message.\nFor the case of outgoing payments, you can get a 'Spend Proof' that proves the authorship of a transaction. In this case, you don't need to specify the recipient address.",
+      "Gere um comprovante de pagamento recebido/efetuado fornecendo o ID da transação, o endereço do destinatário e uma mensagem opcional. No caso de pagamentos efetuados, você pode obter um 'Comprovante de Gasto' que comprova a autoria da transação. Nesse caso, não é necessário especificar o endereço do destinatário.",
     readingWalletList: "Lendo lista da carteira",
     recentIncomingTransactionsToAddress: "Transações de entrada neste endereço",
     recentTransactionsWithAddress: "Transações recentes neste endereço",
@@ -713,7 +707,7 @@ export default {
       walletCreated: "Carteira criada",
       walletImported: "Carteira importada",
       importFromFile: "Importar carteira a partir de ficheiro",
-      useExistingWallet: "Use Existing Wallet",
+      useExistingWallet: "Usar carteira existente",
       importFromLegacyGUI:
         "Importar carteira a partir da antiga carteira GUI (legado)",
       importFromOldGUI: "Importar carteira a partir da antiga carteira GUI",
@@ -757,7 +751,7 @@ export default {
       and: "e",
       privacyPolicy: "política de Privacidade",
       checkout: "Confira",
-      blockchain: "blockchain",
+      blockchain: "Blockchain",
       exchangefee: "Taxa de câmbio",
       exchangeFeeIncluded:
         "A taxa de troca já está incluída no valor exibido que você receberá",

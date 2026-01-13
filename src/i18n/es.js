@@ -721,7 +721,7 @@ export default {
       walletCreated: "Monedero creado",
       walletImported: "Cartera importada",
       importFromFile: "Importar monedero de un archivo",
-      useExistingWallet: "Use Existing Wallet",
+      useExistingWallet: "Usar la billetera existente",
       importFromLegacyGUI: "Importar monedero de una interfaz gráfica heredada",
       importFromOldGUI: "Importar monedero de una interfaz gráfica antigua",
       restoreFromSeed: "Restaurar monedero mediante semilla",

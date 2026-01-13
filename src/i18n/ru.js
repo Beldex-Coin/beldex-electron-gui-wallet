@@ -29,15 +29,15 @@ export default {
     generate: "Создать",
     import: "ИМПОРТИРОВАТЬ",
     importWallet: "ИМПОРТИРОВАТЬ КОШЕЛЕК | ИМПОРТИРОВАТЬ КОШЕЛЬКИ",
-    bns: "BELDEX Name Service",
+    bns: "Служба имен BELDEX",
     next: "ДАЛЕЕ",
     min: "Мин.",
     max: "Макс",
     openWallet: "ОТКРЫТЬ КОШЕЛЕК",
-    purchase: "Purchase",
+    purchase: "Покупка",
     receive: "ПОЛУЧИТЬ",
     registerMasterNode: "ЗАРЕГИСТРИРОВАТЬ СЕРВИСНУЮ НОДУ",
-    renew: "Renew",
+    renew: "Продлить",
     rescan: "ПЕРЕСКАНИРОВАТЬ",
     restoreWallet: "ВОССТАНОВИТЬ КОШЕЛЕК",
     refresh: "Обновить",
@@ -51,12 +51,12 @@ export default {
     settings: "НАСТРОЙКИ",
     showQRCode: "ПОКАЗАТЬ QR КОД",
     showTxDetails: "Детали TXN",
-    sign: "Sign",
+    sign: "Знак",
     stake: "СТЕЙК",
     sweepAll: "разверткаВсе",
     unlock: "РАЗБЛОКИРОВАТЬ",
-    update: "Update",
-    verify: "Verify",
+    update: "Обновлять",
+    verify: "Проверять",
     viewOnExplorer: "ПОСМОТРЕТЬ В ЭКСПЛОРЕРЕ",
     add: "Добавлять",
     bnsUpdate: "Обновление БНС",
@@ -122,9 +122,9 @@ export default {
       import: "Импорт"
     },
     bnsUpdate: {
-      title: "Update BNS record",
-      message: "Do you want to update the BNS record?",
-      ok: "Update"
+      title: "Обновить запись BNS",
+      message: "Вы хотите обновить запись BNS?",
+      ok: "Обновлять"
     },
     noPassword: {
       title: "Пароль не задан",
@@ -136,14 +136,14 @@ export default {
       message: "Введите пароль кошелька"
     },
     purchase: {
-      title: "Purchase name",
-      message: "Do you want to purchase the name?",
-      ok: "Purchase"
+      title: "Название покупки",
+      message: "Вы хотите приобрести это имя?",
+      ok: "Покупка"
     },
     renew: {
-      title: "Renew name",
-      message: "Do you want to renew the name?",
-      ok: "Renew"
+      title: "Обновить имя",
+      message: "Вы хотите обновить название?",
+      ok: "Продлить"
     },
     registerMasterNode: {
       title: "Регистрация сервисной ноды",
@@ -200,9 +200,9 @@ export default {
       ok: "ОТПАРВИТЬ"
     },
     confirmTransaction: {
-      title: "Confirm Sending",
-      sendTo: "Send to",
-      priority: "Priority"
+      title: "Подтвердить отправку",
+      sendTo: "Отправить",
+      priority: "Приоритет"
     },
     unlockConfirm: {
       title: "Подтвердить разблокировку",
@@ -268,7 +268,7 @@ export default {
     seedLanguage: "ЯЗЫК SEED-ФРАЗЫ",
     masterNodeCommand: "КОМАНДА РЕГИСТРАЦИИ СЕРВИСНОЙ НОДЫ",
     masterNodeKey: "КЛЮЧ СЕРВИСНОЙ НОДЫ",
-    bchatId: "BCHAT ID",
+    bchatId: "БЧАТ-идентификатор",
     signature: "Подпись",
     totalBalance: "Итоговый баланс",
     transactionId: "ID транзакции",
@@ -278,8 +278,6 @@ export default {
     walletName: "ИМЯ КОШЕЛЬКА",
     walletRPCPort: "RPC ПОРТ КОШЕЛЬКА",
     walletStoragePath: "ПАПКА КОШЕЛЬКА",
-
-    // These are specific labels which do not get uppercased
     confirmNewPassword: "Подтвердите Новый Пароль",
     newPassword: "Новый Пароль",
     oldPassword: "Старый Пароль",
@@ -288,9 +286,6 @@ export default {
     transactionNotes: "Заметки Транзакции",
     chooseNetwork: "Выберите сеть",
     network: "Сеть",
-
-    // new design revamp
-
     OwnerWalletaddress: "Адрес кошелька владельца",
     backupOwnerWalletAddress: "Адрес кошелька владельца резервной копии",
     updateOwner: "Обновить владельца",
@@ -310,11 +305,11 @@ export default {
     changePassword: "Сменить Пароль",
     copyAddress: "Копировать адрес",
     copySeed: "Копировать семя",
-    copyBackupOwner: "Copy backup owner",
-    copyBelnetAddress: "Copy belnet address",
-    copyBelnetName: "Copy belnet name",
-    copyName: "Copy name",
-    copyOwner: "Copy owner",
+    copyBackupOwner: "Копировать владельца резервной копии",
+    copyBelnetAddress: "Скопировать адрес Belnet",
+    copyBelnetName: "Скопировать имя бельнет",
+    copyName: "Копировать имя",
+    copyOwner: "Копировать владельца",
     copyQR: "Копировать QR код",
     copySeedWords: "Копировать seed-фразу",
     copySpendKey: "Копировать Ключ Отправки",
@@ -338,36 +333,38 @@ export default {
     showQRCode: "Показать QR Код",
     switchWallet: "Переключить Кошелек",
     viewOnExplorer: "Посмотреть в обозревателе блокчейна",
-    favourite: "Favourite"
+    favourite: "Любимый"
   },
   notification: {
     positive: {
       addressCopied: "Адрес скопирован в буфере",
-      linkCopied: "Link copied to clipboard",
-      backupOwnerCopied: "Backup owner copied to clipboard",
+      linkCopied: "Ссылка скопирована в буфер обмена",
+      backupOwnerCopied: "Резервный владелец скопирован в буфер обмена",
       bannedPeer: "{host} забанен до {time}",
       copied: "{item} скопирован в буфер",
-      decryptedBNSRecord: "Successfully decrypted BNS Record for {name}",
+      decryptedBNSRecord:
+        "Registro BNS descriptografado com sucesso para {name}",
       itemSaved: "{item} сохранен в {filename}",
       keyImages: {
         exported: "Ключевые образы экспортированы в {filename}",
         imported: "Ключевые образы импортированы"
       },
-      bnsRecordUpdated: "BNS Record was successfully updated",
-      belnetAddressCopied: "Full belnet address copied",
-      belnetNameCopied: "Belnet name copied",
+      bnsRecordUpdated: "Запись BNS успешно обновлена",
+      belnetAddressCopied: "Полный адрес Belnet скопирован",
+      belnetNameCopied: "Название Белнет скопировано",
       passwordUpdated: "Пароль обновлен",
-      namePurchased: "Name successfully purchased",
-      nameRenewed: "Name successfully renewed",
-      nameCopied: "Name copied to clipboard",
-      ownerCopied: "Owner copied to clipboard",
+      namePurchased: "Имя успешно куплено",
+      nameRenewed: "Имя успешно продлено",
+      nameCopied: "Имя скопировано в буфер обмена",
+      ownerCopied: "Владелец скопировал текст в буфер обмена",
       qrCopied: "QR код скопирован в буфер",
       registerMasterNodeSuccess: "Сервисная нода успешно зарегистрирована",
       sendSuccess: "Транзакция успешно отправлена",
-      masterNodeInfoFilled: "Master node key and min amount filled",
-      bchatIdCopied: "Bchat ID copied to clipboard",
-      signatureCopied: "Signature copied to clipboard",
-      signatureVerified: "Signature verified",
+      masterNodeInfoFilled:
+        "Ключ главного узла и минимальное количество заполнены",
+      bchatIdCopied: "Идентификатор Bchat скопирован в буфер обмена",
+      signatureCopied: "Подпись скопирована в буфер обмена",
+      signatureVerified: "Подпись проверена",
       stakeSuccess: "Стейк успешно начат",
       transactionNotesSaved: "Заметка о транзакции сохранена"
     },
@@ -384,7 +381,7 @@ export default {
       enterTransactionId: "Введите идентификатор транзакции",
       enterTransactionProof: "Enter transaction proof",
       enterWalletName: "Введите имя кошелька",
-      enterName: "Enter a name",
+      enterName: "Введите имя",
       errorSavingItem: "Ошибка сохранения {item}",
       failedMasterNodeUnlock: "Не удалось разблокировать сервисную ноду",
       failedToSetLanguage: "Не удалось переключить язык: {lang}",
@@ -394,13 +391,14 @@ export default {
       internalError: "Внутренняя ошибка",
       invalidAddress: "Адрес не верен",
       invalidAmount: "Сумма не верна",
-      invalidBackupOwner: "Backup owner address not valid",
-      invalidNameLength: "Invalid name length",
-      invalidNameFormat: "Name may only contain alphanumerics and hyphens",
+      invalidBackupOwner: "Адрес резервного владельца недействителен",
+      invalidNameLength: "Неверная длина имени",
+      invalidNameFormat:
+        "Имя может содержать только буквенно-цифровые символы и дефисы",
       invalidNameHypenNotAllowed:
-        "Name may only begin or end with alphanumerics or an underscore",
+        "Имя может начинаться или заканчиваться только буквенно-цифровыми символами или символом подчеркивания",
       invalidOldPassword: "Старый пароль не верен",
-      invalidOwner: "Owner address not valid",
+      invalidOwner: "Адрес владельца недействителен",
       invalidPassword: "Неверный пароль",
       invalidPaymentId: "Payment id не верен",
       invalidPrivateViewKey: "Неверный приватный ключ просмотра",
@@ -411,8 +409,8 @@ export default {
       invalidMasterNodeCommand:
         "Пожалуйста введите команду регистрации сервисной ноды",
       invalidMasterNodeKey: "Ключ сервисной ноды указан неверно",
-      invalidBchatId: "Bchat ID not valid",
-      invalidSignature: "Invalid signature",
+      invalidBchatId: "Идентификатор Bchat недействителен",
+      invalidSignature: "Неверная подпись",
       invalidWalletPath: "Неверный путь к кошельку",
       keyImages: {
         exporting: "Ошибка экспорта ключевых образов",
@@ -469,7 +467,7 @@ export default {
       "Необязательное сообщение, против которого подписывается подпись",
     recipientWalletAddress: "Адрес кошелька получателя",
     selectAFile: "Пожалуйста, выберите файл",
-    bchatId: "The Bchat ID to link to Beldex Name Service",
+    bchatId: "Идентификатор Bchat для привязки к службе имен Beldex",
     signature: "Подпись для проверки",
     unsignedData:
       "Данные, как они должны выглядеть до того, как они были подписаны",
@@ -502,8 +500,9 @@ export default {
       bannedUntil: "Забанено до {time}"
     },
     blockHeight: "Высота блока",
-    height: "Height",
-    cannotSign: "You cannot sign with a view only wallet.",
+    height: "Высота",
+    cannotSign:
+      "Подписать документ с помощью кошелька, предназначенного только для просмотра, невозможно.",
     checkTransaction: {
       description:
         "Убедитесь, что средства были переведены на указанный адрес, предоставив идентификатор транзакции, адрес получателя, сообщение, использованное для подписи, и подпись.\nДля подтверждения расходования средств адрес получателя указывать не нужно.",
@@ -521,7 +520,7 @@ export default {
     closing: "Закрытие",
     connectingToBackend: "Подключение...",
     contribution: "Вклад",
-    contributor: "Contributor",
+    contributor: "Автор",
     daemon: {
       local: {
         title: "Только Локальная Нода",
@@ -563,10 +562,10 @@ export default {
     loadingSettings: "Загрузка настроек",
     oxenBalance: "Баланс",
     belnetNameDescription:
-      "Purchase or update a name on Belnet. If you purchase a name it may take a minute or two for it to show up in the list. To learn more about belnet visit: ",
+      "Приобретите или обновите имя на Belnet. После покупки имени может потребоваться минута-две, чтобы оно появилось в списке. Для получения дополнительной информации о Belnet посетите: ",
     oxenUnlockedBalance: "Разблокированый баланс",
     oxenUnlockedShort: "Разблокировано",
-    me: "Me",
+    me: "Мне",
     noTransactionsFound: "Транзакции не найдены",
     notes: "Заметки",
     numberOfUnspentOutputs: "Количество непотраченных выходов",
@@ -593,7 +592,7 @@ export default {
       "Пожалуйста, скопируйте фразу и храните ее в безопасном месте!",
     saveToAddressBook: "Сохранить в адресной книге",
     seedWords: "Seed-фраза",
-    walletCreated: "Wallet Created",
+    walletCreated: "Кошелек создан",
     selectLanguage: "Выберите язык",
     masterNodeContributionDescription:
       "Стейкинг способствует безопасности сети Beldex. За ваш вклад вы получаете BDX. После размещения стейкинга вам придется подождать 15 или 30 дней, пока ваши BDX будут разблокированы, в зависимости от того, был ли стейкинг разблокирован участником сети или узел был дерегистрирован. Для получения дополнительной информации о стейкинге, пожалуйста, ознакомьтесь с документацией",
@@ -605,28 +604,28 @@ export default {
     noMasterNodesCurrentlyAvailable:
       "В настоящее время нет доступных для добавления главных узлов.",
     masterNodeDetails: {
-      contributors: "Contributors",
-      lastRewardBlockHeight: "Last reward block height",
-      lastUptimeProof: "Last uptime proof",
-      maxContribution: "Max contribution",
-      minContribution: "Min contribution",
-      operatorFee: "Operator Fee",
-      registrationHeight: "Registration height",
-      unlockHeight: "Unlock height",
-      reserved: "Reserved",
-      masterNodeKey: "Master Node Key",
-      snKey: "MN Key",
-      stakingRequirement: "Staking requirement",
-      totalContributed: "Total contributed"
+      contributors: "Авторы",
+      lastRewardBlockHeight: "Высота блока последней награды",
+      lastUptimeProof: "Последнее подтверждение работоспособности",
+      maxContribution: "Максимальный вклад",
+      minContribution: "Минимальный вклад",
+      operatorFee: "Комиссия оператора",
+      registrationHeight: "Высота регистрации",
+      unlockHeight: "Высота разблокировки",
+      reserved: "Сдержанный",
+      masterNodeKey: "Ключ главного узла",
+      snKey: "Миннесота Ключ",
+      stakingRequirement: "Требование к стейкингу",
+      totalContributed: "Всего внесено"
     },
     signAndVerifyDescription:
-      "Sign data with your primary address's private key or verify a signature against a public address.",
+      "Подписывайте данные закрытым ключом вашего основного адреса или проверяйте подпись по общедоступному адресу.",
     spendKey: "Ключ Отправки",
     startingDaemon: "Запуск демона",
     startingWallet: "Запуск кошелька",
     switchToDateSelect: "Переключиться на выбор даты",
     switchToHeightSelect: "Переключиться на выбор высоты блока",
-    syncingDaemon: "Syncing Daemon",
+    syncingDaemon: "Демон синхронизации",
     transactionID: "ID транзакции",
     transactionConfirmed: "подтверждено",
     transactions: {
@@ -638,7 +637,7 @@ export default {
       sent: "Отправлено",
       sentTo: "Транзакция отправлена: {type}",
       timestamp: "Отметка времени",
-      date: "Date",
+      date: "Дата",
       types: {
         all: "Все",
         incoming: "Получать",
@@ -654,14 +653,14 @@ export default {
         failed: "Не удавшиеся"
       }
     },
-    unlockingAtHeight: "Unlocking at height {number}",
+    unlockingAtHeight: "Разблокировка на высоте {number}",
     unspentOutputs: "Непотраченные выходы",
     userNotUsedAddress: "Вы не использовали этот адрес",
     userUsedAddress: "Вы использовали этот адрес",
     viewKey: "Ключ Просмотра",
     viewOnlyMode:
       "Режим просмотра. Пожалуйста загрузите полный кошелек, чтобы отправлять монеты.",
-    website: "website"
+    website: "Веб-сайт"
   },
   titles: {
     addressBook: "Адресная книга",
@@ -677,11 +676,11 @@ export default {
     availableForContribution: "Главные узлы доступны для внесения вклада",
     changePassword: "Сменить пароль",
     configure: "Параметры конфигурации",
-    currentlyStakedNodes: "Currently staked nodes",
-    bnsRecordDetails: "BNS record details",
-    bnsBchatRecords: "Bchat records",
-    bnsBelnetRecords: "Belnet records",
-    importFromFile: "Import from File",
+    currentlyStakedNodes: "Текущие застейканные узлы",
+    bnsRecordDetails: "Детали записи BNS",
+    bnsBchatRecords: "Бчат записи",
+    bnsBelnetRecords: "Рекорды Белнета",
+    importFromFile: "Импорт из файла",
     privateKeys: "Приватные ключи",
     rescanWallet: "Пересканировать кошелек",
     restoreFromSeed: "Восстановить из семян",
@@ -695,7 +694,7 @@ export default {
       staking: "СТЕЙК",
       myStakes: "Мои ставки"
     },
-    masterNodeDetails: "Masternode Details",
+    masterNodeDetails: "Подробная информация о мастерноде",
     settings: {
       title: "Настройки",
       tabs: {
@@ -714,7 +713,7 @@ export default {
       walletCreated: "Кошелек создан",
       walletImported: "Кошелек импортирован",
       importFromFile: "Импортировать кошелек из файла",
-      useExistingWallet: "Use Existing Wallet",
+      useExistingWallet: "Использовать существующий кошелек",
       importFromLegacyGUI: "Импортировать кошелек из предыдущего GUI",
       importFromOldGUI: "Импортировать кошелек из старого  GUI",
       restoreFromSeed: "Восстановить кошелек из seed-фразы",
