@@ -26,8 +26,8 @@
     </template>
     <template v-else>
       <div>
-        <div v-if="!contact" style="padding: 0px 2px 10px; height: 65vh;">
-          <div style="height: 85%;overflow: auto;">
+        <div v-if="!contact" style="padding: 0px 2px 10px;">
+          <div class="inner-box">
             <div class="row gutter-md q-mt-lg">
               <!-- Amount -->
               <div class="col-8 amount">
@@ -578,7 +578,11 @@ export default {
     height: 31px;
   }
 }
-
+.inner-box {
+  height: calc(100vh - 420px);
+  overflow: auto;
+  padding-right: 5px;
+}
 .amount {
   padding-right: 10px;
   .bg-primary {
