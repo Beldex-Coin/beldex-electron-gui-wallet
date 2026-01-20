@@ -9,7 +9,7 @@ export default {
     cancel: "CANCELAR",
     change: "MUDAR",
     check: "Verificar",
-    clear: "clear",
+    clear: "Claro",
     clearAll: "Limpar tudo",
     close: "FECHAR",
     contacts: "CONTACTOS",
@@ -458,9 +458,10 @@ export default {
     filterTx: "Digite um ID, nome, endereço ou valor",
     hexCharacters: "{count} caracteres hexadecimais",
     mnemonicSeed: "25 (or 24) palavras semente mnemónicas",
-    pasteTransactionId: "Paste transaction ID",
+    pasteTransactionId: "Colar o ID da transação",
     pasteTransactionProof: "Colar prova de transação",
-    dataToSign: "Data you want to sign with your primary address's private key",
+    dataToSign:
+      "Dados que pretende assinar com a chave privada do seu endereço principal",
     proveOptionalMessage:
       "Mensagem opcional contra a qual a assinatura é assinada",
     recipientWalletAddress: "Endereço da carteira do destinatário",

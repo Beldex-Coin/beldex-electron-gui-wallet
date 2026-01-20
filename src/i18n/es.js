@@ -188,7 +188,7 @@ export default {
       title: "Cambiar de monedero",
       closeMessage: "¿Confirma que desea cerrar el monedero actual?",
       restartWalletMessage:
-        "Are you sure you want to close and Restart the wallet?",
+        "¿Estás seguro de que quieres cerrar y reiniciar la billetera?",
       restartMessage:
         "El monedero se está sincronizando. \nSi desea cambiar de monedero, tendrá que reiniciar la aplicación. \nEl progreso de la sincronización no se guardará y será necesario volver a examinar la cadena de bloques."
     },
@@ -480,7 +480,7 @@ export default {
     selectAFile: "Seleccione un archivo por favor",
     transactionNotes: "Notas adicionales para agregar a la transacción",
     bchatId: "El ID de Bchat para vincular al servicio de nombres de Beldex",
-    signature: "Signature to verify",
+    signature: "Firma para verificar",
     unsignedData: "Los datos como deberían verse antes de ser firmados",
 
     walletName: "Nombre para identificar su monedero",

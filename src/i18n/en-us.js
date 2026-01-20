@@ -278,7 +278,7 @@ export default {
     walletFile: "Wallet File",
     walletLogLevel: "Wallet Log Level",
     walletName: "Wallet Name",
-    walletRPCPort: "wallet RPC Port",
+    walletRPCPort: "Wallet RPC Port",
     walletStoragePath: "Wallet Storage Path",
 
     // These are specific labels which do not get uppercased

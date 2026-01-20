@@ -11,7 +11,7 @@ export default {
     cancel: "ANNULER",
     change: "CHANGER",
     check: "Vérifier",
-    clear: "clear",
+    clear: "Claire",
     clearAll: "Tout effacer",
     close: "FERMER",
     contacts: "Contacts",
@@ -483,6 +483,8 @@ export default {
     bchatId: "L'identifiant Bchat à lier au service de noms Beldex",
     signature: "Signature à vérifier",
     transactionNotes: "Notes additionnelles attachées à la transaction",
+    unsignedData:
+      "Les données telles qu'elles devraient apparaître avant leur signature",
     walletName: "Un nom pour votre portefeuille",
     walletPassword: "Un mot de passe optionnel pour votre portefeuille",
     enterEthAddress: "Saisissez votre adresse ETH",
