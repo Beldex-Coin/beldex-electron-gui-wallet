@@ -482,7 +482,6 @@ export default {
     bchatId: "El ID de Bchat para vincular al servicio de nombres de Beldex",
     signature: "Firma para verificar",
     unsignedData: "Los datos como deberían verse antes de ser firmados",
-
     walletName: "Nombre para identificar su monedero",
     walletPassword: "Contraseña opcional para proteger su monedero",
     reEnterWalletPassword: "Escriba la contraseña otra vez",

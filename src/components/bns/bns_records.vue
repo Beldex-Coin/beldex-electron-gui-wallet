@@ -73,8 +73,7 @@
         />
       </svg>
       <div class="hintmsg">
-        Here you can find all the BNS Names owned by this wallet. Decrypting a
-        record you own will return the name and value of that BNS record
+        {{ $t("strings.bnsDescription") }}
       </div>
     </div>
 

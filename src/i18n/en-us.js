@@ -563,7 +563,7 @@ export default {
     bnsPurchaseDescription:
       "Purchase or update an BNS record. If you purchase a name, it may take a minute or two for it to show up in the list.",
     bnsDescription:
-      "Here you can find all the BNS names owned by this wallet. Decrypting a record you own will return the name and value of that BNS record.",
+      "Here you can find all the BNS names owned by this wallet. Decrypting a record you own will return the name and value of that BNS record",
     loadingSettings: "Loading settings",
     oxenBalance: "Balance",
     belnetNameDescription:
