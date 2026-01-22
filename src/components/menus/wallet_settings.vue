@@ -87,9 +87,9 @@
           <template v-if="secret.mnemonic">
             <h6 class="q-mb-xs ft-semibold q-pl-md">
               {{ $t("strings.seedWords") }} -
-              <span class="rSeed_hint"
-                >Please Copy and save these in a secure location!</span
-              >
+              <span class="rSeed_hint">{{
+                $t("strings.saveSeedWarning")
+              }}</span>
             </h6>
             <div class="row seed_box q-pa-md">
               <div class="col ft-medium">{{ secret.mnemonic }}</div>
