@@ -261,7 +261,7 @@ export default {
     notes: "Notes",
     addressBookNotes: "Address Book Notes",
     optional: "optional",
-    owner: "Владелец",
+    owner: "Owner",
     password: "Password (optional)",
     paymentId: "PAYMENT ID",
     priority: "Priority",
@@ -599,7 +599,7 @@ export default {
     walletCreated: "Wallet Created",
     selectLanguage: "Select a language",
     masterNodeContributionDescription:
-      "Стейкинг способствует безопасности сети Beldex. За ваш вклад вы получаете BDX. После размещения стейкинга вам придется подождать 15 или 30 дней, пока ваши BDX будут разблокированы, в зависимости от того, был ли стейкинг разблокирован участником сети или узел был дерегистрирован. Для получения дополнительной информации о стейкинге, пожалуйста, ознакомьтесь с документацией",
+      "Staking contributes to the safety of the Beldex network. For your contribution, you earn BDX. Once staked, you will have to wait either 15 or 30 days to have your BDX unlocked, depending on if a stake was unlocked by a contributor or the node was deregistered. To learn more about staking, please visit the documentation on the",
     masterNodeRegistrationDescription:
       'Enter the {registerCommand} command produced by the daemon that is registering to become a Master Node using the "{prepareCommand}" command',
     masterNodeStartStakingDescription: "To start Staing, Please visit",
