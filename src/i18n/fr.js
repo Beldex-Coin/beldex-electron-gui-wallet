@@ -25,6 +25,7 @@ export default {
     delete: "SUPPRIMER",
     edit: "MODIFIER",
     editNotes: "Modifier les notes",
+    enter: "Entrer",
     export: "EXPORTER",
     fromBlockheight: "De la hauteur du bloc",
     generate: "Générer",
@@ -92,6 +93,11 @@ export default {
       viewKey: "Clé d’affichage",
       spendKey: "Clé de dépenses"
     },
+    confirmPurchase: {
+      title: "Confirmer l'achat",
+      ok: "Confirmer"
+    },
+
     deleteAddress: {
       title: "Supprimer l'adresse",
       message: "Êtes-vous sûr de vouloir supprimer cette adresse ?"
@@ -206,9 +212,17 @@ export default {
       sendTo: "Envoyer à",
       priority: "Priorité"
     },
+    confirmUpdate: {
+      title: "Confirmer la mise à jour",
+      ok: "Mettre à jour"
+    },
+    confirmRenew: {
+      title: "Confirmer le renouvellement",
+      ok: "Renouveler"
+    },
     unlockConfirm: {
       title: "Confirmer le déverrouillage",
-      ok: "Desbloquear"
+      ok: "Déverrouiller"
     },
     unlockMasterNode: {
       title: "Déverrouiller le nœud de master",
@@ -237,6 +251,7 @@ export default {
     daemonP2pPort: "PORT P2P DU DÉMON",
     dataStoragePath: "CHEMIN DE STOCKAGE DE DONNÉES",
     decryptRecord: "Ajouter un enregistrement",
+    expirationHeight: "Hauteur d'expiration",
     data: "Donnés",
     filter: "Filtre",
     filterTransactionType: "FILTRER PAR TYPE DE TRANSACTION",
@@ -298,7 +313,10 @@ export default {
     backupOwnerWalletAddress:
       "Adresse du portefeuille du propriétaire de sauvegarde",
     updateOwner: "Mettre à jour le propriétaire",
-    updateValues: "Mettre à jour les valeurs"
+    updateValues: "Mettre à jour les valeurs",
+    updateHeight: "Hauteur de mise à jour",
+    walletAddress: "Adresse du portefeuille",
+    year: "Année"
   },
   footer: {
     ready: "PRÊT",
@@ -476,7 +494,8 @@ export default {
     pasteTransactionProof: "Coller la preuve de transaction",
     proveOptionalMessage:
       "Message facultatif contre lequel la signature est signée",
-    dataToSign: "Data you want to sign with your primary address's private key",
+    dataToSign:
+      "Données que vous souhaitez signer avec la clé privée de votre adresse principale",
     recipientWalletAddress: "Adresse du portefeuille du destinataire",
     reEnterWalletPassword: "Entrez à nouveau le mot de passe",
     selectAFile: "Veuillez sélectionner un fichier",
@@ -519,7 +538,7 @@ export default {
       "Vous ne pouvez pas vous connecter avec un portefeuille en lecture seule",
     checkTransaction: {
       description:
-        "Verify that funds were paid to an address by supplying the transaction ID, the recipient address, the message used for signing and the signature.\nFor a 'Spend Proof' you dont need to provide the recipient address.",
+        "Vérifiez que les fonds ont été versés à une adresse en fournissant l'identifiant de transaction, l'adresse du destinataire, le message utilisé pour la signature et la signature. Pour une « preuve de dépense », vous n'avez pas besoin de fournir l'adresse du destinataire.",
       infoTitles: {
         confirmations: "Confirmations",
         inPool: "In pool",
@@ -555,6 +574,10 @@ export default {
     destinationUnknown: "Destination inconnue",
     editAddressBookEntry: "Modifiez l'entrée du carnet d'adresses",
     expirationHeight: "Hauteur d'expiration",
+    encryptedBchatValue: "Valeur Bchat chiffrée",
+    encryptedBelnetValue: "Valeur Belnet chiffrée",
+    encryptedWalletValue: "Valeur portefeuille chiffrée",
+    encryptedEthAddrValue: "Adresse ETH chiffrée",
     bns: {
       bchatID: "Identifiant Bchat",
       belnetName1Year: "Belnet Nom 1 an",
@@ -574,6 +597,8 @@ export default {
       "Achetez ou mettez à jour une fiche BNS. Si vous achetez un nom, son affichage dans la liste peut prendre une ou deux minutes.",
     bnsDescription:
       "Vous trouverez ici tous les noms BNS détenus par ce portefeuille. Le déchiffrement d'un enregistrement vous appartenant vous renverra le nom et la valeur de cet enregistrement BNS.",
+    bnsUpdateDescription:
+      " Vous pouvez uniquement mettre à jour l'adresse du propriétaire ou les valeurs à la fois. Si vous voulez mettre à jour les deux, vous pouvez soit mettre à jour la valeur avant la propriété, soit après avoir transféré la propriété.",
     loadingSettings: "Chargement des réglages",
     oxenBalance: "Solde",
     belnetNameDescription:
@@ -636,6 +661,7 @@ export default {
     signAndVerifyDescription:
       "Signez des données avec la clé privée de votre adresse principale ou vérifiez une signature par rapport à une adresse publique",
     spendKey: "Clé dépensée",
+    spendKeyHint: `Si la clé de dépense n'est pas fournie, le portefeuille sera restauré en mode lecture seule.`,
     startingDaemon: "Démarrage du démon",
     startingWallet: "Démarrage du portefeuille",
     switchToDateSelect: "Basculer vers la sélection par date",
@@ -672,9 +698,11 @@ export default {
     unspentOutputs: "Sorties non dépensées",
     userNotUsedAddress: "Vous n'avez pas utilisé cette adresse",
     userUsedAddress: "Vous avez utilisé cette adresse",
+    version: "Version",
     viewKey: "Clé de visibilité",
     viewOnlyMode:
       "Mode d'affichage seulement. Veuillez charger le portefeuille complet pour envoyer des pièces.",
+    WalletAddress: "Adresse du portefeuille",
     website: "site web"
   },
   titles: {
@@ -699,6 +727,7 @@ export default {
     importFromFile: "Importer depuis un fichier",
     rescanWallet: "Analysez de nouveau le portefeuille",
     restoreFromSeed: "Restaurer à partir de la graine",
+    bnsServices: "Service BNS",
     bns: {
       purchase: "Acheter des BNS",
       myBns: "Mon BNS"

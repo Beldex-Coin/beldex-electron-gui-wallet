@@ -24,6 +24,7 @@ export default {
     delete: "Löschen",
     edit: "Bearbeiten",
     editNotes: "Notizen bearbeiten",
+    enter: "eingeben",
     export: "Export",
     fromBlockheight: "Von Blockhöhe",
     generate: "Generieren",
@@ -90,6 +91,10 @@ export default {
       seedWords: "Seed Wörter",
       viewKey: "Schlüssel anzeigen",
       spendKey: "Schlüssel ausgeben"
+    },
+    confirmPurchase: {
+      title: "Bestätigen Sie den Kauf",
+      ok: "Bestätigen"
     },
     deleteAddress: {
       title: "Adresse löschen",
@@ -206,6 +211,14 @@ export default {
       sendTo: "Senden an",
       priority: "Priorität"
     },
+    confirmUpdate: {
+      title: "Update bestätigen",
+      ok: "Aktualisieren"
+    },
+    confirmRenew: {
+      title: "Erneuerung bestätigen",
+      ok: "Erneuern"
+    },
     unlockConfirm: {
       title: "Unlock bestätigen",
       ok: "Entsperren"
@@ -238,6 +251,8 @@ export default {
     daemonP2pPort: "Daemon P2P-Port",
     dataStoragePath: "Datenspeicherpfad",
     decryptRecord: "Datensatz hinzufügen",
+    expirationHeight: "Ablaufhöhe",
+    encryptedBchatValue: "Verschlüsselter Bchat-Wert",
     data: "Daten",
     filter: "Filter",
     filterTransactionType: "FILTERN NACH TRANSAKTIONSTYP",
@@ -296,7 +311,10 @@ export default {
     OwnerWalletaddress: " Besitzer-Wallet-Adresse",
     backupOwnerWalletAddress: "Wallet-Adresse des Backup-Eigentümers",
     updateOwner: "Besitzer aktualisieren",
-    updateValues: "Werte aktualisieren"
+    updateValues: "Werte aktualisieren",
+    updateHeight: "Aktualisierungs-Höhe",
+    walletAddress: "Wallet-Adresse",
+    year: "Jahr"
   },
   footer: {
     ready: "Synchronisiert",
@@ -514,7 +532,7 @@ export default {
       "Mit einer Wallet, die nur zum Anzeigen verwendet wird, können Sie nicht signieren",
     checkTransaction: {
       description:
-        "Verify that funds were paid to an address by supplying the transaction ID, the recipient address, the message used for signing and the signature.\nFor a 'Spend Proof' you dont need to provide the recipient address.",
+        "Überprüfen Sie, ob die Gelder an eine Adresse gezahlt wurden, indem Sie die Transaktions-ID, die Empfängeradresse, die zum Signieren verwendete Nachricht und die Signatur angeben.\nFür einen ‚Ausgabennachweis‘ müssen Sie die Empfängeradresse nicht angeben.",
       infoTitles: {
         confirmations: "Confirmations",
         inPool: "In pool",
@@ -549,7 +567,11 @@ export default {
     },
     destinationUnknown: "Ziel unbekannt",
     editAddressBookEntry: "Adressbucheintrag bearbeiten",
-    expirationHeight: "Expiration height",
+    expirationHeight: "Ablaufhöhe",
+    encryptedBchatValue: "Verschlüsselter Bchat-Wert",
+    encryptedBelnetValue: "Verschlüsselter Belnet-Wert",
+    encryptedWalletValue: "Verschlüsselter Wallet-Wert",
+    encryptedEthAddrValue: "Verschlüsselte ETH-Adresse",
     bns: {
       bchatID: "Bchat-ID",
       belnetName1Year: "Belnet Name 1 Jahr",
@@ -568,6 +590,8 @@ export default {
       "Kaufen oder aktualisieren Sie einen BNS-Datensatz. Wenn Sie einen Namen kaufen, kann es ein bis zwei Minuten dauern, bis er in der Liste erscheint.",
     bnsDescription:
       "Hier finden Sie alle BNS-Namen, die dieser Wallet zugeordnet sind. Durch Entschlüsseln eines Ihrer Datensätze werden Name und Wert dieses BNS-Datensatzes angezeigt.",
+    bnsUpdateDescription:
+      " Sie können nur die Besitzeradresse oder die Werte gleichzeitig aktualisieren. Wenn Sie beides aktualisieren möchten, können Sie entweder den Wert vor der Besitzübertragung oder nach der Übertragung des Besitzes aktualisieren.",
     loadingSettings: "Einstellungen werden geladen",
     oxenBalance: "Guthaben",
     belnetNameDescription:
@@ -590,7 +614,7 @@ export default {
       flash: "blinken"
     },
     proveTransactionDescription:
-      "Generate a proof of your incoming/outgoing payment by supplying the transaction ID, the recipient address and an optional message.\nFor the case of outgoing payments, you can get a 'Spend Proof' that proves the authorship of a transaction. In this case, you don't need to specify the recipient address.",
+      "Generieren Sie einen Zahlungsnachweis für Ihre eingehenden/ausgehenden Zahlungen, indem Sie die Transaktions-ID, die Empfängeradresse und optional eine Nachricht angeben. Bei ausgehenden Zahlungen erhalten Sie einen „Ausgabennachweis“, der die Autorisierung der Transaktion belegt. In diesem Fall ist die Angabe der Empfängeradresse nicht erforderlich.",
     readingWalletList: "Lese Wallet Liste",
     recentIncomingTransactionsToAddress:
       "Kürzlich eingegangene Transaktionen zu dieser Adresse",
@@ -630,6 +654,8 @@ export default {
     signAndVerifyDescription:
       "Signieren Sie Daten mit dem privaten Schlüssel Ihrer primären Adresse oder überprüfen Sie eine Signatur anhand einer öffentlichen Adresse",
     spendKey: "Schlüssel ausgeben",
+    spendKeyHint:
+      "Wird der Ausgabenschlüssel nicht angegeben, wird die Wallet im Nur-Anzeige-Modus wiederhergestellt.",
     startingDaemon: "Daemon wird gestartet",
     startingWallet: "Wallet wird gestartet",
     switchToDateSelect: "Wechsel zur Selektion nach Datum",
@@ -666,9 +692,11 @@ export default {
     unspentOutputs: "Nicht verbrauchte Outputs",
     userNotUsedAddress: "Du hast diese Adresse nicht benutzt",
     userUsedAddress: "Du hast diese Adresse benutzt",
+    version: "Version",
     viewKey: "View Key",
     viewOnlyMode:
       "Nur Anzeige Modus. Bitte die volle Wallet laden um Coins zu senden",
+    WalletAddress: "Wallet-Adresse",
     website: "Webseite"
   },
   titles: {
@@ -693,6 +721,7 @@ export default {
     privateKeys: "Private Keys",
     rescanWallet: "Wallet erneut scannen",
     restoreFromSeed: "Aus Seed wiederherstellen",
+    bnsServices: "BNS-Dienst",
     bns: {
       purchase: "BNS kaufen",
       myBns: "Mein BNS"
@@ -762,7 +791,7 @@ export default {
       walletAddress: "Wallet-Adresse",
       myWalletRequire: "Mein Geldbeutel erfordert",
       agreeWith: "Ich bin einverstanden mit",
-      termOfUse: "Terms of Use",
+      termOfUse: "Nutzungsbedingungen",
       and: "Und",
       privacyPolicy: "Datenschutzrichtlinie",
       checkout: "Kasse",

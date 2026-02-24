@@ -23,6 +23,7 @@ export default {
     delete: "APAGAR",
     edit: "EDITAR",
     editNotes: "Editar notas",
+    enter: "Digitar",
     export: "EXPORTAR",
     fromBlockheight: "Da altura do bloco",
     generate: "Gerar",
@@ -89,6 +90,10 @@ export default {
       seedWords: "Palavras Semente",
       viewKey: "Chave de Visualização",
       spendKey: "Chave de Gasto"
+    },
+    confirmPurchase: {
+      title: "Confirmar compra",
+      ok: "Confirmar"
     },
     deleteAddress: {
       title: "Excluir endereço",
@@ -202,6 +207,14 @@ export default {
       sendTo: "Enviar para",
       priority: "Prioridade"
     },
+    confirmUpdate: {
+      title: "Confirmar atualização",
+      ok: "Atualizar"
+    },
+    confirmRenew: {
+      title: "Confirmar renovação",
+      ok: "Renovar"
+    },
     unlockConfirm: {
       title: "Confirmar desbloqueamento",
       ok: "DESBLOQUEAR"
@@ -232,6 +245,7 @@ export default {
     daemonP2pPort: "PORTA P2P DO SERVIÇO",
     dataStoragePath: "DIRECTÓRIO DE ARMAZENAMENTO DOS DADOS",
     decryptRecord: "Adicionar registro",
+    expirationHeight: "Altura de expiração",
     data: "Dados",
     filter: "Filtro",
     filterTransactionType: "FILTRAR POR TIPO DE TRANSAÇÃO",
@@ -287,7 +301,10 @@ export default {
     OwnerWalletaddress: "Endereço da carteira do proprietário",
     backupOwnerWalletAddress: "Endereço da carteira do proprietário de backup",
     updateOwner: "Atualizar proprietário",
-    updateValues: "Atualizar valores"
+    updateValues: "Atualizar valores",
+    updateHeight: "Atualizar altura",
+    walletAddress: "Endereço da carteira",
+    year: "Ano"
   },
   footer: {
     ready: "Pronto",
@@ -538,6 +555,10 @@ export default {
     destinationUnknown: "Destino Desconhecido",
     editAddressBookEntry: "Editar registo do livro de endereços",
     expirationHeight: "Altura de expiração",
+    encryptedBchatValue: "Valor do Bchat criptografado",
+    encryptedBelnetValue: "Encrypted Belnet Value",
+    encryptedWalletValue: "Encrypted Wallet Value",
+    encryptedEthAddrValue: "Encrypted ETH Address",
     bns: {
       bchatID: "ID do bate-papo",
       belnetName1Year: "Nome Belnet 1 ano",
@@ -557,6 +578,8 @@ export default {
       "Adquira ou atualize um registro do BNS. Se você adquirir um nome, pode levar um ou dois minutos para que ele apareça na lista.",
     bnsDescription:
       "Aqui você encontra todos os nomes BNS pertencentes a esta carteira. Ao descriptografar um registro de sua propriedade, você obterá o nome e o valor desse registro BNS.",
+    bnsUpdateDescription:
+      " Você só pode atualizar o endereço do proprietário ou os valores ao mesmo tempo. Se quiser atualizar ambos, você pode atualizar o valor antes da propriedade ou após transferir a propriedade.",
     loadingSettings: "Carregando configurações",
     oxenBalance: "Saldo",
     belnetNameDescription:
@@ -616,6 +639,8 @@ export default {
     signAndVerifyDescription:
       "Assine os dados com a chave privada do seu endereço principal ou verifique uma assinatura em relação a um endereço público",
     spendKey: "Chave de gasto",
+    spendKeyHint:
+      "Caso a chave de gasto não seja fornecida, a carteira será restaurada no modo somente leitura.",
     startingDaemon: "Começando serviço",
     startingWallet: "Começando carteira",
     switchToDateSelect: "Mudar para data de seleção",
@@ -652,9 +677,11 @@ export default {
     unspentOutputs: "Outputs não-gastos",
     userNotUsedAddress: "Não utilizou este endereço",
     userUsedAddress: "Já utilizou este endereço",
+    version: "Versão",
     viewKey: "Chave de visualização",
     viewOnlyMode:
       "Modo de visualização apenas. Por favor carregue a carteira completa para poder enviar moedas.",
+    WalletAddress: "Endereço da carteira",
     website: "site"
   },
   titles: {
@@ -680,6 +707,7 @@ export default {
     privateKeys: "Chaves privadas",
     rescanWallet: "Reexaminar carteira",
     restoreFromSeed: "Restaurar da semente",
+    bnsServices: "Serviço BNS",
     bns: {
       purchase: "Comprar BNS",
       myBns: "Meu BNS"

@@ -24,10 +24,11 @@
             <span>Beldex</span> Electron Wallet
           </h3>
           <div class="ft-medium wallet-txt">
-            Wallet Version : <span>{{ version }}</span>
+            Wallet {{ this.$t("strings.version") }} : <span>{{ version }}</span>
           </div>
           <div class="ft-medium wallet-txt">
-            Daemon Version : <span>{{ daemonVersion }}</span>
+            Daemon {{ this.$t("strings.version") }} :
+            <span>{{ daemonVersion }}</span>
           </div>
           <LanguageSelect class="q-mt-md" @select="onLanguageSelected" />
         </div>

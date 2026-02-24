@@ -759,7 +759,7 @@
 
       <div class="flex justify-center q-my-lg">
         <q-btn
-          label="Next"
+          :label="$t('buttons.next')"
           color="primary"
           :disable="!this.disableValidation()"
           @click="this.next"

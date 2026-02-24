@@ -25,6 +25,7 @@ export default {
     delete: "ELIMINAR",
     edit: "EDITAR",
     editNotes: "Editar notas",
+    enter: "ingresar",
     export: "EXPORTAR",
     fromBlockheight: "Desde altura de bloque",
     generate: "GENERAR",
@@ -92,6 +93,10 @@ export default {
       seedWords: "Palabras Semilla",
       viewKey: "Clave de Visualización",
       spendKey: "Clave de Gasto"
+    },
+    confirmPurchase: {
+      title: "Confirmar compra",
+      ok: "Confirmar"
     },
     deleteAddress: {
       title: "Eliminar dirección",
@@ -206,6 +211,14 @@ export default {
       sendTo: "Enviar a",
       priority: "Prioridad"
     },
+    confirmUpdate: {
+      title: "Confirmar actualización",
+      ok: "ACTUALIZAR"
+    },
+    confirmRenew: {
+      title: "Confirmar renovación",
+      ok: "RENVAR"
+    },
     unlockConfirm: {
       title: "Confirmar liberación",
       ok: "LIBERAR"
@@ -236,6 +249,7 @@ export default {
     daemonP2pPort: "PUERTO P2P SERVICIO",
     dataStoragePath: "RUTA DE ALMACENAMIENTO DE DATOS",
     decryptRecord: "Agregar registro",
+    expirationHeight: "Altura de expiración",
     data: "Datos",
 
     filter: "Filtro",
@@ -298,7 +312,10 @@ export default {
     backupOwnerWalletAddress:
       "Dirección de billetera del propietario de respaldo",
     updateOwner: "Actualizar propietario",
-    updateValues: "Actualizar valores"
+    updateValues: "Actualizar valores",
+    updateHeight: "Altura de actualización",
+    walletAddress: "Dirección de la billetera",
+    year: "Año"
   },
   footer: {
     ready: "LISTO",
@@ -472,7 +489,8 @@ export default {
     filterTx: "Introduzca un ID, nombre, dirección o cantidad",
     hexCharacters: "{count} caracteres hexadecimales",
     mnemonicSeed: "Semilla mnemónica de 25 (o 24) palabras",
-    dataToSign: "Data you want to sign with your primary address's private key",
+    dataToSign:
+      "Datos que desea firmar con la clave privada de su dirección principal",
     pasteTransactionId: "Pegar ID de la transacción",
     pasteTransactionProof: "Pegar prueba de la transacción",
     proveOptionalMessage: "Mensaje opcional contra el qué se firma la firma",
@@ -550,6 +568,10 @@ export default {
     destinationUnknown: "Destino Desconocido",
     editAddressBookEntry: "Modificar un registro de la libreta de direcciones",
     expirationHeight: "altura de espiración",
+    encryptedBchatValue: "Valor cifrado de Bchat",
+    encryptedBelnetValue: "Valor cifrado de Belnet",
+    encryptedWalletValue: "Valor cifrado de la billetera",
+    encryptedEthAddrValue: "Dirección ETH cifrada",
     bns: {
       bchatID: "ID de chat",
       belnetName1Year: "Nombre Belnet 1 año",
@@ -568,6 +590,8 @@ export default {
       "Compre o actualice un registro BNS. Si compra un nombre, puede tardar uno o dos minutos en aparecer en la lista",
     bnsDescription:
       "Aquí puedes encontrar todos los nombres BNS de esta billetera. Al descifrar un registro de tu propiedad, se recuperará el nombre y el valor de ese registro BNS.",
+    bnsUpdateDescription:
+      " Solo puedes actualizar la dirección del propietario o los valores al mismo tiempo. Si quieres actualizar ambos, puedes actualizar el valor antes de la propiedad o después de transferir la propiedad.",
     loadingSettings: "Cargando configuración",
     oxenBalance: "Saldo",
     belnetNameDescription:
@@ -627,6 +651,8 @@ export default {
     signAndVerifyDescription:
       "Firme datos con la clave privada de su dirección principal o verifique una firma con una dirección pública.",
     spendKey: "Clave de gasto",
+    spendKeyHint:
+      "Si no se proporciona la clave de gasto, la billetera se restaurará en modo de solo visualización.",
     startingDaemon: "Iniciando servicio",
     startingWallet: "Iniciando monedero",
     switchToDateSelect: "Cambiar a selección por fecha",
@@ -663,10 +689,12 @@ export default {
     unspentOutputs: "Salidas no gastadas",
     userNotUsedAddress: "No ha utilizado esta dirección",
     userUsedAddress: "Ha utilizado esta dirección",
+    version: "Versión",
     viewKey: "Clave de visualización",
     viewOnlyMode:
       "Este monedero solo permite visualizar operaciones. Por favor, abra uno completo para poder transferir fondos.",
     fromBlockHeight: "Desde la altura del bloque",
+    WalletAddress: "Dirección de la billetera",
     website: "sitio web"
   },
   titles: {
@@ -692,6 +720,7 @@ export default {
     privateKeys: "Claves privadas",
     rescanWallet: "Volver a examinar monedero",
     restoreFromSeed: "Restaurar desde semilla",
+    bnsServices: "servicio BNS",
     bns: {
       purchase: "Comprar BNS",
       myBns: "Mi BNS"

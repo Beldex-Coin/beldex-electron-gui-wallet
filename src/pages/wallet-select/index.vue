@@ -10,7 +10,7 @@
       :dark="theme == 'dark'"
     >
       <div v-if="backbtn" class="flex items-center back-btn-box">
-        <div class="flex items-center" style="width: 150px;">
+        <div class="flex items-center">
           <qbtn flat class="back-btn" @click="backbtn = false">
             <svg
               width="26"
@@ -285,7 +285,7 @@ export default {
             },
 
             ok: {
-              label: "Enter",
+              label: this.$t("buttons.enter"),
               color: "primary"
             },
             cancel: {

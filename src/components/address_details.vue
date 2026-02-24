@@ -144,7 +144,7 @@
                   <div class="col-sm-5">
                     <div class="ft-medium label">
                       <!-- <span>{{ $t("strings.numberOfUnspentOutputs") }}</span> -->
-                      <span>Unspent Outputs</span>
+                      <span>{{ $t("strings.unspentOutputs") }}</span>
                     </div>
                     <div class="value"><span>0</span></div>
                   </div>

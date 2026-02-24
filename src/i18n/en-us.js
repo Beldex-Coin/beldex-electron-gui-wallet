@@ -24,6 +24,7 @@ export default {
     delete: "Delete",
     edit: "Edit",
     editNotes: "Edit Notes",
+    enter: "Enter",
     export: "Export",
     fromBlockheight: "From Blockheight",
     generate: "Generate",
@@ -90,6 +91,10 @@ export default {
       seedWords: "Seed Words",
       viewKey: "View Key",
       spendKey: "Spend Key"
+    },
+    confirmPurchase: {
+      title: "Confirm Purchase",
+      ok: "Confirm"
     },
     deleteAddress: {
       title: "Delete Address",
@@ -208,6 +213,14 @@ export default {
       sendTo: "Send to",
       priority: "Priority"
     },
+    confirmUpdate: {
+      title: "Confirm Update",
+      ok: "Update"
+    },
+    confirmRenew: {
+      title: "Confirm Renew",
+      ok: "Renew"
+    },
     unlockConfirm: {
       title: "Confirm unlock",
       ok: "Unlock"
@@ -239,6 +252,7 @@ export default {
     data: "Data",
     dataStoragePath: "Data Storage Path",
     decryptRecord: "Add Record",
+    expirationHeight: "Expiration Height",
     filter: "Filter",
     filterTransactionType: "FILTER BY TRANSACTION TYPE",
     internalWalletPort: "Internal Wallet Port",
@@ -297,7 +311,10 @@ export default {
     OwnerWalletaddress: "Owner Wallet address",
     backupOwnerWalletAddress: "Backup Owner Wallet Address",
     updateOwner: "Update Owner",
-    updateValues: "Update Values"
+    updateValues: "Update Values",
+    updateHeight: "Update Height",
+    walletAddress: "Wallet address",
+    year: "Year"
   },
   footer: {
     ready: "Synchronized",
@@ -546,6 +563,10 @@ export default {
     destinationUnknown: "Destination Unknown",
     editAddressBookEntry: "Edit address book entry",
     expirationHeight: "Expiration height",
+    encryptedBchatValue: "Encrypted Bchat Value",
+    encryptedBelnetValue: "Encrypted Belnet Value",
+    encryptedWalletValue: "Encrypted Wallet Value",
+    encryptedEthAddrValue: "Encrypted ETH Address",
     bns: {
       bchatID: "Bchat ID",
       belnetName1Year: "Belnet Name 1 year",
@@ -564,6 +585,8 @@ export default {
       "Purchase or update an BNS record. If you purchase a name, it may take a minute or two for it to show up in the list.",
     bnsDescription:
       "Here you can find all the BNS names owned by this wallet. Decrypting a record you own will return the name and value of that BNS record",
+    bnsUpdateDescription:
+      " You can only update owner address or values at a time. If you want to update both, you can either update the value before ownership or after transferring ownership.",
     loadingSettings: "Loading settings",
     oxenBalance: "Balance",
     belnetNameDescription:
@@ -624,6 +647,8 @@ export default {
     signAndVerifyDescription:
       "Sign data with your primary address's private key or verify a signature against a public address.",
     spendKey: "Spend key",
+    spendKeyHint:
+      "If the spend key is not provided, the wallet will be restored in view-only mode.",
     startingDaemon: "Starting daemon",
     startingWallet: "Starting wallet",
     switchToDateSelect: "Switch to date select",
@@ -660,6 +685,7 @@ export default {
     unspentOutputs: "Unspent outputs",
     userNotUsedAddress: "You have not used this address",
     userUsedAddress: "You have used this address",
+    version: "Version",
     viewKey: "View Key",
     viewOnlyMode:
       "View only mode. Please load full wallet in order to send coins.",

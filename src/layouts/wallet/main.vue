@@ -348,7 +348,7 @@
                 />
               </svg>
 
-              <span>Version {{ version }}</span>
+              <span> {{ this.$t("strings.version") }} {{ version }}</span>
             </div>
           </article>
         </section>

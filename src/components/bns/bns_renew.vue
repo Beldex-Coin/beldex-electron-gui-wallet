@@ -67,18 +67,18 @@
       <q-card class="bnsConfirmmodal">
         <q-card-section>
           <div class="text-h6 text-center" style="font-weight: 600">
-            Confirm Renew
+            {{ $t("dialog.confirmRenew.title") }}
           </div>
         </q-card-section>
 
         <q-card-section class="q-pt-none ownerDetails q-mx-lg q-pa-md">
           <section>
             <div class="tablewrapper flex row">
-              <div class="label">Name</div>
+              <div class="label">{{ $t("fieldLabels.name") }}</div>
               <div class="content">{{ this.confirmModal.record.name }}.bdx</div>
             </div>
             <div class="tablewrapper flex row q-mt-md">
-              <div class="label">year</div>
+              <div class="label">{{ $t("fieldLabels.year") }}</div>
               <div class="address">
                 {{ renewYear }}
               </div>
@@ -87,7 +87,7 @@
               v-if="this.confirmModal.record.owner"
               class="tablewrapper flex row q-mt-md"
             >
-              <div class="label">Owner</div>
+              <div class="label">{{ $t("fieldLabels.owner") }}</div>
               <div class="address">
                 {{ this.confirmModal.record.owner }}
               </div>
@@ -102,7 +102,12 @@
             color="accent"
             :label="$t('buttons.cancel')"
           />
-          <q-btn v-close-popup color="primary" label="ok" @click="submit()" />
+          <q-btn
+            v-close-popup
+            color="primary"
+            :label="$t('dialog.confirmRenew.ok')"
+            @click="submit()"
+          />
         </div>
       </q-card>
     </q-dialog>

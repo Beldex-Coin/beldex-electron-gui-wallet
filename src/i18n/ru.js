@@ -24,6 +24,7 @@ export default {
     delete: "УДАЛИТЬ",
     edit: "Редактировать",
     editNotes: "Редактировать примечания",
+    enter: "Входить",
     export: "ЭКСПОРТИРОВАТЬ",
     fromBlockheight: "Из Блокхайта",
     generate: "Создать",
@@ -88,9 +89,13 @@ export default {
       title: "Скопировать: {type}",
       message:
         "Будьте внимательны, владелец приватных ключей может контролировать ваши средства.",
-      seedWords: "Seed-фраза",
+      seedWords: "Семя-фраза",
       viewKey: "Ключ Просмотра",
       spendKey: "Ключ Отправки"
+    },
+    confirmPurchase: {
+      title: "Подтвердить покупку",
+      ok: "Подтвердить"
     },
     deleteAddress: {
       title: "Удалить адрес",
@@ -204,6 +209,14 @@ export default {
       sendTo: "Отправить",
       priority: "Приоритет"
     },
+    confirmUpdate: {
+      title: "Подтвердить обновление",
+      ok: "ОБНОВИТЬ"
+    },
+    confirmRenew: {
+      title: "Подтвердить обновление",
+      ok: "ОБНОВИТЬ"
+    },
     unlockConfirm: {
       title: "Подтвердить разблокировку",
       ok: "РАЗБЛОКИРОВАТЬ"
@@ -234,6 +247,7 @@ export default {
     daemonP2pPort: "Демон P2P-порт",
     dataStoragePath: "Путь хранения данных",
     decryptRecord: "Добавить запись",
+    expirationHeight: " Высота истечения срока действия",
     data: "Данные",
     filter: "Фильтр",
     filterTransactionType: "ТИП ТРАНЗАКЦИИ",
@@ -289,7 +303,10 @@ export default {
     OwnerWalletaddress: "Адрес кошелька владельца",
     backupOwnerWalletAddress: "Адрес кошелька владельца резервной копии",
     updateOwner: "Обновить владельца",
-    updateValues: "Обновить значения"
+    updateValues: "Обновить значения",
+    updateHeight: "Обновить высоту",
+    walletAddress: "Адрес кошелька",
+    year: "Год"
   },
   footer: {
     ready: "Синхронизировано",
@@ -311,9 +328,9 @@ export default {
     copyName: "Копировать имя",
     copyOwner: "Копировать владельца",
     copyQR: "Копировать QR код",
-    copySeedWords: "Копировать seed-фразу",
+    copySeedWords: "Копировать Семя-фразу",
     copySpendKey: "Копировать Ключ Отправки",
-    copyMasterNodeKey: "Copy master node key",
+    copyMasterNodeKey: "Копировать ключ главного узла",
     copyTransactionId: "Копировать ID транзакции",
     copyViewKey: "Копировать Ключ Просмотра",
     createNewWallet: "Создать новый кошелек",
@@ -324,7 +341,7 @@ export default {
     openWallet: "Открыть кошелек",
     rescanWallet: "Пересканировать кошелек",
     restoreWalletFile: "Восстановить кошелек из файла",
-    restoreWalletSeed: "Восстановить кошелек из seed-фразы",
+    restoreWalletSeed: "Восстановить кошелек из Семя-фразы",
     saveQR: "Сохранить QR код в файл",
     sendToThisAddress: "Отправить на этот адрес",
     settings: "Настройки",
@@ -377,7 +394,7 @@ export default {
       copyingPrivateKeys: "Не удалось скопировать приватные ключи",
       dataPathNotFound: "Папка хранилища данных не найдена",
       differentNetType: "Удаленная нода использует другой тип сети (nettype)",
-      enterSeedWords: "Введите seed-фразу",
+      enterSeedWords: "Введите Семя-фразу",
       enterTransactionId: "Введите идентификатор транзакции",
       enterTransactionProof: "Enter transaction proof",
       enterWalletName: "Введите имя кошелька",
@@ -405,7 +422,7 @@ export default {
       invalidPublicAddress: "Неверный публичный адрес",
       invalidRestoreDate: "Неверная дата восстановления",
       invalidRestoreHeight: "Неверная высота блока восстановления",
-      invalidSeedLength: "Неверная длина seed-фразы",
+      invalidSeedLength: "Неверная длина Семя-фразы",
       invalidMasterNodeCommand:
         "Пожалуйста введите команду регистрации сервисной ноды",
       invalidMasterNodeKey: "Ключ сервисной ноды указан неверно",
@@ -460,7 +477,7 @@ export default {
     enteroldPassword: "Введите старый пароль",
     enterNewPassword: "Введите новый пароль",
     reEnterPassword: "Повторно введите пароль",
-    mnemonicSeed: "Seed-фраза, состоящая из 25 или 24 слов",
+    mnemonicSeed: "Семя-фраза, состоящая из 25 или 24 слов",
     pasteTransactionId: "Вставить идентификатор транзакции",
     pasteTransactionProof: "Вставить подтверждение транзакции",
     proveOptionalMessage:
@@ -541,6 +558,10 @@ export default {
     destinationUnknown: "Назначение Неизвестно",
     editAddressBookEntry: "Редактировать запись адресной книги",
     expirationHeight: "Высота выдоха",
+    encryptedBchatValue: "Зашифрованное значение Bchat",
+    encryptedBelnetValue: "Зашифрованное значение Belnet",
+    encryptedWalletValue: "Зашифрованное значение кошелька",
+    encryptedEthAddrValue: "Зашифрованный ETH-адрес",
     bns: {
       bchatID: "Идентификатор Бчата",
       belnetName1Year: "Бельнет Имя 1 год",
@@ -559,6 +580,8 @@ export default {
       "Приобретите или обновите запись в BNS. Если вы приобретаете имя, может потребоваться одна-две минуты, чтобы оно появилось в списке.",
     bnsDescription:
       "Здесь вы можете найти все имена BNS, принадлежащие этому кошельку. Расшифровка принадлежащей вам записи вернет имя и значение этой записи BNS.",
+    bnsUpdateDescription:
+      " Вы можете обновить только адрес владельца или значения одновременно. Если вы хотите обновить оба, вы можете либо обновить значение до передачи прав собственности, либо после передачи прав собственности.",
     loadingSettings: "Загрузка настроек",
     oxenBalance: "Баланс",
     belnetNameDescription:
@@ -591,7 +614,7 @@ export default {
     saveSeedWarning:
       "Пожалуйста, скопируйте фразу и храните ее в безопасном месте!",
     saveToAddressBook: "Сохранить в адресной книге",
-    seedWords: "Seed-фраза",
+    seedWords: "Семя-фраза",
     walletCreated: "Кошелек создан",
     selectLanguage: "Выберите язык",
     masterNodeContributionDescription:
@@ -621,6 +644,8 @@ export default {
     signAndVerifyDescription:
       "Подписывайте данные закрытым ключом вашего основного адреса или проверяйте подпись по общедоступному адресу.",
     spendKey: "Ключ Отправки",
+    spendKeyHint:
+      "Если ключ для совершения транзакций не будет предоставлен, кошелек будет восстановлен в режиме только для просмотра.",
     startingDaemon: "Запуск демона",
     startingWallet: "Запуск кошелька",
     switchToDateSelect: "Переключиться на выбор даты",
@@ -657,9 +682,11 @@ export default {
     unspentOutputs: "Непотраченные выходы",
     userNotUsedAddress: "Вы не использовали этот адрес",
     userUsedAddress: "Вы использовали этот адрес",
+    version: "Версия",
     viewKey: "Ключ Просмотра",
     viewOnlyMode:
       "Режим просмотра. Пожалуйста загрузите полный кошелек, чтобы отправлять монеты.",
+    WalletAddress: "Адрес кошелька",
     website: "Веб-сайт"
   },
   titles: {
@@ -716,7 +743,7 @@ export default {
       useExistingWallet: "Использовать существующий кошелек",
       importFromLegacyGUI: "Импортировать кошелек из предыдущего GUI",
       importFromOldGUI: "Импортировать кошелек из старого  GUI",
-      restoreFromSeed: "Восстановить кошелек из seed-фразы",
+      restoreFromSeed: "Восстановить кошелек из Семя-фразы",
       restoreViewOnly: "Восстановить кошелек только-для-чтения"
     },
     chooseLanguage: "Выберите язык",

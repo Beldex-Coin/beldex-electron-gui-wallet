@@ -258,7 +258,7 @@ export default {
           description: ""
         }
       },
-      priorityOptions: priorityOptions,
+      // priorityOptions: priorityOptions,
       confirmFields: {
         isflash: false,
         totalAmount: -1,
@@ -267,37 +267,45 @@ export default {
       }
     };
   },
-  computed: mapState({
-    theme: state => state.gateway.app.config.appearance.theme,
-    view_only: state => state.gateway.wallet.info.view_only,
-    unlocked_balance: state => state.gateway.wallet.info.unlocked_balance,
-    tx_status: state => state.gateway.tx_status,
-    address_book: state => state.gateway.wallet.address_list.address_book,
-    address_book_starred: state =>
-      state.gateway.wallet.address_list.address_book_starred,
-    address_book_combined() {
-      const starred = this.address_book_starred.map(a => ({
-        ...a,
-        starred: true
-      }));
-      return [...starred, ...this.address_book];
-    },
-    is_ready() {
-      return this.$store.getters["gateway/isReady"];
-    },
-    is_able_to_send() {
-      return this.$store.getters["gateway/isAbleToSend"];
-    },
-    // address_placeholder(state) {
-    address_placeholder() {
-      // const wallet = state.gateway.wallet.info;
-      // const prefix = (wallet && wallet.address && wallet.address[0]) || "L";
-      // return `${prefix}..`;
-      return this.$t("placeholders.beldexAddress");
-    },
-    confirmTransaction: state => state.gateway.tx_status.code === 1,
-    senderAddress: state => state.gateway.sender_address
-  }),
+  computed: {
+    ...mapState({
+      theme: state => state.gateway.app.config.appearance.theme,
+      view_only: state => state.gateway.wallet.info.view_only,
+      unlocked_balance: state => state.gateway.wallet.info.unlocked_balance,
+      tx_status: state => state.gateway.tx_status,
+      address_book: state => state.gateway.wallet.address_list.address_book,
+      address_book_starred: state =>
+        state.gateway.wallet.address_list.address_book_starred,
+      address_book_combined() {
+        const starred = this.address_book_starred.map(a => ({
+          ...a,
+          starred: true
+        }));
+        return [...starred, ...this.address_book];
+      },
+      is_ready() {
+        return this.$store.getters["gateway/isReady"];
+      },
+      is_able_to_send() {
+        return this.$store.getters["gateway/isAbleToSend"];
+      },
+      // address_placeholder(state) {
+      address_placeholder() {
+        // const wallet = state.gateway.wallet.info;
+        // const prefix = (wallet && wallet.address && wallet.address[0]) || "L";
+        // return `${prefix}..`;
+        return this.$t("placeholders.beldexAddress");
+      },
+      confirmTransaction: state => state.gateway.tx_status.code === 1,
+      senderAddress: state => state.gateway.sender_address
+    }),
+    priorityOptions() {
+      return [
+        { label: this.$t("strings.priorityOptions.flash"), value: 5 }, // flash
+        { label: this.$t("strings.priorityOptions.slow"), value: 1 } // Slow
+      ];
+    }
+  },
   validations: {
     newTx: {
       amount: {
