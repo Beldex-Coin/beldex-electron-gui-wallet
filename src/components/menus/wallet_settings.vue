@@ -884,6 +884,7 @@ export default {
     color: #fff !important;
     text-overflow: ellipsis;
     overflow: hidden;
+    width: 300px;
   }
   input {
     overflow: ellipsis;

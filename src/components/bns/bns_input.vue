@@ -100,7 +100,12 @@
             color="accent"
             :label="$t('buttons.cancel')"
           />
-          <q-btn v-close-popup color="primary" label="ok" @click="purchase()" />
+          <q-btn
+            v-close-popup
+            color="primary"
+            :label="$t('dialog.confirmPurchase.ok')"
+            @click="purchase()"
+          />
         </div>
       </q-card>
     </q-dialog>

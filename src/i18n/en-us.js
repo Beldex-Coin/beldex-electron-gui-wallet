@@ -102,7 +102,9 @@ export default {
     },
     discardEdit: {
       title: "Are you Sure?",
-      message: "Are you sure you want to Discard the editing?"
+      message: "Are you sure you want to Discard the editing?",
+      ok: "Continue",
+      cancel: "Discard"
     },
     showMasterNode: {
       title: "Show master node",
@@ -478,6 +480,7 @@ export default {
     bnsDecryptName: "A BNS name that belongs to you",
     belnetFullAddress: "Full belnet address to map BNS name to (without .bdx)",
     enterName: "Enter Name",
+    enterRecipientAddress: "Enter your {coin} recipient address",
     enterAddress: "Enter Address",
     enteroldPassword: "Enter old Password",
     enterNewPassword: "Enter New Password",

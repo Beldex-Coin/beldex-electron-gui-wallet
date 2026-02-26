@@ -617,7 +617,9 @@
           borderless
           dense
           :placeholder="
-            `Enter your ${this.receiveAmountType.name} recipient address`
+            this.$t('placeholders.enterRecipientAddress', {
+              coin: this.sendAmounType.name
+            })
           "
           @input="val => this.recipientAddressValidator(val)"
         />
@@ -691,7 +693,9 @@
             borderless
             dense
             :placeholder="
-              `Enter your ${this.sendAmounType.name} recipient address`
+              this.$t('placeholders.enterRecipientAddress', {
+                type: this.sendAmounType.name
+              })
             "
             @input="val => this.refundAddressValidator(val)"
           />

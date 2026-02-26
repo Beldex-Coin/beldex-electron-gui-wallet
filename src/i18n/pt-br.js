@@ -101,7 +101,9 @@ export default {
     },
     discardEdit: {
       title: "Tem certeza?",
-      message: "Tem certeza de que deseja descartar a edição?"
+      message: "Tem certeza de que deseja descartar a edição?",
+      ok: "Continuar",
+      cancel: "Descartar"
     },
     showMasterNode: {
       title: "Mostrar nó mestre",
@@ -282,7 +284,7 @@ export default {
     bchatId: "ID do BCHAT",
     masterNodeKey: "CHAVE DO NÓDULO DE SERVIÇO",
     signature: "Assinatura",
-    totalBalance: "Balanço total",
+    totalBalance: "Saldo total",
     to: "Para",
     transactionId: "ID da transação",
     walletFile: "FICHEIRO DA CARTEIRA",
@@ -333,7 +335,7 @@ export default {
     copyViewKey: "Copiar chave de visualização",
     createNewWallet: "Criar nova carteira",
     deleteWallet: "Apagar carteira",
-    exit: "Saír da Carteira GUI Beldex",
+    exit: "Sair da carteira",
     importOldGUIWallet: "Importar carteiras da antiga carteira GUI",
     manageKeyImages: "Administrar Imagens de Chave",
     openWallet: "Abrir carteira",
@@ -469,6 +471,7 @@ export default {
       "Endereço belnet completo para mapear o nome BNS (sem .bdx)",
     enterAddress: "Insira o endereço",
     enterName: "Insira o nome",
+    enterRecipientAddress: "Insira o endereço do destinatário de {coin}",
     enteroldPassword: "Digite a senha antiga",
     enterNewPassword: "Insira a nova senha",
     reEnterPassword: "Digite novamente a senha",
@@ -486,6 +489,7 @@ export default {
     bchatId: "O ID do Bchat para vincular ao serviço de nomes Beldex",
     signature: "Assinatura para verificar",
     transactionNotes: "Notas adicionais para anexar à transação",
+    unsignedData: "Os dados como deveriam aparecer antes de serem assinados",
     walletName: "Um nome para a sua carteira",
     walletPassword: "Uma palavra-passe opcional para a carteira",
     reEnterWalletPassword: "Digite novamente a senha",

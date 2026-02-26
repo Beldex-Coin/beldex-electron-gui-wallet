@@ -104,7 +104,9 @@ export default {
     },
     discardEdit: {
       title: "Es-tu sûr?",
-      message: "Êtes-vous sûr de vouloir supprimer la modification ?"
+      message: "Êtes-vous sûr de vouloir supprimer la modification ?",
+      ok: "Continuer",
+      cancel: "Annuler"
     },
     showMasterNode: {
       title: "Afficher le nœud maître",
@@ -272,9 +274,9 @@ export default {
     mnemonicSeed: "MOT MNÉMONIQUE",
     name: "NOM",
     newWalletName: "NOUVEAU NOM DU PORTEFEUILLE",
-    notes: "NOTES",
-    addressBookNotes: "Notes du carnet d'adresses",
-    optional: "OPTIONNEL",
+    notes: "Remarques",
+    addressBookNotes: "Remarques du carnet d'adresses",
+    optional: "Facultatif",
     owner: "Propriétaire",
     password: "MOT DE PASSE",
     paymentId: "ID DE PAIEMENT",
@@ -285,7 +287,7 @@ export default {
     restoreFromDate: "RESTAURATION A PARTIR DE LA DATE",
     bchatId: "Identifiant BCHAT",
     seedLanguage: "LANGAGE SEED",
-    totalBalance: "Balance total",
+    totalBalance: "Solde total",
     to: "Pour",
     masterNodeCommand: "COMMANDE DE NŒUD DE MASTER",
     masterNodeKey: "CLÉ DE MASTER NODE",
@@ -345,7 +347,7 @@ export default {
     copyViewKey: "Copier la clé de visibilité",
     createNewWallet: "Créer un nouveau portefeuille",
     deleteWallet: "Supprimer le portefeuille",
-    exit: "Quitter le portefeuille Beldex GUI",
+    exit: "Quitter le portefeuille",
     importOldGUIWallet: "Importer le portefeuille depuis l’ancien GUI",
     manageKeyImages: "Gérer les images clés",
     openWallet: "Ouvrir le portefeuille",
@@ -470,8 +472,8 @@ export default {
     }
   },
   placeholders: {
-    additionalNotes: "Notes supplémentaires",
-    addNotesOptional: "Ajouter des notes (facultatif)",
+    additionalNotes: "Remarques supplémentaires",
+    addNotesOptional: "Ajouter des remarques (facultatif)",
     addressBookName: "Nom rattaché à cette adresse",
     addressOfSigner: "Adresse du portefeuille public du signataire",
     beldexAddress: "Saisissez l'adresse ou le nom BNS",
@@ -483,6 +485,7 @@ export default {
     belnetFullAddress:
       "Adresse Belnet complète à laquelle associer le nom BNS (sans .bdx)",
     enterName: "Entrez le nom",
+    enterRecipientAddress: "Saisissez votre adresse de destinataire {coin}",
     enterAddress: "Entrer l'adresse",
     enteroldPassword: "Entrez l'ancien mot de passe",
     enterNewPassword: "Entrez un nouveau mot de passe",

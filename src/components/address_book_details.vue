@@ -444,13 +444,13 @@ export default {
           title: this.$t("dialog.discardEdit.title"),
           message: this.$t("dialog.discardEdit.title"),
           ok: {
-            label: "Continue",
+            label: this.$t("dialog.discardEdit.ok"),
             color: "primary"
           },
           cancel: {
             // flat: true,
             color: "accent",
-            label: "Discard"
+            label: this.$t("dialog.discardEdit.cancel")
           }
         })
         .onOk(() => {})

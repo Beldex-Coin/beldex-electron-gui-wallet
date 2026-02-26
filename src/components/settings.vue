@@ -200,7 +200,7 @@
                   />
                 </svg>
 
-                <span>Version {{ version }}</span>
+                <span>{{ $t("strings.version") }} {{ version }}</span>
               </div>
             </article>
           </section>

@@ -104,7 +104,9 @@ export default {
     },
     discardEdit: {
       title: "Estas segura",
-      message: "¿Estás segura de que quieres descartar la edición?"
+      message: "¿Estás segura de que quieres descartar la edición?",
+      ok: "Continuar",
+      cancel: "Descartar"
     },
     showMasterNode: {
       title: "Mostrar nodo maestro",
@@ -283,7 +285,7 @@ export default {
     restoreFromBlockHeight: "RESTAURAR DESDE EL BLOQUE NÚMERO",
     restoreFromDate: "RESTAURAR DESDE EL DÍA",
     seedLanguage: "IDIOMA SEMILLA",
-    totalBalance: "Balance total",
+    totalBalance: "Saldo total",
     masterNodeCommand: "ORDEN PARA REGISTRAR EL NODO DE SERVICIO",
     masterNodeKey: "CLAVE NODO DE SERVICIO",
     bchatId: "ID de BCHAT",
@@ -344,7 +346,7 @@ export default {
     copyViewKey: "Copiar clave de visualización",
     createNewWallet: "Crear nuevo monedero",
     deleteWallet: "Eliminar monedero",
-    exit: "Cerrar la interfaz del monedero Beldex",
+    exit: "Salir de la billetera",
     importOldGUIWallet: "Importar monedero de una interfaz gráfica antigua",
     manageKeyImages: "Administrar Imágenes de Clave",
     openWallet: "Abrir monedero",
@@ -482,6 +484,7 @@ export default {
     belnetFullAddress:
       "Dirección belnet completa a la que se asignará el nombre BNS (sin .bdx)",
     enterName: "Ingrese su nombre",
+    enterRecipientAddress: "Ingrese la dirección del destinatario de {coin}",
     enterAddress: "Ingresa la direccion",
     enteroldPassword: "Ingrese la contraseña anterior",
     enterNewPassword: "Ingrese nueva clave",
@@ -604,6 +607,7 @@ export default {
     numberOfUnspentOutputs: "Número de salidas no gastadas",
     operator: "Operador",
     paymentID: "ID de pago",
+    peerList: "Lista de pares",
     priorityOptions: {
       automatic: "Automática",
       slow: "Lenta",

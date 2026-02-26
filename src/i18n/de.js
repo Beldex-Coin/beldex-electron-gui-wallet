@@ -102,7 +102,9 @@ export default {
     },
     discardEdit: {
       title: "Bist du sicher?",
-      message: "Möchten Sie die Bearbeitung wirklich verwerfen?"
+      message: "Möchten Sie die Bearbeitung wirklich verwerfen?",
+      ok: "Weitermachen",
+      cancel: "Verwerfen"
     },
     showMasterNode: {
       title: "Masterknoten anzeigen",
@@ -343,7 +345,7 @@ export default {
     copyViewKey: "View Key kopieren",
     createNewWallet: "Neue Wallet erstellen",
     deleteWallet: "Wallet löschen",
-    exit: "Beldex GUI Wallet schliessen",
+    exit: "Wallet verlassen",
     importOldGUIWallet: "Wallets von alter GUI importieren",
     manageKeyImages: "Key Images verwalten",
     openWallet: "Wallet öffnen",
@@ -482,6 +484,7 @@ export default {
     belnetFullAddress:
       "Vollständige Belnet-Adresse zur Zuordnung des BNS-Namens (ohne .bdx)",
     enterName: "Name eingeben",
+    enterRecipientAddress: "Geben Sie Ihre {coin}-Empfängeradresse ein",
     enterAddress: "Adresse eingeben",
     enteroldPassword: "Geben Sie das alte Passwort ein",
     enterNewPassword: "Neues Passwort eingeben",

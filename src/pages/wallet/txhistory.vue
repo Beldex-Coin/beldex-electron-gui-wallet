@@ -36,10 +36,10 @@
           <article class="flex row items-center col-10"> -->
         <section class="searchBox flex row no-wrap">
           <article class="flex row items-center no-wrap  q-ml-lg">
-            <div class="col-1 filter-txt ft-semibold">
+            <div class="col-1 filter-txt ft-semibold q-mr-xs">
               {{ $t("fieldLabels.filter") }}
             </div>
-            <OxenField class="col-11 q-px-sm q-pl-lg color=#77778B;">
+            <OxenField class="col-11 q-px-sm q-pl-md color=#77778B;">
               <q-input
                 v-model="tx_filter"
                 :placeholder="$t('placeholders.filterTx')"

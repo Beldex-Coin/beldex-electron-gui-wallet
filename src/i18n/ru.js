@@ -103,7 +103,9 @@ export default {
     },
     discardEdit: {
       title: "Вы уверены?",
-      message: "Вы уверены, что хотите отменить редактирование?"
+      message: "Вы уверены, что хотите отменить редактирование?",
+      ok: "Продолжить",
+      cancel: "Отменить"
     },
     showMasterNode: {
       title: "Показать главный узел",
@@ -335,7 +337,7 @@ export default {
     copyViewKey: "Копировать Ключ Просмотра",
     createNewWallet: "Создать новый кошелек",
     deleteWallet: "Удалить Кошелек",
-    exit: "Закрыть Кошелек Beldex",
+    exit: "Выход из кошелька",
     importOldGUIWallet: "Импортировать кошельки из старого GUI",
     manageKeyImages: "Управлять Ключевыми Образами",
     openWallet: "Открыть кошелек",
@@ -473,6 +475,7 @@ export default {
     belnetFullAddress:
       "Полный адрес Belnet для сопоставления имени BNS (без расширения .bdx)",
     enterName: "Введите имя",
+    enterRecipientAddress: "Введите адрес получателя {coin}",
     enterAddress: "Введите адрес",
     enteroldPassword: "Введите старый пароль",
     enterNewPassword: "Введите новый пароль",
