@@ -224,7 +224,7 @@ export default {
 }
 .submit {
   .q-btn {
-    width: 251px;
+    min-width: 251px;
   }
 }
 </style>

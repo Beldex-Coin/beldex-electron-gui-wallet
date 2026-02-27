@@ -284,6 +284,7 @@ export default {
   height: 58px !important;
   background-color: #32324a;
   margin-bottom: unset !important;
+  margin-left: 10px;
 }
 .infoTxt {
   color: white;
