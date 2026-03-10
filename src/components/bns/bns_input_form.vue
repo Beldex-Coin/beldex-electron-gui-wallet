@@ -95,7 +95,7 @@
           :class="[addressRef ? 'selected' : '']"
         >
           <q-checkbox v-model="addressRef" size="sm" color="green" />
-          <div style="width: 100px">{{ $t("fieldLabels.address") }}</div>
+          <div class="idLabel">{{ $t("fieldLabels.address") }}</div>
           <OxenField class="full-width" optional :error="$v.address.$error">
             <q-input
               v-model="address"
@@ -113,7 +113,7 @@
           :class="[bchatIdRef ? 'selected' : '']"
         >
           <q-checkbox v-model="bchatIdRef" size="sm" color="green" />
-          <div style="width: 100px">{{ $t("strings.bns.bchatID") }}</div>
+          <div class="idLabel">{{ $t("strings.bns.bchatID") }}</div>
           <OxenField class="full-width" optional :error="$v.bchatId.$error">
             <q-input
               v-model="bchatId"
@@ -131,7 +131,7 @@
           :class="[belnetIdRef ? 'selected' : '']"
         >
           <q-checkbox v-model="belnetIdRef" size="sm" color="green" />
-          <div style="width: 100px">{{ $t("fieldLabels.belnetId") }}</div>
+          <div class="idLabel">{{ $t("fieldLabels.belnetId") }}</div>
           <OxenField class="full-width" optional :error="$v.belnetId.$error">
             <q-input
               v-model="belnetId"
@@ -150,7 +150,7 @@
           :class="[ethAddressRef ? 'selected' : '']"
         >
           <q-checkbox v-model="ethAddressRef" size="sm" color="green" />
-          <div style="width: 100px">{{ $t("fieldLabels.eth") }}</div>
+          <div class="idLabel">{{ $t("fieldLabels.eth") }}</div>
           <OxenField class="full-width" optional :error="$v.ethAddress.$error">
             <q-input
               v-model="ethAddress"
@@ -610,7 +610,11 @@ export default {
     border: 1px solid red;
   }
 }
-
+.idLabel {
+  width: 130px;
+  word-break: break-all;
+  padding-right: 10px;
+}
 .idSelectorWrapper {
   .selectionBox {
     background-color: #474766;

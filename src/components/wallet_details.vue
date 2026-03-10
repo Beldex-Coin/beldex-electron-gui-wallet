@@ -165,7 +165,7 @@
                 'flex',
                 'items-center',
                 'ft-semibold',
-                'q-pl-md'
+                'q-px-md'
               ]"
             >
               <q-radio
@@ -186,7 +186,7 @@
                 'flex',
                 'items-center',
                 'ft-semibold',
-                'q-pl-md'
+                'q-px-md'
               ]"
             >
               <q-radio
