@@ -274,6 +274,7 @@ export default {
     message: "Nachricht",
     mnemonicSeed: "Erholungssamen",
     name: "Name",
+    nameHash: "Namens-Hash",
     newWalletName: "Wallet-Name",
     network: "Netzwerk",
     notes: "Notizen",

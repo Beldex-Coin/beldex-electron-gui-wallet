@@ -273,6 +273,7 @@ export default {
     message: "Message",
     mnemonicSeed: "Recovery Seed",
     name: "Name",
+    nameHash: "Name Hash",
     newWalletName: "Wallet Name",
     notes: "Notes",
     addressBookNotes: "Address Book Notes",

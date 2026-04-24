@@ -269,6 +269,7 @@ export default {
     message: "Сообщение",
     mnemonicSeed: "Семя восстановления",
     name: "ИМЯ",
+    nameHash: "Хэш имени",
     newWalletName: "Имя кошелька",
     notes: "Примечания",
     addressBookNotes: "Примечания к адресной книге",

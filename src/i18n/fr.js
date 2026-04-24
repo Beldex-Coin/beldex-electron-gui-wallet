@@ -273,6 +273,7 @@ export default {
     message: "Message",
     mnemonicSeed: "MOT MNÉMONIQUE",
     name: "NOM",
+    nameHash: "Hash de nom",
     newWalletName: "NOUVEAU NOM DU PORTEFEUILLE",
     notes: "Remarques",
     addressBookNotes: "Remarques du carnet d'adresses",

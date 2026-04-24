@@ -118,28 +118,28 @@
           v-if="!record.name && record.encrypted_bchat_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">{{ $t("fieldLabels.encryptedBchatValue") }}</div>
+          <div class="label">{{ $t("strings.encryptedBchatValue") }}</div>
           <div class="address">{{ record.encrypted_bchat_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_belnet_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">{{ $t("fieldLabels.encryptedBelnetValue") }}</div>
+          <div class="label">{{ $t("strings.encryptedBelnetValue") }}</div>
           <div class="address">{{ record.encrypted_belnet_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_wallet_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">{{ $t("fieldLabels.encryptedWalletValue") }}</div>
+          <div class="label">{{ $t("strings.encryptedWalletValue") }}</div>
           <div class="address">{{ record.encrypted_wallet_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_eth_addr_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">{{ $t("fieldLabels.encryptedEthAddrValue") }}</div>
+          <div class="label">{{ $t("strings.encryptedEthAddrValue") }}</div>
           <div class="address">{{ record.encrypted_eth_addr_value }}</div>
         </div>
         <div v-if="record.name" class="tablewrapper flex row q-mt-md no-wrap">

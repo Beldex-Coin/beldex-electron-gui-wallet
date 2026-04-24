@@ -272,6 +272,7 @@ export default {
     message: "Mensaje",
     mnemonicSeed: "SEMILLA MNEMÓNICA",
     name: "NOMBRE",
+    nameHash: "Hash de nombre",
     newWalletName: "NUEVO NOMBRE PARA EL MONEDERO",
     notes: "NOTAS",
     addressBookNotes: "Notas de la libreta de direcciones",
