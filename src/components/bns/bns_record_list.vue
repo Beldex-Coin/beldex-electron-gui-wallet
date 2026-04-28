@@ -362,8 +362,8 @@ export default {
     }
   }
   .updation-btn {
-    min-width: unset;
-    width: 140px;
+    min-width: 140px;
+    // width: 140px;
     height: 45px;
     font-size: 15px;
   }
