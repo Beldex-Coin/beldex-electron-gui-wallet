@@ -187,8 +187,8 @@
             >
               <div class="version ft-regular">
                 <svg
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   viewBox="0 0 26 26"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -200,7 +200,7 @@
                   />
                 </svg>
 
-                <span>Version {{ version }}</span>
+                <span>{{ $t("strings.version") }} {{ version }}</span>
               </div>
             </article>
           </section>
@@ -521,7 +521,7 @@ export default {
       span {
         color: #77778b;
         font-family: "Poppins-Medium";
-        font-size: 18px;
+        font-size: 14px;
         margin-left: 10px;
       }
     }

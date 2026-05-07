@@ -36,10 +36,10 @@
           <article class="flex row items-center col-10"> -->
         <section class="searchBox flex row no-wrap">
           <article class="flex row items-center no-wrap  q-ml-lg">
-            <div class="col-1 filter-txt ft-semibold">
+            <div class="col-1 filter-txt ft-semibold q-mr-xs">
               {{ $t("fieldLabels.filter") }}
             </div>
-            <OxenField class="col-11 q-px-sm q-pl-lg color=#77778B;">
+            <OxenField class="col-11 q-px-sm q-pl-md color=#77778B;">
               <q-input
                 v-model="tx_filter"
                 :placeholder="$t('placeholders.filterTx')"
@@ -125,49 +125,7 @@ export default {
     return {
       tx_type: "all",
       tx_filter: "",
-      txnDetails: "",
-      tx_type_options: [
-        {
-          label: this.$t("strings.transactions.types.all"),
-          value: "all"
-        },
-        {
-          label: this.$t("strings.transactions.types.incoming"),
-          value: "in"
-        },
-        {
-          label: this.$t("strings.transactions.types.outgoing"),
-          value: "out"
-        },
-        {
-          label: this.$t("strings.transactions.types.pending"),
-          value: "all_pending"
-        },
-        {
-          label: this.$t("strings.transactions.types.miner"),
-          value: "miner"
-        },
-        {
-          label: this.$t("strings.transactions.types.masterNode"),
-          value: "mnode"
-        },
-        {
-          label: this.$t("strings.transactions.types.governance"),
-          value: "gov"
-        },
-        {
-          label: this.$t("strings.transactions.types.bns"),
-          value: "bns"
-        },
-        {
-          label: this.$t("strings.transactions.types.stake"),
-          value: "stake"
-        },
-        {
-          label: this.$t("strings.transactions.types.failed"),
-          value: "failed"
-        }
-      ]
+      txnDetails: ""
     };
   },
   methods: {
@@ -254,10 +212,36 @@ export default {
     }
   },
 
-  computed: mapState({
-    theme: state => state.gateway.app.config.appearance.theme,
-    tx_list: state => state.gateway.wallet.transactions.tx_list
-  })
+  computed: {
+    ...mapState({
+      theme: state => state.gateway.app.config.appearance.theme,
+      tx_list: state => state.gateway.wallet.transactions.tx_list
+    }),
+
+    tx_type_options() {
+      return [
+        { label: this.$t("strings.transactions.types.all"), value: "all" },
+        { label: this.$t("strings.transactions.types.incoming"), value: "in" },
+        { label: this.$t("strings.transactions.types.outgoing"), value: "out" },
+        {
+          label: this.$t("strings.transactions.types.pending"),
+          value: "all_pending"
+        },
+        { label: this.$t("strings.transactions.types.miner"), value: "miner" },
+        {
+          label: this.$t("strings.transactions.types.masterNode"),
+          value: "mnode"
+        },
+        {
+          label: this.$t("strings.transactions.types.governance"),
+          value: "gov"
+        },
+        { label: this.$t("strings.transactions.types.bns"), value: "bns" },
+        { label: this.$t("strings.transactions.types.stake"), value: "stake" },
+        { label: this.$t("strings.transactions.types.failed"), value: "failed" }
+      ];
+    }
+  }
 };
 </script>
 
@@ -300,6 +284,7 @@ export default {
   height: 58px !important;
   background-color: #32324a;
   margin-bottom: unset !important;
+  margin-left: 10px;
 }
 .infoTxt {
   color: white;

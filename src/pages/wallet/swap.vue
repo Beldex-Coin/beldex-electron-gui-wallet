@@ -617,7 +617,9 @@
           borderless
           dense
           :placeholder="
-            `Enter your ${this.receiveAmountType.name} recipient address`
+            this.$t('placeholders.enterRecipientAddress', {
+              coin: this.sendAmounType.name
+            })
           "
           @input="val => this.recipientAddressValidator(val)"
         />
@@ -691,7 +693,9 @@
             borderless
             dense
             :placeholder="
-              `Enter your ${this.sendAmounType.name} recipient address`
+              this.$t('placeholders.enterRecipientAddress', {
+                type: this.sendAmounType.name
+              })
             "
             @input="val => this.refundAddressValidator(val)"
           />
@@ -759,7 +763,7 @@
 
       <div class="flex justify-center q-my-lg">
         <q-btn
-          label="Next"
+          :label="$t('buttons.next')"
           color="primary"
           :disable="!this.disableValidation()"
           @click="this.next"

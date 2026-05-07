@@ -109,7 +109,7 @@ export class Backend {
         net_type: "mainnet"
       },
       wallet: {
-        rpc_bind_port: 22026,
+        rpc_bind_port: 29095,
         log_level: 0
       }
     };

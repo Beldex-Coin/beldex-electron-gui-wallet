@@ -79,7 +79,11 @@
         style="position: relative"
       >
         <div class="tablewrapper flex row no-wrap">
-          <div class="label">{{ record.name ? "Name" : "Name Hash" }}</div>
+          <div class="label">
+            {{
+              record.name ? $t("fieldLabels.name") : $t("fieldLabels.nameHash")
+            }}
+          </div>
           <div class="row no-wrap" style="width: 70%">
             <div class="address" style="width: 100%">
               {{ record.name || record.name_hash }}
@@ -94,52 +98,52 @@
         </div>
 
         <div class="tablewrapper flex row q-mt-md no-wrap">
-          <div class="label">Expiration Height</div>
+          <div class="label">{{ $t("fieldLabels.expirationHeight") }}</div>
           <div class="address">{{ record.expiration_height }}</div>
         </div>
 
         <div class="tablewrapper flex row q-mt-md no-wrap">
-          <div class="label">Update Height</div>
+          <div class="label">{{ $t("fieldLabels.updateHeight") }}</div>
           <div class="address">{{ record.update_height }}</div>
         </div>
         <div class="tablewrapper flex row q-mt-md no-wrap">
-          <div class="label">Owner</div>
+          <div class="label">{{ $t("fieldLabels.owner") }}</div>
           <div class="address">{{ record.owner }}</div>
         </div>
         <div class="tablewrapper flex row q-mt-md no-wrap">
-          <div class="label">Transaction ID</div>
+          <div class="label">{{ $t("fieldLabels.transactionId") }}</div>
           <div class="address">{{ record.txid }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_bchat_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">Encrypted Bchat Value</div>
+          <div class="label">{{ $t("strings.encryptedBchatValue") }}</div>
           <div class="address">{{ record.encrypted_bchat_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_belnet_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">Encrypted Belnet Value</div>
+          <div class="label">{{ $t("strings.encryptedBelnetValue") }}</div>
           <div class="address">{{ record.encrypted_belnet_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_wallet_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">Encrypted Wallet Value</div>
+          <div class="label">{{ $t("strings.encryptedWalletValue") }}</div>
           <div class="address">{{ record.encrypted_wallet_value }}</div>
         </div>
         <div
           v-if="!record.name && record.encrypted_eth_addr_value"
           class="tablewrapper flex row q-mt-md no-wrap"
         >
-          <div class="label">Encrypted ETH Value</div>
+          <div class="label">{{ $t("strings.encryptedEthAddrValue") }}</div>
           <div class="address">{{ record.encrypted_eth_addr_value }}</div>
         </div>
         <div v-if="record.name" class="tablewrapper flex row q-mt-md no-wrap">
-          <div class="label">Wallet Address</div>
+          <div class="label">{{ $t("fieldLabels.walletAddress") }}</div>
           <div class="address">
             {{ record.value_wallet ? record.value_wallet : "None" }}
           </div>
@@ -182,7 +186,7 @@
               alt="Update"
               style="height: 24px; width: auto;margin-right: 5px;"
             />
-            Update
+            {{ $t("buttons.update") }}
           </q-btn>
 
           <q-btn
@@ -192,10 +196,10 @@
           >
             <img
               src="../../assets/images/renew.svg"
-              alt="Update"
+              alt="bnsRenew"
               style="height: 24px; width: auto;margin-right: 5px;"
             />
-            Renew
+            {{ $t("buttons.renew") }}
           </q-btn>
         </div>
       </section>
@@ -249,7 +253,6 @@ export default {
       return !record.name || !record.value;
     },
     bindClass(record) {
-      console.log("recordList:", record);
       return [this.isLocked(record) ? "locked" : "unlocked"];
     },
     onUpdate(record) {
@@ -359,8 +362,8 @@ export default {
     }
   }
   .updation-btn {
-    min-width: unset;
-    width: 140px;
+    min-width: 140px;
+    // width: 140px;
     height: 45px;
     font-size: 15px;
   }

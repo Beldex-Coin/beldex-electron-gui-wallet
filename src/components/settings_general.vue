@@ -123,7 +123,7 @@
                 v-close-popup
                 @click.native="setPreset(option)"
               >
-                <q-item-label>
+                <q-item-label class="dropDown">
                   <q-item-label header
                     >{{ option.host }}:{{ option.port }}</q-item-label
                   >

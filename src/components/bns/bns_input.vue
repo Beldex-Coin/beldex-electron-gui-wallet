@@ -15,19 +15,19 @@
       <q-card class="bnsConfirmmodal">
         <q-card-section>
           <div class="text-h6 text-center" style="font-weight: 600;">
-            Confirm Purchase
+            {{ $t("dialog.confirmPurchase.title") }}
           </div>
         </q-card-section>
 
         <q-card-section class="q-pt-none ownerDetails q-mx-lg q-pa-md">
           <section>
             <div class="tablewrapper flex row">
-              <div class="label">Name</div>
+              <div class="label">{{ $t("fieldLabels.name") }}</div>
               <div class="content">{{ this.confirmModal.record.name }}</div>
             </div>
 
             <div class="tablewrapper flex row q-mt-md">
-              <div class="label">year</div>
+              <div class="label">{{ $t("fieldLabels.year") }}</div>
               <div class="yearscontent">
                 {{ yearvalidate(this.confirmModal.record.years) }}
               </div>
@@ -37,7 +37,7 @@
               v-if="this.confirmModal.record.owner"
               class="tablewrapper flex row q-mt-md"
             >
-              <div class="label">Owner</div>
+              <div class="label">{{ $t("fieldLabels.owner") }}</div>
               <div class="address">
                 {{ this.confirmModal.record.owner }}
               </div>
@@ -59,7 +59,7 @@
               v-if="this.confirmModal.record.value_wallet"
               class="tablewrapper flex row"
             >
-              <div class="label">Address</div>
+              <div class="label">{{ $t("fieldLabels.address") }}</div>
               <div class="address">
                 {{ this.confirmModal.record.value_wallet }}
               </div>
@@ -100,7 +100,12 @@
             color="accent"
             :label="$t('buttons.cancel')"
           />
-          <q-btn v-close-popup color="primary" label="ok" @click="purchase()" />
+          <q-btn
+            v-close-popup
+            color="primary"
+            :label="$t('dialog.confirmPurchase.ok')"
+            @click="purchase()"
+          />
         </div>
       </q-card>
     </q-dialog>
@@ -195,7 +200,9 @@ export default {
     },
     yearvalidate(year) {
       let content = year && year.slice(0, year.indexOf("y"));
-      return content && content > 1 ? content + " years" : content + " year";
+      return content && content > 1
+        ? content + " years"
+        : content + " " + this.$t("fieldLabels.year");
     },
     onSubmit(record) {
       if (this.updating) {

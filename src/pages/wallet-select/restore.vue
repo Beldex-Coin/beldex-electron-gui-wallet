@@ -243,8 +243,7 @@
             </OxenField>
 
             <div class="q-mt-sm q-mb-xs" style="color: #afafbe">
-              Note : If the spend key is not provided, the wallet will be
-              restored in view-only mode.
+              {{ $t("strings.bns.note") }} : {{ $t("strings.spendKeyHint") }}
             </div>
 
             <div class="row items-end justify-between q-mt-md">
@@ -672,7 +671,7 @@ export default {
 }
 .submit {
   .q-btn {
-    width: 251px;
+    min-width: 251px;
   }
 }
 

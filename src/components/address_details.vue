@@ -59,7 +59,7 @@
             /> -->
             <div class="address-section">
               <div class="ft-medium label q-mt-md q-mb-xs">
-                Address
+                {{ $t("fieldLabels.address") }}
                 <q-btn
                   class="q-ml-sm address-copy-btn"
                   flat
@@ -144,7 +144,7 @@
                   <div class="col-sm-5">
                     <div class="ft-medium label">
                       <!-- <span>{{ $t("strings.numberOfUnspentOutputs") }}</span> -->
-                      <span>Unspent Outputs</span>
+                      <span>{{ $t("strings.unspentOutputs") }}</span>
                     </div>
                     <div class="value"><span>0</span></div>
                   </div>

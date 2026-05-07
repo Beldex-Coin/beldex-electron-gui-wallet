@@ -524,7 +524,7 @@ export class Daemon {
     }
 
     const params = {
-      entries: [
+      name_hash: [
         nameHash
         // {
         // name_hash: nameHash,
@@ -539,7 +539,7 @@ export class Daemon {
 
     if (!data.hasOwnProperty("result")) return null;
 
-    const entries = data.result.entries;
+    const entries = data?.result?.result || [];
     // this._sanitizeBNSRecords(data.result.entries);
     if (entries.length === 0) return null;
 

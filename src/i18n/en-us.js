@@ -24,13 +24,13 @@ export default {
     delete: "Delete",
     edit: "Edit",
     editNotes: "Edit Notes",
+    enter: "Enter",
     export: "Export",
     fromBlockheight: "From Blockheight",
     generate: "Generate",
     import: "Import",
     importWallet: "Import Wallet | Import Wallets",
     bns: "BELDEX Name Service",
-
     min: "Min",
     next: "Next",
     openWallet: "Open Wallet",
@@ -54,11 +54,10 @@ export default {
     sign: "Sign",
     stake: "Stake",
     sweepAll: "Sweep All",
-    unlock: "unlock",
+    unlock: "Unlock",
     update: "Update",
     verify: "Verify",
     viewOnExplorer: "View in explorer",
-    //new wamp
     add: "Add",
     max: "Max",
     bnsUpdate: "BNS Update",
@@ -92,6 +91,25 @@ export default {
       seedWords: "Seed Words",
       viewKey: "View Key",
       spendKey: "Spend Key"
+    },
+    confirmPurchase: {
+      title: "Confirm Purchase",
+      ok: "Confirm"
+    },
+    deleteAddress: {
+      title: "Delete Address",
+      message: "Are you sure you want to delete this address?"
+    },
+    discardEdit: {
+      title: "Are you Sure?",
+      message: "Are you sure you want to Discard the editing?",
+      ok: "Continue",
+      cancel: "Discard"
+    },
+    showMasterNode: {
+      title: "Show master node",
+      message: "Do you want to continue?",
+      masterNode: "Master node"
     },
     deleteWallet: {
       title: "Delete Wallet",
@@ -197,6 +215,14 @@ export default {
       sendTo: "Send to",
       priority: "Priority"
     },
+    confirmUpdate: {
+      title: "Confirm Update",
+      ok: "Update"
+    },
+    confirmRenew: {
+      title: "Confirm Renew",
+      ok: "Renew"
+    },
     unlockConfirm: {
       title: "Confirm unlock",
       ok: "Unlock"
@@ -219,6 +245,8 @@ export default {
     address: "Address",
     recipientAddress: "Recipient Address",
     amount: "Amount",
+    belnetId: "Belnet ID",
+    eth: "ETH",
     backupOwner: "Backup Owner",
     confirmPassword: "Confirm Password (optional)",
     daemonLogLevel: "Daemon Log Level",
@@ -226,6 +254,7 @@ export default {
     data: "Data",
     dataStoragePath: "Data Storage Path",
     decryptRecord: "Add Record",
+    expirationHeight: "Expiration Height",
     filter: "Filter",
     filterTransactionType: "FILTER BY TRANSACTION TYPE",
     internalWalletPort: "Internal Wallet Port",
@@ -244,11 +273,11 @@ export default {
     message: "Message",
     mnemonicSeed: "Recovery Seed",
     name: "Name",
+    nameHash: "Name Hash",
     newWalletName: "Wallet Name",
     notes: "Notes",
     addressBookNotes: "Address Book Notes",
     optional: "optional",
-
     owner: "Owner",
     password: "Password (optional)",
     paymentId: "PAYMENT ID",
@@ -266,7 +295,7 @@ export default {
     walletFile: "Wallet File",
     walletLogLevel: "Wallet Log Level",
     walletName: "Wallet Name",
-    walletRPCPort: "wallet RPC Port",
+    walletRPCPort: "Wallet RPC Port",
     walletStoragePath: "Wallet Storage Path",
 
     // These are specific labels which do not get uppercased
@@ -285,7 +314,10 @@ export default {
     OwnerWalletaddress: "Owner Wallet address",
     backupOwnerWalletAddress: "Backup Owner Wallet Address",
     updateOwner: "Update Owner",
-    updateValues: "Update Values"
+    updateValues: "Update Values",
+    updateHeight: "Update Height",
+    walletAddress: "Wallet address",
+    year: "Year"
   },
   footer: {
     ready: "Synchronized",
@@ -330,8 +362,6 @@ export default {
     showQRCode: "Show QR Code",
     switchWallet: "Switch Wallet",
     viewOnExplorer: "View on explorer",
-
-    // new vamp
     favourite: "Favourite"
   },
   notification: {
@@ -451,6 +481,7 @@ export default {
     bnsDecryptName: "A BNS name that belongs to you",
     belnetFullAddress: "Full belnet address to map BNS name to (without .bdx)",
     enterName: "Enter Name",
+    enterRecipientAddress: "Enter your {coin} recipient address",
     enterAddress: "Enter Address",
     enteroldPassword: "Enter old Password",
     enterNewPassword: "Enter New Password",
@@ -468,7 +499,11 @@ export default {
     unsignedData: "The data as it should look before it was signed",
     walletName: "Enter your Wallet Name",
     walletPassword: "Enter Password",
-    reEnterWalletPassword: "Re-Enter Password"
+    reEnterWalletPassword: "Re-Enter Password",
+    enterEthAddress: "Enter your ETH Address",
+    enterBelnetId: "Enter your Belnet ID",
+    enterBchatId: "Enter your BChat ID",
+    enterWalletAddress: "Enter your Wallet Address"
   },
   strings: {
     addAddressBookEntry: "Add Address ",
@@ -532,16 +567,30 @@ export default {
     destinationUnknown: "Destination Unknown",
     editAddressBookEntry: "Edit address book entry",
     expirationHeight: "Expiration height",
+    encryptedBchatValue: "Encrypted Bchat Value",
+    encryptedBelnetValue: "Encrypted Belnet Value",
+    encryptedWalletValue: "Encrypted Wallet Value",
+    encryptedEthAddrValue: "Encrypted ETH Address",
     bns: {
       bchatID: "Bchat ID",
       belnetName1Year: "Belnet Name 1 year",
       belnetNameXYears: "Belnet Name {years} years",
-      prices: "Prices :"
+      prices: "Prices :",
+      note: "Note",
+      bnsRegistration: "BNS Name for registration",
+      ownerNotes:
+        "Use current address (leave blank if same wallet) or specify the address if it is a different wallet",
+      ethNotes: "Our eth address is compatible across all EVM chains",
+      records: "BNS Records",
+      addRecord: "Add Record",
+      fetchNewRecord: "Fetching BNS record from the network..."
     },
     bnsPurchaseDescription:
       "Purchase or update an BNS record. If you purchase a name, it may take a minute or two for it to show up in the list.",
     bnsDescription:
-      "Here you can find all the BNS names owned by this wallet. Decrypting a record you own will return the name and value of that BNS record.",
+      "Here you can find all the BNS names owned by this wallet. Decrypting a record you own will return the name and value of that BNS record",
+    bnsUpdateDescription:
+      " You can only update owner address or values at a time. If you want to update both, you can either update the value before ownership or after transferring ownership.",
     loadingSettings: "Loading settings",
     oxenBalance: "Balance",
     belnetNameDescription:
@@ -563,7 +612,6 @@ export default {
       fastest: "Fastest",
       flash: "Flash"
     },
-
     proveTransactionDescription:
       "Generate a proof of your incoming/outgoing payment by supplying the transaction ID, the recipient address and an optional message.\nFor the case of outgoing payments, you can get a 'Spend Proof' that proves the authorship of a transaction. In this case, you don't need to specify the recipient address.",
     readingWalletList: "Reading wallet list",
@@ -574,7 +622,6 @@ export default {
       "Select full rescan or rescan of spent outputs only.",
     saveSeedWarning: "Please copy and save these in a secure location!",
     saveToAddressBook: "Save to address book",
-
     seedWords: "Recovery Seed",
     walletCreated: "Wallet Created",
     selectLanguage: "Select a language",
@@ -604,6 +651,8 @@ export default {
     signAndVerifyDescription:
       "Sign data with your primary address's private key or verify a signature against a public address.",
     spendKey: "Spend key",
+    spendKeyHint:
+      "If the spend key is not provided, the wallet will be restored in view-only mode.",
     startingDaemon: "Starting daemon",
     startingWallet: "Starting wallet",
     switchToDateSelect: "Switch to date select",
@@ -640,6 +689,7 @@ export default {
     unspentOutputs: "Unspent outputs",
     userNotUsedAddress: "You have not used this address",
     userUsedAddress: "You have used this address",
+    version: "Version",
     viewKey: "View Key",
     viewOnlyMode:
       "View only mode. Please load full wallet in order to send coins.",
@@ -740,7 +790,7 @@ export default {
       and: "and",
       privacyPolicy: "Privacy Policy",
       checkout: "Checkout",
-      blockchain: "blockchain",
+      blockchain: "Blockchain",
       exchangefee: "Exchange fee",
       exchangeFeeIncluded:
         " The exchange fee is already included in the displayed amount you’ll get",

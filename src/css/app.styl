@@ -931,6 +931,13 @@ h1, h2, h3, h4, h5, h6, img, .q-list-header, .q-header, .q-menu .q-item-label, .
 .q-item__label
     color #fff
 
+.dropDown
+  &:hover
+     background-color #242433
+     width 100%
+     border-radius 8px
+     cursor pointer
+     
 .q-date
     background #2f2f40
 
@@ -1057,6 +1064,7 @@ h1, h2, h3, h4, h5, h6, img, .q-list-header, .q-header, .q-menu .q-item-label, .
     border-radius 20px
     box-shadow 0 6px 24px rgba(0, 0, 0, .2)
     overflow-y auto
+    padding 30px
 
 .createTitle
     text-align center
@@ -1215,6 +1223,48 @@ h1, h2, h3, h4, h5, h6, img, .q-list-header, .q-header, .q-menu .q-item-label, .
         height 45px
         background-color $beldex-disable-grey
         border-radius 10px
+        display flex
+
+        .icon
+            width 20px
+            height 20px
+
+        .btn-txt
+            color #fff
+            margin-left 5px
+            font-size 15px
+    
+    .transaction-send-btn
+        // width: 168px;
+        width 8.4vw
+        height 38px
+        background-color $beldex-disable-grey
+        border-radius 10px
+        display flex
+        justify-content center
+        align-items center
+        cursor pointer
+        font-family Poppins-SemiBold
+
+        .icon
+            width 20px
+            height 20px
+
+        .btn-txt
+            color #fff
+            margin-left 5px
+            font-size 15px
+
+    .receive-btn
+        // width: 168px;
+        width 8.4vw
+        height 38px
+        border-radius 10px
+        display flex
+        justify-content center
+        align-items center
+        cursor pointer
+        font-family Poppins-SemiBold
 
         .icon
             width 20px
@@ -1226,20 +1276,20 @@ h1, h2, h3, h4, h5, h6, img, .q-list-header, .q-header, .q-menu .q-item-label, .
             font-size 15px
 
     .addressbook-btn
-        height 45px
+        height 54px
         background-color $beldex-disable-grey
 
-    .send-btn:hover, .contact-btn:hover
+    .send-btn:hover,.transaction-send-btn:hover, .contact-btn:hover, .receive-btn:hover
         background-color #484866
 
-    .active > .send-btn
+    .active > .send-btn, .active > .transaction-send-btn, .active > .receive-btn,.active > .addressbook-btn
         background-color $beldex-std-blue
 
         .btn-txt
             color #fff
             margin-left 5px
 
-    .active > .send-btn:hover, .active >.contact-btn:hover
+    .active > .send-btn:hover, .active >.contact-btn:hover, .active > .receive-btn:hover,.active > .addressbook-btn
         background-color #478EFF
 
     .active >.addressbook-btn
@@ -1302,15 +1352,18 @@ body
         border-radius 0
         box-shadow unset
         width 100%
+      
 
         .bg-primary, .bg-accent
             min-width 33%
             background-color $beldex-lightgray !important
 
         .bg-primary
+            height: 61px
             border-bottom 2px solid $beldex-std-green
 
         .bg-accent
+            height: 61px
             border-bottom 2px solid $beldex-border-grey
 
         .bg-accent:hover
@@ -1323,6 +1376,7 @@ body
     .q-btn-group
         .bg-primary, .bg-accent
             min-width 50%
+          
     .tab-desc
         font-size 12px
        
@@ -1420,7 +1474,7 @@ body
         border 1px solid $beldex-border-grey
         max-height 55px
         min-height 45px !important
-        padding-left 20px
+        padding: 0 10px
 
     .q-btn--rectangle
         border-radius 7px
@@ -2193,7 +2247,7 @@ body
         height 306px
 
     .registrationBox .btn
-        height 55px
+        max-height 66px
 
     .registration-View .back-btn-box
         width 695px !important

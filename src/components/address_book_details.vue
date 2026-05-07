@@ -230,7 +230,7 @@
         <q-btn
           color="primary send_btn q-mt-lg"
           :disabled="view_only"
-          label="Send"
+          :label="$t('buttons.send')"
           icon="north_east"
           @click="sendToAddress"
         />
@@ -422,8 +422,8 @@ export default {
     openDeletePopUp() {
       this.$q
         .dialog({
-          title: "Delete Address",
-          message: "Are you sure you want to delete this address?",
+          title: this.$t("dialog.deleteAddress.title"),
+          message: this.$t("dialog.deleteAddress.message"),
           ok: {
             label: this.$t("buttons.delete"),
             color: "red"
@@ -441,16 +441,16 @@ export default {
     openCancelPopUp() {
       this.$q
         .dialog({
-          title: "Are you Sure?",
-          message: "Are you sure you want to Discard the editing?",
+          title: this.$t("dialog.discardEdit.title"),
+          message: this.$t("dialog.discardEdit.title"),
           ok: {
-            label: "Continue",
+            label: this.$t("dialog.discardEdit.ok"),
             color: "primary"
           },
           cancel: {
             // flat: true,
             color: "accent",
-            label: "Discard"
+            label: this.$t("dialog.discardEdit.cancel")
           }
         })
         .onOk(() => {})
