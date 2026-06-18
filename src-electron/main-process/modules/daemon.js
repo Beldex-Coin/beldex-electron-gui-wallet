@@ -30,11 +30,10 @@ export class Daemon {
     return new Promise(resolve => {
       if (process.platform === "win32") {
         let oxend_path = path.join(__ryo_bin, "beldexd.exe");
-        let oxend_version_cmd = `"${oxend_path}" --version`;
         if (!fs.existsSync(oxend_path)) {
           resolve(false);
         }
-        child_process.exec(oxend_version_cmd, (error, stdout) => {
+        child_process.execFile(oxend_path, ["--version"], (error, stdout) => {
           if (error) {
             resolve(false);
           }
@@ -42,12 +41,12 @@ export class Daemon {
         });
       } else {
         let oxend_path = path.join(__ryo_bin, "beldexd");
-        let oxend_version_cmd = `"${oxend_path}" --version`;
         if (!fs.existsSync(oxend_path)) {
           resolve(false);
         }
-        child_process.exec(
-          oxend_version_cmd,
+        child_process.execFile(
+          oxend_path,
+          ["--version"],
           { detached: true },
           (error, stdout) => {
             if (error) {

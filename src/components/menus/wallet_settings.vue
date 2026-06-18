@@ -444,7 +444,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import WalletPassword from "src/mixins/wallet_password";
 import OxenField from "components/oxen_field";
@@ -522,13 +522,13 @@ export default {
     }
   },
   created() {
-    const path = require("upath");
-    this.modals.key_image.export_path = path.join(
+    const joinPath = (...parts) => parts.filter(Boolean).join("/");
+    this.modals.key_image.export_path = joinPath(
       this.wallet_data_dir,
       "images",
       this.info.name
     );
-    this.modals.key_image.import_path = path.join(
+    this.modals.key_image.import_path = joinPath(
       this.wallet_data_dir,
       "images",
       this.info.name,

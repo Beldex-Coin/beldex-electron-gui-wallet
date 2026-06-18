@@ -27,16 +27,34 @@ if (window.console) {
 // To avoid [Object object] in our log since console.log handles non-strings
 // smoothly
 function cleanArgsForIPC(args) {
+  const redactKeyPattern = /(password|seed|mnemonic|secret|spend[_-]?key|view[_-]?key|private[_-]?key|auth|token)/i;
+  const redactValue = item => {
+    if (Array.isArray(item)) {
+      return item.map(redactValue);
+    }
+
+    if (item && typeof item === "object") {
+      return Object.keys(item).reduce((result, key) => {
+        result[key] = redactKeyPattern.test(key)
+          ? "[REDACTED]"
+          : redactValue(item[key]);
+        return result;
+      }, {});
+    }
+
+    return item;
+  };
+
   const str = args.map(item => {
     if (typeof item !== "string") {
       try {
-        return JSON.stringify(item);
+        return JSON.stringify(redactValue(item));
       } catch (error) {
         return item;
       }
     }
 
-    return item;
+    return redactKeyPattern.test(item) ? "[REDACTED]" : item;
   });
 
   return str.join(" ");

@@ -13,7 +13,7 @@ const electron = require("electron");
 const os = require("os");
 const fs = require("fs-extra");
 const path = require("upath");
-const objectAssignDeep = require("object-assign-deep");
+import objectAssignDeep from "object-assign-deep";
 
 const { ipcMain: ipc } = electron;
 
@@ -316,7 +316,9 @@ export class Backend {
       }
 
       case "open_url":
-        require("electron").shell.openExternal(params.url);
+        if (this.isSafeExternalUrl(params.url)) {
+          require("electron").shell.openExternal(params.url);
+        }
         break;
 
       case "save_png": {
@@ -749,5 +751,14 @@ export class Backend {
       }
     }
     return modified;
+  }
+
+  isSafeExternalUrl(url) {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:";
+    } catch (error) {
+      return false;
+    }
   }
 }

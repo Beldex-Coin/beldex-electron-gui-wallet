@@ -113,7 +113,7 @@ import { mapState } from "vuex";
 import TxList from "components/tx_list";
 import OxenField from "components/oxen_field";
 import TxDetails from "components/tx_details";
-const moment = require("moment");
+import moment from "moment";
 
 export default {
   components: {

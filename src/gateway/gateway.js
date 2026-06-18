@@ -1,8 +1,7 @@
-import { ipcRenderer } from "electron";
 import { Notify, Dialog, Loading, LocalStorage } from "quasar";
 import { EventEmitter } from "events";
-import { SCEE } from "./SCEE-Node";
 import { i18n, changeLanguage } from "src/boot/i18n";
+import { appIpc } from "src/shims/electron-renderer";
 
 export class Gateway extends EventEmitter {
   constructor(app, router) {
@@ -10,7 +9,7 @@ export class Gateway extends EventEmitter {
     this.app = app;
     this.router = router;
     this.token = null;
-    this.scee = new SCEE();
+    this.secureCrypto = window.electronAPI.secureCrypto;
 
     // Set the initial language
     let language = LocalStorage.has("language")
@@ -43,7 +42,11 @@ export class Gateway extends EventEmitter {
       }
     });
 
-    ipcRenderer.on("initialize", (event, data) => {
+    const getIpcPayload = (eventOrData, maybeData) =>
+      typeof maybeData === "undefined" ? eventOrData : maybeData;
+
+    appIpc.on("initialize", (eventOrData, maybeData) => {
+      const data = getIpcPayload(eventOrData, maybeData);
       this.token = data.token;
       setTimeout(() => {
         this.ws = new WebSocket("ws://127.0.0.1:" + data.port);
@@ -56,24 +59,25 @@ export class Gateway extends EventEmitter {
       }, 1000);
     });
 
-    ipcRenderer.on("confirmClose", () => {
+    appIpc.on("confirmClose", () => {
       this.confirmClose(i18n.t("dialog.exit.message"));
     });
 
-    ipcRenderer.on("showQuitScreen", () => {
+    appIpc.on("showQuitScreen", () => {
       if (this.router) {
         this.router.replace({ path: "/quit" });
       }
     });
 
-    ipcRenderer.on("appSuspend", () => {
+    appIpc.on("appSuspend", () => {
       if (this.ws) {
         this.ws.close();
       }
       // this.token = null;
     });
 
-    ipcRenderer.on("appResumed", (event, data) => {
+    appIpc.on("appResumed", (eventOrData, maybeData) => {
+      const data = getIpcPayload(eventOrData, maybeData);
       this.token = data.token;
       setTimeout(() => {
         this.ws = new WebSocket("ws://127.0.0.1:" + data.port);
@@ -123,7 +127,7 @@ export class Gateway extends EventEmitter {
     //       this.closeDialog = false;
     //       Loading.hide();
     //       this.router.replace({ path: "/quit" });
-    //       ipcRenderer.send("confirmClose", restart);
+    //       appIpc.send("confirmClose", restart);
     //     })
     //     .onCancel(() => {
     //       // this.closeDialog = false;
@@ -147,7 +151,7 @@ export class Gateway extends EventEmitter {
         this.closeDialog = false;
         Loading.hide();
         this.router.replace({ path: "/quit" });
-        ipcRenderer.send("confirmClose", restart);
+        appIpc.send("confirmClose", restart);
       })
       .onCancel(() => {
         this.closeDialog = false;
@@ -160,7 +164,7 @@ export class Gateway extends EventEmitter {
       method,
       data
     };
-    let encrypted_data = this.scee.encryptString(
+    let encrypted_data = this.secureCrypto.encryptString(
       JSON.stringify(message),
       this.token
     );
@@ -175,7 +179,7 @@ export class Gateway extends EventEmitter {
     // should wrap this in a try catch, and if fail redirect to error screen
     // shouldn't happen outside of dev environment
     let decrypted_data = JSON.parse(
-      this.scee.decryptString(message, this.token)
+      this.secureCrypto.decryptString(message, this.token)
     );
 
     if (

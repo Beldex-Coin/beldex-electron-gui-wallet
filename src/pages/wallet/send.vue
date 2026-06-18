@@ -229,7 +229,7 @@ import WalletPassword from "src/mixins/wallet_password";
 import ConfirmDialogMixin from "src/mixins/confirm_dialog_mixin";
 import ConfirmTransactionDialog from "components/confirm_tx_dialog";
 import Adressbook from "../../pages/wallet/addressbook.vue";
-const objectAssignDeep = require("object-assign-deep");
+import objectAssignDeep from "object-assign-deep";
 
 // the case for doing nothing on a tx_status update
 const DO_NOTHING = 10;
@@ -595,7 +595,7 @@ export default {
   padding-right: 10px;
   .bg-primary {
     width: unset;
-    color: red($color: #000000);
+    color: #000000;
   }
 }
 .address-textarea {

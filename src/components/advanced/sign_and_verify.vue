@@ -101,7 +101,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import OxenField from "components/oxen_field";
 import SignatureDialog from "./signature_dialog";
 import { mapState } from "vuex";

@@ -119,7 +119,7 @@
 import { mapState } from "vuex";
 import BNSInputForm from "./bns_input_form";
 import WalletPassword from "src/mixins/wallet_password";
-const objectAssignDeep = require("object-assign-deep");
+import objectAssignDeep from "object-assign-deep";
 
 export default {
   name: "BNSInput",

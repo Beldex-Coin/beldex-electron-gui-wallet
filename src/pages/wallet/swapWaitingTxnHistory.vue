@@ -273,7 +273,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import QrcodeVue from "qrcode.vue";
 import { mapState } from "vuex";
 

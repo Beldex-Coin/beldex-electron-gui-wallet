@@ -131,7 +131,7 @@
 </template>
 
 <script>
-const { clipboard, nativeImage } = require("electron");
+import { clipboard, nativeImage } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import QrcodeVue from "qrcode.vue";
 import AddressDetails from "components/address_details";

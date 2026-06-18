@@ -1,6 +1,8 @@
 /* eslint-disable no-template-curly-in-string */
 // Configuration for your app
 
+const path = require("path");
+
 module.exports = function() {
   return {
     // app boot (/src/boot)
@@ -22,15 +24,13 @@ module.exports = function() {
       // gzip: true,
       // analyze: true,
       // extractCSS: false,
-      extendWebpack() {
-        /*
-                cfg.module.rules.push({
-                    enforce: "pre",
-                    test: /\.(js|vue)$/,
-                    loader: "eslint-loader",
-                    exclude: /(node_modules|quasar)/
-                })
-                */
+      extendWebpack(cfg) {
+        cfg.resolve = cfg.resolve || {};
+        cfg.resolve.alias = cfg.resolve.alias || {};
+        cfg.resolve.alias.electron = path.resolve(
+          __dirname,
+          "src/shims/electron-renderer.js"
+        );
       }
     },
     devServer: {
@@ -135,6 +135,7 @@ module.exports = function() {
       // id: "org.cordova.quasar.app"
     },
     electron: {
+      nodeIntegration: false,
       bundler: "builder", // or "packager"
       extendWebpack() {
         // cfg

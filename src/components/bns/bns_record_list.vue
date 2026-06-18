@@ -212,7 +212,7 @@ import { mapState } from "vuex";
 import { i18n } from "boot/i18n";
 import ContextMenu from "components/menus/contextmenu";
 
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 
 export default {
   name: "BNSRecordList",

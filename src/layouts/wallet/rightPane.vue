@@ -98,7 +98,6 @@
         <div v-else style="margin-right:4px;">
           <Adressbook />
         </div>
-        <!-- <router-view /> -->
       </keep-alive>
     </article>
   </section>
@@ -109,7 +108,6 @@ import { mapState } from "vuex";
 import Send from "pages/wallet/send";
 import Receive from "pages/wallet/receive";
 import Adressbook from "pages/wallet/addressbook.vue";
-import { Gateway } from "../../gateway/gateway";
 
 export default {
   name: "RightPane",
@@ -123,13 +121,6 @@ export default {
     view_only: state => state.gateway.wallet.info.view_only,
     routes: state => state.gateway.router_path_rightpane
   }),
-  data() {
-    return {
-      // routes: "send",
-      gateway: new Gateway()
-    };
-  },
-
   methods: {
     router: function(e) {
       this.$gateway.send("wallet", "set_sender_address", {

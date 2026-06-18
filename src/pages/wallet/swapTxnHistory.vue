@@ -260,7 +260,7 @@
 </template>
 
 <script>
-const moment = require("moment");
+import moment from "moment";
 import swapWaitingTxnHistory from "./swapWaitingTxnHistory.vue";
 import { mapState } from "vuex";
 import SwapTxnDetails from "./swapTxnDetails.vue";

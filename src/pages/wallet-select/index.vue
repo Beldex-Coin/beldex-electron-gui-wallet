@@ -186,7 +186,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import ContextMenu from "components/menus/contextmenu";
 
