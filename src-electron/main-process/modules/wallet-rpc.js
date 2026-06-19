@@ -1,7 +1,6 @@
 import child_process from "child_process";
-const request = require("request-promise");
+import axios from "axios";
 const queue = require("promise-queue");
-const nodeQueue = require("node-request-queue");
 const http = require("http");
 const os = require("os");
 const fs = require("fs-extra");
@@ -9,6 +8,10 @@ const path = require("upath");
 const crypto = require("crypto");
 const portscanner = require("portscanner");
 const { Swap } = require("./swap");
+
+const PASSWORD_HASH_PBKDF2_ITERATIONS = 600000;
+const PASSWORD_HASH_KEY_LENGTH = 64;
+const PASSWORD_HASH_DIGEST = "sha512";
 
 export class WalletRPC {
   constructor(backend) {
@@ -494,62 +497,55 @@ export class WalletRPC {
   }
 
   async getBalance(method) {
-    let options = {
-      uri: `${this.protocol}${this.hostname}:${this.port}/json_rpc`,
-      method: "POST",
-      json: {
-        jsonrpc: "2.0",
-        id: this.id++,
-        method: method
-      },
-      auth: {
-        user: this.auth[0],
-        pass: this.auth[1],
-        sendImmediately: false
-      },
-      agent: this.agent
-    };
     this.getTransactions().then(wallet => {
       this.sendGateway("set_wallet_data", wallet);
     });
-    let rq = new nodeQueue(1000);
-    rq.push(options);
-    rq.on("resolved", response => {
-      if (method == "getbalance") {
-        let walletData = {
-          info: {
-            address: response.result.per_subaddress[0].address,
-            balance: response.result.balance,
-            unlocked_balance: response.result.unlocked_balance,
-            view_only: this.wallet_state.view_only,
-            load_balance: false
-          }
-        };
-        this.sendGateway("set_wallet_data", walletData);
+    const response = await this.sendRPC(method);
+    if (response.error || method !== "getbalance") {
+      return response;
+    }
+
+    let walletData = {
+      info: {
+        address: response.result.per_subaddress[0].address,
+        balance: response.result.balance,
+        unlocked_balance: response.result.unlocked_balance,
+        view_only: this.wallet_state.view_only,
+        load_balance: false
       }
-      // Handle successfull response
-    })
-      .on("rejected", err => {
-        return {
-          method: method,
-          params: {},
-          error: {
-            code: -1,
-            message: "Cannot connect to wallet-rpc",
-            cause: err.message
-          }
-        };
-        // Handle rejected response
-      })
-      .on("completed", () => {
-        console.log("completed queue");
-        // Handle queue empty.
-      });
+    };
+    this.sendGateway("set_wallet_data", walletData);
+    return response;
+  }
+
+  derivePasswordHash(password, callback) {
+    crypto.pbkdf2(
+      password,
+      this.auth[2],
+      PASSWORD_HASH_PBKDF2_ITERATIONS,
+      PASSWORD_HASH_KEY_LENGTH,
+      PASSWORD_HASH_DIGEST,
+      callback
+    );
+  }
+
+  derivePasswordHashSync(password) {
+    return crypto.pbkdf2Sync(
+      password,
+      this.auth[2],
+      PASSWORD_HASH_PBKDF2_ITERATIONS,
+      PASSWORD_HASH_KEY_LENGTH,
+      PASSWORD_HASH_DIGEST
+    );
   }
 
   isValidPasswordHash(password_hash) {
     if (this.wallet_state.password_hash === null) return true;
-    return this.wallet_state.password_hash === password_hash.toString("hex");
+    const hash =
+      typeof password_hash === "string"
+        ? password_hash
+        : password_hash.toString("hex");
+    return this.wallet_state.password_hash === hash;
   }
 
   hasPassword() {
@@ -559,25 +555,18 @@ export class WalletRPC {
     }
 
     // We need to check if the hash generated with an empty string is the same as the password_hash we are storing
-    crypto.pbkdf2(
-      "",
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("set_has_password", false);
-          return;
-        }
-
-        // If the pass hash doesn't match empty string then we don't have a password
-        this.sendGateway(
-          "set_has_password",
-          this.wallet_state.password_hash !== password_hash.toString("hex")
-        );
+    this.derivePasswordHash("", (err, password_hash) => {
+      if (err) {
+        this.sendGateway("set_has_password", false);
+        return;
       }
-    );
+
+      // If the pass hash doesn't match empty string then we don't have a password
+      this.sendGateway(
+        "set_has_password",
+        this.wallet_state.password_hash !== password_hash.toString("hex")
+      );
+    });
   }
 
   validateAddress(address) {
@@ -619,9 +608,9 @@ export class WalletRPC {
       }
 
       // store hash of the password so we can check against it later when requesting private keys, or for sending txs
-      this.wallet_state.password_hash = crypto
-        .pbkdf2Sync(password, this.auth[2], 1000, 64, "sha512")
-        .toString("hex");
+      this.wallet_state.password_hash = this.derivePasswordHashSync(
+        password
+      ).toString("hex");
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
@@ -679,9 +668,9 @@ export class WalletRPC {
       }
 
       // store hash of the password so we can check against it later when requesting private keys, or for sending txs
-      this.wallet_state.password_hash = crypto
-        .pbkdf2Sync(password, this.auth[2], 1000, 64, "sha512")
-        .toString("hex");
+      this.wallet_state.password_hash = this.derivePasswordHashSync(
+        password
+      ).toString("hex");
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
@@ -747,9 +736,9 @@ export class WalletRPC {
       }
 
       // store hash of the password so we can check against it later when requesting private keys, or for sending txs
-      this.wallet_state.password_hash = crypto
-        .pbkdf2Sync(password, this.auth[2], 1000, 64, "sha512")
-        .toString("hex");
+      this.wallet_state.password_hash = this.derivePasswordHashSync(
+        password
+      ).toString("hex");
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
@@ -815,9 +804,9 @@ export class WalletRPC {
       }
 
       // store hash of the password so we can check against it later when requesting private keys, or for sending txs
-      this.wallet_state.password_hash = crypto
-        .pbkdf2Sync(password, this.auth[2], 1000, 64, "sha512")
-        .toString("hex");
+      this.wallet_state.password_hash = this.derivePasswordHashSync(
+        password
+      ).toString("hex");
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
@@ -893,9 +882,9 @@ export class WalletRPC {
             return;
           }
           // store hash of the password so we can check against it later when requesting private keys, or for sending txs
-          this.wallet_state.password_hash = crypto
-            .pbkdf2Sync(password, this.auth[2], 1000, 64, "sha512")
-            .toString("hex");
+          this.wallet_state.password_hash = this.derivePasswordHashSync(
+            password
+          ).toString("hex");
           this.wallet_state.name = wallet_name;
           this.wallet_state.open = true;
           this.finalizeNewWallet(wallet_name);
@@ -1011,9 +1000,9 @@ export class WalletRPC {
       }
 
       // store hash of the password so we can check against it later when requesting private keys, or for sending txs
-      this.wallet_state.password_hash = crypto
-        .pbkdf2Sync(password, this.auth[2], 1000, 64, "sha512")
-        .toString("hex");
+      this.wallet_state.password_hash = this.derivePasswordHashSync(
+        password
+      ).toString("hex");
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
@@ -1270,59 +1259,52 @@ export class WalletRPC {
     //   _name = _name + ".bdx";
     // }
 
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("set_bns_status", {
-            code: -1,
-            i18n: "notification.errors.internalError",
-            sending: false
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("set_bns_status", {
-            code: -1,
-            i18n: "notification.errors.invalidPassword",
-            sending: false
-          });
-          return;
-        }
-        const params = {
-          years,
-          name: _name
-        };
-        this.sendRPC("bns_renew_mapping", params).then(data => {
-          if (data.hasOwnProperty("error")) {
-            let error =
-              data.error.message.charAt(0).toUpperCase() +
-              data.error.message.slice(1);
-            this.sendGateway("set_bns_status", {
-              code: -1,
-              message: error,
-              sending: false
-            });
-            return;
-          }
-
-          // this.purchasedNames[name.trim()] = type;
-
-          setTimeout(() => this.updateLocalBNSRecords(), 5000);
-
-          this.sendGateway("set_bns_status", {
-            code: 0,
-            i18n: "notification.positive.nameRenewed",
-            message: "notification.positive.nameRenewed",
-            sending: false
-          });
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("set_bns_status", {
+          code: -1,
+          i18n: "notification.errors.internalError",
+          sending: false
         });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("set_bns_status", {
+          code: -1,
+          i18n: "notification.errors.invalidPassword",
+          sending: false
+        });
+        return;
+      }
+      const params = {
+        years,
+        name: _name
+      };
+      this.sendRPC("bns_renew_mapping", params).then(data => {
+        if (data.hasOwnProperty("error")) {
+          let error =
+            data.error.message.charAt(0).toUpperCase() +
+            data.error.message.slice(1);
+          this.sendGateway("set_bns_status", {
+            code: -1,
+            message: error,
+            sending: false
+          });
+          return;
+        }
+
+        // this.purchasedNames[name.trim()] = type;
+
+        setTimeout(() => this.updateLocalBNSRecords(), 5000);
+
+        this.sendGateway("set_bns_status", {
+          code: 0,
+          i18n: "notification.positive.nameRenewed",
+          message: "notification.positive.nameRenewed",
+          sending: false
+        });
+      });
+    });
   }
 
   /*
@@ -1566,130 +1548,116 @@ export class WalletRPC {
   }
 
   stake(password, amount, master_node_key, destination) {
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("set_mnode_status", {
-            stake: {
-              code: -1,
-              i18n: "notification.errors.internalError",
-              sending: false
-            }
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("set_mnode_status", {
-            stake: {
-              code: -1,
-              i18n: "notification.errors.invalidPassword",
-              sending: false
-            }
-          });
-          return;
-        }
-
-        amount = (parseFloat(amount) * 1e9).toFixed(0);
-
-        this.sendRPC("stake", {
-          amount,
-          destination,
-          master_node_key
-        }).then(data => {
-          if (data.hasOwnProperty("error")) {
-            let error =
-              data.error.message.charAt(0).toUpperCase() +
-              data.error.message.slice(1);
-            this.sendGateway("set_mnode_status", {
-              stake: {
-                code: -1,
-                message: error,
-                sending: false
-              }
-            });
-            return;
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("set_mnode_status", {
+          stake: {
+            code: -1,
+            i18n: "notification.errors.internalError",
+            sending: false
           }
+        });
+        return;
+      }
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("set_mnode_status", {
+          stake: {
+            code: -1,
+            i18n: "notification.errors.invalidPassword",
+            sending: false
+          }
+        });
+        return;
+      }
 
-          // Update the new mnode list
-          this.backend.daemon.updateMasterNodes();
+      amount = (parseFloat(amount) * 1e9).toFixed(0);
 
+      this.sendRPC("stake", {
+        amount,
+        destination,
+        master_node_key
+      }).then(data => {
+        if (data.hasOwnProperty("error")) {
+          let error =
+            data.error.message.charAt(0).toUpperCase() +
+            data.error.message.slice(1);
           this.sendGateway("set_mnode_status", {
             stake: {
-              code: 0,
-              i18n: "notification.positive.stakeSuccess",
+              code: -1,
+              message: error,
               sending: false
             }
           });
+          return;
+        }
+
+        // Update the new mnode list
+        this.backend.daemon.updateMasterNodes();
+
+        this.sendGateway("set_mnode_status", {
+          stake: {
+            code: 0,
+            i18n: "notification.positive.stakeSuccess",
+            sending: false
+          }
         });
-      }
-    );
+      });
+    });
   }
 
   registerMnode(password, register_master_node_str) {
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("set_mnode_status", {
-            registration: {
-              code: -1,
-              i18n: "notification.errors.internalError",
-              sending: false
-            }
-          });
-          return;
-        }
-
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("set_mnode_status", {
-            registration: {
-              code: -1,
-              i18n: "notification.errors.invalidPassword",
-              sending: false
-            }
-          });
-          return;
-        }
-
-        this.sendRPC("register_master_node", {
-          register_master_node_str
-        }).then(data => {
-          if (data.hasOwnProperty("error")) {
-            const error =
-              data.error.message.charAt(0).toUpperCase() +
-              data.error.message.slice(1);
-            this.sendGateway("set_mnode_status", {
-              registration: {
-                code: -1,
-                message: error,
-                sending: false
-              }
-            });
-            return;
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("set_mnode_status", {
+          registration: {
+            code: -1,
+            i18n: "notification.errors.internalError",
+            sending: false
           }
+        });
+        return;
+      }
 
-          // Update the new mnode list
-          this.backend.daemon.updateMasterNodes();
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("set_mnode_status", {
+          registration: {
+            code: -1,
+            i18n: "notification.errors.invalidPassword",
+            sending: false
+          }
+        });
+        return;
+      }
 
+      this.sendRPC("register_master_node", {
+        register_master_node_str
+      }).then(data => {
+        if (data.hasOwnProperty("error")) {
+          const error =
+            data.error.message.charAt(0).toUpperCase() +
+            data.error.message.slice(1);
           this.sendGateway("set_mnode_status", {
             registration: {
-              code: 0,
-              i18n: "notification.positive.registerMasterNodeSuccess",
+              code: -1,
+              message: error,
               sending: false
             }
           });
+          return;
+        }
+
+        // Update the new mnode list
+        this.backend.daemon.updateMasterNodes();
+
+        this.sendGateway("set_mnode_status", {
+          registration: {
+            code: 0,
+            i18n: "notification.positive.registerMasterNodeSuccess",
+            sending: false
+          }
         });
-      }
-    );
+      });
+    });
   }
 
   async updateMasterNodeList() {
@@ -1709,76 +1677,69 @@ export class WalletRPC {
     };
 
     // Unlock code 0 means success, 1 means can unlock, -1 means error
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          sendError("notification.errors.internalError");
-          return;
-        }
-
-        if (!this.isValidPasswordHash(password_hash)) {
-          sendError("notification.errors.invalidPassword");
-          return;
-        }
-
-        const sendRPC = path => {
-          return this.sendRPC(path, {
-            master_node_key
-          }).then(data => {
-            if (data.hasOwnProperty("error")) {
-              const error =
-                data.error.message.charAt(0).toUpperCase() +
-                data.error.message.slice(1);
-              sendError(error, false);
-              return null;
-            }
-
-            if (!data.hasOwnProperty("result")) {
-              sendError("notification.errors.failedMasterNodeUnlock");
-              return null;
-            }
-
-            return data.result;
-          });
-        };
-
-        if (confirmed) {
-          sendRPC("request_stake_unlock").then(data => {
-            if (!data) return;
-
-            const unlock = {
-              code: data.unlocked ? 0 : -1,
-              message: data.msg,
-              sending: false
-            };
-
-            // Update the new mnode list
-            if (data.unlocked) {
-              this.backend.daemon.updateMasterNodes();
-            }
-
-            this.sendGateway("set_mnode_status", { unlock });
-          });
-        } else {
-          sendRPC("can_request_stake_unlock").then(data => {
-            if (!data) return;
-
-            const unlock = {
-              code: data.can_unlock ? 1 : -1,
-              message: data.msg,
-              sending: false
-            };
-
-            this.sendGateway("set_mnode_status", { unlock });
-          });
-        }
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        sendError("notification.errors.internalError");
+        return;
       }
-    );
+
+      if (!this.isValidPasswordHash(password_hash)) {
+        sendError("notification.errors.invalidPassword");
+        return;
+      }
+
+      const sendRPC = path => {
+        return this.sendRPC(path, {
+          master_node_key
+        }).then(data => {
+          if (data.hasOwnProperty("error")) {
+            const error =
+              data.error.message.charAt(0).toUpperCase() +
+              data.error.message.slice(1);
+            sendError(error, false);
+            return null;
+          }
+
+          if (!data.hasOwnProperty("result")) {
+            sendError("notification.errors.failedMasterNodeUnlock");
+            return null;
+          }
+
+          return data.result;
+        });
+      };
+
+      if (confirmed) {
+        sendRPC("request_stake_unlock").then(data => {
+          if (!data) return;
+
+          const unlock = {
+            code: data.unlocked ? 0 : -1,
+            message: data.msg,
+            sending: false
+          };
+
+          // Update the new mnode list
+          if (data.unlocked) {
+            this.backend.daemon.updateMasterNodes();
+          }
+
+          this.sendGateway("set_mnode_status", { unlock });
+        });
+      } else {
+        sendRPC("can_request_stake_unlock").then(data => {
+          if (!data) return;
+
+          const unlock = {
+            code: data.can_unlock ? 1 : -1,
+            message: data.msg,
+            sending: false
+          };
+
+          this.sendGateway("set_mnode_status", { unlock });
+        });
+      }
+    });
   }
 
   // submits the transaction to the blockchain, irreversible from here
@@ -1959,7 +1920,7 @@ export class WalletRPC {
         });
     };
 
-    crypto.pbkdf2(password, this.auth[2], 1000, 64, "sha512", cryptoCallback);
+    this.derivePasswordHash(password, cryptoCallback);
   }
 
   purchaseBNS(
@@ -1986,77 +1947,68 @@ export class WalletRPC {
     //   value = value + ".bdx";
     // }
 
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("set_bns_status", {
-            code: -1,
-            i18n: "notification.errors.internalError",
-            sending: false
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("set_bns_status", {
-            code: -1,
-            i18n: "notification.errors.invalidPassword",
-            sending: false
-          });
-          return;
-        }
-
-        const params = {
-          years: years,
-          owner: _owner,
-          backup_owner: backup_owner,
-          name: _name,
-          value_bchat: bchatId,
-
-          value_belnet: belnetId,
-          value_wallet: walletAddress,
-          value_eth_addr: ethAddress
-        };
-        this.sendRPC("bns_buy_mapping", params).then(data => {
-          if (data.hasOwnProperty("error")) {
-            let error =
-              data.error.message.charAt(0).toUpperCase() +
-              data.error.message.slice(1);
-            if (
-              error.includes(
-                "Cannot buy an BNS name that is already registered"
-              )
-            ) {
-              error = "Cannot buy a BNS name that is already registered";
-            }
-            if (error.includes("Transaction is too big")) {
-              error =
-                "Transaction is too big, please do the sweep_all from [masternode -> stakings]";
-            }
-            this.sendGateway("set_bns_status", {
-              code: -1,
-              message: error,
-              sending: false
-            });
-            return;
-          }
-          this.purchasedNames[name.trim()] = years;
-
-          // Fetch new records and then get the decrypted record for the one we just inserted
-          setTimeout(() => this.updateLocalBNSRecords(), 5000);
-
-          this.sendGateway("set_bns_status", {
-            code: 0,
-            i18n: "notification.positive.namePurchased",
-            sending: false
-          });
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("set_bns_status", {
+          code: -1,
+          i18n: "notification.errors.internalError",
+          sending: false
         });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("set_bns_status", {
+          code: -1,
+          i18n: "notification.errors.invalidPassword",
+          sending: false
+        });
+        return;
+      }
+
+      const params = {
+        years: years,
+        owner: _owner,
+        backup_owner: backup_owner,
+        name: _name,
+        value_bchat: bchatId,
+
+        value_belnet: belnetId,
+        value_wallet: walletAddress,
+        value_eth_addr: ethAddress
+      };
+      this.sendRPC("bns_buy_mapping", params).then(data => {
+        if (data.hasOwnProperty("error")) {
+          let error =
+            data.error.message.charAt(0).toUpperCase() +
+            data.error.message.slice(1);
+          if (
+            error.includes("Cannot buy an BNS name that is already registered")
+          ) {
+            error = "Cannot buy a BNS name that is already registered";
+          }
+          if (error.includes("Transaction is too big")) {
+            error =
+              "Transaction is too big, please do the sweep_all from [masternode -> stakings]";
+          }
+          this.sendGateway("set_bns_status", {
+            code: -1,
+            message: error,
+            sending: false
+          });
+          return;
+        }
+        this.purchasedNames[name.trim()] = years;
+
+        // Fetch new records and then get the decrypted record for the one we just inserted
+        setTimeout(() => this.updateLocalBNSRecords(), 5000);
+
+        this.sendGateway("set_bns_status", {
+          code: 0,
+          i18n: "notification.positive.namePurchased",
+          sending: false
+        });
+      });
+    });
   }
 
   updateBNSMapping(
@@ -2082,104 +2034,95 @@ export class WalletRPC {
     //   value = value + ".bdx";
     // }
 
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("set_bns_status", {
+          code: -1,
+          i18n: "notification.errors.internalError",
+          sending: false
+        });
+        return;
+      }
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("set_bns_status", {
+          code: -1,
+          i18n: "notification.errors.invalidPassword",
+          sending: false
+        });
+        return;
+      }
+
+      let params = {
+        name
+      };
+      if (owner) {
+        params.owner = owner;
+      }
+      if (backupOwner) {
+        params.backupOwner = backupOwner;
+      }
+      if (value_bchat) {
+        params.value_bchat = value_bchat;
+      }
+      if (value_belnet) {
+        params.value_belnet = value_belnet;
+      }
+      if (value_wallet) {
+        params.value_wallet = value_wallet;
+      }
+      if (value_eth_addr) {
+        params.value_eth_addr = value_eth_addr;
+      }
+      this.sendRPC("bns_update_mapping", params).then(data => {
+        if (data.hasOwnProperty("error")) {
+          let error =
+            data.error.message.charAt(0).toUpperCase() +
+            data.error.message.slice(1);
+          if (
+            error.includes("Cannot buy an BNS name that is already registered")
+          ) {
+            error = "Cannot buy an BNS name that is already registered";
+          }
           this.sendGateway("set_bns_status", {
             code: -1,
-            i18n: "notification.errors.internalError",
-            sending: false
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("set_bns_status", {
-            code: -1,
-            i18n: "notification.errors.invalidPassword",
+            message: error,
             sending: false
           });
           return;
         }
 
-        let params = {
-          name
-        };
-        if (owner) {
-          params.owner = owner;
-        }
-        if (backupOwner) {
-          params.backupOwner = backupOwner;
-        }
-        if (value_bchat) {
-          params.value_bchat = value_bchat;
-        }
-        if (value_belnet) {
-          params.value_belnet = value_belnet;
-        }
-        if (value_wallet) {
-          params.value_wallet = value_wallet;
-        }
-        if (value_eth_addr) {
-          params.value_eth_addr = value_eth_addr;
-        }
-        this.sendRPC("bns_update_mapping", params).then(data => {
-          if (data.hasOwnProperty("error")) {
-            let error =
-              data.error.message.charAt(0).toUpperCase() +
-              data.error.message.slice(1);
-            if (
-              error.includes(
-                "Cannot buy an BNS name that is already registered"
-              )
-            ) {
-              error = "Cannot buy an BNS name that is already registered";
-            }
-            this.sendGateway("set_bns_status", {
-              code: -1,
-              message: error,
-              sending: false
-            });
-            return;
+        // this.purchasedNames[name.trim()] = type;
+
+        // Fetch new records and then get the decrypted record for the one we just inserted
+        setTimeout(() => this.startBnsHeartBeat(), 5000);
+
+        // Optimistically update our record
+        const { bnsRecords } = this.wallet_state;
+        const newRecords = bnsRecords.map(record => {
+          if (
+            // record.type === type &&
+            record.name &&
+            record.name.toLowerCase() === name
+          ) {
+            return {
+              ...record,
+              ...params
+            };
           }
 
-          // this.purchasedNames[name.trim()] = type;
-
-          // Fetch new records and then get the decrypted record for the one we just inserted
-          setTimeout(() => this.startBnsHeartBeat(), 5000);
-
-          // Optimistically update our record
-          const { bnsRecords } = this.wallet_state;
-          const newRecords = bnsRecords.map(record => {
-            if (
-              // record.type === type &&
-              record.name &&
-              record.name.toLowerCase() === name
-            ) {
-              return {
-                ...record,
-                ...params
-              };
-            }
-
-            return record;
-          });
-          this.wallet_state.bnsRecords = newRecords;
-          this.sendGateway("set_wallet_data", { bnsRecords: newRecords });
-
-          this.sendGateway("set_bns_status", {
-            code: 0,
-            i18n: "notification.positive.bnsRecordUpdated",
-            sending: false,
-            message: "notification.positive.bnsRecordUpdated"
-          });
+          return record;
         });
-      }
-    );
+        this.wallet_state.bnsRecords = newRecords;
+        this.sendGateway("set_wallet_data", { bnsRecords: newRecords });
+
+        this.sendGateway("set_bns_status", {
+          code: 0,
+          i18n: "notification.positive.bnsRecordUpdated",
+          sending: false,
+          message: "notification.positive.bnsRecordUpdated"
+        });
+      });
+    });
   }
 
   proveTransaction(txid, address, message) {
@@ -2279,56 +2222,49 @@ export class WalletRPC {
   }
 
   getPrivateKeys(password) {
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("set_wallet_data", {
-            secret: {
-              mnemonic: "notification.errors.internalError",
-              spend_key: -1,
-              view_key: -1
-            }
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("set_wallet_data", {
-            secret: {
-              mnemonic: "notification.errors.invalidPassword",
-              spend_key: -1,
-              view_key: -1
-            }
-          });
-          return;
-        }
-        Promise.all([
-          this.sendRPC("query_key", { key_type: "mnemonic" }),
-          this.sendRPC("query_key", { key_type: "spend_key" }),
-          this.sendRPC("query_key", { key_type: "view_key" })
-        ]).then(data => {
-          let wallet = {
-            secret: {
-              mnemonic: "",
-              spend_key: "",
-              view_key: ""
-            }
-          };
-          for (let n of data) {
-            if (n.hasOwnProperty("error") || !n.hasOwnProperty("result")) {
-              continue;
-            }
-            wallet.secret[n.params.key_type] = n.result.key;
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("set_wallet_data", {
+          secret: {
+            mnemonic: "notification.errors.internalError",
+            spend_key: -1,
+            view_key: -1
           }
-
-          this.sendGateway("set_wallet_data", wallet);
         });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("set_wallet_data", {
+          secret: {
+            mnemonic: "notification.errors.invalidPassword",
+            spend_key: -1,
+            view_key: -1
+          }
+        });
+        return;
+      }
+      Promise.all([
+        this.sendRPC("query_key", { key_type: "mnemonic" }),
+        this.sendRPC("query_key", { key_type: "spend_key" }),
+        this.sendRPC("query_key", { key_type: "view_key" })
+      ]).then(data => {
+        let wallet = {
+          secret: {
+            mnemonic: "",
+            spend_key: "",
+            view_key: ""
+          }
+        };
+        for (let n of data) {
+          if (n.hasOwnProperty("error") || !n.hasOwnProperty("result")) {
+            continue;
+          }
+          wallet.secret[n.params.key_type] = n.result.key;
+        }
+
+        this.sendGateway("set_wallet_data", wallet);
+      });
+    });
   }
 
   getAddressList() {
@@ -2580,189 +2516,159 @@ export class WalletRPC {
   }
 
   deregisterImages(password) {
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.internalError",
-            timeout: 2000
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.invalidPassword",
-            timeout: 2000
-          });
-          return;
-        }
-        this.sendRPC("export_key_images")
-          .then(data => {
-            if (
-              data.hasOwnProperty("error") ||
-              !data.hasOwnProperty("result")
-            ) {
-              // onError();
-              return [];
-            }
-            if (data.result.signed_key_images) {
-              const signed_key_images = data.result.signed_key_images;
-              return this.sendGateway("set_daemon_data", { signed_key_images });
-              // return data.result.signed_key_images;
-            } else {
-              return [];
-            }
-          })
-          .catch();
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.internalError",
+          timeout: 2000
+        });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.invalidPassword",
+          timeout: 2000
+        });
+        return;
+      }
+      this.sendRPC("export_key_images")
+        .then(data => {
+          if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+            // onError();
+            return [];
+          }
+          if (data.result.signed_key_images) {
+            const signed_key_images = data.result.signed_key_images;
+            return this.sendGateway("set_daemon_data", { signed_key_images });
+            // return data.result.signed_key_images;
+          } else {
+            return [];
+          }
+        })
+        .catch();
+    });
   }
   exportKeyImages(password, filename = null) {
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.internalError",
-            timeout: 2000
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.invalidPassword",
-            timeout: 2000
-          });
-          return;
-        }
-
-        if (filename == null) {
-          filename = path.join(
-            this.wallet_data_dir,
-            "images",
-            this.wallet_state.name,
-            "key_image_export"
-          );
-        } else {
-          filename = path.join(filename, "key_image_export");
-        }
-
-        const onError = () =>
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.keyImages.exporting",
-            timeout: 2000
-          });
-
-        this.sendRPC("export_key_images")
-          .then(data => {
-            if (
-              data.hasOwnProperty("error") ||
-              !data.hasOwnProperty("result")
-            ) {
-              onError();
-              return;
-            }
-
-            if (data.result.signed_key_images) {
-              fs.outputJSONSync(filename, data.result.signed_key_images);
-              this.sendGateway("show_notification", {
-                i18n: [
-                  "notification.positive.keyImages.exported",
-                  { filename }
-                ],
-                timeout: 2000
-              });
-            } else {
-              this.sendGateway("show_notification", {
-                type: "warning",
-                textColor: "black",
-                i18n: "notification.warnings.noKeyImageExport",
-                timeout: 2000
-              });
-            }
-          })
-          .catch(onError);
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.internalError",
+          timeout: 2000
+        });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.invalidPassword",
+          timeout: 2000
+        });
+        return;
+      }
+
+      if (filename == null) {
+        filename = path.join(
+          this.wallet_data_dir,
+          "images",
+          this.wallet_state.name,
+          "key_image_export"
+        );
+      } else {
+        filename = path.join(filename, "key_image_export");
+      }
+
+      const onError = () =>
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.keyImages.exporting",
+          timeout: 2000
+        });
+
+      this.sendRPC("export_key_images")
+        .then(data => {
+          if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+            onError();
+            return;
+          }
+
+          if (data.result.signed_key_images) {
+            fs.outputJSONSync(filename, data.result.signed_key_images);
+            this.sendGateway("show_notification", {
+              i18n: ["notification.positive.keyImages.exported", { filename }],
+              timeout: 2000
+            });
+          } else {
+            this.sendGateway("show_notification", {
+              type: "warning",
+              textColor: "black",
+              i18n: "notification.warnings.noKeyImageExport",
+              timeout: 2000
+            });
+          }
+        })
+        .catch(onError);
+    });
   }
 
   importKeyImages(password, filename = null) {
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.internalError",
-            timeout: 2000
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.invalidPassword",
-            timeout: 2000
-          });
-          return;
-        }
-
-        if (filename == null) {
-          filename = path.join(
-            this.wallet_data_dir,
-            "images",
-            this.wallet_state.name,
-            "key_image_export"
-          );
-        }
-
-        const onError = i18n =>
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n,
-            timeout: 2000
-          });
-
-        fs.readJSON(filename)
-          .then(signed_key_images => {
-            this.sendRPC("import_key_images", {
-              signed_key_images
-            }).then(data => {
-              if (
-                data.hasOwnProperty("error") ||
-                !data.hasOwnProperty("result")
-              ) {
-                onError("notification.errors.keyImages.importing");
-                return;
-              }
-
-              this.sendGateway("show_notification", {
-                i18n: "notification.positive.keyImages.imported",
-                timeout: 2000
-              });
-            });
-          })
-          .catch(() => onError("notification.errors.keyImages.reading"));
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.internalError",
+          timeout: 2000
+        });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.invalidPassword",
+          timeout: 2000
+        });
+        return;
+      }
+
+      if (filename == null) {
+        filename = path.join(
+          this.wallet_data_dir,
+          "images",
+          this.wallet_state.name,
+          "key_image_export"
+        );
+      }
+
+      const onError = i18n =>
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n,
+          timeout: 2000
+        });
+
+      fs.readJSON(filename)
+        .then(signed_key_images => {
+          this.sendRPC("import_key_images", {
+            signed_key_images
+          }).then(data => {
+            if (
+              data.hasOwnProperty("error") ||
+              !data.hasOwnProperty("result")
+            ) {
+              onError("notification.errors.keyImages.importing");
+              return;
+            }
+
+            this.sendGateway("show_notification", {
+              i18n: "notification.positive.keyImages.imported",
+              timeout: 2000
+            });
+          });
+        })
+        .catch(() => onError("notification.errors.keyImages.reading"));
+    });
   }
 
   copyOldGuiWallets(wallets) {
@@ -2984,104 +2890,90 @@ export class WalletRPC {
   }
 
   changeWalletPassword(old_password, new_password) {
-    crypto.pbkdf2(
-      old_password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.internalError",
-            timeout: 2000
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.invalidOldPassword",
-            timeout: 2000
-          });
-          return;
-        }
-
-        this.sendRPC("change_wallet_password", {
-          old_password,
-          new_password
-        }).then(data => {
-          if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
-            this.sendGateway("show_notification", {
-              type: "negative",
-              i18n: "notification.errors.changingPassword",
-              timeout: 2000
-            });
-            return;
-          }
-
-          // store hash of the password so we can check against it later when requesting private keys, or for sending txs
-          this.wallet_state.password_hash = crypto
-            .pbkdf2Sync(new_password, this.auth[2], 1000, 64, "sha512")
-            .toString("hex");
-
-          this.sendGateway("show_notification", {
-            i18n: "notification.positive.passwordUpdated",
-            timeout: 2000
-          });
+    this.derivePasswordHash(old_password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.internalError",
+          timeout: 2000
         });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.invalidOldPassword",
+          timeout: 2000
+        });
+        return;
+      }
+
+      this.sendRPC("change_wallet_password", {
+        old_password,
+        new_password
+      }).then(data => {
+        if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+          this.sendGateway("show_notification", {
+            type: "negative",
+            i18n: "notification.errors.changingPassword",
+            timeout: 2000
+          });
+          return;
+        }
+
+        // store hash of the password so we can check against it later when requesting private keys, or for sending txs
+        this.wallet_state.password_hash = this.derivePasswordHashSync(
+          new_password
+        ).toString("hex");
+
+        this.sendGateway("show_notification", {
+          i18n: "notification.positive.passwordUpdated",
+          timeout: 2000
+        });
+      });
+    });
   }
 
   deleteWallet(password) {
-    crypto.pbkdf2(
-      password,
-      this.auth[2],
-      1000,
-      64,
-      "sha512",
-      (err, password_hash) => {
-        if (err) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.internalError",
-            timeout: 2000
-          });
-          return;
-        }
-        if (!this.isValidPasswordHash(password_hash)) {
-          this.sendGateway("show_notification", {
-            type: "negative",
-            i18n: "notification.errors.invalidPassword",
-            timeout: 2000
-          });
-          return;
-        }
-
-        this.sendGateway("show_loading", {
-          message: "Deleting wallet"
+    this.derivePasswordHash(password, (err, password_hash) => {
+      if (err) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.internalError",
+          timeout: 2000
         });
-
-        let wallet_path = path.join(this.wallet_dir, this.wallet_state.name);
-        this.closeWallet().then(() => {
-          try {
-            if (fs.existsSync(wallet_path + ".keys"))
-              fs.unlinkSync(wallet_path + ".keys");
-            if (fs.existsSync(wallet_path + ".address.txt"))
-              fs.unlinkSync(wallet_path + ".address.txt");
-            if (fs.existsSync(wallet_path)) fs.unlinkSync(wallet_path);
-          } catch (e) {
-            console.warn(`Failed to delete wallet files: ${e}`);
-          }
-
-          this.listWallets();
-          this.sendGateway("hide_loading");
-          this.sendGateway("return_to_wallet_select");
-        });
+        return;
       }
-    );
+      if (!this.isValidPasswordHash(password_hash)) {
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.invalidPassword",
+          timeout: 2000
+        });
+        return;
+      }
+
+      this.sendGateway("show_loading", {
+        message: "Deleting wallet"
+      });
+
+      let wallet_path = path.join(this.wallet_dir, this.wallet_state.name);
+      this.closeWallet().then(() => {
+        try {
+          if (fs.existsSync(wallet_path + ".keys"))
+            fs.unlinkSync(wallet_path + ".keys");
+          if (fs.existsSync(wallet_path + ".address.txt"))
+            fs.unlinkSync(wallet_path + ".address.txt");
+          if (fs.existsSync(wallet_path)) fs.unlinkSync(wallet_path);
+        } catch (e) {
+          console.warn(`Failed to delete wallet files: ${e}`);
+        }
+
+        this.listWallets();
+        this.sendGateway("hide_loading");
+        this.sendGateway("return_to_wallet_select");
+      });
+    });
   }
 
   async saveWallet() {
@@ -3118,31 +3010,33 @@ export class WalletRPC {
 
   sendRPC(method, params = {}, timeout = 0) {
     let id = this.id++;
-    let options = {
-      uri: `${this.protocol}${this.hostname}:${this.port}/json_rpc`,
-      method: "POST",
-      json: {
-        jsonrpc: "2.0",
-        id: `${id}`,
-        method: method
-      },
-      auth: {
-        user: this.auth[0],
-        pass: this.auth[1],
-        sendImmediately: false
-      },
-      agent: this.agent
+    const url = `${this.protocol}${this.hostname}:${this.port}/json_rpc`;
+    let payload = {
+      jsonrpc: "2.0",
+      id: `${id}`,
+      method: method
     };
     if (Object.keys(params).length !== 0) {
-      options.json.params = params;
+      payload.params = params;
     }
+
+    let options = {
+      url,
+      method: "POST",
+      data: payload,
+      auth: {
+        username: this.auth[0],
+        password: this.auth[1]
+      },
+      httpAgent: this.agent
+    };
     if (timeout > 0) {
       options.timeout = timeout;
     }
 
     return this.queue.add(() => {
-      return request(options)
-        .then(response => {
+      return axios(options)
+        .then(({ data: response }) => {
           if (response.hasOwnProperty("error")) {
             return {
               method: method,
@@ -3163,7 +3057,7 @@ export class WalletRPC {
             error: {
               code: -1,
               message: "Cannot connect to wallet-rpc",
-              cause: error.cause
+              cause: error.cause || error
             }
           };
         });
@@ -3182,7 +3076,6 @@ export class WalletRPC {
       }
 
       this.closeWallet().then(() => {
-        // normally we would exit wallet after this promise
         // however if the wallet is not responsive to RPC
         // requests then we must forcefully close it below
       });

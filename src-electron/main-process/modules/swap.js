@@ -1,6 +1,11 @@
 import axios from "axios";
 const { SwapTxnHistory } = require("./swap_transaction_history");
+const https = require("https");
+const crypto = require("crypto");
+const tls = require("tls");
+import dotenv from "dotenv";
 
+dotenv.config();
 export class Swap {
   constructor(backend) {
     this.backend = backend;
@@ -175,54 +180,42 @@ export class Swap {
         method,
         params
       };
+
+      const EXPECTED_PIN = process.env.PUBLIC_KEY_PIN;
+      const agent = new https.Agent({
+        checkServerIdentity(host, cert) {
+          const tlsError = tls.checkServerIdentity(host, cert);
+          if (tlsError) {
+            return tlsError;
+          }
+          const hash = crypto
+            .createHash("sha256")
+            .update(cert.pubkey)
+            .digest("base64");
+          if (hash !== EXPECTED_PIN) {
+            return new Error("Public key pinning failed");
+          }
+        }
+      });
       let signature = await axios.post(
-        "https://api.beldex.dev/api/v1/swap",
-        body
+        "http://apitesting.beldex.dev/api/v1/swap?type=swap",
+        body,
+        {
+          httpsAgent: agent,
+          headers: {
+            "x-api-key": process.env.BELDEX_API_KEY,
+            "Content-Type": "application/json"
+          }
+        }
       );
       let headers = {
         headers: {
           "Content-Type": "application/json",
-          "X-Api-Key": "+kLt3F2TMo8W2LbQSjs6IDaBG4O/VLZsRH+qnNX5FyU=",
+          "X-Api-Key": process.env.CHANGELLY_SWAP_API_KEY,
           "X-Api-Signature": signature.data.signature
         }
       };
-      // const request = require('request');
-      // let options = {
-      //   'method': 'POST',
-      //   'url': 'https://api.changelly.com/v2',
-      //   'headers': {
-      //     'Content-Type': 'application/json',
-      //     'X-Api-Key': '<<ENTER YOUR API KEY >>',
-      //     'X-Api-Signature': '<<ENTER YOUR PRIVATE KEY >>'
-      //   },
-      //   body: JSON.stringify(bo)
-      // };
-      // request(options, function (error, data) {
-      // try {
-      //   let response = JSON.parse(data.body);
-      //   if (response.hasOwnProperty("error")) {
-      //     return {
-      //       status:400,
-      //       method: method,
-      //       params: params,
-      //       error: response.error
-      //     };
-      //   }
-      //   return {
-      //     status:200,
-      //     method: method,
-      //     params: params,
-      //     result: response.result
-      //   };
-      // } catch (err) {
-      //   return {
-      //     status:400,
-      //     method: method,
-      //     params: params,
-      //     error: response.error
-      //   };
-      // }
-      // });
+
       try {
         let response = await axios.post(
           "https://api.changelly.com/v2",
@@ -248,6 +241,7 @@ export class Swap {
         };
       }
     } catch (err) {
+      console.log("err:", err);
       return err;
     }
   }
