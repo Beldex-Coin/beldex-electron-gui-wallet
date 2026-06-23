@@ -1,4 +1,3 @@
-const path = require("path");
 const crypto = require("crypto");
 const {
   clipboard,
@@ -8,7 +7,96 @@ const {
   shell
 } = require("electron");
 
-require(path.resolve(__dirname, "logging.js"));
+function cleanArgsForIPC(args) {
+  const redactKeyPattern = /(password|seed|mnemonic|secret|spend[_-]?key|view[_-]?key|private[_-]?key|auth|token)/i;
+  const redactValue = item => {
+    if (Array.isArray(item)) {
+      return item.map(redactValue);
+    }
+
+    if (item && typeof item === "object") {
+      return Object.keys(item).reduce((result, key) => {
+        result[key] = redactKeyPattern.test(key)
+          ? "[REDACTED]"
+          : redactValue(item[key]);
+        return result;
+      }, {});
+    }
+
+    return item;
+  };
+
+  return args
+    .map(item => {
+      if (typeof item !== "string") {
+        try {
+          return JSON.stringify(redactValue(item));
+        } catch (error) {
+          return item;
+        }
+      }
+
+      return redactKeyPattern.test(item) ? "[REDACTED]" : item;
+    })
+    .join(" ");
+}
+
+function now() {
+  return new Date().toJSON();
+}
+
+function installRendererLogging() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  function logAtLevel(level, prefix, ...args) {
+    const fn = `_${level}`;
+    if (typeof console[fn] === "function") {
+      console[fn](prefix, now(), ...args);
+    }
+
+    ipcRenderer.send(`log-${level}`, cleanArgsForIPC(args));
+  }
+
+  function log(...args) {
+    logAtLevel("info", "INFO ", ...args);
+  }
+
+  if (window.console) {
+    console._log = console.log;
+    console.log = log;
+    console._trace = console.trace;
+    console._debug = console.debug;
+    console._info = console.info;
+    console._warn = console.warn;
+    console._error = console.error;
+    console._fatal = console.error;
+  }
+
+  window.log = {
+    fatal: (...args) => logAtLevel("fatal", "FATAL", ...args),
+    error: (...args) => logAtLevel("error", "ERROR", ...args),
+    warn: (...args) => logAtLevel("warn", "WARN ", ...args),
+    info: (...args) => logAtLevel("info", "INFO ", ...args),
+    debug: (...args) => logAtLevel("debug", "DEBUG", ...args),
+    trace: (...args) => logAtLevel("trace", "TRACE", ...args)
+  };
+
+  window.onerror = (message, script, line, col, error) => {
+    const errorInfo =
+      error && error.stack ? error.stack : JSON.stringify(error);
+    window.log.error(`Top-level unhandled error: ${errorInfo}`);
+  };
+
+  window.addEventListener("unhandledrejection", rejectionEvent => {
+    const error = rejectionEvent.reason;
+    const errorInfo = error && error.stack ? error.stack : error;
+    window.log.error("Top-level unhandled promise rejection:", errorInfo);
+  });
+}
+
+installRendererLogging();
 
 class SCEE {
   constructor() {
@@ -132,6 +220,6 @@ const electronAPI = {
 
 if (process.contextIsolated) {
   contextBridge.exposeInMainWorld("electronAPI", electronAPI);
-} else {
+} else if (typeof window !== "undefined") {
   window.electronAPI = electronAPI;
 }
