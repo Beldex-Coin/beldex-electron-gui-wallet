@@ -547,10 +547,20 @@ export default {
     },
     copyPrivateKey(type, event) {
       event.stopPropagation();
-      for (let i = 0; i < event.path.length; i++) {
-        if (event.path[i].tagName == "BUTTON") {
-          event.path[i].blur();
-          break;
+
+      const path =
+        event.path || (event.composedPath && event.composedPath()) || [];
+      if (path && path.length) {
+        for (let i = 0; i < path.length; i++) {
+          if (path[i] && path[i].tagName === "BUTTON") {
+            path[i].blur();
+            break;
+          }
+        }
+      } else if (event.target && event.target.closest) {
+        const button = event.target.closest("button");
+        if (button) {
+          button.blur();
         }
       }
 
