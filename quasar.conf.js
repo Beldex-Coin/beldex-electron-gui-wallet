@@ -177,6 +177,7 @@ module.exports = function() {
           target: ["dmg", "zip"],
           icon: "src-electron/icons/icon.icns",
           category: "public.app-category.finance",
+          binaries: ["bin/beldexd", "bin/beldex-wallet-rpc"],
           // Notarizing: https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
           hardenedRuntime: true,
           gatekeeperAssess: false,
