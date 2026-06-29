@@ -1,5 +1,117 @@
 import axios from "axios";
 const { SwapTxnHistory } = require("./swap_transaction_history");
+const https = require("https");
+const crypto = require("crypto");
+const tls = require("tls");
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const CHANGELLY_API_URL = "https://api.changelly.com/v2";
+
+function parsePins(pinList = "") {
+  return pinList
+    .split(",")
+    .map(pin => pin.trim())
+    .filter(Boolean)
+    .map(pin => pin.replace(/^sha256\//i, ""));
+}
+
+function getBeldexSwapSignUrl() {
+  const configuredUrl = process.env.BELDEX_SWAP_SIGN_URL;
+  const parsed = assertHttpsUrl(configuredUrl);
+
+  if (
+    parsed.pathname.endsWith("/swap") &&
+    parsed.searchParams.get("type") === "swap"
+  ) {
+    return parsed.toString();
+  }
+
+  const normalizedPath = parsed.pathname.replace(/\/$/, "");
+  parsed.pathname = `${normalizedPath}/swap`;
+  parsed.searchParams.set("type", "swap");
+
+  return parsed.toString();
+}
+
+function getPinnedHosts() {
+  const beldexHost = new URL(getBeldexSwapSignUrl()).hostname;
+  return {
+    [beldexHost]: parsePins(process.env.BELDEX_PUBLIC_KEY_PIN || "")
+  };
+}
+
+function assertHttpsUrl(url) {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:") {
+    throw new Error(`Insecure endpoint blocked: ${url}`);
+  }
+  return parsed;
+}
+
+function getCertificateSpkiPin(cert) {
+  if (cert && cert.raw) {
+    const x509 = new crypto.X509Certificate(cert.raw);
+    const spkiDer = x509.publicKey.export({
+      type: "spki",
+      format: "der"
+    });
+    return crypto
+      .createHash("sha256")
+      .update(spkiDer)
+      .digest("base64");
+  }
+
+  if (cert && cert.pubkey) {
+    return crypto
+      .createHash("sha256")
+      .update(cert.pubkey)
+      .digest("base64");
+  }
+
+  throw new Error("Unable to extract certificate public key for pinning");
+}
+
+function createPinnedHttpsAgent(url, pinnedHosts) {
+  const parsed = assertHttpsUrl(url);
+  const host = parsed.hostname;
+  const allowedPins = pinnedHosts[host] || [];
+  if (allowedPins.length === 0) {
+    return null;
+  }
+
+  return new https.Agent({
+    checkServerIdentity(servername, cert) {
+      const tlsError = tls.checkServerIdentity(servername, cert);
+      if (tlsError) {
+        return tlsError;
+      }
+
+      const pin = getCertificateSpkiPin(cert);
+      if (!allowedPins.includes(pin)) {
+        return new Error(`Public key pinning failed for host: ${host}`);
+      }
+
+      return undefined;
+    }
+  });
+}
+
+async function pinnedPost(url, body, headers, pinnedHosts) {
+  const httpsAgent = createPinnedHttpsAgent(url, pinnedHosts);
+  const requestConfig = {
+    headers,
+    maxRedirects: 0,
+    timeout: 20000
+  };
+
+  if (httpsAgent) {
+    requestConfig.httpsAgent = httpsAgent;
+  }
+
+  return axios.post(url, body, requestConfig);
+}
 
 export class Swap {
   constructor(backend) {
@@ -169,72 +281,37 @@ export class Swap {
 
   async sendRPC(method, params = {}) {
     try {
-      const https = require("https");
       const body = {
         jsonrpc: "2.0",
         id: "test",
         method,
         params
       };
-      const agent = new https.Agent({
-        requestCert: true,
-        rejectUnauthorized: false,
-        ca: `your pem key`
-      });
-      let signature = await axios.post(
-        "https://api.beldex.dev/api/v1/swap",
+
+      const pinnedHosts = getPinnedHosts();
+      const beldexSwapSignUrl = getBeldexSwapSignUrl();
+
+      let signature = await pinnedPost(
+        beldexSwapSignUrl,
         body,
-        { httpsAgent: agent }
+        {
+          "x-api-key": process.env.BELDEX_API_KEY,
+          "Content-Type": "application/json"
+        },
+        pinnedHosts
       );
       let headers = {
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": "+kLt3F2TMo8W2LbQSjs6IDaBG4O/VLZsRH+qnNX5FyU=",
-          "X-Api-Signature": signature.data.signature
-        }
+        "Content-Type": "application/json",
+        "X-Api-Key": process.env.CHANGELLY_SWAP_API_KEY,
+        "X-Api-Signature": signature.data.signature
       };
-      // const request = require('request');
-      // let options = {
-      //   'method': 'POST',
-      //   'url': 'https://api.changelly.com/v2',
-      //   'headers': {
-      //     'Content-Type': 'application/json',
-      //     'X-Api-Key': '<<ENTER YOUR API KEY >>',
-      //     'X-Api-Signature': '<<ENTER YOUR PRIVATE KEY >>'
-      //   },
-      //   body: JSON.stringify(bo)
-      // };
-      // request(options, function (error, data) {
-      // try {
-      //   let response = JSON.parse(data.body);
-      //   if (response.hasOwnProperty("error")) {
-      //     return {
-      //       status:400,
-      //       method: method,
-      //       params: params,
-      //       error: response.error
-      //     };
-      //   }
-      //   return {
-      //     status:200,
-      //     method: method,
-      //     params: params,
-      //     result: response.result
-      //   };
-      // } catch (err) {
-      //   return {
-      //     status:400,
-      //     method: method,
-      //     params: params,
-      //     error: response.error
-      //   };
-      // }
-      // });
+
       try {
-        let response = await axios.post(
-          "https://api.changelly.com/v2",
+        let response = await pinnedPost(
+          CHANGELLY_API_URL,
           body,
-          headers
+          headers,
+          pinnedHosts
         );
         if (response.data.hasOwnProperty("error")) {
           return {
@@ -255,6 +332,7 @@ export class Swap {
         };
       }
     } catch (err) {
+      console.log("swap sendRPC error:", err);
       return err;
     }
   }

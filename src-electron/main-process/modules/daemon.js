@@ -1,6 +1,6 @@
 import child_process from "child_process";
 
-const request = require("request-promise");
+import axios from "axios";
 const queue = require("promise-queue");
 const http = require("http");
 const fs = require("fs");
@@ -30,11 +30,10 @@ export class Daemon {
     return new Promise(resolve => {
       if (process.platform === "win32") {
         let oxend_path = path.join(__ryo_bin, "beldexd.exe");
-        let oxend_version_cmd = `"${oxend_path}" --version`;
         if (!fs.existsSync(oxend_path)) {
           resolve(false);
         }
-        child_process.exec(oxend_version_cmd, (error, stdout) => {
+        child_process.execFile(oxend_path, ["--version"], (error, stdout) => {
           if (error) {
             resolve(false);
           }
@@ -42,12 +41,12 @@ export class Daemon {
         });
       } else {
         let oxend_path = path.join(__ryo_bin, "beldexd");
-        let oxend_version_cmd = `"${oxend_path}" --version`;
         if (!fs.existsSync(oxend_path)) {
           resolve(false);
         }
-        child_process.exec(
-          oxend_version_cmd,
+        child_process.execFile(
+          oxend_path,
+          ["--version"],
           { detached: true },
           (error, stdout) => {
             if (error) {
@@ -150,7 +149,8 @@ export class Daemon {
 
       args.push("--log-file", path.join(dirs[net_type], "logs", "beldexd.log"));
       if (daemon.rpc_bind_ip !== "127.0.0.1") {
-        args.push("--confirm-external-bind");
+        reject(new Error("Local daemon RPC must bind to 127.0.0.1 only."));
+        return;
       }
 
       // TODO: Check if we need to push this command for staging too
@@ -572,20 +572,23 @@ export class Daemon {
     const protocol = options.protocol || this.protocol;
     const hostname = options.hostname || this.hostname;
     const port = options.port || this.port;
+    const url = `${protocol}${hostname}:${port}/json_rpc`;
+    const payload = {
+      jsonrpc: "2.0",
+      id: `${id}`,
+      method: method
+    };
+
+    if (Object.keys(params).length !== 0) {
+      payload.params = params;
+    }
 
     let requestOptions = {
-      uri: `${protocol}${hostname}:${port}/json_rpc`,
+      url,
       method: "POST",
-      json: {
-        jsonrpc: "2.0",
-        id: `${id}`,
-        method: method
-      },
-      agent: this.agent
+      data: payload,
+      httpAgent: this.agent
     };
-    if (Object.keys(params).length !== 0) {
-      requestOptions.json.params = params;
-    }
 
     // If there's a timeout then set it
     if (options.timeout) {
@@ -593,8 +596,8 @@ export class Daemon {
     }
 
     return this.queue.add(() => {
-      return request(requestOptions)
-        .then(response => {
+      return axios(requestOptions)
+        .then(({ data: response }) => {
           if (response.hasOwnProperty("error")) {
             return {
               method: method,
@@ -615,7 +618,7 @@ export class Daemon {
             error: {
               code: -1,
               message: "Cannot connect to daemon-rpc",
-              cause: error.cause
+              cause: error.cause || error
             }
           };
         });

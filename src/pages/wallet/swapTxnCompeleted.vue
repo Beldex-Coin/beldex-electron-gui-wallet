@@ -236,8 +236,8 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
-const moment = require("moment");
+import { clipboard } from "src/shims/electron-renderer";
+import moment from "moment";
 import { mapState } from "vuex";
 
 export default {

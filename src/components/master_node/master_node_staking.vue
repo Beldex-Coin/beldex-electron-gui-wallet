@@ -95,7 +95,7 @@
 </template>
 
 <script>
-const objectAssignDeep = require("object-assign-deep");
+import objectAssignDeep from "object-assign-deep";
 import { mapState } from "vuex";
 import { required, decimal } from "vuelidate/lib/validators";
 import { master_node_key, greater_than_zero } from "src/validators/common";

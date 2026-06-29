@@ -112,7 +112,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import { QSpinnerDots } from "quasar";
 // import TxDetails from "components/tx_details";

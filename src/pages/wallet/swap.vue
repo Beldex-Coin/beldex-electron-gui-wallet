@@ -62,10 +62,6 @@
               @sendAmountValidator="sendAmountValidator"
               @searchCurrency="val => searchCurrency(val)"
             />
-            <!-- <q-btn class="currency-btn dropdown-send-type" @click="isVisible=true" >
-              <div v-html="sendAmounType.label"></div>
-            </q-btn>-->
-
             <!-- <q-select
               v-model="sendAmounType"
               :options="
@@ -830,7 +826,7 @@
 </template>
 
 <script>
-const moment = require("moment");
+import moment from "moment";
 
 import { required, decimal } from "vuelidate/lib/validators";
 import OxenField from "components/oxen_field";
@@ -997,8 +993,7 @@ export default {
       if (data) {
         Object.keys(data).length > 0 &&
           data.map(item => {
-            (item.label = `${item.name}<span class='currency-name ft-regular'> -${item.fullName}<span>`),
-              (item.value = item.ticker);
+            item.value = item.ticker;
             pushedData.push(item);
           });
       }

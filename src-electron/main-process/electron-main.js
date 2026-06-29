@@ -4,7 +4,9 @@ import {
   BrowserWindow,
   Menu,
   dialog,
-  powerMonitor
+  powerMonitor,
+  session,
+  shell
 } from "electron";
 import { version, productName } from "../../package.json";
 import { Backend } from "./modules/backend";
@@ -48,6 +50,59 @@ const inputMenu = Menu.buildFromTemplate([
   { role: "selectall" }
 ]);
 
+const rendererConnectSrc = [
+  "'self'",
+  "ws://127.0.0.1:12313",
+  "https://api.beldex.dev",
+  "https://api.changelly.com"
+];
+
+const devConnectSrc = [
+  ...rendererConnectSrc,
+  "http://127.0.0.1:*",
+  "http://localhost:*",
+  "http://0.0.0.0:*",
+  "ws://127.0.0.1:*",
+  "ws://localhost:*",
+  "ws://0.0.0.0:*"
+];
+
+function getContentSecurityPolicy() {
+  const scriptSrc = ["'self'"];
+  const styleSrc = ["'self'", "'unsafe-inline'"];
+  const connectSrc = isDev ? devConnectSrc : rendererConnectSrc;
+
+  if (isDev) {
+    scriptSrc.push("'unsafe-eval'");
+  }
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc.join(" ")}`,
+    `style-src ${styleSrc.join(" ")}`,
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc.join(" ")}`,
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "base-uri 'none'",
+    "form-action 'self'"
+  ].join("; ");
+}
+
+function isAllowedWindowOpenUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+    return (
+      parsedUrl.protocol === "https:" &&
+      (parsedUrl.hostname === "beldex.io" ||
+        parsedUrl.hostname === "www.beldex.io")
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
 function createWindow() {
   /**
    * Initial window options
@@ -67,9 +122,10 @@ function createWindow() {
     icon: require("path").join(__statics, "icon.png"),
     title,
     webPreferences: {
-      nodeIntegration: true,
-      nodeIntegrationInWorker: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      nodeIntegrationInWorker: false,
+      contextIsolation: true,
+      sandbox: false,
       // anything we want preloaded, e.g. global vars
       preload: path.resolve(__dirname, "electron-preload.js")
     }
@@ -185,6 +241,15 @@ powerMonitor.on("resume", () => {
 });
 
 app.on("ready", () => {
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": [getContentSecurityPolicy()]
+      }
+    });
+  });
+
   checkForUpdate(
     () => mainWindow,
     autoUpdater => {
@@ -205,6 +270,23 @@ app.on("ready", () => {
     Menu.setApplicationMenu(menu);
   }
   createWindow();
+});
+
+app.on("web-contents-created", (_event, contents) => {
+  contents.on("will-navigate", (event, url) => {
+    const currentUrl = contents.getURL();
+    if (url !== currentUrl) {
+      event.preventDefault();
+    }
+  });
+
+  contents.setWindowOpenHandler(({ url }) => {
+    if (isAllowedWindowOpenUrl(url)) {
+      shell.openExternal(url);
+    }
+
+    return { action: "deny" };
+  });
 });
 
 app.on("window-all-closed", () => {

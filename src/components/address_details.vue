@@ -222,7 +222,7 @@
 
 <script>
 import { mapState } from "vuex";
-const { clipboard, nativeImage } = require("electron");
+import { clipboard, nativeImage } from "src/shims/electron-renderer";
 // import AddressHeader from "components/address_header";
 import FormatOxen from "components/format_oxen";
 import QrcodeVue from "qrcode.vue";

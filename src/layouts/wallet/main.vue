@@ -466,7 +466,7 @@
 <script>
 import { openURL } from "quasar";
 import { mapState } from "vuex";
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import WalletDetails from "components/wallet_details";
 import StatusFooter from "components/footer";
 import MainMenu from "components/menus/mainmenu";
@@ -527,7 +527,7 @@ export default {
       // const type = this.$t(
       //   `dialog.keyImages.${this.key_image.type.toLowerCase()}`
       // );
-      let passwordDialog = this.showPasswordConfirmation({
+      let passwordDialog = await this.showPasswordConfirmation({
         title: this.$t("dialog.showMasterNode.title"),
         noPasswordMessage: this.$t("dialog.showMasterNode.message"),
         // this.$t("dialog.keyImages.message", {

@@ -85,7 +85,7 @@ import { mapState } from "vuex";
 import { required } from "vuelidate/lib/validators";
 import { address } from "src/validators/common";
 import OxenField from "components/oxen_field";
-import { clipboard } from "electron";
+import { clipboard } from "src/shims/electron-renderer";
 
 export default {
   name: "ProveTransaction",

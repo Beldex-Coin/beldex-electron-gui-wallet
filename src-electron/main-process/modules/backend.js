@@ -13,11 +13,69 @@ const electron = require("electron");
 const os = require("os");
 const fs = require("fs-extra");
 const path = require("upath");
-const objectAssignDeep = require("object-assign-deep");
+import objectAssignDeep from "object-assign-deep";
 
-const { ipcMain: ipc } = electron;
+const { ipcMain: ipc, safeStorage } = electron;
 
 const LOG_LEVELS = ["fatal", "error", "warn", "info", "debug", "trace"];
+const CONFIG_ENVELOPE_VERSION = 1;
+const CONFIG_ENCRYPTION_SCHEME = "electron-safe-storage";
+const REDACTED_LOG_VALUE = "[REDACTED]";
+const REDACT_LOG_KEY_PATTERN = /(password|seed|mnemonic|secret|spend[_-]?key|view[_-]?key|private[_-]?key|auth|token)/i;
+const REDACT_LOG_STRING_PATTERNS = [
+  /(["']?(?:password|seed|mnemonic|secret|spend[_-]?key|view[_-]?key|private[_-]?key|auth|token)["']?\s*:\s*["'])([^"']*)(["'])/gi,
+  /((?:password|seed|mnemonic|secret|spend[_-]?key|view[_-]?key|private[_-]?key|auth|token)\s*[=:]\s*)(\S+)/gi
+];
+
+function redactLogString(value) {
+  return REDACT_LOG_STRING_PATTERNS.reduce(
+    (result, pattern) =>
+      result.replace(pattern, (match, prefix, secret, suffix = "") => {
+        return `${prefix}${REDACTED_LOG_VALUE}${suffix}`;
+      }),
+    value
+  );
+}
+
+function redactLogValue(value, parentKey = "", seen = new WeakSet()) {
+  if (REDACT_LOG_KEY_PATTERN.test(parentKey)) {
+    return REDACTED_LOG_VALUE;
+  }
+
+  if (typeof value === "string") {
+    return redactLogString(value);
+  }
+
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: redactLogString(value.message || ""),
+      stack: redactLogString(value.stack || "")
+    };
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(item => redactLogValue(item, "", seen));
+  }
+
+  if (value && typeof value === "object") {
+    if (seen.has(value)) {
+      return "[Circular]";
+    }
+
+    seen.add(value);
+    return Object.keys(value).reduce((result, key) => {
+      result[key] = redactLogValue(value[key], key, seen);
+      return result;
+    }, {});
+  }
+
+  return value;
+}
+
+function redactLogArgs(args) {
+  return args.map(arg => redactLogValue(arg));
+}
 
 export class Backend {
   constructor(mainWindow) {
@@ -33,6 +91,65 @@ export class Backend {
     this.config_data = {};
     this.scee = new SCEE();
     this.log = null;
+  }
+
+  isConfigEncryptionAvailable() {
+    return (
+      safeStorage &&
+      typeof safeStorage.isEncryptionAvailable === "function" &&
+      safeStorage.isEncryptionAvailable()
+    );
+  }
+
+  serializeConfig(configData) {
+    const plaintext = JSON.stringify(configData, null, 4);
+    if (!this.isConfigEncryptionAvailable()) {
+      return plaintext;
+    }
+
+    const encrypted = safeStorage.encryptString(plaintext);
+    return JSON.stringify(
+      {
+        version: CONFIG_ENVELOPE_VERSION,
+        encryption: CONFIG_ENCRYPTION_SCHEME,
+        payload: encrypted.toString("base64")
+      },
+      null,
+      2
+    );
+  }
+
+  deserializeConfig(rawConfig) {
+    const parsed = JSON.parse(rawConfig);
+    if (
+      parsed &&
+      parsed.version === CONFIG_ENVELOPE_VERSION &&
+      parsed.encryption === CONFIG_ENCRYPTION_SCHEME &&
+      typeof parsed.payload === "string"
+    ) {
+      if (!this.isConfigEncryptionAvailable()) {
+        throw new Error("Encrypted config cannot be decrypted on this system");
+      }
+
+      const decrypted = safeStorage.decryptString(
+        Buffer.from(parsed.payload, "base64")
+      );
+      return JSON.parse(decrypted);
+    }
+
+    return parsed;
+  }
+
+  writeConfig(callback = () => {}) {
+    let serialized;
+    try {
+      serialized = this.serializeConfig(this.config_data);
+    } catch (error) {
+      callback(error);
+      return;
+    }
+
+    fs.writeFile(this.config_file, serialized, "utf8", callback);
   }
 
   init(config) {
@@ -221,17 +338,12 @@ export class Backend {
             params[key]
           );
         });
-        fs.writeFile(
-          this.config_file,
-          JSON.stringify(this.config_data, null, 4),
-          "utf8",
-          () => {
-            this.send("set_app_data", {
-              config: params,
-              pending_config: params
-            });
-          }
-        );
+        this.writeConfig(() => {
+          this.send("set_app_data", {
+            config: params,
+            pending_config: params
+          });
+        });
         break;
       case "save_config_init":
       case "save_config": {
@@ -270,24 +382,19 @@ export class Backend {
           ...validated
         };
 
-        fs.writeFile(
-          this.config_file,
-          JSON.stringify(this.config_data, null, 4),
-          "utf8",
-          () => {
-            if (data.method == "save_config_init") {
-              this.startup();
-            } else {
-              this.send("set_app_data", {
-                config: this.config_data,
-                pending_config: this.config_data
-              });
-              if (config_changed) {
-                this.send("settings_changed_reboot");
-              }
+        this.writeConfig(() => {
+          if (data.method == "save_config_init") {
+            this.startup();
+          } else {
+            this.send("set_app_data", {
+              config: this.config_data,
+              pending_config: this.config_data
+            });
+            if (config_changed) {
+              this.send("settings_changed_reboot");
             }
           }
-        );
+        });
         break;
       }
       case "init":
@@ -316,7 +423,9 @@ export class Backend {
       }
 
       case "open_url":
-        require("electron").shell.openExternal(params.url);
+        if (this.isSafeExternalUrl(params.url)) {
+          require("electron").shell.openExternal(params.url);
+        }
         break;
 
       case "save_png": {
@@ -391,18 +500,18 @@ export class Backend {
 
     LOG_LEVELS.forEach(level => {
       ipc.on(`log-${level}`, (first, ...rest) => {
-        log[level](...rest);
+        log[level](...redactLogArgs(rest));
       });
     });
 
     this.log = log;
 
     process.on("uncaughtException", error => {
-      log.error("Unhandled Error", error);
+      log.error(...redactLogArgs(["Unhandled Error", error]));
     });
 
     process.on("unhandledRejection", error => {
-      log.error("Unhandled Promise Rejection", error);
+      log.error(...redactLogArgs(["Unhandled Promise Rejection", error]));
     });
   }
 
@@ -426,7 +535,20 @@ export class Backend {
         return;
       }
 
-      let disk_config_data = JSON.parse(data);
+      let disk_config_data;
+      try {
+        disk_config_data = this.deserializeConfig(data);
+      } catch (error) {
+        this.log?.error("Failed to load config", error);
+        this.send("set_app_data", {
+          status: {
+            code: -1
+          },
+          config: this.config_data,
+          pending_config: this.config_data
+        });
+        return;
+      }
 
       // semi-shallow object merge
       Object.keys(disk_config_data).map(key => {
@@ -459,12 +581,7 @@ export class Backend {
       };
 
       // save config file back to file, so updated options are stored on disk
-      fs.writeFile(
-        this.config_file,
-        JSON.stringify(this.config_data, null, 4),
-        "utf8",
-        () => {}
-      );
+      this.writeConfig(() => {});
 
       this.send("set_app_data", {
         config: this.config_data,
@@ -749,5 +866,14 @@ export class Backend {
       }
     }
     return modified;
+  }
+
+  isSafeExternalUrl(url) {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:";
+    } catch (error) {
+      return false;
+    }
   }
 }

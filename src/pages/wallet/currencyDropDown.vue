@@ -7,10 +7,12 @@
       class="currency-btn dropdown-send-type justify-between items-center"
       @click.prevent="toggleDropdown"
     >
-      <div
-        class="current-name ft-semibold"
-        v-html="this.sendAmounTypeValue.label"
-      ></div>
+      <div class="current-name">
+        <span class="ft-semibold">{{ this.sendAmounTypeValue.name }}</span>
+        <span class="currency-name ft-regular">
+          - {{ this.sendAmounTypeValue.fullName }}
+        </span>
+      </div>
       <q-icon name="expand_more" size="sm"></q-icon>
     </button>
     <div v-show="state" class="dropdown-menu">
