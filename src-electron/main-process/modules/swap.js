@@ -17,7 +17,7 @@ function parsePins(pinList = "") {
     .map(pin => pin.replace(/^sha256\//i, ""));
 }
 
-function getBeldexSwapSignUrl() {
+function getBeldexSwapSignUrl(isPrivacySwap) {
   const configuredUrl = process.env.BELDEX_SWAP_SIGN_URL;
   const parsed = assertHttpsUrl(configuredUrl);
 
@@ -30,7 +30,11 @@ function getBeldexSwapSignUrl() {
 
   const normalizedPath = parsed.pathname.replace(/\/$/, "");
   parsed.pathname = `${normalizedPath}/swap`;
-  parsed.searchParams.set("type", "swap");
+  if (isPrivacySwap) {
+    parsed.searchParams.set("type", "privacy");
+  } else {
+    parsed.searchParams.set("type", "swap");
+  }
 
   return parsed.toString();
 }
@@ -226,50 +230,101 @@ export class Swap {
   }
 
   async createTransaction(params) {
-    let walletAddress = params.walletAddress;
+    const walletAddress = params.walletAddress;
+    const isPrivacySwap = Boolean(params.privacySwap);
     delete params["walletAddress"];
     let data = await this.sendRPC("createTransaction", params);
-    await this.swapTxnHistory.updateTransactionDetails(
-      data.result.id,
-      walletAddress
-    );
+    const id = data?.result?.id;
+    const transactionId = id && isPrivacySwap ? `p_${id}` : id;
+    if (transactionId) {
+      await this.swapTxnHistory.updateTransactionDetails(
+        transactionId,
+        walletAddress
+      );
+    }
     this.sendGateway("set_createdTxnDetails", data);
     return;
   }
 
   async createFixTransaction(params) {
-    let walletAddress = params.walletAddress;
+    const walletAddress = params.walletAddress;
+    const isPrivacySwap = Boolean(params.privacySwap);
     delete params["walletAddress"];
     let data = await this.sendRPC("createFixTransaction", params);
-    await this.swapTxnHistory.updateTransactionDetails(
-      data.result.id,
-      walletAddress
-    );
+    const id = data?.result?.id;
+    const transactionId = id && isPrivacySwap ? `p_${id}` : id;
+
+    if (transactionId) {
+      await this.swapTxnHistory.updateTransactionDetails(
+        transactionId,
+        walletAddress
+      );
+    }
     this.sendGateway("set_createdTxnDetails", data);
     return;
   }
 
   async getTransactionHistory(params) {
+    const walletAddress = params && params.walletAddress;
     let actualTransactions = await this.swapTxnHistory.getOrderHistory(
-      params.walletAddress
+      walletAddress
     );
     let orderHistory = [];
     let finalorderHistory = [];
-    for (let i = 0; i < actualTransactions.length / 10; i++) {
-      let ids = actualTransactions.slice(i * 10, (i + 1) * 10);
-      let params = {
-        id: ids
-      };
-      let response = await this.sendRPC("getTransactions", params);
-      for (let j = 0; j < response.result.length; j++) {
-        orderHistory.push(response.result[j]);
+    if (!Array.isArray(actualTransactions) || actualTransactions.length === 0) {
+      this.sendGateway("set_txnHistory", []);
+      return;
+    }
+
+    const normalIds = actualTransactions.filter(
+      id => id && typeof id === "string" && !id.startsWith("p_")
+    );
+    const privacyIds = actualTransactions
+      .filter(id => id && typeof id === "string" && id.startsWith("p_"))
+      .map(id => id.substring(2));
+
+    const fetchHistory = async (ids, privacySwap) => {
+      for (let i = 0; i < Math.ceil(ids.length / 10); i++) {
+        let chunkIds = ids.slice(i * 10, (i + 1) * 10);
+        let rpcParams = {
+          id: chunkIds,
+          privacySwap: privacySwap
+        };
+        let response = await this.sendRPC("getTransactions", rpcParams);
+        if (response && response.result && Array.isArray(response.result)) {
+          for (let j = 0; j < response.result.length; j++) {
+            response.result[j].privacySwap = privacySwap;
+            orderHistory.push(response.result[j]);
+          }
+        }
+      }
+    };
+
+    if (normalIds.length > 0) {
+      await fetchHistory(normalIds, false);
+    }
+    if (privacyIds.length > 0) {
+      await fetchHistory(privacyIds, true);
+    }
+
+    for (let k = 0; k < actualTransactions.length; k++) {
+      const txnItem = actualTransactions[k];
+      if (!txnItem || typeof txnItem !== "string") continue;
+      const currentId = txnItem.startsWith("p_")
+        ? txnItem.substring(2)
+        : txnItem;
+      const element = orderHistory.find(e => e && e.id == currentId);
+      if (element) {
+        finalorderHistory.push(element);
       }
     }
-    for (let k = 0; k < orderHistory.length; k++) {
-      const element = orderHistory.find(e => e.id == actualTransactions[k]);
-      finalorderHistory.push(element);
-    }
-    this.sendGateway("set_txnHistory", orderHistory);
+    finalorderHistory = finalorderHistory.filter(Boolean);
+    finalorderHistory.sort((a, b) => {
+      const ta = new Date(a && (a.createdAt || a.created_at));
+      const tb = new Date(b && (b.createdAt || b.created_at));
+      return tb - ta;
+    });
+    this.sendGateway("set_txnHistory", finalorderHistory);
     return;
   }
 
@@ -281,16 +336,18 @@ export class Swap {
 
   async sendRPC(method, params = {}) {
     try {
+      const isPrivacySwap = params.privacySwap;
+      const requestParams = { ...params };
+      delete requestParams.privacySwap;
       const body = {
         jsonrpc: "2.0",
         id: "test",
         method,
-        params
+        params: requestParams
       };
 
       const pinnedHosts = getPinnedHosts();
-      const beldexSwapSignUrl = getBeldexSwapSignUrl();
-
+      const beldexSwapSignUrl = getBeldexSwapSignUrl(isPrivacySwap);
       let signature = await pinnedPost(
         beldexSwapSignUrl,
         body,
@@ -300,9 +357,12 @@ export class Swap {
         },
         pinnedHosts
       );
+
       let headers = {
         "Content-Type": "application/json",
-        "X-Api-Key": process.env.CHANGELLY_SWAP_API_KEY,
+        "X-Api-Key": isPrivacySwap
+          ? process.env.CHANGELLY_PRIVACY_SWAP_API_KEY
+          : process.env.CHANGELLY_SWAP_API_KEY,
         "X-Api-Signature": signature.data.signature
       };
 

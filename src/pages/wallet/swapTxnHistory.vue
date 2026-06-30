@@ -81,6 +81,7 @@
           <th>{{ this.$t("titles.swap.exchangeRate") }}</th>
           <th>{{ this.$t("titles.swap.receiver") }}</th>
           <th>{{ this.$t("titles.swap.amountReceived") }}</th>
+          <!-- <th>Type</th> -->
         </tr>
         <tr
           v-for="(item, i) in this.txnHistory"
@@ -144,7 +145,6 @@
           <td v-if="item" class="ft-medium cursor">
             {{ convertHumanReadableFormat(item.createdAt) }}
           </td>
-
           <td v-if="item" class="ft-semibold cursor">
             {{ item.amountExpectedFrom }}
           </td>
@@ -170,6 +170,7 @@
             {{ amountReceived(item) }}
             <!-- ≈ {{ Number(item.amountExpectedTo).toFixed(4) + " " + item.currencyTo }} -->
           </td>
+          <!-- <td class="ft-medium cursor"> {{ item.privacySwap?'Privacy':'Normal' }}</td> -->
         </tr>
 
         <!-- <tr>
@@ -277,6 +278,10 @@ export default {
     goback: {
       type: Function,
       required: false
+    },
+    privacySwap: {
+      type: Boolean,
+      required: false
     }
   },
   data() {
@@ -287,7 +292,7 @@ export default {
     };
   },
   created() {
-    this.get_transaction_History();
+    this.get_transaction_History(this.privacySwap);
   },
   computed: mapState({
     txnHistory: state => {
@@ -370,11 +375,12 @@ export default {
       anchor.download = "Beldex_wallet_swap_transaction_report.csv";
       anchor.click();
     },
-    get_transaction_History() {
+    get_transaction_History(privacySwap) {
       let data = {
         // id: this.createdTxnDetails.result.id
         // id:'eukaew8lktw5nlwn',
-        walletAddress: this.info.address
+        walletAddress: this.info.address,
+        privacySwap: privacySwap
       };
       // console.log("get_transaction_history data", data);
       // let count = 1;

@@ -5,10 +5,78 @@
     </q-inner-loading>
     <div v-if="this.routes === 'mainPage'">
       <div class="flex row justify-between">
-        <header class="text-h6 ft-bold">
-          {{ this.$t("titles.swap.exchange") }}
-        </header>
+        <div class="flex row privacy-swap-container">
+          <header class="text-h6 ft-bold q-mr-md">
+            {{ this.$t("titles.swap.exchange") }}
+          </header>
+          <q-btn
+            flat
+            round
+            dense
+            padding="0"
+            style="cursor:pointer;height:17px;width:17px;"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 26 26"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M13 1C6.38702 1 1 6.38702 1 13C1 19.613 6.38702 25 13 25C19.613 25 25 19.613 25 13C25 6.38702 19.613 1 13 1ZM13 2.84615C18.6178 2.84615 23.1538 7.38221 23.1538 13C23.1538 18.6178 18.6178 23.1538 13 23.1538C7.38221 23.1538 2.84615 18.6178 2.84615 13C2.84615 7.38221 7.38221 2.84615 13 2.84615ZM12.0769 6.53846V8.38462H13.9231V6.53846H12.0769ZM12.0769 10.2308V19.4615H13.9231V10.2308H12.0769Z"
+                fill="#8787A8"
+                stroke="#8787A8"
+              />
+            </svg>
+            <q-menu
+              v-model="showPrivacyPopup"
+              :offset="[0, 5]"
+              class="privacy-popup-menu"
+            >
+              <div class="privacy-popup">
+                <div class="popup-content">
+                  {{ this.$t("titles.swap.privacySwapDescription") }}
+                </div>
 
+                <q-btn
+                  flat
+                  round
+                  dense
+                  padding="0"
+                  class="close-btn"
+                  @click="showPrivacyPopup = false"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <g clip-path="url(#clip0_119_4983)">
+                      <path
+                        d="M19.0711 4.92849C15.1721 1.0295 8.82792 1.0295 4.92893 4.92849C1.02995 8.82748 1.02995 15.1716 4.92893 19.0706C8.82792 22.9696 15.1721 22.9696 19.0711 19.0706C22.9701 15.1716 22.9701 8.82748 19.0711 4.92849ZM14.4749 15.5351L12 13.0602L9.52513 15.5351C9.23203 15.8282 8.75756 15.8282 8.46447 15.5351C8.17137 15.242 8.17137 14.7675 8.46447 14.4744L10.9393 11.9996L8.46447 9.52468C8.17137 9.23159 8.17137 8.75712 8.46447 8.46402C8.75756 8.17093 9.23203 8.17093 9.52513 8.46402L12 10.9389L14.4749 8.46402C14.768 8.17093 15.2424 8.17093 15.5355 8.46402C15.8286 8.75712 15.8286 9.23159 15.5355 9.52468L13.0607 11.9996L15.5355 14.4744C15.8286 14.7675 15.8286 15.242 15.5355 15.5351C15.2424 15.8282 14.768 15.8282 14.4749 15.5351Z"
+                        fill="#77778B"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_119_4983">
+                        <rect width="24" height="24" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                </q-btn>
+              </div>
+            </q-menu>
+          </q-btn>
+          <q-toggle
+            v-model="privacySwap"
+            :label="$t('titles.swap.privacySwap')"
+            left-label
+            class="privacySwap q-ml-xs"
+          />
+        </div>
         <q-btn
           color="accent"
           class="history-btn"
@@ -614,7 +682,7 @@
           dense
           :placeholder="
             this.$t('placeholders.enterRecipientAddress', {
-              coin: this.sendAmounType.name
+              coin: this.receiveAmountType.name
             })
           "
           @input="val => this.recipientAddressValidator(val)"
@@ -783,6 +851,7 @@
     />
     <SwapTxnHistory
       v-if="this.routes === 'txnHistory'"
+      :privacy-swap="this.privacySwap"
       @goback="
         () => {
           navigation('mainPage', 1), clearState();
@@ -983,6 +1052,9 @@ export default {
           this.navigation("swapStatus", 4);
         }
       }
+    },
+    privacySwap() {
+      this.clearState();
     }
   },
 
@@ -1095,7 +1167,9 @@ export default {
       searchTxt: "",
       recipientLoader: false,
       refundLoader: false,
-      privacyCurrency: []
+      privacyCurrency: [],
+      privacySwap: false,
+      showPrivacyPopup: false
       // pairStatusContent:''
     };
   },
@@ -1128,7 +1202,8 @@ export default {
       clearInterval(this.refreshMinMax);
       let data = {
         from: this.sendAmounType.value,
-        to: this.receiveAmountType.value
+        to: this.receiveAmountType.value,
+        privacySwap: this.privacySwap
       };
       this.$gateway.send("swap", "get_min_max", data);
       this.refreshMinMax = setInterval(() => {
@@ -1415,7 +1490,8 @@ export default {
       let data = {
         from: this.sendAmounType.value,
         to: this.receiveAmountType.value,
-        amountFrom: this.sendAmount
+        amountFrom: this.sendAmount,
+        privacySwap: this.privacySwap
       };
       // console.log("getExchangeRate..........");
       // clearInterval(this.refreshFloatExchangeRate);
@@ -1439,7 +1515,8 @@ export default {
       let data = {
         from: this.sendAmounType.value,
         to: this.receiveAmountType.value,
-        amountFrom: this.sendAmount
+        amountFrom: this.sendAmount,
+        privacySwap: this.privacySwap
       };
       // let count = 1;
       // clearInterval(this.refreshFixedExchangeRate);
@@ -1484,7 +1561,8 @@ export default {
       });
       let params = {
         address: this.recipientAddress.val,
-        currency: this.receiveAmountType.value
+        currency: this.receiveAmountType.value,
+        privacySwap: this.privacySwap
       };
       if (this.recipientAddress.val) {
         this.$gateway.send("swap", "validate_address", params);
@@ -1498,7 +1576,8 @@ export default {
       });
       let params = {
         address: this.refundAddress.val,
-        currency: this.sendAmounType.value
+        currency: this.sendAmounType.value,
+        privacySwap: this.privacySwap
       };
       // console.log("refund address ",this.refundAddress.val)
       // let params = {
@@ -1552,7 +1631,8 @@ export default {
         to: this.receiveAmountType.value,
         address: this.recipientAddress.val,
         amountFrom: this.sendAmount,
-        walletAddress: this.info.address
+        walletAddress: this.info.address,
+        privacySwap: this.privacySwap
       };
       if (this.destinationTag === "yes") {
         data.extraId = this.destinationTagValue;
@@ -1576,7 +1656,8 @@ export default {
         amountFrom: this.sendAmount,
         rateId: this.fixedExchangeRate.id,
         refundAddress: this.refundAddress.val,
-        walletAddress: this.info.address
+        walletAddress: this.info.address,
+        privacySwap: this.privacySwap
       };
       if (this.destinationTag === "yes") {
         data.extraId = this.destinationTagValue;
@@ -1594,7 +1675,8 @@ export default {
       // };
 
       let data = {
-        id: this.createdTxnDetails.result.id
+        id: this.createdTxnDetails.result.id,
+        privacySwap: this.privacySwap
       };
       // console.log("get_transaction_status data", data);
       // let count = 1;

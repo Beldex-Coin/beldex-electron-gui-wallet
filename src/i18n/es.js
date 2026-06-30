@@ -765,6 +765,9 @@ export default {
     swap: {
       swap: "Intercambio",
       exchange: "Intercambio",
+      privacySwap: "Intercambio Privado",
+      privacySwapDescription:
+        "Tu intercambio será seguro con esta función de intercambio privado. Tu identidad no será visible.",
       history: "Historia",
       unsupportedpair: "Par de intercambio no admitido",
       minimumAmt: "La cantidad mínima es",
