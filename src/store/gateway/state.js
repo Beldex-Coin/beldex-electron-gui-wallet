@@ -159,5 +159,11 @@ export default {
   refundAddressValidation: { result: { result: false } },
   pairsMinMax: [],
   txnStatus: [],
-  txnHistory: []
+  txnHistory: [],
+  txnHistoryMeta: {
+    totalCount: 0,
+    totalPages: 0,
+    page: 1,
+    pageSize: 7
+  }
 };

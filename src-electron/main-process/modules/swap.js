@@ -264,68 +264,99 @@ export class Swap {
     return;
   }
 
-  async getTransactionHistory(params) {
-    const walletAddress = params && params.walletAddress;
-    let actualTransactions = await this.swapTxnHistory.getOrderHistory(
-      walletAddress
-    );
-    let orderHistory = [];
-    let finalorderHistory = [];
-    if (!Array.isArray(actualTransactions) || actualTransactions.length === 0) {
+  async getTransactionHistory(params = {}) {
+    const {
+      walletAddress,
+      page: requestedPage = 1,
+      pageSize: requestedPageSize = 7,
+      isCsvExport = false
+    } = params;
+
+    const page =
+      Number.isFinite(+requestedPage) && +requestedPage > 0
+        ? +requestedPage
+        : 1;
+
+    const pageSize =
+      Number.isFinite(+requestedPageSize) && +requestedPageSize > 0
+        ? +requestedPageSize
+        : 7;
+
+    const transactions =
+      (await this.swapTxnHistory.getOrderHistory(walletAddress)) || [];
+
+    const orderedIds = [...new Set(transactions)]
+      .filter(id => typeof id === "string")
+      .reverse();
+
+    const totalCount = orderedIds.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    const sendMeta = () =>
+      this.sendGateway("set_txnHistoryMeta", {
+        totalCount,
+        totalPages,
+        page,
+        pageSize
+      });
+
+    if (!totalCount) {
       this.sendGateway("set_txnHistory", []);
+      sendMeta();
       return;
     }
 
-    const normalIds = actualTransactions.filter(
-      id => id && typeof id === "string" && !id.startsWith("p_")
-    );
-    const privacyIds = actualTransactions
-      .filter(id => id && typeof id === "string" && id.startsWith("p_"))
-      .map(id => id.substring(2));
+    const pageIds = isCsvExport
+      ? orderedIds
+      : orderedIds.slice((page - 1) * pageSize, page * pageSize);
+
+    if (!pageIds.length) {
+      this.sendGateway("set_txnHistory", []);
+      sendMeta();
+      return;
+    }
+
+    const normalIds = pageIds.filter(id => !id.startsWith("p_"));
+    const privacyIds = pageIds
+      .filter(id => id.startsWith("p_"))
+      .map(id => id.slice(2));
+
+    const transactionMap = new Map();
 
     const fetchHistory = async (ids, privacySwap) => {
-      for (let i = 0; i < Math.ceil(ids.length / 10); i++) {
-        let chunkIds = ids.slice(i * 10, (i + 1) * 10);
-        let rpcParams = {
-          id: chunkIds,
-          privacySwap: privacySwap
-        };
-        let response = await this.sendRPC("getTransactions", rpcParams);
-        if (response && response.result && Array.isArray(response.result)) {
-          for (let j = 0; j < response.result.length; j++) {
-            response.result[j].privacySwap = privacySwap;
-            orderHistory.push(response.result[j]);
-          }
-        }
+      for (let i = 0; i < ids.length; i += 10) {
+        const chunk = ids.slice(i, i + 10);
+
+        const response = await this.sendRPC("getTransactions", {
+          id: chunk,
+          privacySwap
+        });
+
+        response?.result?.forEach(item => {
+          transactionMap.set(item.id, {
+            ...item,
+            privacySwap
+          });
+        });
       }
     };
 
-    if (normalIds.length > 0) {
-      await fetchHistory(normalIds, false);
-    }
-    if (privacyIds.length > 0) {
-      await fetchHistory(privacyIds, true);
-    }
+    await Promise.all([
+      normalIds.length && fetchHistory(normalIds, false),
+      privacyIds.length && fetchHistory(privacyIds, true)
+    ]);
 
-    for (let k = 0; k < actualTransactions.length; k++) {
-      const txnItem = actualTransactions[k];
-      if (!txnItem || typeof txnItem !== "string") continue;
-      const currentId = txnItem.startsWith("p_")
-        ? txnItem.substring(2)
-        : txnItem;
-      const element = orderHistory.find(e => e && e.id == currentId);
-      if (element) {
-        finalorderHistory.push(element);
-      }
-    }
-    finalorderHistory = finalorderHistory.filter(Boolean);
-    finalorderHistory.sort((a, b) => {
-      const ta = new Date(a && (a.createdAt || a.created_at));
-      const tb = new Date(b && (b.createdAt || b.created_at));
-      return tb - ta;
-    });
-    this.sendGateway("set_txnHistory", finalorderHistory);
-    return;
+    const history = pageIds
+      .map(id => transactionMap.get(id.startsWith("p_") ? id.slice(2) : id))
+      .filter(Boolean)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || b.created_at) -
+          new Date(a.createdAt || a.created_at)
+      );
+
+    this.sendGateway("set_txnHistory", history);
+    sendMeta();
   }
 
   async getTransactionStatus(params) {
