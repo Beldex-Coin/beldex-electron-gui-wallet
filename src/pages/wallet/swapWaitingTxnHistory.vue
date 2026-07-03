@@ -57,7 +57,7 @@
             </div>
           </div>
           <div v-if="txnDetails.privacySwap" class="amount-wrapper row q-mt-lg">
-            <div class="label q-mr-sm">Swap Type</div>
+            <div class="label q-mr-sm">{{ this.$t("swap.swaptype") }}</div>
             <div class="row">
               <svg
                 width="30"
@@ -72,7 +72,9 @@
                   fill="white"
                 />
               </svg>
-              <span class="privacy-tag q-ml-xs">Privacy</span>
+              <span class="privacy-tag q-ml-xs">{{
+                this.$t("string.privacy")
+              }}</span>
               <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
             </div>
           </div>

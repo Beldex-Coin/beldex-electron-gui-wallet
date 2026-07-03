@@ -865,6 +865,7 @@
       :fixed-rate="this.fixedExchangeRate"
       :receive-chain-details="this.receiveAmountType"
       :send-chain-details="this.sendAmounType"
+      :is-privacy-swap="this.privacySwap"
       @clearAllintervals="clearAllintervals"
       @goback="
         () => {

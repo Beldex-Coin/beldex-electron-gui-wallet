@@ -701,7 +701,9 @@ export default {
     viewOnlyMode:
       "Nur Anzeige Modus. Bitte die volle Wallet laden um Coins zu senden",
     WalletAddress: "Wallet-Adresse",
-    website: "Webseite"
+    website: "Webseite",
+    privacy: "Privatsphäre",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Adressbuch",
@@ -865,7 +867,8 @@ export default {
         "Der Höchstbetragswert wird geändert, der neue Wert ist ",
       network: "NETZWERK",
       giveCorrectAddress:
-        "Bitte stellen Sie sicher, dass Sie die richtige Adresse für die ausgewählte Kette eingeben ({type}). Andernfalls verlieren Sie Ihr Guthaben."
+        "Bitte stellen Sie sicher, dass Sie die richtige Adresse für die ausgewählte Kette eingeben ({type}). Andernfalls verlieren Sie Ihr Guthaben.",
+      swapType: "Swap-Typ"
     }
   }
 };

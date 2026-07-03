@@ -63,14 +63,45 @@
             </svg>
             <span class="to"> {{ floatingRate.to }}</span>
           </div>
-          <div class="label">{{ this.$t("fieldLabels.amount") }}</div>
-          <div class="amount ft-semibold uppercase">
-            {{
-              createdTxnDetails.amountExpectedFrom +
-                " " +
-                createdTxnDetails.currencyFrom
-            }}
-            <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
+          <div class="amount-wrapper row q-mt-lg">
+            <div class="label amountLabel q-mr-sm">
+              {{ this.$t("fieldLabels.amount") }}
+            </div>
+            <div class="amount ft-semibold uppercase ">
+              {{
+                createdTxnDetails.amountExpectedFrom +
+                  " " +
+                  createdTxnDetails.currencyFrom
+              }}
+              <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
+            </div>
+          </div>
+          <div
+            v-if="this.isPrivacySwap"
+            class="amount-wrapper row q-mt-lg q-mb-sm"
+          >
+            <div class="label q-mr-sm">
+              {{ this.$t("titles.swap.swapType") }}
+            </div>
+            <div class="row">
+              <svg
+                width="30"
+                height="30"
+                viewBox="0 0 30 30"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="30" height="30" rx="8" fill="#303047" />
+                <path
+                  d="M15.013 6.99965C14.8783 6.99705 14.7451 7.0309 14.6279 7.09796C14.6279 7.09796 12.1488 8.49965 9 8.49965C8.58594 8.49965 8.25 8.83559 8.25 9.24965V14.8629C8.25 17.3623 9.97005 19.1533 11.5677 20.2812C13.1657 21.4095 14.7539 21.9586 14.7539 21.9586C14.9134 22.014 15.0866 22.014 15.2461 21.9586C15.2461 21.9586 16.8343 21.4095 18.4323 20.2812C20.0299 19.1533 21.75 17.3623 21.75 14.8629V9.24965C21.75 8.83559 21.4141 8.49965 21 8.49965C17.8512 8.49965 15.3721 7.09796 15.3721 7.09796C15.2627 7.03546 15.139 7.0016 15.013 6.99965ZM15 8.5628C15.4466 8.80239 17.3975 9.74282 20.25 9.92478V14.8629C20.25 16.6647 18.9701 18.0667 17.5677 19.0569C16.2884 19.9603 15.2155 20.3314 15 20.4101C14.7845 20.3314 13.7116 19.9603 12.4323 19.0569C11.0299 18.0667 9.75 16.6647 9.75 14.8629V9.92478C12.6025 9.74282 14.5534 8.80239 15 8.5628Z"
+                  fill="white"
+                />
+              </svg>
+              <span class="privacy-tag q-ml-xs">{{
+                this.$t("strings.privacy")
+              }}</span>
+              <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
+            </div>
           </div>
         </div>
         <div class="col-6 timer-wrapper">
@@ -345,6 +376,10 @@ export default {
     },
     clearAllintervals: {
       type: Function,
+      require: true
+    },
+    isPrivacySwap: {
+      type: Boolean,
       require: true
     }
   },

@@ -700,7 +700,9 @@ export default {
       "Este monedero solo permite visualizar operaciones. Por favor, abra uno completo para poder transferir fondos.",
     fromBlockHeight: "Desde la altura del bloque",
     WalletAddress: "Dirección de la billetera",
-    website: "sitio web"
+    website: "sitio web",
+    privacy: "Privacidad",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Libreta de direcciones",
@@ -867,6 +869,7 @@ export default {
     },
     network: "Spanisch",
     giveCorrectAddress:
-      "Asegúrate de introducir la dirección correcta de la cadena seleccionada ({type}). De lo contrario, perderás tus fondos."
+      "Asegúrate de introducir la dirección correcta de la cadena seleccionada ({type}). De lo contrario, perderás tus fondos.",
+    swapType: "Tipo de Intercambio"
   }
 };

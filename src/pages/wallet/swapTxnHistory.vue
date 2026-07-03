@@ -20,7 +20,7 @@
           />
         </svg>
         <div class="ft-semibold q-ml-md header-txt">
-          {{ this.$t("titles.swap.history") }}
+          {{ $t("titles.swap.history") }}
         </div>
       </div>
       <div class="row q-mr-sm">
@@ -60,6 +60,8 @@
           v-if="this.txnHistory.length > 0"
           color="primary"
           class="downloadCsv-btn"
+          :loading="isCsvExporting"
+          :disable="isCsvExporting"
           @click="downloadCsv"
         >
           <svg
@@ -82,12 +84,17 @@
               </clipPath>
             </defs>
           </svg>
-          <span class="q-ml-xs">{{ this.$t("titles.swap.downloadCsv") }}</span>
+          <span class="q-ml-xs">{{ $t("titles.swap.downloadCsv") }}</span>
         </q-btn>
       </div>
     </header>
 
-    <div v-if="this.txnHistory.length === 0">
+    <div v-if="isLoading" class="q-mt-lg">
+      <q-inner-loading :showing="true">
+        <q-spinner color="primary" size="30" />
+      </q-inner-loading>
+    </div>
+    <div v-else-if="this.txnHistory.length === 0">
       <template>
         <section
           class="flex column justify-center items-center"
@@ -111,12 +118,12 @@
       </q-inner-loading>
       <table style="width: 100%" class="txn-details-wrapper">
         <tr>
-          <th>{{ this.$t("titles.swap.status") }}</th>
-          <th>{{ this.$t("titles.swap.date") }}</th>
-          <th>{{ this.$t("titles.swap.exchangeAmount") }}</th>
-          <th>{{ this.$t("titles.swap.exchangeRate") }}</th>
-          <th>{{ this.$t("titles.swap.receiver") }}</th>
-          <th>{{ this.$t("titles.swap.amountReceived") }}</th>
+          <th>{{ $t("titles.swap.status") }}</th>
+          <th>{{ $t("titles.swap.date") }}</th>
+          <th>{{ $t("titles.swap.exchangeAmount") }}</th>
+          <th>{{ $t("titles.swap.exchangeRate") }}</th>
+          <th>{{ $t("titles.swap.receiver") }}</th>
+          <th>{{ $t("titles.swap.amountReceived") }}</th>
           <th>Type</th>
         </tr>
         <tr
@@ -190,10 +197,10 @@
           </td>
           <td v-if="item" class="ft-medium cursor">
             {{
-              item.payoutAddress.substr(0, 3) +
-                ".." +
+              item.payoutAddress.substr(0, 4) +
+                "..." +
                 item.payoutAddress.substr(
-                  item.payoutAddress.length - 3,
+                  item.payoutAddress.length - 4,
                   item.payoutAddress.length
                 )
             }}
@@ -211,7 +218,9 @@
             style="font-size: 1rem;"
             :class="[!item.privacySwap ? 'swap_indicator_normal' : '']"
           >
-            {{ item.privacySwap ? "Privacy" : "Normal" }}
+            {{
+              item.privacySwap ? $t("strings.privacy") : $t("strings.normal")
+            }}
           </td>
         </tr>
 
@@ -479,7 +488,10 @@ export default {
       this.get_transaction_History(this.privacySwap, 1, { isCsvExport: true });
     },
     exportCsvFromHistory(history = this.txnHistory) {
+      this.isCsvExporting = false;
       let customizeCsv = [];
+      // exportCsvFromHistory(history = this.txnHistory) {
+      //   let customizeCsv = [];
       let csv = "";
       const historyToExport = [...history].sort((a, b) => {
         const ta = this.getTransactionTimestamp(a);
@@ -541,7 +553,11 @@ export default {
       if (this.isLoading && !isCsvExport) {
         return;
       }
-      this.isLoading = true;
+      if (isCsvExport) {
+        this.isCsvExporting = true;
+      } else {
+        this.isLoading = true;
+      }
       if (!isCsvExport) {
         this.currentPage = page;
       }

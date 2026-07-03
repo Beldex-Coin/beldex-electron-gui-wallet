@@ -687,7 +687,9 @@ export default {
     viewOnlyMode:
       "Modo de visualização apenas. Por favor carregue a carteira completa para poder enviar moedas.",
     WalletAddress: "Endereço da carteira",
-    website: "site"
+    website: "site",
+    privacy: "Privacidade",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Livro de endereços",
@@ -851,7 +853,8 @@ export default {
       maximumAmtChanged: "O valor máximo é alterado, o novo valor é ",
       network: "Espanhola",
       giveCorrectAddress:
-        "Certifique-se de inserir o endereço correto da rede selecionada - ({type}). Caso contrário, você perderá seus fundos."
+        "Certifique-se de inserir o endereço correto da rede selecionada - ({type}). Caso contrário, você perderá seus fundos.",
+      swapType: "Tipo de Swap"
     }
   }
 };

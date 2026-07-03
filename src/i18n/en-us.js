@@ -693,7 +693,9 @@ export default {
     viewKey: "View Key",
     viewOnlyMode:
       "View only mode. Please load full wallet in order to send coins.",
-    website: "website"
+    website: "website",
+    privacy: "Privacy",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Address Book",
@@ -854,7 +856,8 @@ export default {
       maximumAmtChanged: "Maximum amount value is changed, the new value is ",
       network: "NETWORK",
       giveCorrectAddress:
-        "Please make sure to enter the correct address for the selected chain - ({type}). Otherwise you will lose your funds."
+        "Please make sure to enter the correct address for the selected chain - ({type}). Otherwise you will lose your funds.",
+      swapType: "Swap Type"
     }
   }
 };

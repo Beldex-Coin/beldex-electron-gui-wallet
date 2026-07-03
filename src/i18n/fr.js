@@ -707,7 +707,9 @@ export default {
     viewOnlyMode:
       "Mode d'affichage seulement. Veuillez charger le portefeuille complet pour envoyer des pièces.",
     WalletAddress: "Adresse du portefeuille",
-    website: "site web"
+    website: "site web",
+    privacy: "Confidentialité",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Carnet d'adresses",
@@ -873,7 +875,8 @@ export default {
         "La valeur du montant maximum est modifiée, la nouvelle valeur est ",
       network: "Französisch",
       giveCorrectAddress:
-        "Veuillez vous assurer de saisir l'adresse correcte pour la chaîne sélectionnée ({type}). Sinon, vous perdrez vos fonds."
+        "Veuillez vous assurer de saisir l'adresse correcte pour la chaîne sélectionnée ({type}). Sinon, vous perdrez vos fonds.",
+      swapType: "Type de Swap"
     }
   }
 };
