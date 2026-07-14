@@ -983,7 +983,7 @@ export default {
         let fromCoin;
         let toCoin;
         let btcCoin = newValue.find(item => item.name === "BTC");
-        let bdxCoin = newValue.find(item => item.name === "BDX");
+        let bdxCoin = newValue.find(item => item.name === "ETH");
         if (bdxCoin.enabledTo) {
           fromCoin = btcCoin;
           toCoin = bdxCoin;
