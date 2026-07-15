@@ -76,6 +76,7 @@ export class Swap {
   }
 
   async getCurrencyList() {
+    this.swapTxnHistory.migrateSwapHistory();
     let currencyList = await this.sendRPC("getCurrenciesFull", {});
     this.sendGateway("set_currencyList", currencyList);
     return;

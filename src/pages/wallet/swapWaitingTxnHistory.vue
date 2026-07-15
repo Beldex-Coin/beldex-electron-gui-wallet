@@ -56,7 +56,10 @@
               <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
             </div>
           </div>
-          <div v-if="txnDetails.privacySwap" class="amount-wrapper row q-mt-lg">
+          <div
+            v-if="txnDetails.privacySwap"
+            class="amount-wrapper row q-mt-lg q-mb-md"
+          >
             <div class="label q-mr-sm">
               {{ this.$t("titles.swap.swapType") }}
             </div>
@@ -98,6 +101,12 @@
             <div class="flex items-center">
               <q-icon name="timer" class="time-icon" />
               <!-- <span id="timer" ref="timer" class="ft-semibold q-ml-xs"> </span> -->
+              <q-spinner
+                v-if="!this.clock"
+                size="20px"
+                color="primary"
+                class="q-ml-md"
+              />
               <span class="ft-semibold q-ml-xs">{{ this.clock }}</span>
             </div>
             <div v-if="this.timeIsExpire" class="label">
