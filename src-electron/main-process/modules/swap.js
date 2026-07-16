@@ -28,7 +28,7 @@ export class Swap {
     let params = data.data;
     switch (data.method) {
       case "currency_list":
-        this.getCurrencyList();
+        this.getCurrencyList(params);
         break;
 
       case "exchange_amount":
@@ -75,8 +75,8 @@ export class Swap {
     }
   }
 
-  async getCurrencyList() {
-    this.swapTxnHistory.migrateSwapHistory();
+  async getCurrencyList(params = {}) {
+    this.swapTxnHistory.migrateSwapHistory(params.walletAddress);
     let currencyList = await this.sendRPC("getCurrenciesFull", {});
     this.sendGateway("set_currencyList", currencyList);
     return;
@@ -231,7 +231,6 @@ export class Swap {
       fetchHistory(normalIds, false),
       fetchHistory(privacyIds, true)
     ]);
-
     this.sendGateway("set_txnHistory", [...transactionMap.values()]);
     sendMeta();
   }

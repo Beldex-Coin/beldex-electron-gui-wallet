@@ -1175,7 +1175,9 @@ export default {
     };
   },
   created() {
-    this.$gateway.send("swap", "currency_list", {});
+    this.$gateway.send("swap", "currency_list", {
+      walletAddress: this.info.address
+    });
   },
 
   beforeDestroy() {
