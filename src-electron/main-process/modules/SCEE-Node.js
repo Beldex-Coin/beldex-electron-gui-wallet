@@ -39,7 +39,7 @@ export class SCEE {
 
     // Derive a key using PBKDF2.
     let key = crypto.pbkdf2Sync(
-      new Buffer(password, "utf8"),
+      Buffer.from(password, "utf8"),
       salt,
       PBKDF2_ITERATIONS,
       ALGORITHM_KEY_SIZE,
@@ -49,7 +49,7 @@ export class SCEE {
     // Encrypt and prepend salt.
     let ciphertextAndNonceAndSalt = Buffer.concat([
       salt,
-      this.encrypt(new Buffer(plaintext, "utf8"), key)
+      this.encrypt(Buffer.from(plaintext, "utf8"), key)
     ]);
 
     // Return as base64 string.
@@ -58,7 +58,7 @@ export class SCEE {
 
   decryptString(base64CiphertextAndNonceAndSalt, password) {
     // Decode the base64.
-    let ciphertextAndNonceAndSalt = new Buffer(
+    let ciphertextAndNonceAndSalt = Buffer.from(
       base64CiphertextAndNonceAndSalt,
       "base64"
     );
@@ -69,7 +69,7 @@ export class SCEE {
 
     // Derive the key using PBKDF2.
     let key = crypto.pbkdf2Sync(
-      new Buffer(password, "utf8"),
+      Buffer.from(password, "utf8"),
       salt,
       PBKDF2_ITERATIONS,
       ALGORITHM_KEY_SIZE,

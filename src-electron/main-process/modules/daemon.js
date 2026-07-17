@@ -7,6 +7,12 @@ const fs = require("fs");
 const path = require("upath");
 const portscanner = require("portscanner");
 
+const SHOULD_LOG_PROCESS_OUTPUT = process.env.BELDEX_VERBOSE_LOGS === "true";
+const PROCESS_OUTPUT_TAIL_LIMIT = 20;
+const LOCAL_DAEMON_START_TIMEOUT_MS =
+  process.platform === "win32" ? 120000 : 45000;
+const START_POLL_INTERVAL_MS = 1000;
+
 export class Daemon {
   constructor(backend) {
     this.backend = backend;
@@ -24,6 +30,49 @@ export class Daemon {
     this.PIVOT_BLOCK_HEIGHT = 119681;
     this.PIVOT_BLOCK_TIMESTAMP = 1539676273;
     this.PIVOT_BLOCK_TIME = 120;
+    this.stdoutTail = [];
+    this.stderrTail = [];
+    this.startupPoll = null;
+    this.startupTimeout = null;
+  }
+
+  appendProcessOutput(target, data) {
+    const value = data.toString().trim();
+    if (!value) {
+      return;
+    }
+
+    target.push(value);
+    if (target.length > PROCESS_OUTPUT_TAIL_LIMIT) {
+      target.shift();
+    }
+  }
+
+  clearStartTimers() {
+    clearInterval(this.startupPoll);
+    clearTimeout(this.startupTimeout);
+    this.startupPoll = null;
+    this.startupTimeout = null;
+  }
+
+  formatRPCError(error, fallbackMessage) {
+    if (!error) {
+      return fallbackMessage;
+    }
+
+    if (typeof error === "string") {
+      return error;
+    }
+
+    const cause = error.cause || {};
+    return error.message || cause.message || cause.code || fallbackMessage;
+  }
+
+  getProcessFailureDetails(prefix) {
+    const stderr = this.stderrTail.join("\n");
+    const stdout = this.stdoutTail.join("\n");
+    const detail = stderr || stdout;
+    return detail ? `${prefix}\n${detail}` : prefix;
   }
 
   checkVersion() {
@@ -99,13 +148,22 @@ export class Daemon {
             this.startHeartbeat();
             resolve();
           } else {
-            reject();
+            reject(
+              new Error(
+                this.formatRPCError(
+                  data.error,
+                  "Could not connect to remote daemon"
+                )
+              )
+            );
           }
         });
       });
     }
     return new Promise((resolve, reject) => {
       this.local = true;
+      this.stdoutTail = [];
+      this.stderrTail = [];
 
       const args = [
         "--data-dir",
@@ -171,6 +229,23 @@ export class Daemon {
         .catch(() => "closed")
         .then(status => {
           if (status === "closed") {
+            let didSettle = false;
+            const finishStart = error => {
+              if (didSettle) {
+                return;
+              }
+
+              didSettle = true;
+              this.clearStartTimers();
+
+              if (error) {
+                reject(error);
+                return;
+              }
+
+              resolve();
+            };
+
             if (process.platform === "win32") {
               this.daemonProcess = child_process.spawn(
                 path.join(__ryo_bin, "beldexd.exe"),
@@ -186,29 +261,66 @@ export class Daemon {
               );
             }
 
-            this.daemonProcess.stdout.on("data", data =>
-              process.stdout.write(`Daemon: ${data}`)
-            );
-            this.daemonProcess.on("error", err =>
-              process.stderr.write(`Daemon: ${err}`)
-            );
+            this.daemonProcess.stdout.on("data", data => {
+              this.appendProcessOutput(this.stdoutTail, data);
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stdout.write(`Daemon: ${data}`);
+              }
+            });
+            this.daemonProcess.stderr.on("data", data => {
+              this.appendProcessOutput(this.stderrTail, data);
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stderr.write(`Daemon: ${data}`);
+              }
+            });
+            this.daemonProcess.on("error", err => {
+              this.appendProcessOutput(
+                this.stderrTail,
+                Buffer.from(String(err && err.message ? err.message : err))
+              );
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stderr.write(`Daemon: ${err}`);
+              }
+              finishStart(
+                new Error(
+                  this.getProcessFailureDetails("Failed to start local daemon")
+                )
+              );
+            });
             this.daemonProcess.on("close", code => {
-              process.stderr.write(`Daemon: exited with code ${code} \n`);
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stderr.write(`Daemon: exited with code ${code} \n`);
+              }
               this.daemonProcess = null;
               this.agent.destroy();
-              if (code === null) {
-                reject(new Error("Failed to start local daemon"));
+              if (!didSettle) {
+                finishStart(
+                  new Error(
+                    this.getProcessFailureDetails(
+                      `Local daemon exited with code ${code}`
+                    )
+                  )
+                );
               }
             });
 
             // To let caller know when the daemon is ready
-            // We can't apply timeout to this because the local daemon might be syncing in the background
-            let intrvl = setInterval(() => {
-              this.sendRPC("get_info").then(data => {
+            this.startupTimeout = setTimeout(() => {
+              this.killProcess();
+              finishStart(
+                new Error(
+                  this.getProcessFailureDetails(
+                    "Timed out while starting local daemon"
+                  )
+                )
+              );
+            }, LOCAL_DAEMON_START_TIMEOUT_MS);
+
+            this.startupPoll = setInterval(() => {
+              this.sendRPC("get_info", {}, { timeout: 5000 }).then(data => {
                 if (!data.hasOwnProperty("error")) {
                   this.startHeartbeat();
-                  clearInterval(intrvl);
-                  resolve();
+                  finishStart();
                 } else {
                   if (
                     this.daemonProcess &&
@@ -217,13 +329,21 @@ export class Daemon {
                   ) {
                     // Ignore
                   } else {
-                    clearInterval(intrvl);
                     this.killProcess();
-                    reject(new Error("Could not connect to local daemon"));
+                    finishStart(
+                      new Error(
+                        this.getProcessFailureDetails(
+                          this.formatRPCError(
+                            data.error,
+                            "Could not connect to local daemon"
+                          )
+                        )
+                      )
+                    );
                   }
                 }
               });
-            }, 1000);
+            }, START_POLL_INTERVAL_MS);
           } else {
             reject(new Error(`Local daemon port ${this.port} is in use`));
           }
@@ -232,6 +352,7 @@ export class Daemon {
   }
 
   killProcess() {
+    this.clearStartTimers();
     if (this.daemonProcess) {
       this.daemonProcess.kill();
       this.daemonProcess = null;

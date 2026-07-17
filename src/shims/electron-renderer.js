@@ -22,3 +22,7 @@ export const appIpc = {
 export const shell = {
   openExternal: url => electronAPI.shell.openExternal(url)
 };
+
+export const dialog = {
+  selectWalletFile: () => electronAPI.dialog.selectWalletFile()
+};

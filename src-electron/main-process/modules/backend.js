@@ -20,6 +20,8 @@ const { ipcMain: ipc, safeStorage } = electron;
 const LOG_LEVELS = ["fatal", "error", "warn", "info", "debug", "trace"];
 const CONFIG_ENVELOPE_VERSION = 1;
 const CONFIG_ENCRYPTION_SCHEME = "electron-safe-storage";
+const REMOTE_NODE_RETRY_ATTEMPTS = 3;
+const REMOTE_NODE_RETRY_DELAY_MS = 2000;
 const REDACTED_LOG_VALUE = "[REDACTED]";
 const REDACT_LOG_KEY_PATTERN = /(password|seed|mnemonic|secret|spend[_-]?key|view[_-]?key|private[_-]?key|auth|token)/i;
 const REDACT_LOG_STRING_PATTERNS = [
@@ -150,6 +152,34 @@ export class Backend {
     }
 
     fs.writeFile(this.config_file, serialized, "utf8", callback);
+  }
+
+  wait(ms) {
+    return new Promise(resolve => {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  async checkRemoteWithRetry(daemonConfig) {
+    let lastResult = {};
+
+    for (let attempt = 1; attempt <= REMOTE_NODE_RETRY_ATTEMPTS; attempt += 1) {
+      lastResult = await this.daemon.checkRemote(daemonConfig);
+      if (!lastResult.error) {
+        return lastResult;
+      }
+
+      if (
+        daemonConfig?.type === "local" ||
+        attempt === REMOTE_NODE_RETRY_ATTEMPTS
+      ) {
+        return lastResult;
+      }
+
+      await this.wait(REMOTE_NODE_RETRY_DELAY_MS);
+    }
+
+    return lastResult;
   }
 
   init(config) {
@@ -658,7 +688,7 @@ export class Backend {
 
       // Make sure the remote node provided is accessible
       const config_daemon = this.config_data.daemons[net_type];
-      this.daemon.checkRemote(config_daemon).then(data => {
+      this.checkRemoteWithRetry(config_daemon).then(data => {
         if (data.error) {
           // If we can default to local then we do so, otherwise we tell the user  to re-set the node
           if (config_daemon.type === "local_remote") {
@@ -772,6 +802,63 @@ export class Backend {
                 // eslint-disable-next-line
               })
               .catch(error => {
+                if (
+                  this.config_data.daemons[net_type].type === "local_remote"
+                ) {
+                  this.daemon.killProcess();
+                  this.config_data.daemons[net_type].type = "remote";
+                  this.send("set_app_data", {
+                    config: this.config_data,
+                    pending_config: this.config_data
+                  });
+                  this.send("show_notification", {
+                    type: "warning",
+                    textColor: "black",
+                    i18n: "notification.warnings.usingRemoteNode",
+                    timeout: 3000
+                  });
+
+                  this.daemon
+                    .start(this.config_data)
+                    .then(() => {
+                      this.send("set_app_data", {
+                        status: {
+                          code: 6 // Starting wallet
+                        }
+                      });
+
+                      return this.walletd.start(this.config_data);
+                    })
+                    .then(() => {
+                      this.send("set_app_data", {
+                        status: {
+                          code: 7 // Reading wallet list
+                        }
+                      });
+
+                      this.walletd.listWallets(true);
+
+                      this.send("set_app_data", {
+                        status: {
+                          code: 0 // Ready
+                        }
+                      });
+                    })
+                    .catch(fallbackError => {
+                      this.send("show_notification", {
+                        type: "negative",
+                        message: fallbackError.message,
+                        timeout: 3000
+                      });
+                      this.send("set_app_data", {
+                        status: {
+                          code: -1 // Return to config screen
+                        }
+                      });
+                    });
+                  return;
+                }
+
                 if (this.config_data.daemons[net_type].type == "remote") {
                   this.send("show_notification", {
                     type: "negative",

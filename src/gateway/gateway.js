@@ -3,6 +3,9 @@ import { EventEmitter } from "events";
 import { i18n, changeLanguage } from "src/boot/i18n";
 import { appIpc } from "src/shims/electron-renderer";
 
+const WS_RETRY_DELAY_MS = 1000;
+const WS_CONNECT_WARN_AFTER_ATTEMPTS = 5;
+
 export class Gateway extends EventEmitter {
   constructor(app, router) {
     super();
@@ -10,6 +13,12 @@ export class Gateway extends EventEmitter {
     this.router = router;
     this.token = null;
     this.secureCrypto = window.electronAPI.secureCrypto;
+    this.ws = null;
+    this.wsRetryTimer = null;
+    this.wsRetryAttempts = 0;
+    this.wsConfig = null;
+    this.isSuspended = false;
+    this.hasShownBackendRetryNotice = false;
 
     // Set the initial language
     let language = LocalStorage.has("language")
@@ -48,15 +57,8 @@ export class Gateway extends EventEmitter {
     appIpc.on("initialize", (eventOrData, maybeData) => {
       const data = getIpcPayload(eventOrData, maybeData);
       this.token = data.token;
-      setTimeout(() => {
-        this.ws = new WebSocket("ws://127.0.0.1:" + data.port);
-        this.ws.addEventListener("open", () => {
-          this.open();
-        });
-        this.ws.addEventListener("message", e => {
-          this.receive(e.data);
-        });
-      }, 1000);
+      this.isSuspended = false;
+      this.connectToBackend(data);
     });
 
     appIpc.on("confirmClose", () => {
@@ -70,30 +72,115 @@ export class Gateway extends EventEmitter {
     });
 
     appIpc.on("appSuspend", () => {
-      if (this.ws) {
-        this.ws.close();
-      }
-      // this.token = null;
+      this.isSuspended = true;
+      this.clearWebSocketRetry();
+      this.closeWebSocket();
     });
 
     appIpc.on("appResumed", (eventOrData, maybeData) => {
       const data = getIpcPayload(eventOrData, maybeData);
       this.token = data.token;
-      setTimeout(() => {
-        this.ws = new WebSocket("ws://127.0.0.1:" + data.port);
-        this.ws.addEventListener("open", () => {
-          console.log("WS reconnected");
-        });
-
-        this.ws.addEventListener("message", e => {
-          this.receive(e.data);
-        });
-
-        this.ws.addEventListener("close", () => {
-          console.log("WS closed after resume");
-        });
-      }, 1000);
+      this.isSuspended = false;
+      this.connectToBackend(data, true);
     });
+  }
+
+  clearWebSocketRetry() {
+    if (this.wsRetryTimer) {
+      clearTimeout(this.wsRetryTimer);
+      this.wsRetryTimer = null;
+    }
+  }
+
+  closeWebSocket() {
+    if (!this.ws) {
+      return;
+    }
+
+    this.ws.onopen = null;
+    this.ws.onmessage = null;
+    this.ws.onerror = null;
+    this.ws.onclose = null;
+
+    if (
+      this.ws.readyState === WebSocket.OPEN ||
+      this.ws.readyState === WebSocket.CONNECTING
+    ) {
+      this.ws.close();
+    }
+
+    this.ws = null;
+  }
+
+  scheduleBackendReconnect(isResume = false) {
+    if (this.isSuspended || !this.wsConfig || this.wsRetryTimer) {
+      return;
+    }
+
+    this.wsRetryTimer = setTimeout(() => {
+      this.wsRetryTimer = null;
+      this.connectToBackend(this.wsConfig, isResume);
+    }, WS_RETRY_DELAY_MS);
+  }
+
+  connectToBackend(config, isResume = false) {
+    if (!config || !config.port) {
+      return;
+    }
+
+    this.wsConfig = config;
+    this.clearWebSocketRetry();
+    this.closeWebSocket();
+
+    const ws = new WebSocket(`ws://127.0.0.1:${config.port}`);
+    this.ws = ws;
+
+    ws.onopen = () => {
+      this.wsRetryAttempts = 0;
+      this.hasShownBackendRetryNotice = false;
+
+      if (isResume) {
+        console.log("WS reconnected");
+        return;
+      }
+
+      this.open();
+    };
+
+    ws.onmessage = event => {
+      this.receive(event.data);
+    };
+
+    ws.onerror = () => {
+      if (this.ws === ws) {
+        ws.close();
+      }
+    };
+
+    ws.onclose = () => {
+      if (this.ws === ws) {
+        this.ws = null;
+      }
+
+      if (this.isSuspended) {
+        return;
+      }
+
+      this.wsRetryAttempts += 1;
+      if (
+        !this.hasShownBackendRetryNotice &&
+        this.wsRetryAttempts >= WS_CONNECT_WARN_AFTER_ATTEMPTS
+      ) {
+        this.hasShownBackendRetryNotice = true;
+        Notify.create({
+          type: "warning",
+          timeout: 2000,
+          message: "Retrying backend connection..."
+        });
+      }
+
+      this.scheduleBackendReconnect(isResume);
+    };
   }
 
   open() {
@@ -110,6 +197,7 @@ export class Gateway extends EventEmitter {
       return;
     }
     this.closeDialog = true;
+    Loading.hide();
 
     const key = restart ? "restart" : "exit";
 
@@ -135,30 +223,37 @@ export class Gateway extends EventEmitter {
     //   return 0;
     // }
 
-    Dialog.create({
-      title: i18n.t(`dialog.${key}.title`),
-      message: msg,
-      ok: {
-        label: i18n.t(`dialog.${key}.ok`),
-        color: key !== "exit" ? "primary" : "red"
-      },
-      cancel: {
-        label: i18n.t("dialog.buttons.cancel"),
-        color: "accent"
-      }
-    })
-      .onOk(() => {
-        this.closeDialog = false;
-        Loading.hide();
-        this.router.replace({ path: "/quit" });
-        appIpc.send("confirmClose", restart);
+    setTimeout(() => {
+      Dialog.create({
+        title: i18n.t(`dialog.${key}.title`),
+        message: msg,
+        class: "exit-confirm-dialog",
+        ok: {
+          label: i18n.t(`dialog.${key}.ok`),
+          color: key !== "exit" ? "primary" : "red"
+        },
+        cancel: {
+          label: i18n.t("dialog.buttons.cancel"),
+          color: "accent"
+        }
       })
-      .onCancel(() => {
-        this.closeDialog = false;
-      });
+        .onOk(() => {
+          this.closeDialog = false;
+          Loading.hide();
+          this.router.replace({ path: "/quit" });
+          appIpc.send("confirmClose", restart);
+        })
+        .onCancel(() => {
+          this.closeDialog = false;
+        });
+    }, 0);
   }
 
   send(module, method, data = {}) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN || !this.token) {
+      return;
+    }
+
     let message = {
       module,
       method,

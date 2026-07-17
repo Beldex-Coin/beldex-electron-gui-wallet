@@ -12,6 +12,14 @@ const { Swap } = require("./swap");
 const PASSWORD_HASH_PBKDF2_ITERATIONS = 600000;
 const PASSWORD_HASH_KEY_LENGTH = 64;
 const PASSWORD_HASH_DIGEST = "sha512";
+const SHOULD_LOG_PROCESS_OUTPUT = process.env.BELDEX_VERBOSE_LOGS === "true";
+const PROCESS_OUTPUT_TAIL_LIMIT = 20;
+const WALLET_RPC_START_TIMEOUT_MS =
+  process.platform === "win32" ? 90000 : 45000;
+const START_POLL_INTERVAL_MS = 1000;
+const WALLET_RPC_CLOSE_TIMEOUT_MS =
+  process.platform === "win32" ? 15000 : 10000;
+const WALLET_RPC_FORCE_KILL_TIMEOUT_MS = 20000;
 
 export class WalletRPC {
   constructor(backend) {
@@ -66,6 +74,49 @@ export class WalletRPC {
     this.agent = new http.Agent({ keepAlive: true, maxSockets: 10 });
     this.queue = new queue(1, Infinity);
     this.swap = new Swap(this);
+    this.stdoutTail = [];
+    this.stderrTail = [];
+    this.startupPoll = null;
+    this.startupTimeout = null;
+  }
+
+  appendProcessOutput(target, data) {
+    const value = data.toString().trim();
+    if (!value) {
+      return;
+    }
+
+    target.push(value);
+    if (target.length > PROCESS_OUTPUT_TAIL_LIMIT) {
+      target.shift();
+    }
+  }
+
+  clearStartTimers() {
+    clearInterval(this.startupPoll);
+    clearTimeout(this.startupTimeout);
+    this.startupPoll = null;
+    this.startupTimeout = null;
+  }
+
+  formatRPCError(error, fallbackMessage) {
+    if (!error) {
+      return fallbackMessage;
+    }
+
+    if (typeof error === "string") {
+      return error;
+    }
+
+    const cause = error.cause || {};
+    return error.message || cause.message || cause.code || fallbackMessage;
+  }
+
+  getProcessFailureDetails(prefix) {
+    const stderr = this.stderrTail.join("\n");
+    const stdout = this.stdoutTail.join("\n");
+    const detail = stderr || stdout;
+    return detail ? `${prefix}\n${detail}` : prefix;
   }
 
   // this function will take an options object for testnet, data-dir, etc
@@ -73,6 +124,8 @@ export class WalletRPC {
     const { net_type } = options.app;
     const daemon = options.daemons[net_type];
     return new Promise((resolve, reject) => {
+      this.stdoutTail = [];
+      this.stderrTail = [];
       let daemon_address = `${daemon.rpc_bind_ip}:${daemon.rpc_bind_port}`;
       if (daemon.type == "remote") {
         daemon_address = `${daemon.remote_host}:${daemon.remote_port}`;
@@ -165,6 +218,23 @@ export class WalletRPC {
           .catch(() => "closed")
           .then(status => {
             if (status === "closed") {
+              let didSettle = false;
+              const finishStart = error => {
+                if (didSettle) {
+                  return;
+                }
+
+                didSettle = true;
+                this.clearStartTimers();
+
+                if (error) {
+                  reject(error);
+                  return;
+                }
+
+                resolve();
+              };
+
               const options =
                 process.platform === "win32" ? {} : { detached: true };
               this.walletRPCProcess = child_process.spawn(
@@ -174,7 +244,10 @@ export class WalletRPC {
               );
 
               this.walletRPCProcess.stdout.on("data", data => {
-                process.stdout.write(`Wallet: ${data}`);
+                this.appendProcessOutput(this.stdoutTail, data);
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stdout.write(`Wallet: ${data}`);
+                }
 
                 let lines = data.toString().split("\n");
                 let match,
@@ -192,10 +265,12 @@ export class WalletRPC {
                 }
 
                 // Keep track on wether a wallet is syncing or not
-                this.sendGateway("set_wallet_data", {
-                  isRPCSyncing
-                });
-                this.isRPCSyncing = isRPCSyncing;
+                if (this.isRPCSyncing !== isRPCSyncing) {
+                  this.sendGateway("set_wallet_data", {
+                    isRPCSyncing
+                  });
+                  this.isRPCSyncing = isRPCSyncing;
+                }
 
                 if (height && Date.now() - this.last_height_send_time > 1000) {
                   this.last_height_send_time = Date.now();
@@ -206,24 +281,62 @@ export class WalletRPC {
                   });
                 }
               });
-              this.walletRPCProcess.on("error", err =>
-                process.stderr.write(`Wallet: ${err}`)
-              );
+              this.walletRPCProcess.stderr.on("data", data => {
+                this.appendProcessOutput(this.stderrTail, data);
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stderr.write(`Wallet: ${data}`);
+                }
+              });
+              this.walletRPCProcess.on("error", err => {
+                this.appendProcessOutput(
+                  this.stderrTail,
+                  Buffer.from(String(err && err.message ? err.message : err))
+                );
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stderr.write(`Wallet: ${err}`);
+                }
+                finishStart(
+                  new Error(
+                    this.getProcessFailureDetails("Failed to start wallet RPC")
+                  )
+                );
+              });
               this.walletRPCProcess.on("close", code => {
-                process.stderr.write(`Wallet: exited with code ${code} \n`);
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stderr.write(`Wallet: exited with code ${code} \n`);
+                }
                 this.walletRPCProcess = null;
                 this.agent.destroy();
-                if (code === null) {
-                  reject(new Error("Failed to start wallet RPC"));
+                if (!didSettle) {
+                  finishStart(
+                    new Error(
+                      this.getProcessFailureDetails(
+                        `Wallet RPC exited with code ${code}`
+                      )
+                    )
+                  );
                 }
               });
 
               // To let caller know when the wallet is ready
-              let intrvl = setInterval(() => {
-                this.sendRPC("get_languages").then(data => {
+              this.startupTimeout = setTimeout(() => {
+                if (this.walletRPCProcess) {
+                  this.walletRPCProcess.kill();
+                }
+                this.walletRPCProcess = null;
+                finishStart(
+                  new Error(
+                    this.getProcessFailureDetails(
+                      "Timed out while starting wallet RPC"
+                    )
+                  )
+                );
+              }, WALLET_RPC_START_TIMEOUT_MS);
+
+              this.startupPoll = setInterval(() => {
+                this.sendRPC("get_languages", {}, 5000).then(data => {
                   if (!data.hasOwnProperty("error")) {
-                    clearInterval(intrvl);
-                    resolve();
+                    finishStart();
                   } else {
                     if (
                       this.walletRPCProcess &&
@@ -232,14 +345,22 @@ export class WalletRPC {
                     ) {
                       // Ignore
                     } else {
-                      clearInterval(intrvl);
                       if (this.walletRPCProcess) this.walletRPCProcess.kill();
                       this.walletRPCProcess = null;
-                      reject(new Error("Could not connect to wallet RPC"));
+                      finishStart(
+                        new Error(
+                          this.getProcessFailureDetails(
+                            this.formatRPCError(
+                              data.error,
+                              "Could not connect to wallet RPC"
+                            )
+                          )
+                        )
+                      );
                     }
                   }
                 });
-              }, 1000);
+              }, START_POLL_INTERVAL_MS);
             } else {
               reject(new Error(`Wallet RPC port ${this.port} is in use`));
             }
@@ -3069,38 +3190,65 @@ export class WalletRPC {
   }
 
   async quit() {
+    this.clearStartTimers();
     return new Promise(resolve => {
       if (!this.walletRPCProcess) {
         resolve();
         return;
       }
 
-      this.closeWallet().then(() => {
-        // however if the wallet is not responsive to RPC
-        // requests then we must forcefully close it below
-      });
-      setTimeout(() => {
-        if (this.walletRPCProcess) {
-          this.walletRPCProcess.on("close", () => {
-            this.agent.destroy();
-            clearTimeout(this.forceKill);
-            resolve();
-          });
+      let didResolve = false;
+      const finishQuit = () => {
+        if (didResolve) {
+          return;
+        }
 
-          // Force kill after 20 seconds
+        didResolve = true;
+        clearTimeout(closeTimeout);
+        clearTimeout(this.forceKill);
+        this.agent.destroy();
+        resolve();
+      };
+
+      const terminateProcess = signal => {
+        if (this.walletRPCProcess) {
+          this.walletRPCProcess.kill(signal);
           this.forceKill = setTimeout(() => {
             if (this.walletRPCProcess) {
               this.walletRPCProcess.kill("SIGKILL");
             }
-          }, 20000);
-
-          // Force kill if the rpc is syncing
-          const signal = this.isRPCSyncing ? "SIGKILL" : "SIGTERM";
-          this.walletRPCProcess.kill(signal);
-        } else {
-          resolve();
+          }, WALLET_RPC_FORCE_KILL_TIMEOUT_MS);
         }
-      }, 2500);
+
+        finishQuit();
+      };
+
+      this.walletRPCProcess.once("close", () => {
+        finishQuit();
+      });
+
+      const closeTimeout = setTimeout(() => {
+        const signal = this.isRPCSyncing ? "SIGKILL" : "SIGTERM";
+        terminateProcess(signal);
+      }, WALLET_RPC_CLOSE_TIMEOUT_MS);
+
+      const closeRequest = this.wallet_state.open
+        ? this.closeWallet()
+        : Promise.resolve();
+
+      closeRequest
+        .catch(() => {
+          // If wallet-rpc is unresponsive we still terminate the process below.
+        })
+        .then(() => {
+          if (!this.walletRPCProcess) {
+            finishQuit();
+            return;
+          }
+
+          const signal = this.isRPCSyncing ? "SIGKILL" : "SIGTERM";
+          terminateProcess(signal);
+        });
     });
   }
 }

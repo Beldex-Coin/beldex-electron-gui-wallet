@@ -1,6 +1,39 @@
 # Building
 
-Building beldex electron wallet binaries is done using github actions. Windows and linux binaries will build right out of the box but there are some extra steps needed for Mac OS
+Building Beldex Electron Wallet binaries is done using GitHub Actions. Windows builds work as-is, but Linux compatibility depends on the build environment you use.
+
+## Supported OS baseline
+
+The current app runtime is Electron `42.4.1`, so the practical support floor is:
+
+- Windows: `Windows 10` and newer
+- macOS: `macOS 12 Monterey` and newer
+- Linux: build on an older baseline if you want older distro compatibility
+
+Building on a newer host OS does not lower these Windows/macOS minimums. If you need support below those floors, that requires a separate legacy build on an older Electron version.
+
+## Linux compatibility
+
+If you build the Linux package on a very new distro such as Ubuntu 24.04, the generated Electron artifacts can inherit newer glibc/runtime expectations and fail on older Linux releases.
+
+To avoid that:
+
+1. GitHub Actions now builds Linux artifacts on `ubuntu-20.04`.
+2. For local Linux builds, use the compatibility container:
+
+```bash
+npm run build:linux:compat
+```
+
+This builds inside the pinned Docker image defined in [build/linux-compat.Dockerfile](/Users/blockhash/Documents/my-workspace/work/beldex-electron-gui-wallet/build/linux-compat.Dockerfile), which gives you a lower Linux userspace baseline than building directly on Ubuntu 24.
+
+If you want to publish a Linux release from your machine instead of CI:
+
+```bash
+GH_TOKEN=your_token_here npm run release:linux:compat
+```
+
+These commands require Docker on the build machine.
 
 ## Mac OS
 

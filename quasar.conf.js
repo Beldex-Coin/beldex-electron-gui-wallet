@@ -3,6 +3,22 @@
 
 const path = require("path");
 
+function addCommonJsExternals(cfg, moduleNames) {
+  if (Array.isArray(cfg.externals)) {
+    moduleNames.forEach(moduleName => {
+      cfg.externals.push({
+        [moduleName]: `commonjs ${moduleName}`
+      });
+    });
+    return;
+  }
+
+  cfg.externals = cfg.externals || {};
+  moduleNames.forEach(moduleName => {
+    cfg.externals[moduleName] = `commonjs ${moduleName}`;
+  });
+}
+
 module.exports = function() {
   return {
     // app boot (/src/boot)
@@ -31,6 +47,7 @@ module.exports = function() {
           __dirname,
           "src/shims/electron-renderer.js"
         );
+        addCommonJsExternals(cfg, ["bufferutil", "utf-8-validate"]);
       }
     },
     devServer: {
@@ -137,9 +154,8 @@ module.exports = function() {
     electron: {
       nodeIntegration: false,
       bundler: "builder", // or "packager"
-      extendWebpack() {
-        // cfg
-        // do something with Electron process Webpack cfg
+      extendWebpack(cfg) {
+        addCommonJsExternals(cfg, ["bufferutil", "utf-8-validate"]);
       },
       packager: {
         // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
@@ -167,7 +183,7 @@ module.exports = function() {
 
         linux: {
           target: ["deb", "AppImage"],
-          icon: "src-electron/icon.png",
+          icon: "src-electron/icons/icon.png",
           category: "Finance"
         },
 
@@ -177,6 +193,7 @@ module.exports = function() {
           target: ["dmg", "zip"],
           icon: "src-electron/icons/icon.icns",
           category: "public.app-category.finance",
+          minimumSystemVersion: "12.0.0",
           // Notarizing: https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
           hardenedRuntime: true,
           gatekeeperAssess: false,
@@ -192,6 +209,10 @@ module.exports = function() {
         nsis: {
           oneClick: false,
           allowToChangeInstallationDirectory: true
+        },
+
+        win: {
+          icon: "src-electron/icons/icon.ico"
         },
 
         files: [

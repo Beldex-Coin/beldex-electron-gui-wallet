@@ -228,6 +228,23 @@ function createWindow() {
   mainWindowState.manage(mainWindow);
 }
 
+ipcMain.handle("dialog:selectWalletFile", async () => {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return "";
+  }
+
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    title: "Select wallet file",
+    properties: ["openFile"]
+  });
+
+  if (canceled || !filePaths || filePaths.length === 0) {
+    return "";
+  }
+
+  return filePaths[0];
+});
+
 powerMonitor.on("suspend", () => {
   mainWindow.webContents.send("appSuspend");
 });

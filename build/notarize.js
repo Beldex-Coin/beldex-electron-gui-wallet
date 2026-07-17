@@ -1,4 +1,6 @@
 require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
 const { notarize } = require("@electron/notarize");
 /*
  Pre-requisites: https://github.com/electron/electron-notarize#prerequisites
@@ -29,7 +31,15 @@ exports.default = async function notarizing(context) {
 
   if (isEmpty(SIGNING_APPLE_ID) || isEmpty(SIGNING_APP_PASSWORD)) {
     log(
-      "SIGNING_APPLE_ID or SIGNING_APP_PASSWORD not set.\nTerminating noratization."
+      "SIGNING_APPLE_ID or SIGNING_APP_PASSWORD not set.\nSkipping notarization."
+    );
+    return;
+  }
+
+  const appPath = path.join(appOutDir, `${appName}.app`);
+  if (!fs.existsSync(appPath)) {
+    log(
+      `App bundle not found at ${appPath}.\nSkipping notarization and leaving the packaging logs intact for the upstream build failure.`
     );
     return;
   }
@@ -37,11 +47,21 @@ exports.default = async function notarizing(context) {
   const options = {
     tool: "notarytool",
     appBundleId: "com.beldex.electronwallet",
-    appPath: `${appOutDir}/${appName}.app`,
+    appPath,
     appleId: SIGNING_APPLE_ID,
     appleIdPassword: SIGNING_APP_PASSWORD,
     teamId: SIGNING_TEAM_ID
   };
   if (!isEmpty(SIGNING_TEAM_ID)) options.ascProvider = SIGNING_TEAM_ID;
-  return notarize(options);
+
+  try {
+    return await notarize(options);
+  } catch (error) {
+    log(
+      `Notarization failed for ${appPath}.\n${
+        error && error.message ? error.message : error
+      }`
+    );
+    throw error;
+  }
 };
