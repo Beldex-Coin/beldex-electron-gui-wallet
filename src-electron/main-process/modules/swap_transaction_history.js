@@ -72,7 +72,7 @@ export class SwapTxnHistory {
     const db = await this._readDb();
     return db[DB_TABLE].filter(
       record => record.wallet_address === address
-    ).sort((a, b) => b.created_at - a.created_at);
+    ).sort((a, b) => b.created_at - a.created_at || b.id - a.id);
   }
   async updateTransactionDetails(
     txn_id,

@@ -27,7 +27,7 @@
         <span class="txn-id-txt ft-medium q-mr-sm"
           >{{ this.$t("titles.swap.transactionID") }} :</span
         >
-        <span class="ft-semibold q-mr-sm">{{ txnDetails.id }}</span>
+        <span class="ft-semibold q-mr-sm">{{ txnDetails?.id }}</span>
         <q-btn
           style="height: 30px;width:30px;"
           flat
@@ -35,7 +35,7 @@
           color="primary"
           size="9px"
           class="copy-btn flex justify-center items-center"
-          @click="copyAddress(txnDetails.id)"
+          @click="copyAddress(txnDetails?.id)"
         />
         <!-- <q-icon name="content_copy" color="primary" /> -->
       </article>
@@ -56,7 +56,7 @@
         </svg>-->
         <q-icon name="history" size="md" color="#fffe3" class="status-icon" />
         <span class="ft-semibold paid-status q-ml-sm">{{
-          txnDetails.status
+          txnDetails?.status
         }}</span>
       </article>
 
@@ -64,15 +64,15 @@
         <div class="col-md-5">
           <div class="amount-txt">{{ this.$t("titles.swap.amountFrom") }}</div>
           <div class="ft-semibold amount-val">
-            {{ txnDetails.amountExpectedFrom }}
-            <span class="uppercase">{{ txnDetails.currencyFrom }}</span>
+            {{ txnDetails?.amountExpectedFrom }}
+            <span class="uppercase">{{ txnDetails?.currencyFrom }}</span>
           </div>
         </div>
         <div class="col-md-7">
           <div class="amount-txt">{{ this.$t("titles.swap.amountTo") }}</div>
           <div class="ft-semibold amount-val">
-            {{ txnDetails.amountExpectedTo }}
-            <span class="uppercase">{{ txnDetails.currencyTo }}</span>
+            {{ txnDetails?.amountExpectedTo }}
+            <span class="uppercase">{{ txnDetails?.currencyTo }}</span>
           </div>
         </div>
       </article>
@@ -80,7 +80,7 @@
 
       <article class="recipient-address-wrapper">
         <div class="label">{{ this.$t("fieldLabels.recipientAddress") }}</div>
-        <div class="address ft-semibold">{{ txnDetails.payoutAddress }}</div>
+        <div class="address ft-semibold">{{ txnDetails?.payoutAddress }}</div>
       </article>
 
       <article class="warning-wrapper q-mt-md">

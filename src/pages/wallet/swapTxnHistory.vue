@@ -23,7 +23,7 @@
           {{ $t("titles.swap.history") }}
         </div>
       </div>
-      <div class="row q-mr-sm">
+      <div class="row items-center no-wrap q-mr-sm">
         <div v-if="totalPages > 1" class="custom-pagination  q-mr-sm">
           <q-btn
             flat
@@ -129,7 +129,7 @@
         <tr
           v-for="(item, i) in paginatedHistory"
           :key="item.id || i"
-          @click="setTxnDetails((currentPage - 1) * rowsPerPage + i)"
+          @click="setTxnDetails(item)"
         >
           <td v-if="item" class="cursor">
             <svg
@@ -279,8 +279,8 @@
     </q-header>-->
   </div>
   <SwapTxnCompeleted
-    v-else-if="this.txnDetails.status === 'finished'"
-    :txn-status="this.txnDetails"
+    v-else-if="txnDetails?.status === 'finished'"
+    :txn-status="txnDetails"
     from="history"
     @goback="
       () => {
@@ -294,8 +294,8 @@
     :send-chain-details="this.sendAmounType"
   @clearAllintervals="clearAllintervals"-->
   <swapWaitingTxnHistory
-    v-else-if="this.txnDetails.status === 'waiting'"
-    :txn-details="this.txnDetails"
+    v-else-if="txnDetails?.status === 'waiting'"
+    :txn-details="txnDetails"
     @goback="
       () => {
         (isVisible = true), (txnDetails = '');
@@ -403,17 +403,8 @@ export default {
         return [1, 2, 3, 4, "...", total];
       }
 
-      // Your requested custom layouts
-      if (current === total) {
-        return [1, "...", total - 5, total - 4, "...", total - 1, total];
-      }
-
-      if (current === total - 1) {
-        return [1, "...", total - 5, total - 4, total - 2, total - 1, total];
-      }
-
       if (current >= total - 2) {
-        return [1, "...", total - 3, total - 2, total - 1, total];
+        return [1, "...", total - 2, total - 1, total];
       }
 
       return [1, "...", current - 1, current, current + 1, "...", total];
@@ -472,8 +463,8 @@ export default {
         " " +
         item.currencyTo}`;
     },
-    setTxnDetails(index) {
-      this.txnDetails = this.txnHistory[index];
+    setTxnDetails(item) {
+      this.txnDetails = item;
       this.isVisible = false;
     },
     changePage(page) {

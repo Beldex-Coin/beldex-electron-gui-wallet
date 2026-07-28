@@ -70,12 +70,10 @@
               </div>
             </q-menu>
           </q-btn>
-          <q-toggle
-            v-model="privacySwap"
-            :label="$t('titles.swap.privacySwap')"
-            left-label
-            class="privacySwap q-ml-xs"
-          />
+          <span class="q-ml-xs privacy-swap-label">{{
+            $t("titles.swap.privacySwap")
+          }}</span>
+          <q-toggle v-model="privacySwap" class="privacySwap" />
         </div>
         <q-btn
           color="accent"
