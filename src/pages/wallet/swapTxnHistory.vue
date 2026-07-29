@@ -533,11 +533,10 @@ export default {
         keysCounter = 0;
       }
 
-      const anchor = document.createElement("a");
-      anchor.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-      anchor.target = "_blank";
-      anchor.download = "Beldex_wallet_swap_transaction_report.csv";
-      anchor.click();
+      this.$gateway.send("core", "save_csv", {
+        defaultFilename: "Beldex_wallet_swap_transaction_report.csv",
+        csv
+      });
     },
     get_transaction_History(privacySwap, page = 1, options = {}) {
       const isCsvExport = Boolean(options.isCsvExport);

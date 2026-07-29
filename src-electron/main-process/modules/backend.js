@@ -428,36 +428,87 @@ export class Backend {
         }
         break;
 
-      case "save_png": {
-        let filename = dialog.showSaveDialog(this.mainWindow, {
-          title: "Save " + params.type,
-          filters: [{ name: "PNG", extensions: ["png"] }],
-          defaultPath: os.homedir()
-        });
-        if (filename) {
-          let base64Data = params.img.replace(/^data:image\/png;base64,/, "");
-          let binaryData = Buffer.from(base64Data, "base64").toString("binary");
-          fs.writeFile(filename, binaryData, "binary", err => {
-            if (err) {
-              this.send("show_notification", {
-                type: "negative",
-                i18n: [
-                  "notification.errors.errorSavingItem",
-                  { item: params.type }
-                ],
-                timeout: 2000
-              });
-            } else {
-              this.send("show_notification", {
-                i18n: [
-                  "notification.positive.itemSaved",
-                  { item: params.type, filename }
-                ],
-                timeout: 2000
+      case "save_csv": {
+        const defaultFilename =
+          params.defaultFilename || "beldex_wallet_report.csv";
+        dialog
+          .showSaveDialog(this.mainWindow, {
+            title: "Save CSV Report",
+            defaultPath: path.join(os.homedir(), defaultFilename),
+            filters: [{ name: "CSV (Comma delimited)", extensions: ["csv"] }]
+          })
+          .then(result => {
+            if (!result.canceled && result.filePath) {
+              fs.writeFile(result.filePath, params.csv, "utf8", err => {
+                if (err) {
+                  this.send("show_notification", {
+                    type: "negative",
+                    i18n: [
+                      "notification.errors.errorSavingItem",
+                      { item: "CSV Report" }
+                    ],
+                    timeout: 2000
+                  });
+                } else {
+                  this.send("show_notification", {
+                    i18n: [
+                      "notification.positive.itemSaved",
+                      { item: "CSV Report", filename: result.filePath }
+                    ],
+                    timeout: 2000
+                  });
+                }
               });
             }
+          })
+          .catch(err => {
+            console.error("save_csv error:", err);
           });
-        }
+        break;
+      }
+
+      case "save_png": {
+        dialog
+          .showSaveDialog(this.mainWindow, {
+            title: "Save " + params.type,
+            filters: [{ name: "PNG", extensions: ["png"] }],
+            defaultPath: os.homedir()
+          })
+          .then(result => {
+            if (!result.canceled && result.filePath) {
+              const filename = result.filePath;
+              let base64Data = params.img.replace(
+                /^data:image\/png;base64,/,
+                ""
+              );
+              let binaryData = Buffer.from(base64Data, "base64").toString(
+                "binary"
+              );
+              fs.writeFile(filename, binaryData, "binary", err => {
+                if (err) {
+                  this.send("show_notification", {
+                    type: "negative",
+                    i18n: [
+                      "notification.errors.errorSavingItem",
+                      { item: params.type }
+                    ],
+                    timeout: 2000
+                  });
+                } else {
+                  this.send("show_notification", {
+                    i18n: [
+                      "notification.positive.itemSaved",
+                      { item: params.type, filename }
+                    ],
+                    timeout: 2000
+                  });
+                }
+              });
+            }
+          })
+          .catch(err => {
+            console.error("save_png error:", err);
+          });
         break;
       }
 
