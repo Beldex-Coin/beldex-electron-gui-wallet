@@ -533,6 +533,17 @@ export default {
         keysCounter = 0;
       }
 
+      if (!csv || !csv.trim()) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 2000,
+          message: this.$t("notification.errors.errorSavingItem", {
+            item: "CSV Report"
+          })
+        });
+        return;
+      }
+
       this.$gateway.send("core", "save_csv", {
         defaultFilename: "Beldex_wallet_swap_transaction_report.csv",
         csv

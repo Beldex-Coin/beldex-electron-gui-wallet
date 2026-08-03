@@ -429,8 +429,21 @@ export class Backend {
         break;
 
       case "save_csv": {
-        const defaultFilename =
-          params.defaultFilename || "beldex_wallet_report.csv";
+        if (!params || typeof params.csv !== "string" || !params.csv.trim()) {
+          console.error("save_csv error: missing or invalid CSV data");
+          this.send("show_notification", {
+            type: "negative",
+            i18n: [
+              "notification.errors.errorSavingItem",
+              { item: "CSV Report" }
+            ],
+            timeout: 2000
+          });
+          break;
+        }
+        const defaultFilename = path.basename(
+          params.defaultFilename || "beldex_wallet_report.csv"
+        );
         dialog
           .showSaveDialog(this.mainWindow, {
             title: "Save CSV Report",
@@ -463,6 +476,12 @@ export class Backend {
           })
           .catch(err => {
             console.error("save_csv error:", err);
+
+            this.send("show_notification", {
+              type: "negative",
+              i18n: ["notification.errors.errorSavingItem", { item: err }],
+              timeout: 2000
+            });
           });
         break;
       }
