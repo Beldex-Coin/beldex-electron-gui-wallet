@@ -1,11 +1,12 @@
 import axios from "axios";
-const { SwapTxnHistory } = require("./swap_transaction_history");
+import { SwapTxnHistory } from "./swap_transaction_history.js";
 import { signRequest } from "../../utils";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const CHANGELLY_API_URL = "https://api.changelly.com/v2";
+
 export class Swap {
   constructor(backend) {
     this.backend = backend;
@@ -16,14 +17,12 @@ export class Swap {
   }
 
   sendGateway(method, data) {
-    // if wallet is closed, do not send any wallet data to gateway
-    // this is for the case that we close the wallet at the same
-    // after another action has started, but before it has finished
     if (!this.wallet_state.open && method == "set_wallet_data") {
       return;
     }
     this.backend.send(method, data);
   }
+
   async handle(data) {
     let params = data.data;
     switch (data.method) {
@@ -76,7 +75,9 @@ export class Swap {
   }
 
   async getCurrencyList(params = {}) {
-    this.swapTxnHistory.migrateSwapHistory(params.walletAddress);
+    if (params && params.walletAddress) {
+      await this.swapTxnHistory.migrateSwapHistory(params.walletAddress);
+    }
     let currencyList = await this.sendRPC("getCurrenciesFull", {});
     this.sendGateway("set_currencyList", currencyList);
     return;
@@ -113,23 +114,27 @@ export class Swap {
     this.sendGateway("set_validateAddress", data);
     return;
   }
+
   async refundAddressValidation(params) {
     let data = await this.sendRPC("validateAddress", params);
     this.sendGateway("set_refundAddressValidation", data);
     return;
   }
+
   async createTransaction(params) {
     const walletAddress = params.walletAddress;
     const isPrivacySwap = Boolean(params.privacySwap);
     delete params["walletAddress"];
     let data = await this.sendRPC("createTransaction", params);
-    const transactionId = data?.result?.id;
-    if (transactionId) {
-      await this.swapTxnHistory.updateTransactionDetails(
+    const resultObj = data?.result;
+    const transactionId = resultObj?.id;
+    if (transactionId && walletAddress) {
+      this.swapTxnHistory.updateTransactionDetails(
         transactionId,
         walletAddress,
         isPrivacySwap,
-        "changelly"
+        "changelly",
+        resultObj
       );
     }
     this.sendGateway("set_createdTxnDetails", data);
@@ -141,18 +146,76 @@ export class Swap {
     const isPrivacySwap = Boolean(params.privacySwap);
     delete params["walletAddress"];
     let data = await this.sendRPC("createFixTransaction", params);
-    const transactionId = data?.result?.id;
+    const resultObj = data?.result;
+    const transactionId = resultObj?.id;
 
-    if (transactionId) {
-      await this.swapTxnHistory.updateTransactionDetails(
+    if (transactionId && walletAddress) {
+      this.swapTxnHistory.updateTransactionDetails(
         transactionId,
         walletAddress,
         isPrivacySwap,
-        "changelly"
+        "changelly",
+        resultObj
       );
     }
     this.sendGateway("set_createdTxnDetails", data);
     return;
+  }
+
+  formatRowForUI(row) {
+    if (!row) return null;
+    let parsedRaw = {};
+    try {
+      if (row.raw_response) {
+        parsedRaw =
+          typeof row.raw_response === "string"
+            ? JSON.parse(row.raw_response)
+            : row.raw_response;
+      }
+    } catch (e) {
+      console.error("formatRowForUI parse error:", e);
+    }
+
+    const amountFrom =
+      row.amount_from != null
+        ? String(row.amount_from)
+        : parsedRaw.amountExpectedFrom || "";
+    const amountTo =
+      row.amount_to != null
+        ? String(row.amount_to)
+        : parsedRaw.amountExpectedTo || "";
+
+    let rate = parsedRaw.rate;
+    if (
+      (!rate || isNaN(Number(rate))) &&
+      Number(amountFrom) > 0 &&
+      Number(amountTo) > 0
+    ) {
+      rate = (Number(amountTo) / Number(amountFrom)).toFixed(6);
+    }
+
+    return {
+      ...parsedRaw,
+      id: row.txn_id,
+      txn_id: row.txn_id,
+      uuid: row.uuid,
+      status: row.txn_status,
+      type: row.txn_type,
+      privacySwap: row.swap_type === "privacy",
+      currencyFrom: row.currency_from,
+      currencyTo: row.currency_to,
+      networkFrom: row.network_from,
+      networkTo: row.network_to,
+      payinAddress: row.payin_address,
+      payoutAddress: row.payout_address,
+      refundAddress: row.refund_address,
+      amountExpectedFrom: amountFrom,
+      amountExpectedTo: amountTo,
+      networkFee: row.network_fee,
+      rate: rate || "0",
+      createdAt: row.created_at,
+      created_at: row.created_at
+    };
   }
 
   async getTransactionHistory(params = {}) {
@@ -163,13 +226,39 @@ export class Swap {
       isCsvExport = false
     } = params;
 
+    if (!walletAddress) {
+      this.sendGateway("set_txnHistory", []);
+      this.sendGateway("set_txnHistoryMeta", {
+        totalCount: 0,
+        totalPages: 0,
+        page: 1,
+        pageSize: 7
+      });
+      return;
+    }
+
+    // Ensure legacy JSON migration has run for this wallet
+    await this.swapTxnHistory.migrateSwapHistory(walletAddress);
+
     const page = Math.max(1, Number(requestedPage) || 1);
     const pageSize = Math.max(1, Number(requestedPageSize) || 7);
 
-    const transactions =
-      (await this.swapTxnHistory.getOrderHistory(walletAddress)) || [];
+    let rawRows = [];
+    let totalCount = 0;
 
-    const totalCount = transactions.length;
+    if (isCsvExport) {
+      rawRows = this.swapTxnHistory.getOrderHistory(walletAddress);
+      totalCount = rawRows.length;
+    } else {
+      const paginatedResult = this.swapTxnHistory.getPaginatedOrderHistory(
+        walletAddress,
+        page,
+        pageSize
+      );
+      rawRows = paginatedResult.transactions;
+      totalCount = paginatedResult.totalCount;
+    }
+
     const totalPages = Math.ceil(totalCount / pageSize);
 
     const sendMeta = () =>
@@ -180,63 +269,104 @@ export class Swap {
         pageSize
       });
 
-    if (!totalCount) {
+    if (!rawRows.length) {
       this.sendGateway("set_txnHistory", []);
       sendMeta();
       return;
     }
 
-    const pageTransactions = isCsvExport
-      ? transactions
-      : transactions.slice((page - 1) * pageSize, page * pageSize);
+    // Format local SQLite rows immediately for fast UI display
+    const formattedList = rawRows.map(row => this.formatRowForUI(row));
+    this.sendGateway("set_txnHistory", formattedList);
+    sendMeta();
 
-    if (!pageTransactions.length) {
-      this.sendGateway("set_txnHistory", []);
-      sendMeta();
-      return;
-    }
-
+    // In background, sync latest status from Changelly API for current page rows
     const normalIds = [];
     const privacyIds = [];
-
-    for (const { txn_id, swap_type } of pageTransactions) {
-      if (swap_type === "privacy") {
-        privacyIds.push(txn_id);
+    for (const item of formattedList) {
+      if (item.privacySwap) {
+        privacyIds.push(item.id);
       } else {
-        normalIds.push(txn_id);
+        normalIds.push(item.id);
       }
     }
 
-    const transactionMap = new Map();
-
-    const fetchHistory = async (ids, privacySwap) => {
+    const syncApiStatus = async (ids, isPrivacy) => {
       if (!ids.length) return;
-
       for (let i = 0; i < ids.length; i += 10) {
-        const { result = [] } = await this.sendRPC("getTransactions", {
-          id: ids.slice(i, i + 10),
-          privacySwap
-        });
+        try {
+          const chunk = ids.slice(i, i + 10);
+          const response = await this.sendRPC("getTransactions", {
+            id: chunk,
+            privacySwap: isPrivacy
+          });
 
-        result.forEach(item =>
-          transactionMap.set(item.id, {
-            ...item,
-            privacySwap
-          })
-        );
+          if (response && response.status && Array.isArray(response.result)) {
+            response.result.forEach(rpcItem => {
+              if (rpcItem && rpcItem.id) {
+                this.swapTxnHistory.updateTransactionDetails(
+                  rpcItem.id,
+                  walletAddress,
+                  isPrivacy,
+                  "changelly",
+                  rpcItem
+                );
+              }
+            });
+          }
+        } catch (syncErr) {
+          console.error("Background transaction sync error:", syncErr);
+        }
       }
     };
 
-    await Promise.all([
-      fetchHistory(normalIds, false),
-      fetchHistory(privacyIds, true)
-    ]);
-    this.sendGateway("set_txnHistory", [...transactionMap.values()]);
-    sendMeta();
+    // Track active request timestamp to prevent out-of-order page updates during fast pagination
+    const currentRequestId = Date.now();
+    this.lastHistoryRequestId = currentRequestId;
+
+    Promise.all([
+      syncApiStatus(normalIds, false),
+      syncApiStatus(privacyIds, true)
+    ]).then(() => {
+      // Only re-emit gateway if this is still the active pagination request
+      if (this.lastHistoryRequestId !== currentRequestId) {
+        return;
+      }
+
+      const updatedRows = isCsvExport
+        ? this.swapTxnHistory.getOrderHistory(walletAddress)
+        : this.swapTxnHistory.getPaginatedOrderHistory(
+            walletAddress,
+            page,
+            pageSize
+          ).transactions;
+
+      const updatedFormattedList = updatedRows.map(row =>
+        this.formatRowForUI(row)
+      );
+      this.sendGateway("set_txnHistory", updatedFormattedList);
+    });
   }
 
   async getTransactionStatus(params) {
     let data = await this.sendRPC("getTransactions", params);
+    if (data && data.status && Array.isArray(data.result)) {
+      const walletAddress = params.walletAddress;
+      const isPrivacy = Boolean(params.privacySwap);
+      if (walletAddress) {
+        data.result.forEach(rpcItem => {
+          if (rpcItem && rpcItem.id) {
+            this.swapTxnHistory.updateTransactionDetails(
+              rpcItem.id,
+              walletAddress,
+              isPrivacy,
+              "changelly",
+              rpcItem
+            );
+          }
+        });
+      }
+    }
     this.sendGateway("set_txnStatus", data);
     return;
   }

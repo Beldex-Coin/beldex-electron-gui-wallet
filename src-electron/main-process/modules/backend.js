@@ -886,6 +886,13 @@ export class Backend {
       if (this.wss) {
         this.wss.close();
       }
+      if (
+        this.swap &&
+        this.swap.swapTxnHistory &&
+        this.swap.swapTxnHistory.dbManager
+      ) {
+        this.swap.swapTxnHistory.dbManager.close();
+      }
 
       Promise.all(process).then(() => {
         resolve();

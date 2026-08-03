@@ -1,145 +1,138 @@
-const fs = require("fs/promises");
-const path = require("upath");
-const os = require("os");
-
-const DB_NAME = "beldex_wallet";
-const DB_TABLE = "transaction_history";
-const DB_FILE = "beldex_wallet_indexeddb.json";
-
-const EMPTY_DB = {
-  database: DB_NAME,
-  version: 1,
-  migratedWallets: [], // tracks which wallet addresses have completed migration
-  [DB_TABLE]: [],
-  nextId: 1
-};
+import fs from "fs/promises";
+import path from "upath";
+import crypto from "crypto";
+import { SwapDatabaseManager } from "./swap_db.js";
 
 export class SwapTxnHistory {
-  constructor(backend) {
-    this.backend = backend;
+  constructor(swapInstance) {
+    this.swapInstance = swapInstance;
+    const dbDir = swapInstance?.backend?.wallet_dir || null;
+    this.dbManager = new SwapDatabaseManager(dbDir);
+    this.dbManager.init();
   }
-  _getDbDir() {
-    if (os.platform() === "win32") {
-      return `${os.homedir()}\\Documents\\Beldex`;
-    }
-    return path.join(os.homedir(), "Beldex");
-  }
-  _getDbPath() {
-    return path.join(this._getDbDir(), DB_FILE);
-  }
+
   _getSwapHistoryPath() {
-    return path.join(this._getDbDir(), "swap_transaction_history.json");
+    return path.join(this.dbManager.dbDir, "swap_transaction_history.json");
   }
-  async _readDb() {
-    const filePath = this._getDbPath();
-    try {
-      const raw = await fs.readFile(filePath, "utf8");
-      if (!raw) {
-        return { ...EMPTY_DB };
-      }
-      const parsed = JSON.parse(raw);
-      return {
-        database: DB_NAME,
-        version: parsed.version || 1,
-        migratedWallets: Array.isArray(parsed.migratedWallets)
-          ? parsed.migratedWallets
-          : [],
-        [DB_TABLE]: Array.isArray(parsed[DB_TABLE]) ? parsed[DB_TABLE] : [],
-        nextId: Number.isInteger(parsed.nextId) ? parsed.nextId : 1
-      };
-    } catch (err) {
-      if (err.code !== "ENOENT") {
-        console.error("SwapTxnHistory _readDb error:", err.message);
-      }
-      return { ...EMPTY_DB };
-    }
-  }
-  async _writeDb(db) {
-    const filePath = this._getDbPath();
-    const dir = this._getDbDir();
-    try {
-      await fs.mkdir(dir, { recursive: true });
-      await fs.writeFile(filePath, JSON.stringify(db, null, 2), "utf8");
-    } catch (err) {
-      console.error("SwapTxnHistory _writeDb error:", err.message);
-      throw err;
-    }
-  }
-  async getOrderHistory(address) {
+
+  getOrderHistory(address) {
     if (!address) {
       return [];
     }
-    const db = await this._readDb();
-    return db[DB_TABLE].filter(
-      record => record.wallet_address === address
-    ).sort((a, b) => b.created_at - a.created_at || b.id - a.id);
+    return this.dbManager.getAllOrderHistory(address);
   }
-  async updateTransactionDetails(
+
+  getPaginatedOrderHistory(address, page = 1, pageSize = 7) {
+    if (!address) {
+      return { transactions: [], totalCount: 0 };
+    }
+    const transactions = this.dbManager.getOrderHistory(
+      address,
+      page,
+      pageSize
+    );
+    const totalCount = this.dbManager.getOrderHistoryCount(address);
+    return { transactions, totalCount };
+  }
+
+  _mapChangellyDetailsToRecord(
     txn_id,
     address,
-    isPrivacySwap,
-    exchange_type
+    isPrivacySwap = false,
+    exchange_type = "changelly",
+    details = {}
   ) {
-    if (!txn_id || !address) {
-      return;
-    }
-    const db = await this._readDb();
-    const existing = db[DB_TABLE].find(
-      record => record.txn_id === txn_id && record.wallet_address === address
-    );
-    if (existing) {
-      return existing;
-    }
     const swapType = isPrivacySwap ? "privacy" : "normal";
-    const newRecord = {
-      id: db.nextId,
-      wallet_address: address,
-      txn_id,
-      swap_type: swapType,
-      exchange_type: exchange_type,
-      created_at: Date.now()
-    };
-    db[DB_TABLE].push(newRecord);
-    db.nextId += 1;
-    try {
-      await this._writeDb(db);
-    } catch (err) {
-      // _writeDb already logged the details; here we just stop this call
-      // from becoming an unhandled promise rejection for the caller.
-      console.error(
-        `updateTransactionDetails failed to persist txn_id ${txn_id}`
-      );
-      return;
-    }
-    return newRecord;
-  }
+    const now = Date.now();
 
-  // Pure check: given a set of "wallet::txn_id" keys, confirm every
-  // txnId for walletAddress is present. No I/O, no Set construction —
-  // callers pass in a Set they've already built. Kept as its own method
-  // so it stays independently unit-testable.
-  _verifyMigration(existingKeys, walletAddress, txnIds) {
-    if (!Array.isArray(txnIds)) return true;
-    for (const txnId of txnIds) {
-      if (!existingKeys.has(`${walletAddress}::${txnId}`)) {
-        console.error(`Missing txn_id: ${txnId} for wallet: ${walletAddress}`);
-        return false;
+    let createdAt = details.createdAt || details.created_at || now;
+    if (typeof createdAt === "number" && createdAt < 10000000000) {
+      createdAt = createdAt * 1000;
+    } else if (typeof createdAt === "string" && !isNaN(Number(createdAt))) {
+      createdAt = Number(createdAt);
+      if (createdAt < 10000000000) {
+        createdAt = createdAt * 1000;
+      }
+    } else if (typeof createdAt === "string") {
+      const parsed = new Date(createdAt).getTime();
+      if (!isNaN(parsed)) {
+        createdAt = parsed;
       }
     }
-    return true;
+
+    return {
+      uuid: crypto.randomUUID(),
+      wallet_address: address,
+      exchange: exchange_type || "changelly",
+      txn_id: txn_id,
+      txn_status: details.status || "waiting",
+      txn_type: details.type || "float",
+      swap_type: swapType,
+      currency_from: details.currencyFrom || "",
+      network_from: details.networkFrom || null,
+      currency_to: details.currencyTo || "",
+      network_to: details.networkTo || null,
+      payin_address: details.payinAddress || null,
+      payin_address_memo: details.payinExtraId || null,
+      payout_address: details.payoutAddress || null,
+      payout_address_memo: details.payoutExtraId || null,
+      refund_address: details.refundAddress || null,
+      refund_status: details.refundStatus || "not_returned",
+      refund_address_memo: details.refundExtraId || null,
+      amount_from: details.amountExpectedFrom ?? details.amountFrom ?? null,
+      amount_to: details.amountExpectedTo ?? details.amountTo ?? null,
+      network_fee: details.networkFee || 0,
+      platform_fee: details.platformFee || 0,
+      raw_response: details,
+      created_at: createdAt,
+      updated_at: now
+    };
   }
 
-  // walletAddress is required — always called one wallet at a time.
+  updateTransactionDetails(
+    txn_id,
+    address,
+    isPrivacySwap = false,
+    exchange_type = "changelly",
+    details = {}
+  ) {
+    if (!txn_id || !address) {
+      return null;
+    }
+
+    const record = this._mapChangellyDetailsToRecord(
+      txn_id,
+      address,
+      isPrivacySwap,
+      exchange_type,
+      details
+    );
+
+    try {
+      this.dbManager.upsertTransaction(record);
+      return record;
+    } catch (err) {
+      console.error(
+        `updateTransactionDetails failed for txn_id ${txn_id}:`,
+        err.message
+      );
+      return null;
+    }
+  }
+
   async migrateSwapHistory(walletAddress) {
     if (!walletAddress) {
       console.error("migrateSwapHistory requires a walletAddress.");
       return;
     }
-    const db = await this._readDb();
-    if (db.migratedWallets.includes(walletAddress)) {
-      console.log(`Swap history already migrated for wallet: ${walletAddress}`);
+
+    if (this.dbManager.isWalletMigrated(walletAddress)) {
+      console.log(
+        `Swap history already migrated to SQLite for wallet: ${walletAddress}`
+      );
       return;
     }
+
     const swapHistoryPath = this._getSwapHistoryPath();
     let swapHistory;
     try {
@@ -151,65 +144,110 @@ export class SwapTxnHistory {
       } else {
         console.error("Failed to read swap_transaction_history.json", err);
       }
+      this.dbManager.markWalletMigrated(walletAddress);
       return;
     }
+
     if (!Object.prototype.hasOwnProperty.call(swapHistory, walletAddress)) {
-      console.log(`No swap history found for wallet: ${walletAddress}`);
+      console.log(`No swap history found in JSON for wallet: ${walletAddress}`);
+      this.dbManager.markWalletMigrated(walletAddress);
       return;
     }
+
     const rawTxnIds = swapHistory[walletAddress];
-    if (!Array.isArray(rawTxnIds)) {
+    if (!Array.isArray(rawTxnIds) || rawTxnIds.length === 0) {
       console.log(
-        `Swap history for wallet ${walletAddress} is not a valid list.`
+        `Swap history for wallet ${walletAddress} is empty or invalid.`
       );
+      this.dbManager.markWalletMigrated(walletAddress);
       return;
     }
 
-    // Dedup the source list itself in case the file has repeats for this wallet.
     const txnIds = [...new Set(rawTxnIds)];
-
-    // Built once, reused for both the insert-dedup pass and verification below
-    // — avoids rebuilding the same Set twice off the full table.
-    const existingKeys = new Set(
-      db[DB_TABLE].map(item => `${item.wallet_address}::${item.txn_id}`)
-    );
-    let inserted = 0;
-    for (const txnId of txnIds) {
-      const key = `${walletAddress}::${txnId}`;
-      if (existingKeys.has(key)) continue;
-      db[DB_TABLE].push({
-        id: db.nextId++,
-        wallet_address: walletAddress,
-        txn_id: txnId,
-        swap_type: "normal",
-        exchange_type: "changelly",
-        created_at: Date.now()
-      });
-      existingKeys.add(key);
-      inserted++;
-    }
-    if (!this._verifyMigration(existingKeys, walletAddress, txnIds)) {
-      console.error("Migration verification failed.");
-      return;
-    }
-    db.migratedWallets.push(walletAddress);
-
-    // Single write covers both the inserted records and the migratedWallets
-    // flag — no intermediate write + re-read round trip.
-    try {
-      await this._writeDb(db);
-    } catch (err) {
-      // _writeDb already logged the details. Note: db.migratedWallets was
-      // mutated in memory above but never persisted, so on the next call
-      // db.migratedWallets.includes(walletAddress) will correctly be false
-      // and this wallet will be retried from scratch — no partial state.
-      console.error(
-        `migrateSwapHistory failed to persist migration for wallet: ${walletAddress}`
-      );
-      return;
-    }
     console.log(
-      `Migration completed successfully for wallet ${walletAddress}. Inserted ${inserted} records.`
+      `Starting migration for wallet ${walletAddress}: ${txnIds.length} transaction IDs to migrate...`
     );
+
+    const fetchedRecordsMap = new Map();
+
+    const fetchBatchFromApi = async (ids, isPrivacy) => {
+      if (!ids || ids.length === 0) return;
+      for (let i = 0; i < ids.length; i += 10) {
+        const chunk = ids.slice(i, i + 10);
+        try {
+          if (!this.swapInstance || !this.swapInstance.sendRPC) break;
+          const response = await this.swapInstance.sendRPC("getTransactions", {
+            id: chunk,
+            privacySwap: isPrivacy
+          });
+
+          if (response && response.status && Array.isArray(response.result)) {
+            response.result.forEach(item => {
+              if (item && item.id) {
+                fetchedRecordsMap.set(item.id, {
+                  ...item,
+                  privacySwap: isPrivacy
+                });
+              }
+            });
+          }
+        } catch (apiErr) {
+          console.error(
+            `Error fetching migration batch for privacy=${isPrivacy}:`,
+            apiErr.message
+          );
+        }
+      }
+    };
+
+    // 1. Try normal RPC fetch
+    await fetchBatchFromApi(txnIds, false);
+
+    // 2. Identify remaining IDs not found in normal fetch, and attempt privacy RPC fetch
+    const remainingIds = txnIds.filter(id => !fetchedRecordsMap.has(id));
+    if (remainingIds.length > 0) {
+      await fetchBatchFromApi(remainingIds, true);
+    }
+
+    // 3. Upsert fetched records and fallbacks into SQLite
+    let count = 0;
+    const recordsToInsert = [];
+
+    for (const txnId of txnIds) {
+      const fetchedItem = fetchedRecordsMap.get(txnId);
+      const isPrivacySwap = fetchedItem
+        ? Boolean(fetchedItem.privacySwap)
+        : false;
+
+      const recordDetails = fetchedItem || {
+        txn_id: txnId,
+        status: "waiting",
+        type: "float"
+      };
+
+      const record = this._mapChangellyDetailsToRecord(
+        txnId,
+        walletAddress,
+        isPrivacySwap,
+        "changelly",
+        recordDetails
+      );
+
+      recordsToInsert.push(record);
+      count++;
+    }
+
+    try {
+      this.dbManager.batchUpsertTransactions(recordsToInsert);
+      this.dbManager.markWalletMigrated(walletAddress);
+      console.log(
+        `Migration completed successfully for wallet ${walletAddress}. Migrated ${count} records into beldex_wallet.db SQLite database.`
+      );
+    } catch (dbErr) {
+      console.error(
+        `Failed to persist migration batch for wallet: ${walletAddress}`,
+        dbErr.message
+      );
+    }
   }
 }
