@@ -3,6 +3,7 @@ import path from "upath";
 import os from "os";
 import fs from "fs-extra";
 import crypto from "crypto";
+import { toMsEpoch } from "../../utils.js";
 
 const DB_FILE_NAME = "beldex_wallet.db";
 
@@ -134,6 +135,7 @@ export class SwapDatabaseManager {
         network_fee = COALESCE(excluded.network_fee, swap_transactions_history.network_fee),
         platform_fee = COALESCE(excluded.platform_fee, swap_transactions_history.platform_fee),
         raw_response = COALESCE(excluded.raw_response, swap_transactions_history.raw_response),
+        created_at = swap_transactions_history.created_at,
         updated_at = excluded.updated_at;
     `);
 
@@ -160,6 +162,11 @@ export class SwapDatabaseManager {
       WHERE exchange = ? AND txn_id = ?;
     `);
 
+    this.statements.getTxnById = this.db.prepare(`
+      SELECT * FROM swap_transactions_history
+      WHERE txn_id = ? LIMIT 1;
+    `);
+
     this.statements.getMeta = this.db.prepare(`
       SELECT value FROM swap_db_metadata WHERE key = ?;
     `);
@@ -173,6 +180,9 @@ export class SwapDatabaseManager {
   upsertTransaction(tx) {
     this.init();
     const now = Date.now();
+    const rawVal = tx.created_at ?? tx.createdAt ?? now;
+    const createdAt = toMsEpoch(rawVal);
+
     const payload = {
       uuid: crypto.randomUUID(),
       wallet_address: tx.wallet_address || "",
@@ -200,7 +210,7 @@ export class SwapDatabaseManager {
         typeof tx.raw_response === "object"
           ? JSON.stringify(tx.raw_response)
           : tx.raw_response || null,
-      created_at: tx.created_at ? Number(tx.created_at) : now,
+      created_at: createdAt,
       updated_at: tx.updated_at ? Number(tx.updated_at) : now
     };
 
@@ -242,6 +252,12 @@ export class SwapDatabaseManager {
     this.init();
     if (!exchange || !txnId) return null;
     return this.statements.getTxnByProviderId.get(exchange, txnId) || null;
+  }
+
+  getTxnById(txnId) {
+    this.init();
+    if (!txnId) return null;
+    return this.statements.getTxnById.get(String(txnId)) || null;
   }
 
   isWalletMigrated(walletAddress) {
