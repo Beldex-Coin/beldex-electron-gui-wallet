@@ -110,3 +110,11 @@ export const set_txnHistory = (state, data) => {
 export const set_txnHistoryMeta = (state, data) => {
   state.txnHistoryMeta = data;
 };
+
+export const set_activeExchange = (state, data) => {
+  state.activeExchange = data;
+};
+
+export const set_swapError = (state, data) => {
+  state.swapError = data;
+};

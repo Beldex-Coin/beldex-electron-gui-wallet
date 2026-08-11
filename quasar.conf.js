@@ -2,6 +2,18 @@
 // Configuration for your app
 
 const path = require("path");
+const envVars = require("dotenv").config().parsed || {};
+
+const whitelistedEnv = {
+  CHANGELLY_SWAP_API_KEY: envVars.CHANGELLY_SWAP_API_KEY || "",
+  CHANGELLY_PRIVACY_SWAP_API_KEY: envVars.CHANGELLY_PRIVACY_SWAP_API_KEY || "",
+  CHANGELLY_SWAP_PRIVATE_KEY: envVars.CHANGELLY_SWAP_PRIVATE_KEY || "",
+  CHANGELLY_PRIVACY_SWAP_PRIVATE_KEY:
+    envVars.CHANGELLY_PRIVACY_SWAP_PRIVATE_KEY || "",
+  QUICKEX_SWAP_PUPLIC_KEY: envVars.QUICKEX_SWAP_PUPLIC_KEY || "",
+  QUICKEX_SWAP_SECRET_KEY: envVars.QUICKEX_SWAP_SECRET_KEY || "",
+  QUICKEX_REFERRER_ID: envVars.QUICKEX_REFERRER_ID || ""
+};
 
 module.exports = function() {
   return {
@@ -20,6 +32,7 @@ module.exports = function() {
     build: {
       scopeHoisting: true,
       vueRouterMode: "history",
+      env: whitelistedEnv,
       // vueCompiler: true,
       // gzip: true,
       // analyze: true,

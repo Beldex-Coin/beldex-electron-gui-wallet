@@ -165,5 +165,7 @@ export default {
     totalPages: 0,
     page: 1,
     pageSize: 7
-  }
+  },
+  activeExchange: "changelly",
+  swapError: null
 };
