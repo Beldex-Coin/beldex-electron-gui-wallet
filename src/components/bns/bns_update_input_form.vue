@@ -345,7 +345,6 @@ export default {
 
       if (this.contentUpdate === "Values" && this.ethAddressRef) {
         this.$v.ethAddress.$touch();
-        // console.log("this.$v.ethAddress.$error:",this.$v.ethAddress.$error)
         if (this.$v.ethAddress.$error) {
           this.toastmsg("Invalid ETH Address");
           return;

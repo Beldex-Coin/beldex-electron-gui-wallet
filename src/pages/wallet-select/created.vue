@@ -224,7 +224,6 @@ export default {
     },
     copyPrivateKey(type, event) {
       event.stopPropagation();
-      // console.log("secret ::", this.secret);
       const button =
         (event.path && event.path.find(el => el.tagName === "BUTTON")) ||
         (event.composedPath &&

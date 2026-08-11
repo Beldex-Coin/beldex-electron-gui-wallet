@@ -294,11 +294,8 @@ export default {
       url = url.slice(0, url.lastIndexOf("/") - (url.length - 1)) + hash;
 
       this.$gateway.send("core", "open_url", { url });
-
-      // console.log("input hash", url);
     },
     outputHash(url) {
-      // console.log("outhash", url);
       this.$gateway.send("core", "open_url", { url });
     }
   }

@@ -1,10 +1,5 @@
 <template>
   <div v-if="isVisible" class="swapTxnHistory">
-    <!-- <q-inner-loading :showing="this.txnHistory.length > 0 ? false : true">
-      <q-spinner color="primary" size="30" />
-    </q-inner-loading> -->
-    <!-- <q-header>
-    <q-toolbar top>-->
     <header class="flex row items-center q-mb-md justify-between">
       <div class="flex items-center back-arrow-btn" @click="backToSwap">
         <svg
@@ -186,7 +181,7 @@
             </svg>
           </td>
           <td v-if="item" class="ft-medium cursor">
-            {{ convertHumanReadableFormat(item.createdAt) }}
+            {{ formatTime(item.createdAt || item.created_at) }}
           </td>
           <td v-if="item" class="ft-semibold cursor">
             {{ item.amountExpectedFrom }}
@@ -197,12 +192,14 @@
           </td>
           <td v-if="item" class="ft-medium cursor">
             {{
-              item.payoutAddress.substr(0, 4) +
-                "..." +
-                item.payoutAddress.substr(
-                  item.payoutAddress.length - 4,
-                  item.payoutAddress.length
-                )
+              item.payoutAddress
+                ? item.payoutAddress.substr(0, 4) +
+                  "..." +
+                  item.payoutAddress.substr(
+                    item.payoutAddress.length - 4,
+                    item.payoutAddress.length
+                  )
+                : "N/A"
             }}
           </td>
           <td
@@ -270,13 +267,6 @@
         </tr>-->
       </table>
     </section>
-
-    <!-- <div class="flex justify-center q-mt-sm">
-        <q-btn c color="primary" label="Confirm & Make payment" />
-      </div>
-    -->
-    <!-- </q-toolbar>
-    </q-header>-->
   </div>
   <SwapTxnCompeleted
     v-else-if="txnDetails?.status === 'finished'"
@@ -312,7 +302,6 @@
 </template>
 
 <script>
-import moment from "moment";
 import swapWaitingTxnHistory from "./swapWaitingTxnHistory.vue";
 import { mapState } from "vuex";
 import SwapTxnDetails from "./swapTxnDetails.vue";
@@ -421,14 +410,9 @@ export default {
     },
     txnHistory: {
       deep: true,
-      handler(newValue, oldValue) {
-        if (!this.isCsvExporting) {
-          return;
-        }
-
-        if (newValue !== oldValue) {
+      handler(newValue) {
+        if (this.isCsvExporting) {
           this.exportCsvFromHistory(newValue);
-          this.isCsvExporting = false;
         }
       }
     }
@@ -438,21 +422,58 @@ export default {
     backToSwap() {
       this.$emit("goback");
     },
-    getTransactionTimestamp(item) {
-      const rawValue = item && (item.createdAt || item.created_at);
-      if (rawValue === undefined || rawValue === null || rawValue === "") {
-        return 0;
+
+    formatTime(value, { utc = false } = {}) {
+      if (!value) return "N/A";
+      let date;
+      if (typeof value === "string" && isNaN(value)) {
+        date = new Date(value);
+      } else {
+        let num = Number(value);
+        if (isNaN(num)) return "N/A";
+        const digits = Math.floor(Math.abs(num)).toString().length;
+        let ms;
+        if (digits >= 16) {
+          ms = Math.floor(num / 1000);
+        } else if (digits <= 10) {
+          ms = num * 1000;
+        } else {
+          ms = num;
+        }
+        date = new Date(ms);
       }
-      const numericValue = Number(rawValue);
-      return Number.isFinite(numericValue)
-        ? numericValue
-        : new Date(rawValue).getTime();
+      if (isNaN(date.getTime())) return "N/A";
+
+      const getDay = utc ? date.getUTCDate() : date.getDate();
+      const getMonthIdx = utc ? date.getUTCMonth() : date.getMonth();
+      const getYear = utc ? date.getUTCFullYear() : date.getFullYear();
+      const getHours = utc ? date.getUTCHours() : date.getHours();
+      const getMinutes = utc ? date.getUTCMinutes() : date.getMinutes();
+      const getSeconds = utc ? date.getUTCSeconds() : date.getSeconds();
+
+      const day = getDay.toString().padStart(2, "0");
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+      ];
+      const month = months[getMonthIdx];
+      const hours = getHours.toString().padStart(2, "0");
+      const minutes = getMinutes.toString().padStart(2, "0");
+      const seconds = getSeconds.toString().padStart(2, "0");
+
+      return `${day} ${month} ${getYear} ${hours}:${minutes}:${seconds}`;
     },
-    convertHumanReadableFormat(date) {
-      return moment(
-        this.getTransactionTimestamp({ createdAt: date }) / 1000
-      ).format("DD MMM YYYY, h:mm:ss");
-    },
+
     amountReceived(item) {
       if (item.status == "finished") {
         return `${Number(item.amountExpectedTo).toFixed(4) +
@@ -481,48 +502,66 @@ export default {
     exportCsvFromHistory(history = this.txnHistory) {
       this.isCsvExporting = false;
       let customizeCsv = [];
-      // exportCsvFromHistory(history = this.txnHistory) {
-      //   let customizeCsv = [];
       let csv = "";
-      const historyToExport = [...history].sort((a, b) => {
+      const historyToExport = [...(history || [])].sort((a, b) => {
         const ta = this.getTransactionTimestamp(a);
         const tb = this.getTransactionTimestamp(b);
         return tb - ta;
       });
 
-      historyToExport.length > 0 &&
-        historyToExport.map(item => {
-          let csvObj = {};
-          csvObj.Date = moment(
-            this.getTransactionTimestamp(item) / 1000
-          ).format("DD MMM YYYY-h:mm:ss");
-          csvObj.Status = item.status;
-          csvObj.Exchange_Currency =
-            item.currencyFrom.toUpperCase() +
-            " -> " +
-            item.currencyTo.toUpperCase();
-          csvObj.Exchange_Amount = item.amountExpectedFrom;
-          csvObj.Exchange_rate = item.rate;
-          csvObj.Received_Amount = item.amountExpectedTo;
-          csvObj.Swap_Type = item.privacySwap ? "Privacy" : "Normal";
-          csvObj.Receiver_Address = item.payoutAddress;
-          customizeCsv.push(csvObj);
+      if (historyToExport.length === 0) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 2000,
+          message: this.$t("notification.errors.errorSavingItem", {
+            item: "CSV Report"
+          })
         });
-      // Loop the array of objects
+        this.get_transaction_History(this.privacySwap, this.currentPage);
+        return;
+      }
+
+      historyToExport.forEach(item => {
+        if (!item) return;
+        let csvObj = {};
+        const ts = item.createdAt || item.created_at || null;
+        csvObj.Date = ts ? this.formatTime(ts) : "N/A";
+        csvObj.Status = item.status || "N/A";
+        csvObj.Exchange_Currency =
+          (item.currencyFrom || "").toUpperCase() +
+          " -> " +
+          (item.currencyTo || "").toUpperCase();
+        csvObj.Exchange_Amount = item.amountExpectedFrom ?? "N/A";
+        csvObj.Exchange_rate = item.rate ?? "N/A";
+        csvObj.Received_Amount = item.amountExpectedTo ?? "N/A";
+        csvObj.Swap_Type = item.privacySwap ? "Privacy" : "Normal";
+        csvObj.Receiver_Address = item.payoutAddress || "N/A";
+        customizeCsv.push(csvObj);
+      });
+
+      if (customizeCsv.length === 0) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 2000,
+          message: this.$t("notification.errors.errorSavingItem", {
+            item: "CSV Report"
+          })
+        });
+        this.get_transaction_History(this.privacySwap, this.currentPage);
+        return;
+      }
+
       let header = true;
       for (let row = 0; row < customizeCsv.length; row++) {
         let keysAmount = Object.keys(customizeCsv[row]).length;
         let keysCounter = 0;
-        // If this is the first row, generate the headings
         if (header) {
-          // Loop each property of the object
           for (let key in customizeCsv[row]) {
-            // This is to not add a comma at the last cell
-            // The '\r\n' adds a new line
             csv += key + (keysCounter + 1 < keysAmount ? "," : "\r\n");
-            header = false;
+            keysCounter++;
           }
-          csv += "\r\n";
+          header = false;
+          keysCounter = 0;
         }
         for (let key in customizeCsv[row]) {
           csv +=
@@ -530,7 +569,6 @@ export default {
             (keysCounter + 1 < keysAmount ? "," : "\r\n");
           keysCounter++;
         }
-        keysCounter = 0;
       }
 
       if (!csv || !csv.trim()) {
@@ -541,6 +579,7 @@ export default {
             item: "CSV Report"
           })
         });
+        this.get_transaction_History(this.privacySwap, this.currentPage);
         return;
       }
 
@@ -548,6 +587,8 @@ export default {
         defaultFilename: "Beldex_wallet_swap_transaction_report.csv",
         csv
       });
+
+      this.get_transaction_History(this.privacySwap, this.currentPage);
     },
     get_transaction_History(privacySwap, page = 1, options = {}) {
       const isCsvExport = Boolean(options.isCsvExport);
@@ -571,26 +612,7 @@ export default {
         pageSize: isCsvExport ? this.csvExportPageSize : this.rowsPerPage,
         isCsvExport
       };
-      // console.log("get_transaction_history data", data);
-      // let count = 1;
-      // this.refreshTxnHistory = setInterval(() => {
-      //   console.log("get status ::", count++);
-
-      // this.$gateway.send("swap", "transaction_history", data);
-
-      // this.$gateway.send("swap", "transaction_status", data);
       this.$gateway.send("swap", "transaction_history", data);
-      //   if (this.txnStatus.hasOwnProperty("result")) {
-      //     console.log("txnStatustxnStatus ", this.txnStatus);
-      //     if (this.txnStatus.result[0].status !== "waiting") {
-      //       console.log(
-      //         "txnStatustxnStatus 2",
-      //         this.txnStatus.result[0].status
-      //       );
-      //       this.navigation("swapStatus", 4);
-      //     }
-      //   }
-      // }, 30000);
     }
   }
 };
