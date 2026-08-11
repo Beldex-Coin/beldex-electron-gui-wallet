@@ -48,7 +48,9 @@
             {{ this.$t("titles.swap.sendFundDisc") }}
           </div>
           <div class="header-pair uppercase">
-            <span class="from">{{ floatingRate.from }}</span>
+            <span class="from">{{
+              floatingRate.from || createdTxnDetails.currencyFrom
+            }}</span>
             <svg
               width="10"
               height="11"
@@ -61,7 +63,9 @@
                 fill="#20D030"
               />
             </svg>
-            <span class="to"> {{ floatingRate.to }}</span>
+            <span class="to">
+              {{ floatingRate.to || createdTxnDetails.currencyTo }}</span
+            >
           </div>
           <div class="amount-wrapper row q-mt-lg">
             <div class="label amountLabel q-mr-sm">
@@ -175,7 +179,13 @@
             ><br />
             <span class="ft-semibold uppercase" style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
-              {{ receiveChainDetails.blockchain.replaceAll("_", " ") }}</span
+              {{
+                receiveChainDetails.blockchain
+                  ? receiveChainDetails.blockchain.replaceAll("_", " ")
+                  : receiveChainDetails.protocol ||
+                    receiveChainDetails.name ||
+                    ""
+              }}</span
             >
           </div>
           <div class="q-mt-sm">
@@ -265,12 +275,9 @@
             <td>{{ this.$t("titles.swap.exchangeRate") }}</td>
             <td class="uppercase">
               1
-              {{ floatingRate.from ? floatingRate.from : "" }}
-              ~ {{ Number(floatingRate.rate).toFixed(8) }}
-              {{ floatingRate.to ? floatingRate.to : "" }}
-              <!-- {{ createdTxnDetails.currencyFrom  }}
-              ~ {{ Number(floatingRate.rate).toFixed(8) }}
-              {{ createdTxnDetails.currencyTo}} -->
+              {{ floatingRate.from || createdTxnDetails.currencyFrom || "" }}
+              ~ {{ Number(floatingRate.rate || 0).toFixed(8) }}
+              {{ floatingRate.to || createdTxnDetails.currencyTo || "" }}
             </td>
           </tr>
           <tr v-else>
@@ -278,9 +285,9 @@
             <td>
               <span class="uppercase"
                 >1
-                {{ fixedRate.from }}
-                = {{ Number(fixedRate.result).toFixed(8) }}
-                {{ fixedRate.to }}</span
+                {{ fixedRate.from || createdTxnDetails.currencyFrom }}
+                = {{ Number(fixedRate.result || 0).toFixed(8) }}
+                {{ fixedRate.to || createdTxnDetails.currencyTo }}</span
               ><br />
               <span class="fixed-rate-hint">{{
                 this.$t("titles.swap.fixedRateUpdateSec")
@@ -290,8 +297,8 @@
           <tr v-if="createdTxnDetails.type == 'float'">
             <td>{{ this.$t("titles.swap.serviceFee") }}</td>
             <td class="uppercase">
-              {{ Number(floatingRate.fee).toFixed(8) }}
-              {{ floatingRate.to ? floatingRate.to : "" }}
+              {{ Number(floatingRate.fee || 0).toFixed(8) }}
+              {{ floatingRate.to || createdTxnDetails.currencyTo || "" }}
             </td>
           </tr>
 
@@ -304,19 +311,30 @@
           <tr v-if="createdTxnDetails.type == 'float'">
             <td>{{ this.$t("titles.swap.networkFee") }}</td>
             <td class="uppercase">
-              {{ Number(floatingRate.networkFee).toFixed(8) }}
-              {{ floatingRate.to ? floatingRate.to : "" }}
+              {{ Number(floatingRate.networkFee || 0).toFixed(8) }}
+              {{ floatingRate.to || createdTxnDetails.currencyTo || "" }}
             </td>
           </tr>
           <tr>
             <td>{{ this.$t("titles.swap.youGet") }}</td>
             <td v-if="createdTxnDetails.type == 'float'" class="uppercase">
-              ~ {{ Number(floatingRate.amountTo).toFixed(8) }}
-              {{ floatingRate.to ? floatingRate.to : "" }}
+              ~
+              {{
+                Number(
+                  floatingRate.amountTo ||
+                    createdTxnDetails.amountExpectedTo ||
+                    0
+                ).toFixed(8)
+              }}
+              {{ floatingRate.to || createdTxnDetails.currencyTo || "" }}
             </td>
             <td v-else class="uppercase">
-              {{ Number(fixedRate.amountTo).toFixed(8) }}
-              {{ fixedRate.to }}
+              {{
+                Number(
+                  fixedRate.amountTo || createdTxnDetails.amountExpectedTo || 0
+                ).toFixed(8)
+              }}
+              {{ fixedRate.to || createdTxnDetails.currencyTo || "" }}
             </td>
           </tr>
         </table>
@@ -414,7 +432,6 @@ export default {
 
       clearInterval(this.timer);
       //  this.startAndStopTimer()
-      // console.log("exchangeData ::", exchangeData);
     },
     startAndStopTimer() {
       clearInterval(this.timer);

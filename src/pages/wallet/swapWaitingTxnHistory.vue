@@ -1,5 +1,5 @@
 <template>
-  <div class="txnSettlement">
+  <div class="txnSettlement waitingTxnHistory">
     <header class="flex row items-center q-mb-md">
       <div
         class="flex items-center back-arrow-btn"
@@ -18,7 +18,6 @@
           />
         </svg>
       </div>
-
       <div class="ft-semibold q-ml-md header-txt">
         {{ this.$t("buttons.back") }}
       </div>
@@ -154,7 +153,11 @@
             ><br />
             <span class="ft-semibold uppercase" style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
-              {{ this.chainDetails.receive.replaceAll("_", " ") }}</span
+              {{
+                this.chainDetails.receive
+                  ? this.chainDetails.receive.replaceAll("_", " ")
+                  : ""
+              }}</span
             >
           </div>
           <div>
@@ -274,7 +277,11 @@
           <tr v-if="txnDetails.type == 'float'">
             <td>{{ this.$t("titles.swap.networkFee") }}</td>
             <td class="uppercase">
-              {{ Number(txnDetails.networkFee).toFixed(8) }}
+              {{
+                isNaN(Number(txnDetails.networkFee))
+                  ? "0.00000000"
+                  : Number(txnDetails.networkFee).toFixed(8)
+              }}
               {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
             </td>
           </tr>
@@ -342,7 +349,8 @@ export default {
     }
   },
   computed: mapState({
-    currencyList: state => state.gateway.currencyList.result
+    currencyList: state => state.gateway.currencyList.result,
+    info: state => state.gateway.wallet.info
   }),
   data() {
     return {
@@ -358,34 +366,59 @@ export default {
       clock: ""
     };
   },
+
+  watch: {
+    currencyList: {
+      immediate: true,
+      handler() {
+        this.set_chainDetails();
+      }
+    },
+    txnDetails: {
+      immediate: true,
+      handler() {
+        this.set_chainDetails();
+      }
+    }
+  },
   beforeDestroy() {
     clearInterval(this.timer);
+    if (this.refreshTxnStatus) {
+      clearInterval(this.refreshTxnStatus);
+    }
   },
   mounted() {
     this.startAndStopTimer();
-    // console.log("SwapTxnSettlement ::", this.txnDetails);
     this.set_chainDetails();
+    this.get_transaction_status();
   },
 
   methods: {
     backTopayment() {
       this.$emit("goback");
-      // this.$emit("clearAllintervals");
-
       clearInterval(this.timer);
-      //  this.startAndStopTimer()
-      // console.log("exchangeData ::", exchangeData);
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+      }
     },
     startAndStopTimer() {
       clearInterval(this.timer);
       var today;
       let addTime;
 
+      const rawTs = this.txnDetails?.createdAt || this.txnDetails?.created_at;
+      let ms = Number(rawTs);
+      if (isNaN(ms) || !ms) {
+        ms = Date.now();
+      } else if (String(Math.floor(ms)).length <= 10) {
+        ms = ms * 1000;
+      }
+
       if (this.txnDetails.type == "float") {
-        today = new Date(this.txnDetails.createdAt / 1000);
+        today = new Date(ms);
         addTime = today.setHours(today.getHours() + 3);
       } else {
-        today = new Date(this.txnDetails.createdAt / 1000);
+        today = new Date(ms);
         addTime = today.setMinutes(today.getMinutes() + 20);
       }
       var countDownDate = new Date(addTime).getTime();
@@ -402,14 +435,9 @@ export default {
         );
         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        // Output the result in an element with id="timer"
-        // document.getElementById("timer").innerHTML =
-        //   hours + "h " + minutes + "m " + seconds + "s ";
         this.clock = hours + "h " + minutes + "m " + seconds + "s ";
 
-        // If the count down is over, write some text
         if (distance < 0) {
-          // document.getElementById("timer").innerHTML = "00:00:00";
           this.clock = "Expired";
           this.timeIsExpire = true;
           this.clearintervals();
@@ -418,26 +446,43 @@ export default {
     },
     clearintervals() {
       clearInterval(this.timer);
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+      }
     },
 
     set_chainDetails() {
+      if (
+        !this.currencyList ||
+        !Array.isArray(this.currencyList) ||
+        !this.txnDetails
+      )
+        return;
       let sendChain = this.currencyList.find(
         item => item.ticker === this.txnDetails.currencyFrom
       );
       let receiveChain = this.currencyList.find(
         item => item.ticker === this.txnDetails.currencyTo
       );
-      // console.log("set_chainDetails", sendChain);
-      (this.chainDetails.send = sendChain.blockchain),
-        (this.chainDetails.receive = receiveChain.blockchain);
+      this.chainDetails.send = (sendChain && sendChain.blockchain) || "";
+      this.chainDetails.receive =
+        (receiveChain && receiveChain.blockchain) || "";
     },
     showQR(address) {
-      // event.stopPropagation();
       this.QR.visible = true;
       this.QR.address = address;
+    },
+    get_transaction_status() {
+      const data = {
+        id: this.txnDetails?.id,
+        privacySwap: this.txnDetails?.privacySwap,
+        exchange: this.txnDetails?.exchange_type,
+        walletAddress: this.info?.address
+      };
 
-      // this.QR.address='bcbf9e4b0703d65223af71f3318711d1bc5462588c901c09bda751447b69a0a1'
-      // clearInterval(this.timer);
+      this.refreshTxnStatus = setInterval(() => {
+        this.$gateway.send("swap", "transaction_status", data);
+      }, 30000);
     },
 
     copyAddress(content) {

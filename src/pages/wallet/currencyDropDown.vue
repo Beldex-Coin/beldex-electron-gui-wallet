@@ -18,7 +18,7 @@
     <div v-show="state" class="dropdown-menu">
       <!-- <ul class="list-unstyled"  v-for="currency in this.filterCurrecyList"
                 :key="currency.value" >
-                   
+                  
                 {{ currency.name }}
                 </ul> -->
       <div class="optionView">
@@ -35,8 +35,8 @@
           <div v-if="!searchTxt">
             <div>Privacy Currencies</div>
             <div
-              v-for="currency in this.privacyCurrency"
-              :key="currency.ticker"
+              v-for="(currency, index) in this.privacyCurrency"
+              :key="`${currency.ticker}-${index}`"
               @click="set_amountValidator(currency)"
             >
               <q-item-section class="swapdropDown-option q-py-sm q-pl-md">
@@ -64,8 +64,8 @@
           <div v-if="!searchTxt">All Currencies</div>
 
           <div
-            v-for="currency in this.filterCurrecyList"
-            :key="currency.value"
+            v-for="(currency, index) in this.filterCurrecyList"
+            :key="`${currency.value}-${index}`"
             @click="set_amountValidator(currency)"
           >
             <q-item-section class="swapdropDown-option q-py-sm q-pl-md">
@@ -141,12 +141,10 @@ export default {
   methods: {
     set_searchCurrency(val) {
       this.searchTxt = val;
-      // console.log("searchCurrency 1", val);
       this.$emit("searchCurrency", val);
     },
 
     set_amountValidator(val) {
-      // console.log("amountValidator", val);
       this.$emit("sendAmounType", val);
       this.$emit("sendAmountValidator");
       this.state = false;
@@ -163,10 +161,8 @@ export default {
         // DOM has been updated
         this.$refs.currency.focus();
       });
-      // console.log(this.$refs.currency);
     },
     close(e) {
-      //   console.log("clsoe", e.target);
       if (!this.$el.contains(e.target)) {
         this.state = false;
         if (this.searchTxt) {

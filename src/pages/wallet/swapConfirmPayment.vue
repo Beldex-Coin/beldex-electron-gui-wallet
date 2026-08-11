@@ -96,7 +96,11 @@
           </div>
           <div class="ft-semibold expand-txt uppercase">
             {{ this.$t("titles.swap.network") }} :
-            <span>{{ sendChainDetails.blockchain.replaceAll("_", " ") }}</span>
+            <span>{{
+              sendChainDetails.blockchain
+                ? sendChainDetails.blockchain.replaceAll("_", " ")
+                : sendChainDetails.protocol || sendChainDetails.name || ""
+            }}</span>
           </div>
         </div>
         <div class="col-6">
@@ -122,21 +126,26 @@
           <div class="ft-semibold expand-txt uppercase">
             {{ this.$t("titles.swap.network") }} :
             <span>{{
-              receiveChainDtails.blockchain.replaceAll("_", " ")
+              receiveChainDtails.blockchain
+                ? receiveChainDtails.blockchain.replaceAll("_", " ")
+                : receiveChainDtails.protocol || receiveChainDtails.name || ""
             }}</span>
           </div>
         </div>
       </article>
       <div class="hr-seperator"></div>
 
-      <article v-if="!this.refundAddress" class="flex row">
+      <article
+        v-if="this.floatingRate.fee || this.floatingRate.networkFee"
+        class="flex row"
+      >
         <div class="col-6">
           <div class="q-mb-sm">{{ this.$t("titles.swap.exchangefee") }}</div>
           <div class="ft-semibold amount-txt uppercase">
             {{
               (this.floatingRate.fee
                 ? Number(this.floatingRate.fee).toFixed(8) + " "
-                : "-- ") + receiveChainDtails.name
+                : "0 ") + receiveChainDtails.name
             }}
           </div>
           <div class="ft-regular hint-txt">
@@ -149,7 +158,7 @@
             {{
               (this.floatingRate.networkFee
                 ? Number(this.floatingRate.networkFee).toFixed(8) + " "
-                : "-- ") + receiveChainDtails.name
+                : "0") + receiveChainDtails.name
             }}
           </div>
           <div class="ft-regular hint-txt">
@@ -157,11 +166,20 @@
           </div>
         </div>
       </article>
-      <div v-if="!this.refundAddress" class="hr-seperator"></div>
+      <div
+        v-if="this.floatingRate.fee || this.floatingRate.networkFee"
+        class="hr-seperator"
+      ></div>
 
       <article class="flex row">
-        <div :class="[this.refundAddress ? 'col-12' : 'col-6']">
-          <div v-if="this.refundAddress" class="q-mb-sm">
+        <div :class="[this.fixedRate.result ? 'col-12' : 'col-6']">
+          <div
+            v-if="
+              this.refundAddress &&
+                this.floatingRate.exchange_type === 'changelly'
+            "
+            class="q-mb-sm"
+          >
             <div class>{{ this.$t("titles.swap.guaranteeFee") }}</div>
             <div class="ft-semibold amount-txt uppercase">
               1
@@ -190,7 +208,10 @@
             {{ this.$t("titles.swap.refundAddress") }}
           </div>
           <div
-            v-if="this.refundAddress"
+            v-if="
+              this.refundAddress ||
+                this.floatingRate.exchange_type !== 'changelly'
+            "
             :class="[
               this.refundAddress
                 ? 'ft-semibold amount-txt'
@@ -200,7 +221,7 @@
             {{ this.refundAddress }}
           </div>
         </div>
-        <div v-if="!this.refundAddress" class="col-6">
+        <div v-if="!this.fixedRate.result" class="col-6">
           <div class="q-mb-sm">{{ this.$t("titles.swap.exchangeRate") }}</div>
           <div class="ft-semibold amount-txt uppercase">
             1
@@ -293,7 +314,6 @@ export default {
   data() {
     return {};
   },
-
   methods: {
     goToExchangepair() {
       this.$emit("goback");
@@ -305,33 +325,28 @@ export default {
       this.$emit("sending", this.pairsMinMax?.minAmountFloat);
     },
     disableValidation() {
-      let fixed_validation;
-      if (this.exchangeType === "fixed") {
-        fixed_validation = this.isValidRefundAddress.result;
-      } else {
-        fixed_validation = true;
-      }
-
       let receiveFund = "";
-      let refundAdd = "";
+      let refundAdd = true;
       if (this.exchangeType === "float") {
         receiveFund = this.floatingRate.amountTo;
-        refundAdd = true;
       } else {
         refundAdd = this.refundAddress;
         receiveFund = this.fixedRate.amountTo;
       }
+
+      const amountFrom =
+        this.floatingRate.amountFrom ||
+        this.fixedRate.amountFrom ||
+        this.floatingRate.amountExpectedFrom;
 
       return (
         !(
           this.minMaxWarningContent === "min" ||
           this.minMaxWarningContent === "max"
         ) &&
-        this.pairsMinMax?.minAmountFloat &&
         receiveFund > 0 &&
         refundAdd &&
-        fixed_validation &&
-        this.floatingRate.amountFrom > 0
+        (amountFrom > 0 || Number(receiveFund) > 0)
       );
     }
   }
