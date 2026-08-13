@@ -167,6 +167,11 @@ export class SwapDatabaseManager {
       WHERE txn_id = ? LIMIT 1;
     `);
 
+    this.statements.getExistingTxnIds = this.db.prepare(`
+      SELECT txn_id FROM swap_transactions_history
+      WHERE wallet_address = ?;
+    `);
+
     this.statements.getMeta = this.db.prepare(`
       SELECT value FROM swap_db_metadata WHERE key = ?;
     `);
@@ -258,6 +263,13 @@ export class SwapDatabaseManager {
     this.init();
     if (!txnId) return null;
     return this.statements.getTxnById.get(String(txnId)) || null;
+  }
+
+  getExistingTxnIds(walletAddress) {
+    this.init();
+    if (!walletAddress) return new Set();
+    const rows = this.statements.getExistingTxnIds.all(walletAddress);
+    return new Set(rows.map(row => String(row.txn_id)));
   }
 
   isWalletMigrated(walletAddress) {

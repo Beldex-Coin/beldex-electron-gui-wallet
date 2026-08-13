@@ -45,7 +45,7 @@ export class Swap {
     }
   }
 
-  async _selectExchange() {
+  async _selectExchange(params = {}) {
     const hasBdxPair = result =>
       Array.isArray(result) &&
       result.some(
@@ -53,31 +53,29 @@ export class Swap {
           c.ticker?.toLowerCase() === "bdx" || c.name?.toLowerCase() === "bdx"
       );
 
-    const changellyResult = await changellyAdapter.getCurrenciesFull({});
+    const changellyResult = await changellyAdapter.getCurrenciesFull(params);
     if (changellyResult.status && hasBdxPair(changellyResult.result)) {
       this.activeExchange = "changelly";
       this.sendGateway("set_activeExchange", "changelly");
-      return "changelly";
+      return { exchange: "changelly", currencyList: changellyResult };
     }
 
-    const quickexResult = await quickexAdapter.getCurrenciesFull();
-
+    const quickexResult = await quickexAdapter.getCurrenciesFull(params);
     if (quickexResult.status && hasBdxPair(quickexResult.result)) {
       this.activeExchange = "quickex";
       this.sendGateway("set_activeExchange", "quickex");
-      return "quickex";
+      return { exchange: "quickex", currencyList: quickexResult };
     }
 
     this.activeExchange = "changelly";
     console.warn(
       "[Swap] BDX pair not available on any exchange. Defaulting to Changelly."
     );
-    this.sendGateway("set_swapError", {
-      message: "BDX pair is currently unavailable on all exchanges.",
-      method: "getCurrenciesFull"
-    });
-    this.sendGateway("set_activeExchange", "changelly");
-    return "changelly";
+    this.sendGateway("set_activeExchange", this.activeExchange);
+    return {
+      exchange: this.activeExchange,
+      currencyList: changellyResult || []
+    };
   }
 
   _adapter(exchange) {
@@ -115,10 +113,25 @@ export class Swap {
     if (params?.walletAddress) {
       await this.swapTxnHistory.migrateSwapHistory(params.walletAddress);
     }
-    const exchange = await this._selectExchange();
-    const adapter = this._adapter(exchange);
-    const currencyList = await adapter.getCurrenciesFull(params);
-    if (currencyList) currencyList.exchange_type = exchange;
+    const { exchange, currencyList } = await this._selectExchange(params);
+    if (
+      !currencyList ||
+      !currencyList.status ||
+      !Array.isArray(currencyList.result) ||
+      currencyList.result.length === 0
+    ) {
+      console.warn(
+        "[Swap] Currency list fetch failed or empty. Showing maintenance screen."
+      );
+      this.sendGateway("set_currencyList", {
+        status: false,
+        result: [],
+        exchange_type: exchange,
+        maintenance: true
+      });
+      return;
+    }
+    currencyList.exchange_type = exchange;
     this.sendGateway("set_currencyList", currencyList);
   }
 
@@ -282,6 +295,67 @@ export class Swap {
       const amountTo = row.amount_to != null ? Number(row.amount_to) : 0;
       let rate = 0;
       if (amountFrom > 0 && amountTo > 0) rate = amountTo / amountFrom;
+
+      let rawResp = null;
+      if (row.raw_response) {
+        try {
+          rawResp =
+            typeof row.raw_response === "string"
+              ? JSON.parse(row.raw_response)
+              : row.raw_response;
+        } catch (e) {
+          rawResp = row.raw_response;
+        }
+      }
+      const isQuickex =
+        row.exchange === "quickex" ||
+        (rawResp && (rawResp.deposits || rawResp.withdrawals));
+
+      let moneySent = null;
+      let moneyReceived = null;
+      let payinHash = row.payin_address_memo || "";
+      let payoutHash = row.payout_address_memo || "";
+
+      if (isQuickex && rawResp) {
+        const deposit =
+          Array.isArray(rawResp.deposits) && rawResp.deposits.length > 0
+            ? rawResp.deposits[0]
+            : null;
+        const withdrawal =
+          Array.isArray(rawResp.withdrawals) && rawResp.withdrawals.length > 0
+            ? rawResp.withdrawals[0]
+            : null;
+
+        if (deposit?.createdAt) {
+          moneySent = new Date(deposit.createdAt).getTime() * 1000;
+        }
+        if (withdrawal?.createdAt) {
+          moneyReceived = new Date(withdrawal.createdAt).getTime() * 1000;
+        }
+        if (deposit?.txId) {
+          payinHash = deposit.txId;
+        }
+        if (withdrawal?.txId) {
+          payoutHash = withdrawal.txId;
+        }
+      }
+
+      const baseTs = Number(row.created_at || Date.now());
+      if (!moneySent) {
+        const ms = rawResp?.moneySent ? Number(rawResp.moneySent) : baseTs;
+        moneySent = ms < 1e15 ? ms * 1000 : ms;
+      }
+      if (!moneyReceived) {
+        const ms = rawResp?.moneyReceived
+          ? Number(rawResp.moneyReceived)
+          : baseTs;
+        moneyReceived = ms < 1e15 ? ms * 1000 : ms;
+      }
+
+      if (!payinHash) payinHash = rawResp?.payinHash || "";
+      if (!payoutHash)
+        payoutHash = rawResp?.payoutHash || rawResp?.payoutHashLink || "";
+
       return {
         id: row.txn_id,
         status: row.txn_status || "waiting",
@@ -300,8 +374,14 @@ export class Swap {
         rate,
         createdAt: row.created_at,
         created_at: row.created_at,
+        moneySent,
+        moneyReceived,
+        payinHash,
+        payoutHash,
+        payoutHashLink: payoutHash,
         privacySwap: row.swap_type === "privacy",
-        exchange_type: row.exchange || "changelly"
+        exchange_type: row.exchange || "changelly",
+        raw_response: rawResp
       };
     });
 

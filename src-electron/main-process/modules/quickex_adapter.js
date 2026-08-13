@@ -1,8 +1,14 @@
 import axios from "axios";
 import crypto from "crypto";
 import dotenv from "dotenv";
-import { isWithin3Hours, toMsEpoch } from "../../utils.js";
-import { normalizeCurrencyList } from "./swap_mappers.js";
+import {
+  normalizeCurrencyList,
+  normalizeExchangeAmount,
+  normalizePairsParams,
+  normalizeValidateAddress,
+  normalizeCreatedTransaction,
+  normalizeTransactionStatus
+} from "./swap_mappers.js";
 
 dotenv.config();
 
@@ -10,27 +16,6 @@ const QUICKEX_API_URL = "https://quickex.io/api";
 const QUICKEX_PUBLIC_KEY = process.env.QUICKEX_SWAP_PUPLIC_KEY;
 const QUICKEX_SECRET_KEY = process.env.QUICKEX_SWAP_SECRET_KEY;
 const REFERRER_ID = process.env.QUICKEX_REFERRER_ID;
-
-/** Maps QuickEx order event kinds to normalized status strings. */
-const EVENT_STATUS_MAP = {
-  CREATION_END: "waiting",
-  INCOMING_FUNDS_DETECTED: "confirming",
-  DEPOSIT_REGISTERED: "exchanging",
-  FUNDS_WITHDRAWAL_START: "sending",
-  WITHDRAWAL_COMPLETED: "finished"
-};
-
-function resolveQuickexTxStatus(tx) {
-  if (tx.completed) return "finished";
-  if (tx.failedToCreate) return "failed";
-  if (tx.orderEvents?.length > 0) {
-    const event = tx.orderEvents[0];
-    if (!isWithin3Hours(event.createdAt)) return "overdue";
-    return EVENT_STATUS_MAP[event.kind] ?? "waiting";
-  }
-  if (tx.isPendingToCreate) return "waiting";
-  return "waiting";
-}
 
 function _buildAuthHeaders(body, queryStr) {
   const timestamp = Date.now().toString();
@@ -45,13 +30,6 @@ function _buildAuthHeaders(body, queryStr) {
     "X-Api-Timestamp": timestamp,
     "X-Api-Signature": signature
   };
-}
-
-function _extractAddr(val, key) {
-  if (!val) return "";
-  if (typeof val === "string") return val;
-  if (typeof val === "object") return val[key] || val.address || "";
-  return "";
 }
 
 function _handleError(method, err, errorData, params) {
@@ -138,18 +116,7 @@ export async function getExchangeAmount(params) {
     const amount = params.amountFrom || params.amount;
     const url = `${QUICKEX_API_URL}/v2/rates/public/one?instrumentFromCurrencyTitle=${from}&instrumentFromNetworkTitle=${fromNetwork}&instrumentToCurrencyTitle=${to}&instrumentToNetworkTitle=${toNetwork}&claimedDepositAmountCurrency=${from}&claimedDepositAmount=${amount}&rateMode=FLOATING&exchangeType=crypto&referrerId=${REFERRER_ID}`;
     const res = await axios.get(url, { headers: _baseHeaders });
-    const data = res.data;
-    const result = [
-      {
-        from: from,
-        to: to,
-        amountFrom: amount,
-        amountTo: data.amountToGet,
-        networkFee: data.finalNetworkFeeAmount || data.networkFee,
-        rate: data.price,
-        result: data.amountToGet
-      }
-    ];
+    const result = normalizeExchangeAmount(res.data, params);
     return { status: true, method, result };
   } catch (err) {
     const optimiszedparams = {
@@ -196,40 +163,8 @@ export async function getPairsParams(params) {
 
     const url = `${QUICKEX_API_URL}/v2/rates/public/one?instrumentFromCurrencyTitle=${from}&instrumentFromNetworkTitle=${fromNetwork}&instrumentToCurrencyTitle=${to}&instrumentToNetworkTitle=${toNetwork}&claimedDepositAmountCurrency=${from}&claimedDepositAmount=${amount}&rateMode=FLOATING&exchangeType=crypto&referrerId=${REFERRER_ID}`;
     const res = await axios.get(url, { headers: _baseHeaders });
-    const data = res.data;
-    if (
-      (data?.generalMinAmount && data?.generalMaxAmount) ||
-      (data.minAmountFloat && data.maxAmountFloat)
-    ) {
-      return {
-        status: true,
-        method,
-        result: [
-          {
-            from: from,
-            to: to,
-            minAmountFloat: data.generalMinAmount,
-            maxAmountFloat: data.generalMaxAmount,
-            minAmountFixed: data.generalMinAmount,
-            maxAmountFixed: data.generalMaxAmount
-          }
-        ]
-      };
-    }
-    return {
-      status: true,
-      method,
-      result: [
-        {
-          from: from,
-          to: to,
-          minAmountFloat: 0,
-          maxAmountFloat: 0,
-          minAmountFixed: 0,
-          maxAmountFixed: 0
-        }
-      ]
-    };
+    const result = normalizePairsParams(res.data, params);
+    return { status: true, method, result };
   } catch (err) {
     return _handleError(method, err, err.response?.data || {}, params);
   }
@@ -241,7 +176,7 @@ export async function validateAddress(params) {
   try {
     const body = {
       currencyTitle: params.currency.toUpperCase(),
-      networkTitle: params.currency.toUpperCase(),
+      networkTitle: params.currencyNetWork.toUpperCase(),
       address: params.address
     };
     if (params.extraId) body.memo = params.extraId;
@@ -250,14 +185,8 @@ export async function validateAddress(params) {
       body,
       { headers: _baseHeaders }
     );
-    const data = res.data;
-    return {
-      status: true,
-      method,
-      result: {
-        result: typeof data === "boolean" ? data : data.result === true
-      }
-    };
+    const result = normalizeValidateAddress(res.data);
+    return { status: true, method, result };
   } catch (err) {
     return _handleError(method, err, err.response?.data || {}, params);
   }
@@ -270,11 +199,11 @@ export async function createTransaction(params) {
     const body = {
       instrumentFrom: {
         currencyTitle: (params.from || "").toUpperCase(),
-        networkTitle: (params.from || "").toUpperCase()
+        networkTitle: (params.networkFrom || "").toUpperCase()
       },
       instrumentTo: {
         currencyTitle: (params.to || "").toUpperCase(),
-        networkTitle: (params.to || "").toUpperCase()
+        networkTitle: (params.networkTo || "").toUpperCase()
       },
       destinationAddress: params.address,
       refundAddress: params.refundAddress || "",
@@ -291,30 +220,7 @@ export async function createTransaction(params) {
     );
     if (res.status >= 400) return { status: false, method, error: res.data };
 
-    const data = res.data;
-    const result = {
-      id: data.orderId,
-      type: "float",
-      networkFee: data.claimedNetworkFee,
-      platformFee: data?.claimedPublicRate?.platformFee_Absolute || 0,
-      apiExtraFee: data.claimedNetworkFee,
-      payinAddress: _extractAddr(data.depositAddress, "depositAddress"),
-      payinExtraId: _extractAddr(data.depositAddress, "depositAddressMemo"),
-      payoutAddress: data.destinationAddress || "",
-      payoutExtraId: data.destinationAddressMemo || null,
-      refundAddress: data.refundAddress || "",
-      refundExtraId: data.refundAddressMemo || null,
-      amountExpectedFrom: data.claimedDepositAmount,
-      amountExpectedTo: data.amountToGet,
-      amountTo: data.amountToGet,
-      status: data.completed ? "finished" : "waiting",
-      currencyFrom: (data.instrumentFromCurrencyTitle || "").toLowerCase(),
-      currencyTo: (data.instrumentToCurrencyTitle || "").toLowerCase(),
-      payTill: new Date(Date.now() + 15 * 60000).toISOString(),
-      createdAt: toMsEpoch(data.createdAt),
-      created_at: toMsEpoch(data.createdAt),
-      raw_response: data
-    };
+    const result = normalizeCreatedTransaction(res.data);
     return { status: true, method, result };
   } catch (err) {
     return _handleError(method, err, err.response?.data || {}, params);
@@ -332,7 +238,9 @@ export async function getTransactionStatus(params, dbManager) {
   let destAddress = params.destinationAddress || params.destination_address;
   if (!destAddress && dbManager) {
     const record = dbManager.getTxnById(orderId);
-    if (record) destAddress = record.payout_address;
+    if (record) {
+      destAddress = record?.payout_address;
+    }
   }
 
   let queryString = `orderId=${orderId}`;
@@ -341,43 +249,13 @@ export async function getTransactionStatus(params, dbManager) {
 
   const url = `${QUICKEX_API_URL}/v2/orders/public-info?${queryString}`;
   const authHeaders = _buildAuthHeaders(null, queryString);
-
   try {
     const res = await axios.get(url, {
       headers: { ..._baseHeaders, ...authHeaders }
     });
     if (res.status >= 400) return { status: false, method, error: res.data };
-    const data = res.data;
-    const rawArray = Array.isArray(data) ? data : data ? [data] : [];
-    const result = rawArray.map(tx => {
-      const status = resolveQuickexTxStatus(tx);
-      const amountExpectedFrom = tx.claimedDepositAmount;
-      const amountExpectedTo = tx.amountToGet;
-      let rate = tx.price;
-      if (!rate && amountExpectedFrom && amountExpectedTo)
-        rate = Number(amountExpectedTo) / Number(amountExpectedFrom);
-      return {
-        id: tx.orderId || tx.id,
-        status,
-        currencyFrom: (tx.instrumentFromCurrencyTitle || "").toLowerCase(),
-        currencyTo: (tx.instrumentToCurrencyTitle || "").toLowerCase(),
-        payinAddress: _extractAddr(tx.depositAddress, "depositAddress"),
-        payinExtraId: _extractAddr(tx.depositAddress, "depositAddressMemo"),
-        payoutAddress: _extractAddr(
-          tx.destinationAddress,
-          "destinationAddress"
-        ),
-        refundAddress: _extractAddr(tx.refundAddress, "refundAddress"),
-        amountExpectedFrom,
-        amountExpectedTo,
-        rate: rate || 0,
-        networkFee: tx.claimedNetworkFee,
-        createdAt: toMsEpoch(tx.createdAt || tx.created_at),
-        created_at: toMsEpoch(tx.createdAt || tx.created_at),
-        raw_response: tx
-      };
-    });
 
+    const result = normalizeTransactionStatus(res.data);
     return { status: true, method, result };
   } catch (err) {
     return _handleError(method, err, err.response?.data || {}, params);

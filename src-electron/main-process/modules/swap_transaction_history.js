@@ -184,6 +184,51 @@ export class SwapTxnHistory {
     }
   }
 
+  async _removeStaleIdsFromJson(walletAddress, staleIds) {
+    if (!staleIds || staleIds.length === 0) return;
+
+    const swapHistoryPath = this._getSwapHistoryPath();
+    try {
+      const raw = await fs.readFile(swapHistoryPath, "utf8");
+      const swapHistory = JSON.parse(raw);
+
+      if (!swapHistory[walletAddress]) return;
+
+      const staleSet = new Set(staleIds.map(id => String(id)));
+
+      // Remove only the stale IDs (not returned by Changelly API)
+      swapHistory[walletAddress] = swapHistory[walletAddress].filter(
+        id => !staleSet.has(String(id))
+      );
+
+      // If wallet array is now empty, remove the wallet key
+      if (swapHistory[walletAddress].length === 0) {
+        delete swapHistory[walletAddress];
+      }
+
+      // If no wallet keys remain, delete the file entirely
+      if (Object.keys(swapHistory).length === 0) {
+        await fs.unlink(swapHistoryPath);
+        console.log(
+          "[SwapTxnHistory] Deleted empty swap_transaction_history.json"
+        );
+      } else {
+        await fs.writeFile(
+          swapHistoryPath,
+          JSON.stringify(swapHistory, null, 2),
+          "utf8"
+        );
+      }
+
+      console.log(
+        `[SwapTxnHistory] Removed ${staleIds.length} stale transaction IDs from JSON for wallet ${walletAddress}`
+      );
+    } catch (err) {
+      // Non-critical — don't block migration on cleanup failure
+      console.warn("[SwapTxnHistory] JSON cleanup warning:", err.message);
+    }
+  }
+
   async migrateSwapHistory(walletAddress) {
     if (!walletAddress) {
       console.error("migrateSwapHistory requires a walletAddress.");
@@ -220,7 +265,33 @@ export class SwapTxnHistory {
       return;
     }
 
-    const txnIds = [...new Set(rawTxnIds)];
+    const jsonTxnIds = [...new Set(rawTxnIds.map(id => String(id)))];
+    const dbCount = dbManager.getOrderHistoryCount(walletAddress);
+
+    // Guard 1: First check if transaction ID count in JSON matches DB count
+    if (jsonTxnIds.length === dbCount) {
+      dbManager.markWalletMigrated(walletAddress);
+      console.log(
+        `[SwapTxnHistory] Migration guard: JSON transaction count (${jsonTxnIds.length}) matches DB count (${dbCount}) for wallet ${walletAddress}. Marked migration as done.`
+      );
+      return;
+    }
+
+    // Guard 2: If counts are not equal, check which IDs are missing from DB
+    const existingDbTxnIds = dbManager.getExistingTxnIds(walletAddress);
+    const missingTxnIds = jsonTxnIds.filter(id => !existingDbTxnIds.has(id));
+
+    if (missingTxnIds.length === 0) {
+      dbManager.markWalletMigrated(walletAddress);
+      console.log(
+        `[SwapTxnHistory] Migration guard: All ${jsonTxnIds.length} JSON transaction IDs already present in DB for wallet ${walletAddress}. Marked migration as done.`
+      );
+      return;
+    }
+
+    console.log(
+      `[SwapTxnHistory] Migrating ${missingTxnIds.length} missing transaction IDs (JSON total: ${jsonTxnIds.length}, DB total: ${dbCount}) for wallet ${walletAddress}.`
+    );
 
     const fetchedRecordsMap = new Map();
 
@@ -239,7 +310,7 @@ export class SwapTxnHistory {
             if (Array.isArray(response.result)) {
               response.result.forEach(item => {
                 if (item && item.id) {
-                  fetchedRecordsMap.set(item.id, {
+                  fetchedRecordsMap.set(String(item.id), {
                     ...item,
                     privacySwap: isPrivacy
                   });
@@ -264,13 +335,13 @@ export class SwapTxnHistory {
       return true;
     };
 
-    const normalSuccess = await fetchBatchFromApi(txnIds, false);
+    const normalSuccess = await fetchBatchFromApi(missingTxnIds, false);
     if (!normalSuccess) {
       console.error(`Migration aborted for ${walletAddress} due to API error.`);
       return;
     }
 
-    const remainingIds = txnIds.filter(id => !fetchedRecordsMap.has(id));
+    const remainingIds = missingTxnIds.filter(id => !fetchedRecordsMap.has(id));
     if (remainingIds.length > 0) {
       const privacySuccess = await fetchBatchFromApi(remainingIds, true);
       if (!privacySuccess) {
@@ -281,20 +352,19 @@ export class SwapTxnHistory {
       }
     }
 
+    // Identify stale IDs: sent to Changelly API but NOT returned in result
+    const staleIds = missingTxnIds.filter(id => !fetchedRecordsMap.has(id));
+
     let count = 0;
     const recordsToInsert = [];
 
-    for (const txnId of txnIds) {
+    for (const txnId of missingTxnIds) {
       const fetchedItem = fetchedRecordsMap.get(txnId);
-      const isPrivacySwap = fetchedItem
-        ? Boolean(fetchedItem.privacySwap)
-        : false;
+      // Skip stale IDs — only insert records that were returned by the API
+      if (!fetchedItem) continue;
 
-      const recordDetails = fetchedItem || {
-        txn_id: txnId,
-        status: "waiting",
-        type: "float"
-      };
+      const isPrivacySwap = Boolean(fetchedItem.privacySwap);
+      const recordDetails = fetchedItem;
 
       const record = this._mapDetailsToRecord(
         txnId,
@@ -312,8 +382,12 @@ export class SwapTxnHistory {
     try {
       dbManager.batchUpsertTransactions(recordsToInsert);
       dbManager.markWalletMigrated(walletAddress);
+
+      // Remove stale IDs (not returned by Changelly) from legacy JSON
+      await this._removeStaleIdsFromJson(walletAddress, staleIds);
+
       console.log(
-        `Migration completed successfully for wallet ${walletAddress}. Migrated ${count} records into beldex_wallet.db SQLite database.`
+        `Migration completed successfully for wallet ${walletAddress}. Migrated ${count} records, removed ${staleIds.length} stale IDs from JSON.`
       );
     } catch (dbErr) {
       console.error(
