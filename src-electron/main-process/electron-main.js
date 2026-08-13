@@ -28,6 +28,11 @@ if (process.env.PROD) {
   global.__ryo_bin = path.join(process.cwd(), "bin").replace(/\\/g, "\\\\");
 }
 
+// Electron 42.4.1 has been unstable for some macOS users during very early
+// startup. Disabling Maglev avoids that V8 compilation path until the runtime
+// is upgraded to a newer 42.x patch.
+app.commandLine.appendSwitch("js-flags", "--no-maglev");
+
 let mainWindow, backend;
 let showConfirmClose = true;
 let forceQuit = false;
@@ -112,14 +117,13 @@ function createWindow() {
     defaultWidth: 900,
     defaultHeight: 700
   });
-  mainWindow = new BrowserWindow({
+  const windowOptions = {
     x: mainWindowState.x,
     y: mainWindowState.y,
     width: mainWindowState.width,
     height: mainWindowState.height,
     minWidth: 1200,
     minHeight: 650,
-    icon: require("path").join(__statics, "icon.png"),
     title,
     webPreferences: {
       nodeIntegration: false,
@@ -129,7 +133,15 @@ function createWindow() {
       // anything we want preloaded, e.g. global vars
       preload: path.resolve(__dirname, "electron-preload.js")
     }
-  });
+  };
+
+  // macOS reads the app bundle icon from the .app resources; avoid forcing a
+  // separate window icon decode path during startup.
+  if (process.platform !== "darwin") {
+    windowOptions.icon = require("path").join(__statics, "icon.png");
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
 
   mainWindow.on("close", e => {
     // Don't ask for confirmation if we're installing an update
