@@ -833,6 +833,7 @@ export default {
       date: "Date",
       exchangeAmount: "Exchange amount",
       receiver: "Receiver",
+      confirmations: "Confirmations",
       sendFundDisc: "Send funds to the address below",
       timeLeft: "Time left to send",
       guaranteedRateDisc: "The guaranteed rate has been terminated",
@@ -856,7 +857,7 @@ export default {
       maximumAmtChanged: "Maximum amount value is changed, the new value is ",
       network: "NETWORK",
       giveCorrectAddress:
-        "Please make sure to enter the correct address for the selected chain - ({type}). Otherwise you will lose your funds.",
+        "Please make sure to enter the correct address for the selected chain. Otherwise you will lose your funds.",
       swapType: "Swap Type"
     }
   }

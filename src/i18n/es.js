@@ -841,6 +841,7 @@ export default {
       date: "fechas",
       exchangeAmount: "Monto del cambio",
       receiver: "Receptor",
+      confirmations: "Confirmations",
       sendFundDisc: "Envíe fondos a la siguiente dirección",
       timeLeft: "Tiempo restante para enviar",
       guaranteedRateDisc: "La tarifa garantizada ha sido cancelada",

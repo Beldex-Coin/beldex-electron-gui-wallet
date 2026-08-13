@@ -323,12 +323,7 @@
             <tr v-if="this.exechangeRateType == 'float'">
               <td>{{ this.$t("titles.swap.serviceFee") }}</td>
               <td class="uppercase">
-                {{
-                  exchange_amount.fee
-                    ? Number(exchange_amount.fee).toFixed(8)
-                    : "--"
-                }}
-                {{ this.receiveAmountType.name }}
+                {{ getFeeAmount() }} {{ receiveAmountType.name }}
               </td>
             </tr>
 
@@ -418,18 +413,11 @@
           <q-icon name="o_info" size="14px" />
         </div>
         <div style="width: 95%">
-          {{
-            this.$t("titles.swap.giveCorrectAddress", {
-              type:
-                this.receiveAmountType.exchange_type === "quickex"
-                  ? this.receiveAmountType.protocol
-                  : this.receiveAmountType?.blockchain?.replaceAll("_", " ")
-            })
-          }}
+          {{ this.$t("titles.swap.giveCorrectAddress") }}
         </div>
       </div>
       <div
-        v-if="this.receiveAmountType.hasOwnProperty('extraIdName')"
+        v-if="this.receiveAmountType?.extraIdName"
         class="destination-tag-wrapper q-mt-md"
       >
         <span class="ft-Light hint">
@@ -759,10 +747,7 @@ export default {
         if (toCoin.enabled && fromCoin.enabled) {
           this.bdxCoinDetails = toCoin;
           this.receiveAmountType = toCoin;
-          this.minMaxPair();
-          this.clearAllintervals();
-          this.getExchangeRate();
-          this.validateFixedIsEnabled();
+          this.restartAllIntervals();
         } else {
           this.navigation("maintenance", 1);
         }
@@ -1026,17 +1011,11 @@ export default {
       } else if (this.sendAmounType.value === this.receiveAmountType.value) {
         this.receiveAmountType = this.bdxCoinDetails;
       }
-      this.minMaxPair();
-
-      this.clearAllintervals();
-      this.getExchangeRate();
-
+      this.restartAllIntervals();
       if (
-        this.sendAmounType.fixRateEnabled &&
-        this.receiveAmountType.fixRateEnabled
+        !this.sendAmounType.fixRateEnabled ||
+        !this.receiveAmountType.fixRateEnabled
       ) {
-        this.getFixedExchangeAmount();
-      } else {
         this.exechangeRateType = "float";
       }
     },
@@ -1054,15 +1033,11 @@ export default {
       } else if (this.sendAmounType.value === this.receiveAmountType.value) {
         this.sendAmounType = this.bdxCoinDetails;
       }
-      this.minMaxPair();
-      this.clearAllintervals();
-      this.getExchangeRate(this.pairsMinMax);
+      this.restartAllIntervals();
       if (
-        this.sendAmounType.fixRateEnabled &&
-        this.receiveAmountType.fixRateEnabled
+        !this.sendAmounType.fixRateEnabled ||
+        !this.receiveAmountType.fixRateEnabled
       ) {
-        this.getFixedExchangeAmount();
-      } else {
         this.exechangeRateType = "float";
       }
     },
@@ -1072,8 +1047,6 @@ export default {
         this.sendAmounType
       ];
       this.swaploading = true;
-      clearInterval(this.refreshMinMax);
-      this.clearAllintervals();
       this.destinationTagValue = "";
       this.refundDestinationTagValue = "";
       this.recipientAddress = { val: "", error: false };
@@ -1082,9 +1055,13 @@ export default {
       this.$store.commit("gateway/set_pairsMinMax", {
         result: [{ from: "", to: "", minAmountFloat: 0, maxAmountFloat: 0 }]
       });
-      this.minMaxPair();
-      this.getExchangeRate();
-      this.validateFixedIsEnabled();
+      this.restartAllIntervals();
+      if (
+        !this.sendAmounType.fixRateEnabled ||
+        !this.receiveAmountType.fixRateEnabled
+      ) {
+        this.exechangeRateType = "float";
+      }
     },
     minMaxAmoutValidator(amount) {
       if (this.exchange_amount.hasOwnProperty("error")) {
@@ -1404,6 +1381,17 @@ export default {
       this.refreshTxnStatus = setInterval(() => {
         this.$gateway.send("swap", "transaction_status", data);
       }, 30000);
+    },
+    getFeeAmount() {
+      if (this.exchange_amount?.fee) {
+        return Number(this.exchange_amount.fee).toFixed(8);
+      }
+
+      if (this.exchange_amount?.networkFee) {
+        return "0";
+      }
+
+      return "--";
     }
   }
 };

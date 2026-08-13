@@ -849,6 +849,7 @@ export default {
       date: "Date",
       exchangeAmount: "Montant d'échange",
       receiver: "Destinataire",
+      confirmations: "Confirmations",
       sendFundDisc: "Envoyez des fonds à l'adresse ci-dessous",
       timeLeft: "Temps restant pour envoyer",
       guaranteedRateDisc: "Le tarif garanti a été résilié",

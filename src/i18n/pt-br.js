@@ -829,6 +829,7 @@ export default {
       date: "Data",
       exchangeAmount: "Valor de troca",
       receiver: "Receptor",
+      confirmations: "Confirmações",
       sendFundDisc: "Envie fundos para o endereço abaixo",
       timeLeft: "Tempo restante para enviar",
       guaranteedRateDisc: "A taxa garantida foi encerrada",

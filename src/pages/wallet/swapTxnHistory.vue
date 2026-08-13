@@ -569,83 +569,110 @@ export default {
       this.currentPage = page;
       this.get_transaction_History(this.privacySwap, this.currentPage);
     },
+    getTransactionTimestamp(item) {
+      if (!item) return 0;
+      const value = item.createdAt || item.created_at || 0;
+      if (typeof value === "string" && isNaN(value)) {
+        const date = new Date(value);
+        return isNaN(date.getTime()) ? 0 : date.getTime();
+      }
+      let num = Number(value);
+      if (isNaN(num)) return 0;
+      const digits = Math.floor(Math.abs(num)).toString().length;
+      if (digits >= 16) return Math.floor(num / 1000);
+      if (digits <= 10) return num * 1000;
+      return num;
+    },
     downloadCsv() {
       this.isCsvExporting = true;
       this.get_transaction_History(this.privacySwap, 1, { isCsvExport: true });
     },
     exportCsvFromHistory(history = this.txnHistory) {
-      this.isCsvExporting = false;
-      let customizeCsv = [];
-      let csv = "";
-      const historyToExport = [...(history || [])].sort((a, b) => {
-        const ta = this.getTransactionTimestamp(a);
-        const tb = this.getTransactionTimestamp(b);
-        return tb - ta;
-      });
-
-      if (historyToExport.length === 0) {
-        this.$q.notify({
-          type: "negative",
-          timeout: 2000,
-          message: this.$t("notification.errors.errorSavingItem", {
-            item: "CSV Report"
-          })
+      try {
+        let customizeCsv = [];
+        let csv = "";
+        const historyToExport = [...(history || [])].sort((a, b) => {
+          const ta = this.getTransactionTimestamp(a);
+          const tb = this.getTransactionTimestamp(b);
+          return tb - ta;
         });
-        this.get_transaction_History(this.privacySwap, this.currentPage);
-        return;
-      }
 
-      historyToExport.forEach(item => {
-        if (!item) return;
-        let csvObj = {};
-        const ts = item.createdAt || item.created_at || null;
-        csvObj.Date = ts ? this.formatTime(ts) : "N/A";
-        csvObj.Status = item.status || "N/A";
-        csvObj.Exchange_Currency =
-          (item.currencyFrom || "").toUpperCase() +
-          " -> " +
-          (item.currencyTo || "").toUpperCase();
-        csvObj.Exchange_Amount = item.amountExpectedFrom ?? "N/A";
-        csvObj.Exchange_rate = item.rate ?? "N/A";
-        csvObj.Received_Amount = item.amountExpectedTo ?? "N/A";
-        csvObj.Swap_Type = item.privacySwap ? "Privacy" : "Normal";
-        csvObj.Receiver_Address = item.payoutAddress || "N/A";
-        customizeCsv.push(csvObj);
-      });
-
-      if (customizeCsv.length === 0) {
-        this.$q.notify({
-          type: "negative",
-          timeout: 2000,
-          message: this.$t("notification.errors.errorSavingItem", {
-            item: "CSV Report"
-          })
-        });
-        this.get_transaction_History(this.privacySwap, this.currentPage);
-        return;
-      }
-
-      let header = true;
-      for (let row = 0; row < customizeCsv.length; row++) {
-        let keysAmount = Object.keys(customizeCsv[row]).length;
-        let keysCounter = 0;
-        if (header) {
-          for (let key in customizeCsv[row]) {
-            csv += key + (keysCounter + 1 < keysAmount ? "," : "\r\n");
-            keysCounter++;
-          }
-          header = false;
-          keysCounter = 0;
+        if (historyToExport.length === 0) {
+          this.$q.notify({
+            type: "negative",
+            timeout: 2000,
+            message: this.$t("notification.errors.errorSavingItem", {
+              item: "CSV Report"
+            })
+          });
+          return;
         }
-        for (let key in customizeCsv[row]) {
-          csv +=
-            customizeCsv[row][key] +
-            (keysCounter + 1 < keysAmount ? "," : "\r\n");
-          keysCounter++;
-        }
-      }
 
-      if (!csv || !csv.trim()) {
+        historyToExport.forEach(item => {
+          if (!item) return;
+          let csvObj = {};
+          const ts = item.createdAt || item.created_at || null;
+          csvObj.Date = ts ? this.formatTime(ts) : "N/A";
+          csvObj.Status = item.status || "N/A";
+          csvObj.Exchange_Currency =
+            (item.currencyFrom || "").toUpperCase() +
+            " -> " +
+            (item.currencyTo || "").toUpperCase();
+          csvObj.Exchange_Amount = item.amountExpectedFrom ?? "N/A";
+          csvObj.Exchange_rate = item.rate ?? "N/A";
+          csvObj.Received_Amount = item.amountExpectedTo ?? "N/A";
+          csvObj.Swap_Type = item.privacySwap ? "Privacy" : "Normal";
+          csvObj.Receiver_Address = item.payoutAddress || "N/A";
+          customizeCsv.push(csvObj);
+        });
+
+        if (customizeCsv.length === 0) {
+          this.$q.notify({
+            type: "negative",
+            timeout: 2000,
+            message: this.$t("notification.errors.errorSavingItem", {
+              item: "CSV Report"
+            })
+          });
+          return;
+        }
+
+        const headers = Object.keys(customizeCsv[0]);
+        const csvRows = [
+          headers.join(","),
+          ...customizeCsv.map(row =>
+            headers
+              .map(key => {
+                const val = row[key] ?? "";
+                const str = String(val).replace(/"/g, '""');
+                return str.includes(",") ||
+                  str.includes('"') ||
+                  str.includes("\n")
+                  ? `"${str}"`
+                  : str;
+              })
+              .join(",")
+          )
+        ];
+        csv = csvRows.join("\r\n");
+
+        if (!csv || !csv.trim()) {
+          this.$q.notify({
+            type: "negative",
+            timeout: 2000,
+            message: this.$t("notification.errors.errorSavingItem", {
+              item: "CSV Report"
+            })
+          });
+          return;
+        }
+
+        this.$gateway.send("core", "save_csv", {
+          defaultFilename: "Beldex_wallet_swap_transaction_report.csv",
+          csv
+        });
+      } catch (err) {
+        console.error("[SwapTxnHistory] exportCsvFromHistory error:", err);
         this.$q.notify({
           type: "negative",
           timeout: 2000,
@@ -653,16 +680,10 @@ export default {
             item: "CSV Report"
           })
         });
+      } finally {
+        this.isCsvExporting = false;
         this.get_transaction_History(this.privacySwap, this.currentPage);
-        return;
       }
-
-      this.$gateway.send("core", "save_csv", {
-        defaultFilename: "Beldex_wallet_swap_transaction_report.csv",
-        csv
-      });
-
-      this.get_transaction_History(this.privacySwap, this.currentPage);
     },
     get_transaction_History(privacySwap, page = 1, options = {}) {
       const isCsvExport = Boolean(options.isCsvExport);

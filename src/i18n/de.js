@@ -842,6 +842,7 @@ export default {
       date: "Datum",
       exchangeAmount: "Umtauschbetrag",
       receiver: "Empfängerin",
+      confirmations: "Bestätigungen",
       sendFundDisc: "Senden Sie Geld an die unten angegebene Adresse",
       timeLeft: "Es bleibt noch Zeit zum Senden",
       guaranteedRateDisc: "Der garantierte Tarif wurde gekündigt",

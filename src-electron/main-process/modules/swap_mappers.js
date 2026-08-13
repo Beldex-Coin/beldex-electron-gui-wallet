@@ -139,6 +139,10 @@ export function normalizeCreatedTransaction(data) {
     payTill: new Date(Date.now() + 15 * 60000).toISOString(),
     createdAt: toMsEpoch(data.createdAt),
     created_at: toMsEpoch(data.createdAt),
+    minConfirmationsToTrade:
+      data.minConfirmationsToTrade ?? data.payinConfirmations ?? 3,
+    payinConfirmations:
+      data.minConfirmationsToTrade ?? data.payinConfirmations ?? 3,
     raw_response: data
   };
 }
@@ -198,6 +202,10 @@ export function normalizeTransactionStatus(data) {
       payoutHashLink: tx.payoutHashLink || tx.payout_hash_link || "",
       createdAt: toMsEpoch(tx.createdAt || tx.created_at),
       created_at: toMsEpoch(tx.createdAt || tx.created_at),
+      minConfirmationsToTrade:
+        tx.minConfirmationsToTrade ?? tx.payinConfirmations ?? 3,
+      payinConfirmations:
+        tx.minConfirmationsToTrade ?? tx.payinConfirmations ?? 3,
       raw_response: tx
     };
   });

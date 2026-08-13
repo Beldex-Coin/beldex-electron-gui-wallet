@@ -73,11 +73,11 @@
               {{ this.$t("titles.swap.confirmedInBlockchain") }}
               <span class="uppercase">{{ statusDetails.currencyTo }}</span>
             </div>
-            <a
-              class="explorer-link"
-              @click="inputHash(statusDetails.payinHash)"
-              >{{ this.$t("titles.swap.seenInputExplorer") }}</a
-            >
+            <!-- <a
+          class="explorer-link"
+          @click="inputHash(statusDetails.payinHash)"
+          >{{ this.$t("titles.swap.seenInputExplorer") }}</a
+          > -->
           </div>
         </div>
         <div class="hr-seperator q-my-md"></div>
@@ -286,17 +286,14 @@ export default {
   },
 
   methods: {
-    inputHash(hash) {
-      let payInCurrency = this.Currencylist.find(
-        item => item.ticker === this.statusDetails.currencyFrom
-      );
-      let url = payInCurrency.transactionUrl;
-      url = url.slice(0, url.lastIndexOf("/") - (url.length - 1)) + hash;
-
-      this.$gateway.send("core", "open_url", { url });
-
-      // console.log("input hash", url);
-    }
+    //inputHash(hash) {
+    //let payInCurrency = this.Currencylist.find(
+    // item => item.ticker === this.statusDetails.currencyFrom
+    //);
+    // let url = payInCurrency.transactionUrl;
+    //url = url.slice(0, url.lastIndexOf("/") - (url.length - 1)) + hash;
+    // this.$gateway.send("core", "open_url", { url });
+    // },
   }
 };
 </script>

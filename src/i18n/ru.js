@@ -831,6 +831,7 @@ export default {
       date: "Дата",
       exchangeAmount: "Сумма обмена",
       receiver: "Получатель",
+      confirmations: "Подтверждения",
       sendFundDisc: "Отправьте средства на адрес ниже",
       timeLeft: "Осталось время отправить",
       guaranteedRateDisc: "Гарантированная ставка прекращена",

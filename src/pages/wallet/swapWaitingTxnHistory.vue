@@ -285,6 +285,10 @@
               {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
             </td>
           </tr>
+          <tr v-if="getConfirmationCount() !== null">
+            <td>{{ $t("titles.swap.confirmations") }}</td>
+            <td class="uppercase">{{ getConfirmationCount() }} Blocks</td>
+          </tr>
           <tr>
             <td>{{ this.$t("titles.swap.youGet") }}</td>
             <td v-if="txnDetails.type == 'float'" class="uppercase">
@@ -461,6 +465,20 @@ export default {
     showQR(address) {
       this.QR.visible = true;
       this.QR.address = address;
+    },
+    getConfirmationCount() {
+      if (!this.txnDetails) return null;
+      const count =
+        this.txnDetails.minConfirmationsToTrade ??
+        this.txnDetails.payinConfirmations ??
+        (this.txnDetails.raw_response &&
+        typeof this.txnDetails.raw_response === "object"
+          ? this.txnDetails.raw_response.minConfirmationsToTrade ??
+            this.txnDetails.raw_response.payinConfirmations
+          : null);
+      return count != null && count !== "" && !isNaN(Number(count))
+        ? Number(count)
+        : null;
     },
 
     copyAddress(content) {

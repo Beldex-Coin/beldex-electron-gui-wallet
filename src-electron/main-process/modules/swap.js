@@ -50,7 +50,8 @@ export class Swap {
       Array.isArray(result) &&
       result.some(
         c =>
-          c.ticker?.toLowerCase() === "bdx" || c.name?.toLowerCase() === "bdx"
+          (c.ticker?.toLowerCase() === "bdx" && c.enabled) ||
+          (c.name?.toLowerCase() === "bdx" && c.enabled)
       );
 
     const changellyResult = await changellyAdapter.getCurrenciesFull(params);

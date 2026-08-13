@@ -323,10 +323,18 @@ export default {
       //url = url.slice(0, url.lastIndexOf("/") - (url.length - 1)) + hash;
 
       //this.$gateway.send("core", "open_url", { url });
-      this.copyAddress(hash, "Input Hash is copied!");
+      let payinhash = hash;
+      if (!hash) {
+        payinhash = this.txnStatus?.raw_response?.deposits[0]?.txId || "";
+      }
+      this.copyAddress(payinhash, "Input Hash is copied!");
     },
     outputHash(url) {
-      this.copyAddress(url, "Output Hash is copied!");
+      let payoutHash = url;
+      if (!payoutHash) {
+        payoutHash = this.txnStatus?.raw_response?.withdrawals[0]?.txId || "";
+      }
+      this.copyAddress(payoutHash, "Output Hash is copied!");
       // this.$gateway.send("core", "open_url", { url });
     }
   }
