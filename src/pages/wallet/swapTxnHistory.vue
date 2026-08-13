@@ -272,31 +272,18 @@
     v-else-if="txnDetails?.status === 'finished'"
     :txn-status="txnDetails"
     from="history"
-    @goback="
-      () => {
-        (isVisible = true), (txnDetails = '');
-      }
-    "
+    @goback="backToHistoryList"
   />
-  <!-- :floating-rate="this.exchange_amount"
-    :fixed-rate="this.fixedExchangeRate"
-    :receive-chain-details="this.receiveAmountType"
-    :send-chain-details="this.sendAmounType"
-  @clearAllintervals="clearAllintervals"-->
   <swapWaitingTxnHistory
     v-else-if="txnDetails?.status === 'waiting'"
     :txn-details="txnDetails"
-    @goback="
-      () => {
-        (isVisible = true), (txnDetails = '');
-      }
-    "
+    @goback="backToHistoryList"
     @backToSwap="backToSwap"
   />
   <SwapTxnDetails
     v-else
     :txn-details="this.txnDetails"
-    @goback="isVisible = true"
+    @goback="backToHistoryList"
     @backToSwap="backToSwap"
   />
 </template>
@@ -327,6 +314,7 @@ export default {
   data() {
     return {
       isVisible: true,
+      refreshTxnStatus: null,
       refreshTxnHistory: "",
       txnDetails: "",
       currentPage: 1,
@@ -338,6 +326,12 @@ export default {
   },
   created() {
     this.get_transaction_History(this.privacySwap, 1);
+  },
+  beforeDestroy() {
+    if (this.refreshTxnStatus) {
+      clearInterval(this.refreshTxnStatus);
+      this.refreshTxnStatus = null;
+    }
   },
   computed: {
     ...mapState({
@@ -362,7 +356,8 @@ export default {
           }
         );
       },
-      info: state => state.gateway.wallet.info
+      info: state => state.gateway.wallet.info,
+      storeTxnStatus: state => state.gateway.txnStatus
     }),
 
     totalPages() {
@@ -415,12 +410,64 @@ export default {
           this.exportCsvFromHistory(newValue);
         }
       }
+    },
+    storeTxnStatus(newStatus) {
+      if (
+        newStatus &&
+        newStatus.hasOwnProperty("result") &&
+        Array.isArray(newStatus.result) &&
+        newStatus.result.length > 0
+      ) {
+        const details = newStatus.result[0];
+        if (
+          this.txnDetails &&
+          (this.txnDetails.id === details.id ||
+            this.txnDetails.id === newStatus.id)
+        ) {
+          const cleanDetails = Object.keys(details).reduce((acc, key) => {
+            if (
+              details[key] !== undefined &&
+              details[key] !== null &&
+              details[key] !== ""
+            ) {
+              acc[key] = details[key];
+            }
+            return acc;
+          }, {});
+          this.txnDetails = { ...this.txnDetails, ...cleanDetails };
+          const terminalStatuses = [
+            "finished",
+            "failed",
+            "refunded",
+            "expired",
+            "overdue"
+          ];
+          if (terminalStatuses.includes(details.status)) {
+            if (this.refreshTxnStatus) {
+              clearInterval(this.refreshTxnStatus);
+              this.refreshTxnStatus = null;
+            }
+          }
+        }
+      }
     }
   },
 
   methods: {
     backToSwap() {
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
       this.$emit("goback");
+    },
+    backToHistoryList() {
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
+      this.isVisible = true;
+      this.txnDetails = "";
     },
 
     formatTime(value, { utc = false } = {}) {
@@ -485,8 +532,35 @@ export default {
         item.currencyTo}`;
     },
     setTxnDetails(item) {
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
       this.txnDetails = item;
       this.isVisible = false;
+
+      if (!item || !item.id) return;
+
+      const data = {
+        id: item.id,
+        privacySwap: Boolean(item.privacySwap),
+        exchange: item.exchange_type || item.exchange,
+        walletAddress: this.info?.address
+      };
+
+      const terminalStatuses = [
+        "finished",
+        "failed",
+        "refunded",
+        "expired",
+        "overdue"
+      ];
+      if (!terminalStatuses.includes(item.status)) {
+        this.$gateway.send("swap", "transaction_status", data);
+        this.refreshTxnStatus = setInterval(() => {
+          this.$gateway.send("swap", "transaction_status", data);
+        }, 30000);
+      }
     },
     changePage(page) {
       if (this.isLoading || page < 1 || page > this.totalPages) {

@@ -383,23 +383,16 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timer);
-    if (this.refreshTxnStatus) {
-      clearInterval(this.refreshTxnStatus);
-    }
   },
   mounted() {
     this.startAndStopTimer();
     this.set_chainDetails();
-    this.get_transaction_status();
   },
 
   methods: {
     backTopayment() {
       this.$emit("goback");
       clearInterval(this.timer);
-      if (this.refreshTxnStatus) {
-        clearInterval(this.refreshTxnStatus);
-      }
     },
     startAndStopTimer() {
       clearInterval(this.timer);
@@ -446,9 +439,6 @@ export default {
     },
     clearintervals() {
       clearInterval(this.timer);
-      if (this.refreshTxnStatus) {
-        clearInterval(this.refreshTxnStatus);
-      }
     },
 
     set_chainDetails() {
@@ -471,18 +461,6 @@ export default {
     showQR(address) {
       this.QR.visible = true;
       this.QR.address = address;
-    },
-    get_transaction_status() {
-      const data = {
-        id: this.txnDetails?.id,
-        privacySwap: this.txnDetails?.privacySwap,
-        exchange: this.txnDetails?.exchange_type,
-        walletAddress: this.info?.address
-      };
-
-      this.refreshTxnStatus = setInterval(() => {
-        this.$gateway.send("swap", "transaction_status", data);
-      }, 30000);
     },
 
     copyAddress(content) {

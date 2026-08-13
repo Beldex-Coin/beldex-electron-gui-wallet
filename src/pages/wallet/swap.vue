@@ -10,6 +10,7 @@
             {{ this.$t("titles.swap.exchange") }}
           </header>
           <q-btn
+            v-if="this.currentExchange !== 'quickex'"
             flat
             round
             dense
@@ -71,17 +72,14 @@
             </q-menu>
           </q-btn>
           <q-toggle
+            v-if="this.currentExchange !== 'quickex'"
             v-model="privacySwap"
             :label="$t('titles.swap.privacySwap')"
             left-label
             class="privacySwap q-ml-xs"
           />
         </div>
-        <q-btn
-          color="accent"
-          class="history-btn"
-          @click="routes = 'txnHistory'"
-        >
+        <q-btn color="accent" class="history-btn" @click="navigateToHistory">
           <svg
             width="18"
             height="18"
@@ -699,6 +697,13 @@ export default {
       this.checkExchangeFallback(newVal);
     },
     currencyList(newValue) {
+      // Check if backend flagged maintenance (API failure)
+      const rawCurrencyList = this.$store.state.gateway.currencyList;
+      if (rawCurrencyList?.maintenance) {
+        this.swaploading = false;
+        this.navigation("maintenance", 1);
+        return;
+      }
       if (newValue && newValue.length > 0) {
         this.swaploading = false;
         newValue.sort(function(a, b) {
@@ -713,8 +718,16 @@ export default {
         this.filtercurrency = newValue;
         let fromCoin;
         let toCoin;
-        let btcCoin = newValue.find(item => item.name.toLowerCase() === "btc");
-        let bdxCoin = newValue.find(item => item.name.toLowerCase() === "eth");
+        let btcCoin = newValue.find(
+          item =>
+            item.name.toLowerCase() === "btc" &&
+            item.protocol.toLowerCase() === "btc"
+        );
+        let bdxCoin = newValue.find(
+          item =>
+            item.name.toLowerCase() === "bdx" &&
+            item.protocol.toLowerCase() === "bdx"
+        );
         if (bdxCoin.enabledTo) {
           fromCoin = btcCoin;
           toCoin = bdxCoin;
@@ -763,16 +776,36 @@ export default {
       }
     },
     txnStatus(newStatus) {
-      if (newStatus.hasOwnProperty("result")) {
-        if (newStatus.result[0].status === "finished") {
-          this.clearAllintervals();
-          this.navigation("txnCompleted", 5);
-        }
-        if (
-          newStatus.result[0].status === "confirming" ||
-          newStatus.result[0].status === "exchanging"
+      if (
+        newStatus.hasOwnProperty("result") &&
+        Array.isArray(newStatus.result) &&
+        newStatus.result.length > 0
+      ) {
+        const status = newStatus.result[0].status;
+        const terminalStatuses = [
+          "finished",
+          "failed",
+          "refunded",
+          "expired",
+          "overdue"
+        ];
+        if (terminalStatuses.includes(status)) {
+          if (this.refreshTxnStatus) {
+            clearInterval(this.refreshTxnStatus);
+            this.refreshTxnStatus = null;
+          }
+          if (status === "finished") {
+            this.navigation("txnCompleted", 5);
+          }
+        } else if (
+          status === "confirming" ||
+          status === "exchanging" ||
+          status === "sending"
         ) {
           this.navigation("swapStatus", 4);
+          if (!this.refreshTxnStatus) {
+            this.get_transaction_status();
+          }
         }
       }
     },
@@ -913,6 +946,10 @@ export default {
       });
       this.routes = page;
     },
+    navigateToHistory() {
+      this.clearAllintervals();
+      this.navigation("txnHistory", 1);
+    },
     sendAmounts(newvalue) {
       this.sendAmount = newvalue;
       this.clearAllintervals();
@@ -981,10 +1018,9 @@ export default {
       this.refundAddress = { val: "", error: false };
       this.refundDestinationTag = "no";
       this.refundDestinationTagValue = "";
-
       if (
         this.sendAmounType.value === "bdx" &&
-        this.receiveAmountType.value === "bdx"
+        this.receiveAmountType.value === "btc"
       ) {
         this.receiveAmountType = this.btcCoinDetails;
       } else if (this.sendAmounType.value === this.receiveAmountType.value) {
@@ -1195,7 +1231,10 @@ export default {
     clearAllintervals() {
       clearInterval(this.refreshFixedExchangeRate);
       clearInterval(this.refreshFloatExchangeRate);
-      clearInterval(this.refreshTxnStatus);
+      if (this.routes !== "swapStatus" && this.routes !== "settlement") {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
       clearInterval(this.refreshMinMax);
     },
 
@@ -1243,6 +1282,7 @@ export default {
       let params = {
         address: this.recipientAddress.val,
         currency: this.receiveAmountType.value,
+        currencyNetWork: this.receiveAmountType.protocol,
         privacySwap: this.privacySwap
       };
       if (this.recipientAddress.val) {
@@ -1258,7 +1298,8 @@ export default {
       let params = {
         address: this.refundAddress.val,
         currency: this.sendAmounType.value,
-        privacySwap: this.privacySwap
+        privacySwap: this.privacySwap,
+        currencyNetWork: this.sendAmounType.protocol
       };
       if (this.refundAddress.val) {
         this.$gateway.send("swap", "refundAddressValidation", params);
@@ -1299,7 +1340,9 @@ export default {
     createtxn() {
       let data = {
         from: this.sendAmounType.value,
+        networkFrom: this.sendAmounType.protocol,
         to: this.receiveAmountType.value,
+        networkTo: this.receiveAmountType.protocol,
         address: this.recipientAddress.val,
         amountFrom: this.sendAmount,
         walletAddress: this.info.address,
@@ -1325,9 +1368,9 @@ export default {
         address: this.recipientAddress.val,
         amountFrom: this.sendAmount,
         rateId: this.fixedExchangeRate.id,
-        refundAddress: this.refundAddress.val,
-        walletAddress: this.info.address,
-        privacySwap: this.privacySwap
+        id: this.createdTxnDetails?.result?.id,
+        privacySwap: this.privacySwap || false,
+        walletAddress: this.info.address
       };
       if (this.destinationTag === "yes") {
         data.extraId = this.destinationTagValue;
@@ -1340,12 +1383,24 @@ export default {
       this.navigation("settlement", 3);
       localStorage.setItem("createdFixedTxnTime", new Date());
     },
-    get_transaction_status() {
+    get_transaction_status(params) {
+      const txnId =
+        this.createdTxnDetails?.result?.id ||
+        params?.id ||
+        this.txnStatus?.result?.[0]?.id;
+      if (!txnId) return;
       let data = {
-        id: this.createdTxnDetails.result.id,
-        privacySwap: this.privacySwap,
-        walletAddress: this.info.address
+        id: txnId,
+        privacySwap: this.privacySwap || params?.privacySwap || false,
+        walletAddress: this.info?.address
       };
+      if (params?.exchange_type || params?.exchange) {
+        data.exchange = params.exchange_type || params.exchange;
+      }
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+      }
+      this.$gateway.send("swap", "transaction_status", data);
       this.refreshTxnStatus = setInterval(() => {
         this.$gateway.send("swap", "transaction_status", data);
       }, 30000);

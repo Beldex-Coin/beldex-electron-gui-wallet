@@ -814,7 +814,7 @@ export default {
       // history: "history",
       transactionPreview: "Visualização da transação",
       transactionID: "ID da transação",
-      changellyAddress: "Endereço da mudança",
+      changellyAddress: "Endereço da exchange",
       completed: "Concluído",
       amountTo: "Valor para",
       amountReceived: "Montante recebido",

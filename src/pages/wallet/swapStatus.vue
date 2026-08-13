@@ -35,7 +35,7 @@
                   ? '50%'
                   : statusDetails.status === 'sending'
                   ? '75%'
-                  : statusDetails.status === 'sending'
+                  : statusDetails.status === 'finished'
                   ? '100%'
                   : '10%'
             }"

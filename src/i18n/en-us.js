@@ -818,7 +818,7 @@ export default {
         "You can always check the status of this transaction in transaction",
       transactionPreview: "Transaction Preview",
       transactionID: "Transaction ID",
-      changellyAddress: "Changelly address",
+      changellyAddress: "Exchange address",
       completed: "Completed",
       amountTo: "Amount to",
       amountReceived: "Amount received",
