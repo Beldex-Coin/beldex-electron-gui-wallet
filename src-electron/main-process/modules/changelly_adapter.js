@@ -56,7 +56,16 @@ export async function getCurrenciesFull(params = {}) {
 }
 
 export async function getExchangeAmount(params) {
-  return _post("getExchangeAmount", params, Boolean(params.privacySwap));
+  const optimizedParams = {
+    from: params?.fromDetails?.value || params?.from,
+    to: params?.toDetails?.value || params?.to,
+    amountFrom: params?.amountFrom
+  };
+  return _post(
+    "getExchangeAmount",
+    optimizedParams,
+    Boolean(params.privacySwap)
+  );
 }
 
 export async function getFixRateForAmount(params) {
@@ -64,7 +73,12 @@ export async function getFixRateForAmount(params) {
 }
 
 export async function getPairsParams(params) {
-  return _post("getPairsParams", params, Boolean(params.privacySwap));
+  const optimizedParams = {
+    from: params?.fromDetails?.value || params?.from,
+    to: params?.toDetails?.value || params?.to,
+    amountFrom: params?.amountFrom
+  };
+  return _post("getPairsParams", optimizedParams, Boolean(params.privacySwap));
 }
 
 export async function validateAddress(params) {
