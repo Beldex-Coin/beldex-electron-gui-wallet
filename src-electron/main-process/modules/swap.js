@@ -1,6 +1,7 @@
 import { SwapTxnHistory } from "./swap_transaction_history.js";
 import * as changellyAdapter from "./changelly_adapter.js";
 import * as quickexAdapter from "./quickex_adapter.js";
+import { swapExchangeList } from "../config/config.js";
 
 export class Swap {
   constructor(backend) {
@@ -54,28 +55,33 @@ export class Swap {
           (c.name?.toLowerCase() === "bdx" && c.enabled)
       );
 
-    const changellyResult = await changellyAdapter.getCurrenciesFull(params);
-    if (changellyResult.status && hasBdxPair(changellyResult.result)) {
-      this.activeExchange = "changelly";
-      this.sendGateway("set_activeExchange", "changelly");
-      return { exchange: "changelly", currencyList: changellyResult };
+    if (swapExchangeList.changelly) {
+      const changellyResult = await changellyAdapter.getCurrenciesFull(params);
+      if (changellyResult?.status && hasBdxPair(changellyResult.result)) {
+        this.activeExchange = "changelly";
+        this.sendGateway("set_activeExchange", "changelly");
+        return { exchange: "changelly", currencyList: changellyResult };
+      }
     }
 
-    const quickexResult = await quickexAdapter.getCurrenciesFull(params);
-    if (quickexResult.status && hasBdxPair(quickexResult.result)) {
-      this.activeExchange = "quickex";
-      this.sendGateway("set_activeExchange", "quickex");
-      return { exchange: "quickex", currencyList: quickexResult };
+    if (swapExchangeList.quickex) {
+      const quickexResult = await quickexAdapter.getCurrenciesFull(params);
+      if (quickexResult?.status && hasBdxPair(quickexResult.result)) {
+        this.activeExchange = "quickex";
+        this.sendGateway("set_activeExchange", "quickex");
+        return { exchange: "quickex", currencyList: quickexResult };
+      }
     }
 
-    this.activeExchange = "changelly";
+    const fallbackExchange = swapExchangeList.quickex ? "quickex" : "changelly";
+    this.activeExchange = fallbackExchange;
     console.warn(
-      "[Swap] BDX pair not available on any exchange. Defaulting to Changelly."
+      `[Swap] BDX pair not available on any exchange. Defaulting to ${fallbackExchange}.`
     );
     this.sendGateway("set_activeExchange", this.activeExchange);
     return {
       exchange: this.activeExchange,
-      currencyList: changellyResult || []
+      currencyList: { status: false, result: [] }
     };
   }
 
