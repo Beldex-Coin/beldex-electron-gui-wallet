@@ -180,11 +180,9 @@
             <span class="ft-semibold uppercase" style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
               {{
-                receiveChainDetails.blockchain
-                  ? receiveChainDetails.blockchain.replaceAll("_", " ")
-                  : receiveChainDetails.protocol ||
-                    receiveChainDetails.name ||
-                    ""
+                sendChainDetails.blockchain
+                  ? sendChainDetails.blockchain.replaceAll("_", " ")
+                  : sendChainDetails.protocol || sendChainDetails.name || ""
               }}</span
             >
           </div>

@@ -154,9 +154,9 @@
             <span class="ft-semibold uppercase" style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
               {{
-                this.chainDetails.receive
-                  ? this.chainDetails.receive.replaceAll("_", " ")
-                  : ""
+                this.chainDetails.send
+                  ? this.chainDetails.send.replaceAll("_", " ")
+                  : getSentNetwork()
               }}</span
             >
           </div>
@@ -461,6 +461,9 @@ export default {
       this.chainDetails.send = (sendChain && sendChain.blockchain) || "";
       this.chainDetails.receive =
         (receiveChain && receiveChain.blockchain) || "";
+    },
+    getSentNetwork() {
+      return this.txnDetails?.raw_response?.instrumentFromNetworkTitle || null;
     },
     showQR(address) {
       this.QR.visible = true;

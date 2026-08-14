@@ -91,7 +91,10 @@
       </article>
     </section>
 
-    <div class="flex justify-center q-mt-xl">
+    <div
+      v-if="txnDetails?.status !== 'exchanging'"
+      class="flex justify-center q-mt-xl"
+    >
       <q-btn
         color="primary"
         label="Start Over"

@@ -462,6 +462,7 @@ export default {
       this.$emit("goback");
     },
     backToHistoryList() {
+      this.get_transaction_History(this.privacySwap, this.currentPage || 1);
       if (this.refreshTxnStatus) {
         clearInterval(this.refreshTxnStatus);
         this.refreshTxnStatus = null;
