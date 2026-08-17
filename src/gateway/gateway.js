@@ -401,6 +401,13 @@ export class Gateway extends EventEmitter {
         this.app.store.commit("gateway/set_txnHistory", decrypted_data.data);
         break;
 
+      case "set_txnHistoryMeta":
+        this.app.store.commit(
+          "gateway/set_txnHistoryMeta",
+          decrypted_data.data
+        );
+        break;
+
       case "set_fixedExchangeRate":
         this.app.store.commit(
           "gateway/set_fixedExchangeRate",

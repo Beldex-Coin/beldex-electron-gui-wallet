@@ -701,7 +701,9 @@ export default {
     viewOnlyMode:
       "Nur Anzeige Modus. Bitte die volle Wallet laden um Coins zu senden",
     WalletAddress: "Wallet-Adresse",
-    website: "Webseite"
+    website: "Webseite",
+    privacy: "Privatsphäre",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Adressbuch",
@@ -767,6 +769,9 @@ export default {
     swap: {
       swap: "Tauschen",
       exchange: "Austausch",
+      privacySwap: "Privater Tausch",
+      privacySwapDescription:
+        "Ihr Tausch wird mit dieser Funktion für private Transaktionen sicher durchgeführt. Ihre Identität bleibt verborgen.",
       history: "Geschichte",
       unsupportedpair: "Nicht unterstütztes Austauschpaar",
       minimumAmt: "Der Mindestbetrag beträgt",
@@ -822,7 +827,7 @@ export default {
         "Sie können den Status dieser Transaktion jederzeit in der Transaktion überprüfen",
       transactionPreview: "Transaktionsvorschau",
       transactionID: "Transaction ID",
-      changellyAddress: "Changelly-Adresse",
+      changellyAddress: "Exchange-Adresse",
       completed: "Vollendet",
       amountTo: "Betragen",
       amountReceived: "Erhaltener Betrag",
@@ -837,6 +842,7 @@ export default {
       date: "Datum",
       exchangeAmount: "Umtauschbetrag",
       receiver: "Empfängerin",
+      confirmations: "Bestätigungen",
       sendFundDisc: "Senden Sie Geld an die unten angegebene Adresse",
       timeLeft: "Es bleibt noch Zeit zum Senden",
       guaranteedRateDisc: "Der garantierte Tarif wurde gekündigt",
@@ -862,7 +868,8 @@ export default {
         "Der Höchstbetragswert wird geändert, der neue Wert ist ",
       network: "NETZWERK",
       giveCorrectAddress:
-        "Bitte stellen Sie sicher, dass Sie die richtige Adresse für die ausgewählte Kette eingeben ({type}). Andernfalls verlieren Sie Ihr Guthaben."
+        "Bitte stellen Sie sicher, dass Sie die richtige Adresse für die ausgewählte Kette eingeben ({type}). Andernfalls verlieren Sie Ihr Guthaben.",
+      swapType: "Swap-Typ"
     }
   }
 };

@@ -1,339 +1,441 @@
-import axios from "axios";
-const { SwapTxnHistory } = require("./swap_transaction_history");
-const https = require("https");
-const crypto = require("crypto");
-const tls = require("tls");
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const CHANGELLY_API_URL = "https://api.changelly.com/v2";
-
-function parsePins(pinList = "") {
-  return pinList
-    .split(",")
-    .map(pin => pin.trim())
-    .filter(Boolean)
-    .map(pin => pin.replace(/^sha256\//i, ""));
-}
-
-function getBeldexSwapSignUrl() {
-  const configuredUrl = process.env.BELDEX_SWAP_SIGN_URL;
-  const parsed = assertHttpsUrl(configuredUrl);
-
-  if (
-    parsed.pathname.endsWith("/swap") &&
-    parsed.searchParams.get("type") === "swap"
-  ) {
-    return parsed.toString();
-  }
-
-  const normalizedPath = parsed.pathname.replace(/\/$/, "");
-  parsed.pathname = `${normalizedPath}/swap`;
-  parsed.searchParams.set("type", "swap");
-
-  return parsed.toString();
-}
-
-function getPinnedHosts() {
-  const beldexHost = new URL(getBeldexSwapSignUrl()).hostname;
-  return {
-    [beldexHost]: parsePins(process.env.BELDEX_PUBLIC_KEY_PIN || "")
-  };
-}
-
-function assertHttpsUrl(url) {
-  const parsed = new URL(url);
-  if (parsed.protocol !== "https:") {
-    throw new Error(`Insecure endpoint blocked: ${url}`);
-  }
-  return parsed;
-}
-
-function getCertificateSpkiPin(cert) {
-  if (cert && cert.raw) {
-    const x509 = new crypto.X509Certificate(cert.raw);
-    const spkiDer = x509.publicKey.export({
-      type: "spki",
-      format: "der"
-    });
-    return crypto
-      .createHash("sha256")
-      .update(spkiDer)
-      .digest("base64");
-  }
-
-  if (cert && cert.pubkey) {
-    return crypto
-      .createHash("sha256")
-      .update(cert.pubkey)
-      .digest("base64");
-  }
-
-  throw new Error("Unable to extract certificate public key for pinning");
-}
-
-function createPinnedHttpsAgent(url, pinnedHosts) {
-  const parsed = assertHttpsUrl(url);
-  const host = parsed.hostname;
-  const allowedPins = pinnedHosts[host] || [];
-  if (allowedPins.length === 0) {
-    return null;
-  }
-
-  return new https.Agent({
-    checkServerIdentity(servername, cert) {
-      const tlsError = tls.checkServerIdentity(servername, cert);
-      if (tlsError) {
-        return tlsError;
-      }
-
-      const pin = getCertificateSpkiPin(cert);
-      if (!allowedPins.includes(pin)) {
-        return new Error(`Public key pinning failed for host: ${host}`);
-      }
-
-      return undefined;
-    }
-  });
-}
-
-async function pinnedPost(url, body, headers, pinnedHosts) {
-  const httpsAgent = createPinnedHttpsAgent(url, pinnedHosts);
-  const requestConfig = {
-    headers,
-    maxRedirects: 0,
-    timeout: 20000
-  };
-
-  if (httpsAgent) {
-    requestConfig.httpsAgent = httpsAgent;
-  }
-
-  return axios.post(url, body, requestConfig);
-}
+import { SwapTxnHistory } from "./swap_transaction_history.js";
+import * as changellyAdapter from "./changelly_adapter.js";
+import * as quickexAdapter from "./quickex_adapter.js";
+import { swapExchangeList } from "../config/config.js";
 
 export class Swap {
   constructor(backend) {
     this.backend = backend;
     this.swapTxnHistory = new SwapTxnHistory(this);
-    this.wallet_state = {
-      open: false
-    };
+    this.wallet_state = { open: false };
+    this.activeExchange = "changelly";
   }
 
   sendGateway(method, data) {
-    // if wallet is closed, do not send any wallet data to gateway
-    // this is for the case that we close the wallet at the same
-    // after another action has started, but before it has finished
-    if (!this.wallet_state.open && method == "set_wallet_data") {
-      return;
-    }
+    if (!this.wallet_state.open && method === "set_wallet_data") return;
     this.backend.send(method, data);
   }
+
   async handle(data) {
-    let params = data.data;
+    const params = data.data;
     switch (data.method) {
       case "currency_list":
-        this.getCurrencyList();
-        break;
-
+        return this.getCurrencyList(params);
       case "exchange_amount":
-        this.getExchangeAmount(params);
-        break;
-
+        return this.getExchangeAmount(params);
       case "fixed_exchange_amount":
-        this.getFixedExchangeAmount(params);
-        break;
-
+        return this.getFixedExchangeAmount(params);
       case "get_min_max":
-        this.getPairsMinMax(params);
-        break;
-
+        return this.getPairsMinMax(params);
       case "get_min":
-        this.getMinAmount(params.from, params.to);
-        break;
-
+        return this.getMinAmount(params.from, params.to);
       case "validate_address":
-        this.validateAddress(params);
-        break;
-
+        return this.validateAddress(params);
       case "refundAddressValidation":
-        this.refundAddressValidation(params);
-        break;
-
+        return this.refundAddressValidation(params);
       case "create_transaction":
-        this.createTransaction(params);
-        break;
-
+        return this._createOrder("createTransaction", params);
       case "create_fixed_transaction":
-        this.createFixTransaction(params);
-        break;
-
+        return this._createOrder("createFixTransaction", params);
       case "transaction_history":
-        this.getTransactionHistory(params);
-        break;
-
+        return this.getTransactionHistory(params);
       case "transaction_status":
-        this.getTransactionStatus(params);
-        break;
-
+        return this.getTransactionStatus(params);
       default:
+        break;
     }
   }
 
-  async getCurrencyList() {
-    let currencyList = await this.sendRPC("getCurrenciesFull", {});
+  async _selectExchange(params = {}) {
+    const hasBdxPair = result =>
+      Array.isArray(result) &&
+      result.some(
+        c =>
+          (c.ticker?.toLowerCase() === "bdx" && c.enabled) ||
+          (c.name?.toLowerCase() === "bdx" && c.enabled)
+      );
+
+    if (swapExchangeList.changelly) {
+      const changellyResult = await changellyAdapter.getCurrenciesFull(params);
+      if (changellyResult?.status && hasBdxPair(changellyResult.result)) {
+        this.activeExchange = "changelly";
+        this.sendGateway("set_activeExchange", "changelly");
+        return { exchange: "changelly", currencyList: changellyResult };
+      }
+    }
+
+    if (swapExchangeList.quickex) {
+      const quickexResult = await quickexAdapter.getCurrenciesFull(params);
+      if (quickexResult?.status && hasBdxPair(quickexResult.result)) {
+        this.activeExchange = "quickex";
+        this.sendGateway("set_activeExchange", "quickex");
+        return { exchange: "quickex", currencyList: quickexResult };
+      }
+    }
+
+    const fallbackExchange = swapExchangeList.quickex ? "quickex" : "changelly";
+    this.activeExchange = fallbackExchange;
+    console.warn(
+      `[Swap] BDX pair not available on any exchange. Defaulting to ${fallbackExchange}.`
+    );
+    this.sendGateway("set_activeExchange", this.activeExchange);
+    return {
+      exchange: this.activeExchange,
+      currencyList: { status: false, result: [] }
+    };
+  }
+
+  _adapter(exchange) {
+    return exchange === "quickex" ? quickexAdapter : changellyAdapter;
+  }
+
+  async _callAdapter(method, params, exchangeOverride) {
+    const exchange =
+      exchangeOverride ||
+      params.exchange_type ||
+      params.exchange ||
+      this.activeExchange;
+    const adapter = this._adapter(exchange);
+    const fn = adapter[method];
+    if (typeof fn !== "function") {
+      console.error(
+        `[Swap] Method "${method}" not found on adapter "${exchange}"`
+      );
+      return {
+        status: false,
+        method,
+        error: { message: `${method} not available on ${exchange}` }
+      };
+    }
+    const dbManager = this.swapTxnHistory?.dbManager;
+    const result =
+      method === "getTransactionStatus" || method === "getTransactions"
+        ? await fn(params, dbManager)
+        : await fn(params);
+    if (result && !result.exchange_type) result.exchange_type = exchange;
+    return result;
+  }
+
+  async getCurrencyList(params = {}) {
+    if (params?.walletAddress) {
+      await this.swapTxnHistory.migrateSwapHistory(params.walletAddress);
+    }
+    const { exchange, currencyList } = await this._selectExchange(params);
+    if (
+      !currencyList ||
+      !currencyList.status ||
+      !Array.isArray(currencyList.result) ||
+      currencyList.result.length === 0
+    ) {
+      console.warn(
+        "[Swap] Currency list fetch failed or empty. Showing maintenance screen."
+      );
+      this.sendGateway("set_currencyList", {
+        status: false,
+        result: [],
+        exchange_type: exchange,
+        maintenance: true
+      });
+      return;
+    }
+    currencyList.exchange_type = exchange;
     this.sendGateway("set_currencyList", currencyList);
-    return;
   }
 
   async getExchangeAmount(params) {
-    let data = await this.sendRPC("getExchangeAmount", params);
+    const data = await this._callAdapter("getExchangeAmount", params);
+    if (!data.status && data.minMaxHint) {
+      this.sendGateway("set_pairsMinMax", {
+        status: true,
+        method: "getPairsParams",
+        result: [data.minMaxHint],
+        exchange_type: data.exchange_type || this.activeExchange
+      });
+    }
     this.sendGateway("set_exchangeAmount", data);
-    return;
   }
 
   async getFixedExchangeAmount(params) {
-    let data = await this.sendRPC("getFixRateForAmount", params);
+    const data = await this._callAdapter("getFixRateForAmount", params);
     this.sendGateway("set_fixedExchangeRate", data);
-    return;
   }
 
   async getPairsMinMax(params) {
-    let data = await this.sendRPC("getPairsParams", params);
+    const data = await this._callAdapter("getPairsParams", params);
+    if (!data.status && data.minMaxHint) {
+      this.sendGateway("set_pairsMinMax", {
+        status: true,
+        method: "getPairsParams",
+        result: [data.minMaxHint],
+        exchange_type: data.exchange_type || this.activeExchange
+      });
+      return;
+    }
+    if (!data.status && !data.result) {
+      const from = params?.fromDetails?.value || params?.from || "";
+      const to = params?.toDetails?.value || params?.to || "";
+      this.sendGateway("set_pairsMinMax", {
+        status: true,
+        method: "getPairsParams",
+        result: [
+          {
+            from,
+            to,
+            minAmountFloat: 0,
+            maxAmountFloat: 0,
+            minAmountFixed: 0,
+            maxAmountFixed: 0
+          }
+        ],
+        exchange_type: data.exchange_type || this.activeExchange
+      });
+      return;
+    }
     this.sendGateway("set_pairsMinMax", data);
-    return;
   }
 
-  getMinAmount(from, to) {
-    let params = {
-      from,
-      to
-    };
-    return this.sendRPC("getMinAmount", params);
+  async getMinAmount(from, to) {
+    return this._callAdapter("getPairsParams", { from, to });
   }
 
   async validateAddress(params) {
-    let data = await this.sendRPC("validateAddress", params);
+    const data = await this._callAdapter("validateAddress", params);
     this.sendGateway("set_validateAddress", data);
-    return;
   }
+
   async refundAddressValidation(params) {
-    let data = await this.sendRPC("validateAddress", params);
+    const data = await this._callAdapter("validateAddress", params);
     this.sendGateway("set_refundAddressValidation", data);
-    return;
   }
 
-  async createTransaction(params) {
-    let walletAddress = params.walletAddress;
-    delete params["walletAddress"];
-    let data = await this.sendRPC("createTransaction", params);
-    await this.swapTxnHistory.updateTransactionDetails(
-      data.result.id,
-      walletAddress
-    );
-    this.sendGateway("set_createdTxnDetails", data);
-    return;
-  }
+  async _createOrder(rpcMethod, params) {
+    const walletAddress = params.walletAddress;
+    const isPrivacySwap = Boolean(params.privacySwap);
+    const exchangeType =
+      params.exchange_type || params.exchange || this.activeExchange;
+    const adapterParams = { ...params };
+    delete adapterParams.walletAddress;
 
-  async createFixTransaction(params) {
-    let walletAddress = params.walletAddress;
-    delete params["walletAddress"];
-    let data = await this.sendRPC("createFixTransaction", params);
-    await this.swapTxnHistory.updateTransactionDetails(
-      data.result.id,
-      walletAddress
-    );
-    this.sendGateway("set_createdTxnDetails", data);
-    return;
-  }
+    const data = await this._callAdapter(rpcMethod, {
+      ...adapterParams,
+      exchange_type: exchangeType
+    });
+    const transactionId = data?.result?.id;
 
-  async getTransactionHistory(params) {
-    let actualTransactions = await this.swapTxnHistory.getOrderHistory(
-      params.walletAddress
-    );
-    let orderHistory = [];
-    let finalorderHistory = [];
-    for (let i = 0; i < actualTransactions.length / 10; i++) {
-      let ids = actualTransactions.slice(i * 10, (i + 1) * 10);
-      let params = {
-        id: ids
-      };
-      let response = await this.sendRPC("getTransactions", params);
-      for (let j = 0; j < response.result.length; j++) {
-        orderHistory.push(response.result[j]);
+    if (transactionId && walletAddress) {
+      const now = Date.now();
+      if (data.result) {
+        data.result.created_at = now;
+        data.result.createdAt = now;
       }
+      this.swapTxnHistory.updateTransactionDetails(
+        transactionId,
+        walletAddress,
+        isPrivacySwap,
+        data.exchange_type || exchangeType,
+        data.result
+      );
+    } else if (!transactionId) {
+      console.warn(
+        `[Swap] ${rpcMethod}: DB update skipped — no transactionId in response`,
+        data?.error
+      );
     }
-    for (let k = 0; k < orderHistory.length; k++) {
-      const element = orderHistory.find(e => e.id == actualTransactions[k]);
-      finalorderHistory.push(element);
+
+    this.sendGateway("set_createdTxnDetails", data);
+  }
+
+  async getTransactionHistory(params = {}) {
+    const {
+      walletAddress,
+      page: requestedPage = 1,
+      pageSize: requestedPageSize = 7,
+      isCsvExport = false
+    } = params;
+
+    if (!walletAddress) {
+      this.sendGateway("set_txnHistory", []);
+      this.sendGateway("set_txnHistoryMeta", {
+        totalCount: 0,
+        totalPages: 0,
+        page: 1,
+        pageSize: 7
+      });
+      return;
     }
-    this.sendGateway("set_txnHistory", orderHistory);
-    return;
+    const page = Math.max(1, Number(requestedPage) || 1);
+    const pageSize = Math.max(1, Number(requestedPageSize) || 7);
+
+    let rawRows = [];
+    let totalCount = 0;
+
+    if (isCsvExport) {
+      rawRows = this.swapTxnHistory.getOrderHistory(walletAddress);
+      totalCount = rawRows.length;
+    } else {
+      const paginatedResult = this.swapTxnHistory.getPaginatedOrderHistory(
+        walletAddress,
+        page,
+        pageSize
+      );
+      rawRows = paginatedResult.transactions;
+      totalCount = paginatedResult.totalCount;
+    }
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const sendMeta = () =>
+      this.sendGateway("set_txnHistoryMeta", {
+        totalCount,
+        totalPages,
+        page,
+        pageSize
+      });
+
+    if (!rawRows.length) {
+      this.sendGateway("set_txnHistory", []);
+      sendMeta();
+      return;
+    }
+
+    const history = rawRows.map(row => {
+      const amountFrom = row.amount_from != null ? Number(row.amount_from) : 0;
+      const amountTo = row.amount_to != null ? Number(row.amount_to) : 0;
+      let rate = 0;
+      if (amountFrom > 0 && amountTo > 0) rate = amountTo / amountFrom;
+
+      let rawResp = null;
+      if (row.raw_response) {
+        try {
+          rawResp =
+            typeof row.raw_response === "string"
+              ? JSON.parse(row.raw_response)
+              : row.raw_response;
+        } catch (e) {
+          rawResp = row.raw_response;
+        }
+      }
+      const isQuickex =
+        row.exchange === "quickex" ||
+        (rawResp && (rawResp.deposits || rawResp.withdrawals));
+
+      let moneySent = null;
+      let moneyReceived = null;
+      let payinHash = row.payin_address_memo || "";
+      let payoutHash = row.payout_address_memo || "";
+
+      if (isQuickex && rawResp) {
+        const deposit =
+          Array.isArray(rawResp.deposits) && rawResp.deposits.length > 0
+            ? rawResp.deposits[0]
+            : null;
+        const withdrawal =
+          Array.isArray(rawResp.withdrawals) && rawResp.withdrawals.length > 0
+            ? rawResp.withdrawals[0]
+            : null;
+
+        if (deposit?.createdAt) {
+          moneySent = new Date(deposit.createdAt).getTime() * 1000;
+        }
+        if (withdrawal?.createdAt) {
+          moneyReceived = new Date(withdrawal.createdAt).getTime() * 1000;
+        }
+        if (deposit?.txId) {
+          payinHash = deposit.txId;
+        }
+        if (withdrawal?.txId) {
+          payoutHash = withdrawal.txId;
+        }
+      }
+
+      const baseTs = Number(row.created_at || Date.now());
+      if (!moneySent) {
+        const ms = rawResp?.moneySent ? Number(rawResp.moneySent) : baseTs;
+        moneySent = ms < 1e15 ? ms * 1000 : ms;
+      }
+      if (!moneyReceived) {
+        const ms = rawResp?.moneyReceived
+          ? Number(rawResp.moneyReceived)
+          : baseTs;
+        moneyReceived = ms < 1e15 ? ms * 1000 : ms;
+      }
+
+      if (!payinHash) payinHash = rawResp?.payinHash || "";
+      if (!payoutHash)
+        payoutHash = rawResp?.payoutHash || rawResp?.payoutHashLink || "";
+
+      return {
+        id: row.txn_id,
+        status: row.txn_status || "waiting",
+        type: row.txn_type || "float",
+        currencyFrom: row.currency_from ? row.currency_from.toLowerCase() : "",
+        currencyTo: row.currency_to ? row.currency_to.toLowerCase() : "",
+        payinAddress: row.payin_address || "",
+        payinExtraId: row.payin_address_memo || "",
+        payoutAddress: row.payout_address || "",
+        payoutExtraId: row.payout_address_memo || "",
+        refundAddress: row.refund_address || "",
+        refundExtraId: row.refund_address_memo || "",
+        amountExpectedFrom: amountFrom,
+        amountExpectedTo: amountTo,
+        networkFee: row.network_fee != null ? Number(row.network_fee) : 0,
+        rate,
+        createdAt: row.created_at,
+        created_at: row.created_at,
+        moneySent,
+        moneyReceived,
+        payinHash,
+        payoutHash,
+        payoutHashLink: payoutHash,
+        privacySwap: row.swap_type === "privacy",
+        exchange_type: row.exchange || "changelly",
+        raw_response: rawResp
+      };
+    });
+
+    const sortedHistory = history.sort(
+      (a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0)
+    );
+
+    this.sendGateway("set_txnHistory", sortedHistory);
+    sendMeta();
   }
 
   async getTransactionStatus(params) {
-    let data = await this.sendRPC("getTransactions", params);
-    this.sendGateway("set_txnStatus", data);
-    return;
-  }
-
-  async sendRPC(method, params = {}) {
-    try {
-      const body = {
-        jsonrpc: "2.0",
-        id: "test",
-        method,
-        params
-      };
-
-      const pinnedHosts = getPinnedHosts();
-      const beldexSwapSignUrl = getBeldexSwapSignUrl();
-
-      let signature = await pinnedPost(
-        beldexSwapSignUrl,
-        body,
-        {
-          "x-api-key": process.env.BELDEX_API_KEY,
-          "Content-Type": "application/json"
-        },
-        pinnedHosts
-      );
-      let headers = {
-        "Content-Type": "application/json",
-        "X-Api-Key": process.env.CHANGELLY_SWAP_API_KEY,
-        "X-Api-Signature": signature.data.signature
-      };
-
-      try {
-        let response = await pinnedPost(
-          CHANGELLY_API_URL,
-          body,
-          headers,
-          pinnedHosts
-        );
-        if (response.data.hasOwnProperty("error")) {
-          return {
-            status: false,
-            method: method,
-            error: response.data
-          };
-        }
-        return {
-          status: true,
-          method: method,
-          result: response.data.result
-        };
-      } catch (err) {
-        return {
-          status: false,
-          method: method
-        };
+    let exchange = params.exchange_type || params.exchange;
+    let walletAddress = params.walletAddress || params.address;
+    if (!walletAddress && params.id && this.swapTxnHistory?.dbManager) {
+      const record = this.swapTxnHistory.dbManager.getTxnById(params.id);
+      if (record) {
+        walletAddress = record.wallet_address;
+        params.walletAddress = walletAddress;
       }
-    } catch (err) {
-      console.log("swap sendRPC error:", err);
-      return err;
     }
+
+    if (!exchange && params.id) {
+      exchange = this.swapTxnHistory.getTxnExchange(params.id, walletAddress);
+    }
+    if (!exchange) exchange = this.activeExchange;
+
+    const method =
+      exchange === "quickex" ? "getTransactionStatus" : "getTransactions";
+    const data = await this._callAdapter(method, params, exchange);
+    if (data) data.exchange_type = exchange;
+
+    // Persist updated status to DB
+    if (data?.status && Array.isArray(data.result) && data.result.length > 0) {
+      const details = data.result[0];
+      const txnId = params.id || details.id;
+      if (txnId && walletAddress) {
+        this.swapTxnHistory.updateTransactionDetails(
+          txnId,
+          walletAddress,
+          params.privacySwap || false,
+          exchange,
+          details
+        );
+      }
+    }
+
+    this.sendGateway("set_txnStatus", data);
   }
 }

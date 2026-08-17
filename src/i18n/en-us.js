@@ -693,7 +693,9 @@ export default {
     viewKey: "View Key",
     viewOnlyMode:
       "View only mode. Please load full wallet in order to send coins.",
-    website: "website"
+    website: "website",
+    privacy: "Privacy",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Address Book",
@@ -758,6 +760,9 @@ export default {
     swap: {
       swap: "Swap",
       exchange: "Exchange",
+      privacySwap: "Privacy Swap",
+      privacySwapDescription:
+        "Your swap will be secure with this privacy swap feature. Your identity won't be visible.",
       history: "History",
       unsupportedpair: "Unsupported exchange pair",
       minimumAmt: "Minimum amount is",
@@ -813,7 +818,7 @@ export default {
         "You can always check the status of this transaction in transaction",
       transactionPreview: "Transaction Preview",
       transactionID: "Transaction ID",
-      changellyAddress: "Changelly address",
+      changellyAddress: "Exchange address",
       completed: "Completed",
       amountTo: "Amount to",
       amountReceived: "Amount received",
@@ -828,6 +833,7 @@ export default {
       date: "Date",
       exchangeAmount: "Exchange amount",
       receiver: "Receiver",
+      confirmations: "Confirmations",
       sendFundDisc: "Send funds to the address below",
       timeLeft: "Time left to send",
       guaranteedRateDisc: "The guaranteed rate has been terminated",
@@ -851,7 +857,8 @@ export default {
       maximumAmtChanged: "Maximum amount value is changed, the new value is ",
       network: "NETWORK",
       giveCorrectAddress:
-        "Please make sure to enter the correct address for the selected chain - ({type}). Otherwise you will lose your funds."
+        "Please make sure to enter the correct address for the selected chain. Otherwise you will lose your funds.",
+      swapType: "Swap Type"
     }
   }
 };

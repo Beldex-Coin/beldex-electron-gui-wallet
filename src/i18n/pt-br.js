@@ -687,7 +687,9 @@ export default {
     viewOnlyMode:
       "Modo de visualização apenas. Por favor carregue a carteira completa para poder enviar moedas.",
     WalletAddress: "Endereço da carteira",
-    website: "site"
+    website: "site",
+    privacy: "Privacidade",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Livro de endereços",
@@ -753,6 +755,9 @@ export default {
     swap: {
       swap: "Trocar",
       exchange: "Intercâmbio",
+      privacySwap: "Troca Privada",
+      privacySwapDescription:
+        "Sua troca será segura com este recurso de troca privada. Sua identidade não ficará visível.",
       history: "História",
       unsupportedpair: "Par de exchanges não suportado",
       minimumAmt: "O valor mínimo é",
@@ -809,7 +814,7 @@ export default {
       // history: "history",
       transactionPreview: "Visualização da transação",
       transactionID: "ID da transação",
-      changellyAddress: "Endereço da mudança",
+      changellyAddress: "Endereço da exchange",
       completed: "Concluído",
       amountTo: "Valor para",
       amountReceived: "Montante recebido",
@@ -824,6 +829,7 @@ export default {
       date: "Data",
       exchangeAmount: "Valor de troca",
       receiver: "Receptor",
+      confirmations: "Confirmações",
       sendFundDisc: "Envie fundos para o endereço abaixo",
       timeLeft: "Tempo restante para enviar",
       guaranteedRateDisc: "A taxa garantida foi encerrada",
@@ -848,7 +854,8 @@ export default {
       maximumAmtChanged: "O valor máximo é alterado, o novo valor é ",
       network: "Espanhola",
       giveCorrectAddress:
-        "Certifique-se de inserir o endereço correto da rede selecionada - ({type}). Caso contrário, você perderá seus fundos."
+        "Certifique-se de inserir o endereço correto da rede selecionada - ({type}). Caso contrário, você perderá seus fundos.",
+      swapType: "Tipo de Swap"
     }
   }
 };

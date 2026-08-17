@@ -707,7 +707,9 @@ export default {
     viewOnlyMode:
       "Mode d'affichage seulement. Veuillez charger le portefeuille complet pour envoyer des pièces.",
     WalletAddress: "Adresse du portefeuille",
-    website: "site web"
+    website: "site web",
+    privacy: "Confidentialité",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Carnet d'adresses",
@@ -772,6 +774,9 @@ export default {
     swap: {
       swap: "Échanger",
       exchange: "Échange",
+      privacySwap: "Échange Privé",
+      privacySwapDescription:
+        "Votre échange sera sécurisé grâce à cette fonction d’échange privé. Votre identité ne sera pas visible.",
       history: "Histoire",
       unsupportedpair: "Paire d'échange non prise en charge",
       minimumAmt: "Le montant minimum est",
@@ -829,7 +834,7 @@ export default {
       // history: "history",
       transactionPreview: "Aperçu des transactions",
       transactionID: "identifiant de transaction",
-      changellyAddress: "Adresse de Changelly",
+      changellyAddress: "Adresse de l'échange",
       completed: "Complété",
       amountTo: "S'élever à",
       amountReceived: "Montant reçu",
@@ -844,6 +849,7 @@ export default {
       date: "Date",
       exchangeAmount: "Montant d'échange",
       receiver: "Destinataire",
+      confirmations: "Confirmations",
       sendFundDisc: "Envoyez des fonds à l'adresse ci-dessous",
       timeLeft: "Temps restant pour envoyer",
       guaranteedRateDisc: "Le tarif garanti a été résilié",
@@ -870,7 +876,8 @@ export default {
         "La valeur du montant maximum est modifiée, la nouvelle valeur est ",
       network: "Französisch",
       giveCorrectAddress:
-        "Veuillez vous assurer de saisir l'adresse correcte pour la chaîne sélectionnée ({type}). Sinon, vous perdrez vos fonds."
+        "Veuillez vous assurer de saisir l'adresse correcte pour la chaîne sélectionnée ({type}). Sinon, vous perdrez vos fonds.",
+      swapType: "Type de Swap"
     }
   }
 };

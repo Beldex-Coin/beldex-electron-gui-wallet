@@ -1,6 +1,6 @@
 {
   "name": "beldex-electron-wallet",
-  "version": "7.0.2",
+  "version": "7.1.0",
   "description": "Modern GUI interface for Beldex Currency",
   "productName": "Beldex Electron Wallet",
   "repository": {
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "axios": "^1.18.0",
+    "better-sqlite3": "^13.0.2",
     "bunyan": "^1.8.14",
     "electron-is-dev": "^3.0.1",
     "electron-updater": "^6.8.9",

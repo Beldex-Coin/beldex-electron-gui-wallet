@@ -700,7 +700,9 @@ export default {
       "Este monedero solo permite visualizar operaciones. Por favor, abra uno completo para poder transferir fondos.",
     fromBlockHeight: "Desde la altura del bloque",
     WalletAddress: "Dirección de la billetera",
-    website: "sitio web"
+    website: "sitio web",
+    privacy: "Privacidad",
+    normal: "Normal"
   },
   titles: {
     addressBook: "Libreta de direcciones",
@@ -765,6 +767,9 @@ export default {
     swap: {
       swap: "Intercambio",
       exchange: "Intercambio",
+      privacySwap: "Intercambio Privado",
+      privacySwapDescription:
+        "Tu intercambio será seguro con esta función de intercambio privado. Tu identidad no será visible.",
       history: "Historia",
       unsupportedpair: "Par de intercambio no admitido",
       minimumAmt: "La cantidad mínima es",
@@ -836,6 +841,7 @@ export default {
       date: "fechas",
       exchangeAmount: "Monto del cambio",
       receiver: "Receptor",
+      confirmations: "Confirmations",
       sendFundDisc: "Envíe fondos a la siguiente dirección",
       timeLeft: "Tiempo restante para enviar",
       guaranteedRateDisc: "La tarifa garantizada ha sido cancelada",
@@ -864,6 +870,7 @@ export default {
     },
     network: "Spanisch",
     giveCorrectAddress:
-      "Asegúrate de introducir la dirección correcta de la cadena seleccionada ({type}). De lo contrario, perderás tus fondos."
+      "Asegúrate de introducir la dirección correcta de la cadena seleccionada ({type}). De lo contrario, perderás tus fondos.",
+    swapType: "Tipo de Intercambio"
   }
 };

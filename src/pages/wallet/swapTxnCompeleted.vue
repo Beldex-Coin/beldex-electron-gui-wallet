@@ -93,8 +93,10 @@
           </div>
           <div class="ft-semibold content">
             {{
-              this.momentdate(this.txnStatus.moneyReceived / 1000).format(
-                "DD MMM YYYY-h:mm:ss"
+              this.formatTxnDate(
+                this.txnStatus.moneyReceived ||
+                  this.txnStatus.createdAt ||
+                  this.txnStatus.created_at
               )
             }}
           </div>
@@ -105,8 +107,10 @@
           </div>
           <div class="ft-semibold content">
             {{
-              this.momentdate(this.txnStatus.moneySent / 1000).format(
-                "DD MMM YYYY-h:mm:ss"
+              this.formatTxnDate(
+                this.txnStatus.moneySent ||
+                  this.txnStatus.createdAt ||
+                  this.txnStatus.created_at
               )
             }}
           </div>
@@ -278,28 +282,60 @@ export default {
   }),
 
   methods: {
-    copyAddress(txnId) {
+    formatTxnDate(value) {
+      if (!value) {
+        value = this.txnStatus?.createdAt || this.txnStatus?.created_at;
+      }
+      if (!value) return "N/A";
+      let date;
+      if (typeof value === "string" && isNaN(value)) {
+        date = new Date(value);
+      } else {
+        let num = Number(value);
+        if (isNaN(num)) return "N/A";
+        const digits = Math.floor(Math.abs(num)).toString().length;
+        let ms;
+        if (digits >= 16) {
+          ms = Math.floor(num / 1000);
+        } else if (digits <= 10) {
+          ms = num * 1000;
+        } else {
+          ms = num;
+        }
+        date = new Date(ms);
+      }
+      if (isNaN(date.getTime())) return "N/A";
+      return moment(date).format("DD MMM YYYY-h:mm:ss");
+    },
+    copyAddress(txnId, message = "Transaction ID is copied!") {
       clipboard.writeText(txnId);
       this.$q.notify({
         type: "positive",
         timeout: 1000,
-        message: "Transaction ID is copied!"
+        message: message
       });
     },
     inputHash(hash) {
-      let payInCurrency = this.Currencylist.find(
-        item => item.ticker === this.txnStatus.currencyFrom
-      );
-      let url = payInCurrency.transactionUrl;
-      url = url.slice(0, url.lastIndexOf("/") - (url.length - 1)) + hash;
+      //let payInCurrency = this.Currencylist.find(
+      //  item => item.ticker === this.txnStatus.currencyFrom
+      //);
+      //let url = this.txnStatus.payoutHashLink;
+      //url = url.slice(0, url.lastIndexOf("/") - (url.length - 1)) + hash;
 
-      this.$gateway.send("core", "open_url", { url });
-
-      // console.log("input hash", url);
+      //this.$gateway.send("core", "open_url", { url });
+      let payinhash = hash;
+      if (!hash) {
+        payinhash = this.txnStatus?.raw_response?.deposits[0]?.txId || "";
+      }
+      this.copyAddress(payinhash, "Input Hash is copied!");
     },
     outputHash(url) {
-      // console.log("outhash", url);
-      this.$gateway.send("core", "open_url", { url });
+      let payoutHash = url;
+      if (!payoutHash) {
+        payoutHash = this.txnStatus?.raw_response?.withdrawals[0]?.txId || "";
+      }
+      this.copyAddress(payoutHash, "Output Hash is copied!");
+      // this.$gateway.send("core", "open_url", { url });
     }
   }
 };
