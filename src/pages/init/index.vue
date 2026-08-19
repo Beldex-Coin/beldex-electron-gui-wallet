@@ -133,13 +133,27 @@
             </svg>
           </div> -->
         </div>
+        <div class="startup-message q-mt-sm">
+          {{ startupMessage }}
+        </div>
 
-        <!-- <div class="message">
-          {{ message }}
-        </div> -->
-
-        <div v-if="daemonStatus" class="q-mt-xs">
-          {{ $t("strings.syncingDaemon") }}: {{ daemonStatus }}
+        <div v-if="progressItems.length" class="startup-progress q-mt-md">
+          <div
+            v-for="item in progressItems"
+            :key="item.key"
+            class="startup-progress-item"
+          >
+            <div class="startup-progress-row">
+              <span class="startup-progress-label">{{ item.label }}</span>
+              <span class="startup-progress-value">{{ item.status }}</span>
+            </div>
+            <div class="startup-progress-bar">
+              <div
+                class="startup-progress-fill"
+                :style="{ width: `${item.percent}%` }"
+              ></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -163,25 +177,128 @@ export default {
   computed: mapState({
     status: state => state.gateway.app.status,
     config: state => state.gateway.app.config,
-    isLocalDaemon() {
-      if (!this.config || !this.config.app.net_type) return false;
-      return this.config.daemons[this.config.app.net_type].type === "local";
-    },
     daemon: state => state.gateway.daemon,
-    daemonStatus() {
-      // Check to see if config is loaded
-      if (this.status.code < 3 || !this.isLocalDaemon) return null;
+    wallet: state => state.gateway.wallet,
+    configDaemon() {
+      if (!this.config || !this.config.app || !this.config.app.net_type) {
+        return null;
+      }
 
-      const currentHeight = this.daemon.info.height_without_bootstrap;
-      const targetHeight = Math.max(
-        this.daemon.info.height,
-        this.daemon.info.target_height
+      return this.config.daemons[this.config.app.net_type] || null;
+    },
+    daemonTargetHeight() {
+      return Math.max(
+        this.toSafeHeight(this.daemon.info.height_without_bootstrap),
+        this.toSafeHeight(this.daemon.info.height),
+        this.toSafeHeight(this.daemon.info.target_height)
       );
-      const percentage = ((100 * currentHeight) / targetHeight).toFixed(1);
+    },
+    daemonCurrentHeight() {
+      if (!this.configDaemon) {
+        return 0;
+      }
 
-      if (targetHeight === 0 || currentHeight >= targetHeight) return null;
+      if (this.configDaemon.type === "local_remote") {
+        return this.toSafeHeight(this.daemon.info.height_without_bootstrap);
+      }
 
-      return `${currentHeight}/${targetHeight} (${percentage}%)`;
+      return this.toSafeHeight(this.daemon.info.height);
+    },
+    walletTargetHeight() {
+      if (!this.configDaemon) {
+        return 0;
+      }
+
+      if (
+        this.configDaemon.type === "local" ||
+        this.configDaemon.type === "local_remote"
+      ) {
+        return this.daemonTargetHeight;
+      }
+
+      return this.toSafeHeight(this.daemon.info.height);
+    },
+    walletCurrentHeight() {
+      return this.toSafeHeight(this.wallet.info.height);
+    },
+    daemonProgressItem() {
+      if (!this.configDaemon) {
+        return null;
+      }
+
+      if (
+        this.configDaemon.type === "remote" ||
+        this.daemonTargetHeight === 0 ||
+        this.daemonCurrentHeight >= this.daemonTargetHeight
+      ) {
+        return null;
+      }
+
+      return {
+        key: "daemon",
+        label: this.$t("strings.syncingDaemon"),
+        status: `${this.daemonCurrentHeight}/${
+          this.daemonTargetHeight
+        } (${this.calculatePercent(
+          this.daemonCurrentHeight,
+          this.daemonTargetHeight
+        )}%)`,
+        percent: this.calculatePercentNumber(
+          this.daemonCurrentHeight,
+          this.daemonTargetHeight
+        )
+      };
+    },
+    walletProgressItem() {
+      if (
+        this.walletTargetHeight === 0 ||
+        this.walletCurrentHeight === 0 ||
+        this.walletCurrentHeight >= this.walletTargetHeight
+      ) {
+        return null;
+      }
+
+      return {
+        key: "wallet",
+        label: `${this.$t("footer.wallet")} ${this.$t("footer.scanning")}`,
+        status: `${this.walletCurrentHeight}/${
+          this.walletTargetHeight
+        } (${this.calculatePercent(
+          this.walletCurrentHeight,
+          this.walletTargetHeight
+        )}%)`,
+        percent: this.calculatePercentNumber(
+          this.walletCurrentHeight,
+          this.walletTargetHeight
+        )
+      };
+    },
+    progressItems() {
+      return [this.daemonProgressItem, this.walletProgressItem].filter(Boolean);
+    },
+    startupMessage() {
+      if (this.walletProgressItem) {
+        return `${this.$t("footer.wallet")} ${this.$t("footer.scanning")}`;
+      }
+
+      if (this.daemonProgressItem) {
+        return this.$t("strings.syncingDaemon");
+      }
+
+      switch (this.status.code) {
+        case 1:
+          return this.$t("strings.connectingToBackend");
+        case 2:
+          return this.$t("strings.loadingSettings");
+        case 3:
+          return this.$t("strings.startingDaemon");
+        case 6:
+          return this.$t("strings.startingWallet");
+        case 7:
+          return this.$t("strings.readingWalletList");
+        default:
+          return this.$t("strings.connectingToBackend");
+      }
     }
   }),
   watch: {
@@ -196,6 +313,27 @@ export default {
     this.updateStatus();
   },
   methods: {
+    toSafeHeight(value) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+    },
+    calculatePercent(currentHeight, targetHeight) {
+      return this.calculatePercentNumber(currentHeight, targetHeight).toFixed(
+        1
+      );
+    },
+    calculatePercentNumber(currentHeight, targetHeight) {
+      if (targetHeight === 0) {
+        return 0;
+      }
+
+      const rawPercent = (100 * currentHeight) / targetHeight;
+      if (rawPercent >= 100) {
+        return currentHeight < targetHeight ? 99.9 : 100;
+      }
+
+      return Math.max(0, rawPercent);
+    },
     updateStatus() {
       switch (this.status.code) {
         case -1: // config not found, go to welcome screen
@@ -275,6 +413,47 @@ export default {
   .version {
     color: white;
   }
+}
+.startup-message {
+  color: white;
+  font-size: 28px;
+  font-family: "Poppins-Medium";
+}
+.startup-progress {
+  width: min(520px, 88vw);
+  margin: 0 auto;
+  text-align: left;
+}
+.startup-progress-item + .startup-progress-item {
+  margin-top: 16px;
+}
+.startup-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.startup-progress-label,
+.startup-progress-value {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 16px;
+}
+.startup-progress-value {
+  font-family: "Poppins-Medium";
+}
+.startup-progress-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+.startup-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #1bcc39 0%, #2fff62 100%);
+  transition: width 0.25s ease;
 }
 .startup-icons {
   & > div {
