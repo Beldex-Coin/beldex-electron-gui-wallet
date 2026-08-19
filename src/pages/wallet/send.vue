@@ -392,6 +392,7 @@ export default {
     // if(this.senderAddress)
     // {
     this.autoFill(this.senderAddress);
+    this.primePasswordConfirmation();
     // }
   },
   methods: {
@@ -552,6 +553,9 @@ export default {
           color: "accent"
         }
       });
+      if (!passwordDialog || typeof passwordDialog.onOk !== "function") {
+        return;
+      }
       passwordDialog
         .onOk(password => {
           password = password || "";
