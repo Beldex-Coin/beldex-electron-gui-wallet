@@ -14,9 +14,11 @@
   },
   "private": true,
   "scripts": {
-    "dev": "quasar dev -m electron",
+    "dev": "ELECTRON_DISABLE_SANDBOX=1 quasar dev -m electron",
     "build": "quasar build -m electron --publish=never",
+    "build:linux:compat": "bash ./build/build-linux-compat.sh build",
     "release": "quasar build -m electron --publish=always",
+    "release:linux:compat": "bash ./build/build-linux-compat.sh release",
     "lint": "eslint --fix .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|md|vue)\"",
     "ready": "npm run lint && npm run format"
@@ -49,7 +51,7 @@
     "babel-eslint": "^10.1.0",
     "devtron": "^1.4.0",
     "dotenv": "^17.4.2",
-    "electron": "42.4.1",
+    "electron": "42.7.1",
     "electron-builder": "26.15.3",
     "electron-debug": "^2.1.0",
     "electron-devtools-installer": "^2.2.4",
