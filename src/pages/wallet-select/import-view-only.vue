@@ -130,7 +130,7 @@ export default {
         viewkey: "",
         refresh_type: "date",
         refresh_start_height: 0,
-        refresh_start_date: 1492486495000, // timestamp of block 1
+        refresh_start_date: Date.now(),
         password: "",
         password_confirm: ""
       }

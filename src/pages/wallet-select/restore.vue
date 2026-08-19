@@ -402,6 +402,7 @@ import { privkey } from "src/validators/common";
 const timeStampFirstBlock = 1525305600000;
 const qDateFormat = "YYYY/MM/DD";
 let dateFirstBlock = date.formatDate(timeStampFirstBlock, qDateFormat);
+let defaultRestoreDate = date.formatDate(Date.now(), qDateFormat);
 
 export default {
   components: {
@@ -415,7 +416,7 @@ export default {
         seed: "",
         refresh_type: "date",
         refresh_start_height: 0,
-        refresh_start_date: dateFirstBlock, // timestamp of block 1
+        refresh_start_date: defaultRestoreDate, // timestamp of block 1
         password: "",
         password_confirm: ""
       },
@@ -426,7 +427,7 @@ export default {
         spendkey: "",
         refresh_type: "date",
         refresh_start_height: 0,
-        refresh_start_date: dateFirstBlock, // timestamp of block 1
+        refresh_start_date: defaultRestoreDate, // timestamp of block 1
         password: "",
         password_confirm: ""
       }
@@ -651,7 +652,7 @@ export default {
     dateRangeOptions(dateSelected) {
       const now = Date.now();
       const formattedNow = date.formatDate(now, qDateFormat);
-      return dateSelected >= dateFirstBlock && dateSelected < formattedNow;
+      return dateSelected >= dateFirstBlock && dateSelected <= formattedNow;
     },
     cancel() {
       this.$router.replace({ path: "/wallet-select" });
