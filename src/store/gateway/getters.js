@@ -1,41 +1,54 @@
-export const isReady = state => {
+const toSafeHeight = value => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+};
+
+const getTargetHeight = state => {
   const { daemons, app } = state.app.config;
   const config_daemon = daemons[app.net_type];
+  const daemonHeight = toSafeHeight(state.daemon.info.height);
+  const daemonTargetHeight = toSafeHeight(state.daemon.info.target_height);
+  const localHeight = toSafeHeight(state.daemon.info.height_without_bootstrap);
 
-  let target_height;
-  if (config_daemon.type === "local") {
-    target_height = Math.max(
-      state.daemon.info.height,
-      state.daemon.info.target_height
-    );
-  } else {
-    target_height = state.daemon.info.height;
+  if (config_daemon.type === "local" || config_daemon.type === "local_remote") {
+    return Math.max(daemonHeight, daemonTargetHeight, localHeight);
   }
 
-  return state.wallet.info.height >= target_height - 1;
+  return daemonHeight;
+};
+
+const isWalletReady = state => {
+  const target_height = getTargetHeight(state);
+  const walletHeight = toSafeHeight(state.wallet.info.height);
+
+  if (state.wallet.isRPCSyncing === true) {
+    return false;
+  }
+
+  if (target_height === 0) {
+    return true;
+  }
+
+  return walletHeight >= target_height - 1;
+};
+
+export const isReady = state => {
+  return isWalletReady(state);
 };
 
 export const isAbleToSend = state => {
   const { daemons, app } = state.app.config;
   const config_daemon = daemons[app.net_type];
 
-  let target_height;
-  if (config_daemon.type === "local") {
-    target_height = Math.max(
-      state.daemon.info.height,
-      state.daemon.info.target_height
-    );
-  } else {
-    target_height = state.daemon.info.height;
-  }
+  const target_height = getTargetHeight(state);
+  const walletReady = isWalletReady(state);
 
   if (config_daemon.type === "local_remote") {
     return (
-      state.daemon.info.height_without_bootstrap >= target_height &&
-      state.wallet.info.height >= target_height - 1
+      state.daemon.info.height_without_bootstrap >= target_height && walletReady
     );
   } else {
-    return state.wallet.info.height >= target_height - 1;
+    return walletReady;
   }
 };
 

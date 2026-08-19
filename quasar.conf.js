@@ -3,6 +3,21 @@
 
 const path = require("path");
 const envVars = require("dotenv").config().parsed || {};
+function addCommonJsExternals(cfg, moduleNames) {
+  if (Array.isArray(cfg.externals)) {
+    moduleNames.forEach(moduleName => {
+      cfg.externals.push({
+        [moduleName]: `commonjs ${moduleName}`
+      });
+    });
+    return;
+  }
+
+  cfg.externals = cfg.externals || {};
+  moduleNames.forEach(moduleName => {
+    cfg.externals[moduleName] = `commonjs ${moduleName}`;
+  });
+}
 
 const whitelistedEnv = {
   CHANGELLY_SWAP_API_KEY: envVars.CHANGELLY_SWAP_API_KEY || "",
@@ -44,6 +59,7 @@ module.exports = function() {
           __dirname,
           "src/shims/electron-renderer.js"
         );
+        addCommonJsExternals(cfg, ["bufferutil", "utf-8-validate"]);
       }
     },
     devServer: {
@@ -150,9 +166,8 @@ module.exports = function() {
     electron: {
       nodeIntegration: false,
       bundler: "builder", // or "packager"
-      extendWebpack() {
-        // cfg
-        // do something with Electron process Webpack cfg
+      extendWebpack(cfg) {
+        addCommonJsExternals(cfg, ["bufferutil", "utf-8-validate"]);
       },
       packager: {
         // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
@@ -176,7 +191,11 @@ module.exports = function() {
         copyright: "Copyright © 2018-2021 Beldex, 2018 Ryo Currency Project",
         afterSign: "build/notarize.js",
         artifactName: "beldex-electron-wallet-${version}-${os}.${ext}",
-        publish: "github",
+        publish: {
+          provider: "generic",
+          url:
+            "https://github.com/Beldex-coin/beldex-electron-gui-wallet/releases/latest/download/"
+        },
 
         linux: {
           target: ["deb", "AppImage"],
