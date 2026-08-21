@@ -227,6 +227,10 @@ export class Swap {
       if (data.result) {
         data.result.created_at = now;
         data.result.createdAt = now;
+        data.result.blockchainFrom = params.blockchainFrom;
+        data.result.blockchainTo = params.blockchainTo;
+        data.result.networkFrom = params.networkFrom || null;
+        data.result.networkTo = params.networkTo || null;
       }
       this.swapTxnHistory.updateTransactionDetails(
         transactionId,
@@ -388,6 +392,10 @@ export class Swap {
         payoutHashLink: payoutHash,
         privacySwap: row.swap_type === "privacy",
         exchange_type: row.exchange || "changelly",
+        blockchainFrom: row.blockchain_from || null,
+        blockchainTo: row.blockchain_to || null,
+        networkFrom: row.network_from || null,
+        networkTo: row.network_to || null,
         raw_response: rawResp
       };
     });

@@ -44,7 +44,8 @@ export function normalizeCurrencyList(rawList, exchange) {
         payinConfirmations: 3,
         extraIdName: c.requiresMemo ? "memo" : null,
         image: c.currencyLogoLink || "",
-        protocol: c.networkTitle || ""
+        protocol: c.networkTitle || "",
+        blockchain: null
       };
     }
 
@@ -59,7 +60,8 @@ export function normalizeCurrencyList(rawList, exchange) {
       payinConfirmations: Number(c.payinConfirmations) || 0,
       extraIdName: c.extraIdName || null,
       image: c.image || "",
-      protocol: c.protocol || c.contractAddress || ""
+      protocol: c.protocol || c.contractAddress || "",
+      blockchain: c.blockchain || null
     };
   });
 }
@@ -136,6 +138,8 @@ export function normalizeCreatedTransaction(data) {
     status: data.completed ? "finished" : "waiting",
     currencyFrom: (data.instrumentFromCurrencyTitle || "").toLowerCase(),
     currencyTo: (data.instrumentToCurrencyTitle || "").toLowerCase(),
+    blockchainFrom: data.blockchain_from || null,
+    blockchainTo: data.blockchain_to || null,
     payTill: new Date(Date.now() + 15 * 60000).toISOString(),
     createdAt: toMsEpoch(data.createdAt),
     created_at: toMsEpoch(data.createdAt),

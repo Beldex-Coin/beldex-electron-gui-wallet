@@ -58,8 +58,10 @@ export class SwapDatabaseManager {
         swap_type TEXT NOT NULL,
         currency_from TEXT NOT NULL,
         network_from TEXT,
+        blockchain_from TEXT,
         currency_to TEXT NOT NULL,
         network_to TEXT,
+        blockchain_to TEXT,
         payin_address TEXT,
         payin_address_memo TEXT,
         payout_address TEXT,
@@ -95,20 +97,35 @@ export class SwapDatabaseManager {
     this.db.exec(createTxnTable);
     this.db.exec(createIndexes);
     this.db.exec(createMetaTable);
+    this._runMigrations();
+  }
+
+  _runMigrations() {
+    const addCol = col => {
+      try {
+        this.db.exec(
+          `ALTER TABLE swap_transactions_history ADD COLUMN ${col} TEXT;`
+        );
+      } catch (e) {
+        // Column already exists — safe to ignore
+      }
+    };
+    addCol("blockchain_from");
+    addCol("blockchain_to");
   }
 
   _prepareStatements() {
     this.statements.upsertTxn = this.db.prepare(`
       INSERT INTO swap_transactions_history (
         uuid, wallet_address, exchange, txn_id, txn_status, txn_type, swap_type,
-        currency_from, network_from, currency_to, network_to,
+        currency_from, network_from, blockchain_from, currency_to, network_to, blockchain_to,
         payin_address, payin_address_memo, payout_address, payout_address_memo,
         refund_address, refund_status, refund_address_memo,
         amount_from, amount_to, network_fee, platform_fee,
         raw_response, created_at, updated_at
       ) VALUES (
         @uuid, @wallet_address, @exchange, @txn_id, @txn_status, @txn_type, @swap_type,
-        @currency_from, @network_from, @currency_to, @network_to,
+        @currency_from, @network_from, @blockchain_from, @currency_to, @network_to, @blockchain_to,
         @payin_address, @payin_address_memo, @payout_address, @payout_address_memo,
         @refund_address, @refund_status, @refund_address_memo,
         @amount_from, @amount_to, @network_fee, @platform_fee,
@@ -121,8 +138,10 @@ export class SwapDatabaseManager {
         swap_type = COALESCE(NULLIF(excluded.swap_type, ''), swap_transactions_history.swap_type),
         currency_from = COALESCE(NULLIF(excluded.currency_from, ''), swap_transactions_history.currency_from),
         network_from = COALESCE(excluded.network_from, swap_transactions_history.network_from),
+        blockchain_from = COALESCE(excluded.blockchain_from, swap_transactions_history.blockchain_from),
         currency_to = COALESCE(NULLIF(excluded.currency_to, ''), swap_transactions_history.currency_to),
         network_to = COALESCE(excluded.network_to, swap_transactions_history.network_to),
+        blockchain_to = COALESCE(excluded.blockchain_to, swap_transactions_history.blockchain_to),
         payin_address = COALESCE(excluded.payin_address, swap_transactions_history.payin_address),
         payin_address_memo = COALESCE(excluded.payin_address_memo, swap_transactions_history.payin_address_memo),
         payout_address = COALESCE(excluded.payout_address, swap_transactions_history.payout_address),
@@ -198,8 +217,10 @@ export class SwapDatabaseManager {
       swap_type: tx.swap_type || "normal",
       currency_from: tx.currency_from || "",
       network_from: tx.network_from || null,
+      blockchain_from: tx.blockchain_from || null,
       currency_to: tx.currency_to || "",
       network_to: tx.network_to || null,
+      blockchain_to: tx.blockchain_to || null,
       payin_address: tx.payin_address || null,
       payin_address_memo: tx.payin_address_memo || null,
       payout_address: tx.payout_address || null,
@@ -219,7 +240,11 @@ export class SwapDatabaseManager {
       updated_at: tx.updated_at ? Number(tx.updated_at) : now
     };
 
-    return this.statements.upsertTxn.run(payload);
+    const result = this.statements.upsertTxn.run(payload);
+    console.log(
+      `[SwapDB] upsert txn_id=${payload.txn_id} | network_from=${payload.network_from} | network_to=${payload.network_to} tx.created_at=${tx.created_at}, tx.createdAt=${tx.createdAt}, now=${now}`
+    );
+    return result;
   }
 
   batchUpsertTransactions(txArray) {

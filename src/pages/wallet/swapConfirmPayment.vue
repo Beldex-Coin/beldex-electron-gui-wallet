@@ -96,11 +96,14 @@
           </div>
           <div class="ft-semibold expand-txt uppercase">
             {{ this.$t("titles.swap.network") }} :
-            <span>{{
-              sendChainDetails.blockchain
-                ? sendChainDetails.blockchain.replaceAll("_", " ")
-                : sendChainDetails.protocol || sendChainDetails.name || ""
-            }}</span>
+            <span>{{ sendChainDetails.protocol || "" }}</span>
+          </div>
+          <div
+            v-if="sendChainDetails.blockchain"
+            class="ft-semibold expand-txt uppercase"
+          >
+            {{ this.$t("titles.swap.blockchain") }} :
+            <span>{{ sendChainDetails.blockchain.replaceAll("_", " ") }}</span>
           </div>
         </div>
         <div class="col-6">
@@ -125,10 +128,15 @@
           </div>
           <div class="ft-semibold expand-txt uppercase">
             {{ this.$t("titles.swap.network") }} :
+            <span>{{ receiveChainDtails.protocol || "" }}</span>
+          </div>
+          <div
+            v-if="receiveChainDtails.blockchain"
+            class="ft-semibold expand-txt uppercase"
+          >
+            {{ this.$t("titles.swap.blockchain") }} :
             <span>{{
-              receiveChainDtails.blockchain
-                ? receiveChainDtails.blockchain.replaceAll("_", " ")
-                : receiveChainDtails.protocol || receiveChainDtails.name || ""
+              receiveChainDtails.blockchain.replaceAll("_", " ") || ""
             }}</span>
           </div>
         </div>
@@ -310,7 +318,6 @@ export default {
       required: false
     }
   },
-
   data() {
     return {};
   },

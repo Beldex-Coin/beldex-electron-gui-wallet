@@ -114,8 +114,10 @@ export class SwapTxnHistory {
       swap_type: swapType,
       currency_from: details.currencyFrom || "",
       network_from: details.networkFrom || null,
+      blockchain_from: details.blockchainFrom || null,
       currency_to: details.currencyTo || "",
       network_to: details.networkTo || null,
+      blockchain_to: details.blockchainTo || null,
       payin_address: extractAddr(
         details.payinAddress || details.depositAddress
       ),

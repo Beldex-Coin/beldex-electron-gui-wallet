@@ -1323,7 +1323,9 @@ export default {
         address: this.recipientAddress.val,
         amountFrom: this.sendAmount,
         walletAddress: this.info.address,
-        privacySwap: this.privacySwap
+        privacySwap: this.privacySwap,
+        blockchainFrom: this.sendAmounType.blockchain || null,
+        blockchainTo: this.receiveAmountType.blockchain || null
       };
       if (this.refundAddress && this.refundAddress.val) {
         data.refundAddress = this.refundAddress.val;
