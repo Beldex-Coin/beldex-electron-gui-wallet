@@ -22,6 +22,7 @@ export default {
     decrypt: "РАСШИФРОВАТЬ",
     addRecord: "Добавить БНС",
     delete: "УДАЛИТЬ",
+    done: "Готово",
     edit: "Редактировать",
     editNotes: "Редактировать примечания",
     enter: "Входить",
@@ -252,6 +253,8 @@ export default {
     expirationHeight: " Высота истечения срока действия",
     data: "Данные",
     filter: "Фильтр",
+    startDate: "Дата начала",
+    endDate: "Дата окончания",
     filterTransactionType: "ТИП ТРАНЗАКЦИИ",
     internalWalletPort: "Внутренний порт кошелька",
     keyImages: {
@@ -435,7 +438,9 @@ export default {
       keyImages: {
         exporting: "Ошибка экспорта ключевых образов",
         reading: "Ошибка чтения ключевых образов",
-        importing: "Ошибка импорта ключевых образов"
+        importing: "Ошибка импорта ключевых образов",
+        notSyncedFarEnough:
+          "Этот кошелёк ещё недостаточно синхронизирован, чтобы соответствовать экспортированным ключевым образам. Дождитесь завершения синхронизации и повторите попытку импорта."
       },
       negativeAmount: "Сумма не может быть отрицательной",
       newPasswordNoMatch: "Новые пароли не совпадают",
@@ -667,6 +672,8 @@ export default {
       sentTo: "Транзакция отправлена: {type}",
       timestamp: "Отметка времени",
       date: "Дата",
+      filterByDate: "Фильтр по дате",
+      clearDateRange: "Очистить фильтр по дате",
       types: {
         all: "Все",
         incoming: "Получать",

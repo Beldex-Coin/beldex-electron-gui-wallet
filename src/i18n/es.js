@@ -23,6 +23,7 @@ export default {
     decrypt: "DESCIFRAR",
     addRecord: "Agregar BNS",
     delete: "ELIMINAR",
+    done: "HECHO",
     edit: "EDITAR",
     editNotes: "Editar notas",
     enter: "ingresar",
@@ -255,6 +256,8 @@ export default {
     data: "Datos",
 
     filter: "Filtro",
+    startDate: "Fecha de inicio",
+    endDate: "Fecha de fin",
     filterTransactionType: "FILTRAR POR TIPO DE TRANSACCIÓN",
     internalWalletPort: "PUERTO INTERNO MONEDERO",
     keyImages: {
@@ -445,7 +448,9 @@ export default {
       keyImages: {
         exporting: "Error exportando imágenes de clave",
         reading: "Error leyendo imágenes de clave",
-        importing: "Error importando imágenes de clave"
+        importing: "Error importando imágenes de clave",
+        notSyncedFarEnough:
+          "Esta billetera aún no se ha sincronizado lo suficiente para coincidir con las imágenes de clave exportadas. Espere a que termine de sincronizar y luego intente importar nuevamente."
       },
       negativeAmount: "La cantidad no puede ser negativa",
       newPasswordNoMatch: "Las contraseñas nuevas no coinciden",
@@ -675,6 +680,8 @@ export default {
       sentTo: "Transacción {type} enviada a",
       timestamp: "Fecha y hora",
       date: "Fecha",
+      filterByDate: "Filtrar por fecha",
+      clearDateRange: "Borrar filtro de fecha",
       types: {
         all: "Todas",
         incoming: "Recibir",

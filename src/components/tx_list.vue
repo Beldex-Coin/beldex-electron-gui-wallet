@@ -120,6 +120,7 @@ import FormatOxen from "components/format_oxen";
 import { i18n } from "boot/i18n";
 import ContextMenu from "components/menus/contextmenu";
 import TxTypeIcon from "components/tx_type_icon";
+import DateRangeFilterMixin from "src/mixins/date_range_filter_mixin";
 export default {
   name: "TxList",
   filters: {
@@ -156,6 +157,7 @@ export default {
     ContextMenu,
     TxTypeIcon
   },
+  mixins: [DateRangeFilterMixin],
   props: {
     limit: {
       type: Number,
@@ -171,6 +173,11 @@ export default {
       type: String,
       required: false,
       default: ""
+    },
+    dateRange: {
+      type: Object,
+      required: false,
+      default: () => ({ from: null, to: null })
     },
     toOutgoingAddress: {
       type: String,
@@ -242,27 +249,19 @@ export default {
     type: {
       handler(val, old) {
         if (val == old) return;
-        if (this.$refs.scroller) {
-          this.$refs.scroller.stop();
-          this.page = 0;
-          this.$refs.scroller.reset();
-          this.$refs.scroller.resume();
-        }
-        this.filterTxList();
-        this.pageTxList();
+        this.resetPagingAndRefilter();
       }
     },
     filter: {
       handler(val, old) {
         if (val == old) return;
-        if (this.$refs.scroller) {
-          this.$refs.scroller.stop();
-          this.page = 0;
-          this.$refs.scroller.reset();
-          this.$refs.scroller.resume();
-        }
-        this.filterTxList();
-        this.pageTxList();
+        this.resetPagingAndRefilter();
+      }
+    },
+    dateRange: {
+      handler(val, old) {
+        if (val === old) return;
+        this.resetPagingAndRefilter();
       }
     }
   },
@@ -271,11 +270,25 @@ export default {
     this.pageTxList();
   },
   methods: {
+    resetPagingAndRefilter() {
+      if (this.$refs.scroller) {
+        this.$refs.scroller.stop();
+        this.page = 0;
+        this.$refs.scroller.reset();
+        this.$refs.scroller.resume();
+      }
+      this.filterTxList();
+      this.pageTxList();
+    },
     filterTxList() {
       const all_in = ["in", "pool", "miner", "mnode", "gov", "bns"];
       const all_out = ["out", "pending", "stake"];
       const all_pending = ["pending", "pool"];
       this.tx_list_filtered = this.tx_list.filter(tx => {
+        if (!this.isTxInDateRange(tx, this.dateRange)) {
+          return false;
+        }
+
         let valid = true;
         if (this.type === "all_in" && !all_in.includes(tx.type)) {
           return false;

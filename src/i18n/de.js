@@ -22,6 +22,7 @@ export default {
     decrypt: "ENTSCHLÜSSELN",
     addRecord: "BNS hinzufügen",
     delete: "Löschen",
+    done: "Fertig",
     edit: "Bearbeiten",
     editNotes: "Notizen bearbeiten",
     enter: "eingeben",
@@ -257,6 +258,8 @@ export default {
     encryptedBchatValue: "Verschlüsselter Bchat-Wert",
     data: "Daten",
     filter: "Filter",
+    startDate: "Startdatum",
+    endDate: "Enddatum",
     filterTransactionType: "FILTERN NACH TRANSAKTIONSTYP",
     internalWalletPort: "Interner Wallet-Port",
     keyImages: {
@@ -442,7 +445,9 @@ export default {
       keyImages: {
         exporting: "Fehler beim Export der Key images",
         reading: "Fehler beim lesen der Key images",
-        importing: "Fehler beim Import der Key Images"
+        importing: "Fehler beim Import der Key Images",
+        notSyncedFarEnough:
+          "Diese Wallet ist noch nicht weit genug synchronisiert, um mit den exportierten Key Images übereinzustimmen. Warten Sie, bis die Synchronisierung abgeschlossen ist, und versuchen Sie den Import erneut."
       },
       negativeAmount: "Betrag kann nicht negativ sein ",
       newPasswordNoMatch: "Neue Passwörter stimmen nicht überein",
@@ -677,6 +682,8 @@ export default {
       sentTo: "{type} Transaktion gesendet nach",
       timestamp: "Zeitstempel",
       date: "Datum",
+      filterByDate: "Nach Datum filtern",
+      clearDateRange: "Datumsfilter löschen",
       types: {
         all: "Alles",
         incoming: "Erhalten",

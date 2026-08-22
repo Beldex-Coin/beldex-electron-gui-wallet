@@ -22,6 +22,7 @@ export default {
     decrypt: "DECRYPT",
     addRecord: "Add BNS",
     delete: "Delete",
+    done: "Done",
     edit: "Edit",
     editNotes: "Edit Notes",
     enter: "Enter",
@@ -257,6 +258,8 @@ export default {
     expirationHeight: "Expiration Height",
     filter: "Filter",
     filterTransactionType: "FILTER BY TRANSACTION TYPE",
+    startDate: "Start Date",
+    endDate: "End Date",
     internalWalletPort: "Internal Wallet Port",
     keyImages: {
       exportDirectory: "Key Image Export Directory",
@@ -444,7 +447,9 @@ export default {
       keyImages: {
         exporting: "Error exporting key images",
         reading: "Error reading key images",
-        importing: "Error importing key images"
+        importing: "Error importing key images",
+        notSyncedFarEnough:
+          "This wallet hasn't synced far enough to match the exported key images yet. Wait until it finishes syncing, then try importing again."
       },
       negativeAmount: "Amount cannot be negative",
       newPasswordNoMatch: "New passwords do not match",
@@ -670,6 +675,8 @@ export default {
       sentTo: "{type} transaction sent to",
       timestamp: "Timestamp",
       date: "Date",
+      filterByDate: "Filter by date",
+      clearDateRange: "Clear date filter",
       types: {
         all: "All",
         incoming: "Receive",

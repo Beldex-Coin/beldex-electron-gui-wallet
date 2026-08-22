@@ -21,6 +21,7 @@ export default {
     decrypt: "DESCRIPTO",
     addRecord: "Adicionar BNS",
     delete: "APAGAR",
+    done: "FEITO",
     edit: "EDITAR",
     editNotes: "Editar notas",
     enter: "Digitar",
@@ -250,6 +251,8 @@ export default {
     expirationHeight: "Altura de expiração",
     data: "Dados",
     filter: "Filtro",
+    startDate: "Data de início",
+    endDate: "Data de término",
     filterTransactionType: "FILTRAR POR TIPO DE TRANSAÇÃO",
     internalWalletPort: "PORTA INTERNA DA CARTEIRA",
     keyImages: {
@@ -433,7 +436,9 @@ export default {
       keyImages: {
         exporting: "Erro ao exportar as chaves de imagem",
         reading: "Erro ao ler as chaves de imagem",
-        importing: "Erro ao importar as chaves de imagem"
+        importing: "Erro ao importar as chaves de imagem",
+        notSyncedFarEnough:
+          "Esta carteira ainda não sincronizou o suficiente para corresponder às chaves de imagem exportadas. Aguarde a sincronização terminar e tente importar novamente."
       },
       negativeAmount: "Quantidade não pode ser negativa",
       newPasswordNoMatch: "Nova palavra-passe não coincide",
@@ -663,6 +668,8 @@ export default {
       sentTo: "{type} transacão enviada a",
       timestamp: "Data e hora",
       date: "Data",
+      filterByDate: "Filtrar por data",
+      clearDateRange: "Limpar filtro de data",
       types: {
         all: "Todos",
         incoming: "Receber",

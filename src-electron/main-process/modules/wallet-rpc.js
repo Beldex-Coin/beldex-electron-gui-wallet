@@ -2760,13 +2760,12 @@ export class WalletRPC {
         );
       }
 
-      const onError = (i18n, message) =>
-        this.sendGateway(
-          "show_notification",
-          message
-            ? { type: "negative", message, timeout: 4000 }
-            : { type: "negative", i18n, timeout: 4000 }
-        );
+      const onError = i18n =>
+        this.sendGateway("show_notification", {
+          type: "negative",
+          i18n,
+          timeout: 4000
+        });
 
       fs.readJSON(filename)
         .then(signed_key_images => {
@@ -2779,15 +2778,15 @@ export class WalletRPC {
                 !data.hasOwnProperty("result")
               ) {
                 const rpcMessage =
-                  data.error && data.error.message ? data.error.message : null;
-                const isCountMismatch =
-                  rpcMessage && rpcMessage.includes("signed_key_images.size()");
+                  data.error && data.error.message ? data.error.message : "";
+                const isCountMismatch = rpcMessage.includes(
+                  "signed_key_images.size()"
+                );
 
                 onError(
-                  "notification.errors.keyImages.importing",
                   isCountMismatch
-                    ? "This wallet hasn't synced far enough to match the exported key images yet. Wait until it finishes syncing, then try importing again."
-                    : rpcMessage
+                    ? "notification.errors.keyImages.notSyncedFarEnough"
+                    : "notification.errors.keyImages.importing"
                 );
                 return;
               }

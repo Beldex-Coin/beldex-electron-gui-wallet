@@ -23,6 +23,7 @@ export default {
     decrypt: "DÉCRYPTER",
     addRecord: "Ajouter un BNS",
     delete: "SUPPRIMER",
+    done: "FAIT",
     edit: "MODIFIER",
     editNotes: "Modifier les notes",
     enter: "Entrer",
@@ -256,6 +257,8 @@ export default {
     expirationHeight: "Hauteur d'expiration",
     data: "Donnés",
     filter: "Filtre",
+    startDate: "Date de début",
+    endDate: "Date de fin",
     filterTransactionType: "FILTRER PAR TYPE DE TRANSACTION",
     internalWalletPort: "PORT DE PORTEFEUILLE INTERNE",
     keyImages: {
@@ -446,7 +449,9 @@ export default {
       keyImages: {
         exporting: "Erreur de l'exportation des clés images",
         reading: "Erreur de lecture des clés images",
-        importing: "Erreur d'importation des clés images"
+        importing: "Erreur d'importation des clés images",
+        notSyncedFarEnough:
+          "Ce portefeuille n'est pas encore assez synchronisé pour correspondre aux clés images exportées. Attendez la fin de la synchronisation, puis réessayez d'importer."
       },
       negativeAmount: "Le montant ne peut être négatif",
       newPasswordNoMatch: "Les nouveaux mots de passe ne correspondent pas",
@@ -683,6 +688,8 @@ export default {
       sentTo: "Transaction {type} envoyée à",
       timestamp: "Horodatage",
       date: "Date",
+      filterByDate: "Filtrer par date",
+      clearDateRange: "Effacer le filtre de date",
       types: {
         all: "Toutes",
         incoming: "Recevoir",
