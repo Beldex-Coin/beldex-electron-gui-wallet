@@ -241,14 +241,14 @@ function createWindow() {
   mainWindow.loadURL(process.env.APP_URL);
   mainWindowState.manage(mainWindow);
 }
-ipcMain.handle("dialog:selectWalletFile", async () => {
+async function selectPath(title, property) {
   if (!mainWindow || mainWindow.isDestroyed()) {
     return "";
   }
 
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
-    title: "Select wallet file",
-    properties: ["openFile"]
+    title,
+    properties: [property]
   });
 
   if (canceled || !filePaths || filePaths.length === 0) {
@@ -256,6 +256,18 @@ ipcMain.handle("dialog:selectWalletFile", async () => {
   }
 
   return filePaths[0];
+}
+
+ipcMain.handle("dialog:selectWalletFile", async () => {
+  return selectPath("Select wallet file", "openFile");
+});
+
+ipcMain.handle("dialog:selectFile", async (event, options = {}) => {
+  return selectPath(options.title || "Select file", "openFile");
+});
+
+ipcMain.handle("dialog:selectDirectory", async (event, options = {}) => {
+  return selectPath(options.title || "Select folder", "openDirectory");
 });
 
 powerMonitor.on("suspend", () => {

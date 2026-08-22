@@ -271,7 +271,7 @@
         <div class="q-ma-md">
           <div class="q-mb-md">
             <!-- <div class="q-mr-xl"> -->
-            <div class="r-btn-wrapper">
+            <div v-if="!view_only" class="r-btn-wrapper">
               <div
                 :class="[
                   modals.key_image.type === 'Export'
@@ -326,16 +326,6 @@
                 disable
                 borderless
               />
-              <input
-                id="keyImageExportPath"
-                ref="keyImageExportSelect"
-                class="image-path"
-                type="file"
-                webkitdirectory
-                directory
-                hidden
-                @change="setKeyImageExportPath"
-              />
               <q-btn color="secondary" @click="selectKeyImageExportPath">
                 {{ $t("buttons.browse") }}
               </q-btn>
@@ -351,14 +341,6 @@
                 v-model="modals.key_image.import_path"
                 disable
                 borderless
-              />
-              <input
-                id="keyImageImportPath"
-                ref="keyImageImportSelect"
-                type="file"
-                class="image-path"
-                hidden
-                @change="setKeyImageImportPath"
               />
               <q-btn color="secondary" @click="selectKeyImageImportPath">
                 {{ $t("buttons.browse") }}
@@ -444,7 +426,7 @@
 </template>
 
 <script>
-import { clipboard } from "src/shims/electron-renderer";
+import { clipboard, dialog } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import WalletPassword from "src/mixins/wallet_password";
 import OxenField from "components/oxen_field";
@@ -484,6 +466,7 @@ export default {
     theme: state => state.gateway.app.config.appearance.theme,
     info: state => state.gateway.wallet.info,
     secret: state => state.gateway.wallet.secret,
+    view_only: state => state.gateway.wallet.info.view_only,
     wallet_data_dir: state => state.gateway.app.config.app.wallet_data_dir,
     is_ready() {
       return this.$store.getters["gateway/isReady"];
@@ -521,23 +504,36 @@ export default {
       deep: true
     }
   },
-  created() {
-    const joinPath = (...parts) => parts.filter(Boolean).join("/");
-    this.modals.key_image.export_path = joinPath(
-      this.wallet_data_dir,
-      "images",
-      this.info.name
-    );
-    this.modals.key_image.import_path = joinPath(
-      this.wallet_data_dir,
-      "images",
-      this.info.name,
-      "key_image_export"
-    );
-  },
   methods: {
+    setDefaultKeyImagePaths() {
+      // Only seed defaults on first open; don't clobber a path the user already browsed to.
+      if (
+        this.modals.key_image.export_path ||
+        this.modals.key_image.import_path
+      ) {
+        return;
+      }
+      const joinPath = (...parts) => parts.filter(Boolean).join("/");
+      this.modals.key_image.export_path = joinPath(
+        this.wallet_data_dir,
+        "images",
+        this.info.name
+      );
+      this.modals.key_image.import_path = joinPath(
+        this.wallet_data_dir,
+        "images",
+        this.info.name,
+        "key_image_export"
+      );
+    },
     async showModal(which) {
       if (!this.is_ready) return;
+      if (which === "key_image") {
+        this.setDefaultKeyImagePaths();
+        if (this.view_only) {
+          this.modals.key_image.type = "Import";
+        }
+      }
       this.modals[which].visible = true;
       // const hasPassword =  await this.hasPassword();
       // console.log('hasPasswordhasPassword ::',hasPassword)
@@ -668,17 +664,21 @@ export default {
     //     this.$gateway.send("wallet", "rescan_spent");
     //   }
     // },
-    selectKeyImageExportPath() {
-      this.$refs.keyImageExportSelect.click();
+    async selectKeyImageExportPath() {
+      const path = await dialog.selectDirectory({
+        title: this.$t("fieldLabels.keyImages.exportDirectory")
+      });
+      if (path) {
+        this.modals.key_image.export_path = path;
+      }
     },
-    setKeyImageExportPath(file) {
-      this.modals.key_image.export_path = file.target.files[0].path;
-    },
-    selectKeyImageImportPath() {
-      this.$refs.keyImageImportSelect.click();
-    },
-    setKeyImageImportPath(file) {
-      this.modals.key_image.import_path = file.target.files[0].path;
+    async selectKeyImageImportPath() {
+      const path = await dialog.selectFile({
+        title: this.$t("fieldLabels.keyImages.importFile")
+      });
+      if (path) {
+        this.modals.key_image.import_path = path;
+      }
     },
     async doKeyImages() {
       this.hideModal("key_image");
@@ -878,11 +878,6 @@ export default {
 .rescan-modal {
   color: #fff;
   border-radius: 10px !important;
-}
-
-.image-path {
-  opacity: 0;
-  overflow: hidden;
 }
 
 .key-image-modal {

@@ -24,5 +24,7 @@ export const shell = {
 };
 
 export const dialog = {
-  selectWalletFile: () => electronAPI.dialog.selectWalletFile()
+  selectWalletFile: () => electronAPI.dialog.selectWalletFile(),
+  selectFile: options => electronAPI.dialog.selectFile(options),
+  selectDirectory: options => electronAPI.dialog.selectDirectory(options)
 };

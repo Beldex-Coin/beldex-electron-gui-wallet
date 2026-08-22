@@ -217,7 +217,10 @@ const electronAPI = {
     openExternal: url => shell.openExternal(url)
   },
   dialog: {
-    selectWalletFile: () => ipcRenderer.invoke("dialog:selectWalletFile")
+    selectWalletFile: () => ipcRenderer.invoke("dialog:selectWalletFile"),
+    selectFile: options => ipcRenderer.invoke("dialog:selectFile", options),
+    selectDirectory: options =>
+      ipcRenderer.invoke("dialog:selectDirectory", options)
   }
 };
 
