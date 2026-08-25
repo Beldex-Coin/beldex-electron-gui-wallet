@@ -193,12 +193,17 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 export default {
   computed: mapState({
     info: state => state.gateway.wallet.info,
-    secret: state => state.gateway.wallet.secret,
+    secret: state =>
+      state.gateway.wallet.secret || {
+        mnemonic: "",
+        spend_key: "",
+        view_key: ""
+      },
     theme: state => state.gateway.app.config.appearance.theme,
     walletName() {
       return `${this.info.name}`;
@@ -219,15 +224,20 @@ export default {
     },
     copyPrivateKey(type, event) {
       event.stopPropagation();
-      // console.log("secret ::", this.secret);
-      for (let i = 0; i < event.path.length; i++) {
-        if (event.path[i].tagName == "BUTTON") {
-          event.path[i].blur();
-          break;
-        }
+      const button =
+        (event.path && event.path.find(el => el.tagName === "BUTTON")) ||
+        (event.composedPath &&
+          event.composedPath().find(el => el.tagName === "BUTTON")) ||
+        (event.target &&
+          event.target.closest &&
+          event.target.closest("button"));
+      if (button) {
+        button.blur();
       }
 
-      if (this.secret[type] == null) {
+      const secret = this.secret || {};
+      const value = secret[type];
+      if (value == null || value === "") {
         this.$q.notify({
           type: "negative",
           timeout: 1000,

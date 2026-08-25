@@ -20,21 +20,21 @@
         <q-card class="bnsConfirmmodal">
           <q-card-section>
             <div class="text-h6 text-center" style="font-weight: 600">
-              Confirm Update
+              {{ $t("dialog.confirmUpdate.title") }}
             </div>
           </q-card-section>
 
           <q-card-section class="q-pt-none ownerDetails q-mx-lg q-pa-md">
             <section>
               <div class="tablewrapper flex row">
-                <div class="label">Name</div>
+                <div class="label">{{ $t("fieldLabels.name") }}</div>
                 <div class="content">{{ this.confirmModal.record.name }}</div>
               </div>
               <div
                 v-if="this.confirmModal.record.owner"
                 class="tablewrapper flex row q-mt-md"
               >
-                <div class="label">Owner</div>
+                <div class="label">{{ $t("fieldLabels.owner") }}</div>
                 <div class="address">
                   {{ this.confirmModal.record.owner }}
                 </div>
@@ -55,7 +55,7 @@
                 v-if="this.confirmModal.record.value_wallet"
                 class="tablewrapper flex row"
               >
-                <div class="label">Address</div>
+                <div class="label">{{ $t("fieldLabels.address") }}</div>
                 <div class="address">
                   {{ this.confirmModal.record.value_wallet }}
                 </div>
@@ -99,7 +99,7 @@
             <q-btn
               v-close-popup
               color="primary"
-              label="ok"
+              :label="$t('dialog.confirmUpdate.ok')"
               @click="update(confirmModal.record)"
             />
           </div>
@@ -116,7 +116,7 @@
 import { mapState } from "vuex";
 import BNSUpdateInputForm from "./bns_update_input_form";
 import WalletPassword from "src/mixins/wallet_password";
-const objectAssignDeep = require("object-assign-deep");
+import objectAssignDeep from "object-assign-deep";
 
 export default {
   name: "BNSUpdate",

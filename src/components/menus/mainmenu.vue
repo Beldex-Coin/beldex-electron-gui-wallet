@@ -16,7 +16,7 @@
             class="q-mx-md q-my-sm"
             @click.native="switchWallet"
           >
-            <q-item-label header class="flex items-center">
+            <q-item-label header class="flex items-center  flex-nowrap no-wrap">
               <img
                 src="../../assets/images/switch_wallet.svg"
                 alt="exitWallet"
@@ -59,7 +59,7 @@
             clickable
             @click.native="exit"
           >
-            <q-item-label header class="flex items-center">
+            <q-item-label header class="flex items-center flex-nowrap no-wrap">
               <img
                 src="../../assets/images/exitWallet.svg"
                 alt="exitWallet"
@@ -84,10 +84,11 @@
           </p>
           <hr style="width: 70%; border: 1px solid #4d4d6d" />
           <p class="q-my-sm">
-            Wallet Version: <span style="color: #00ad07">{{ version }}</span>
+            Wallet {{ this.$t("strings.version") }}:
+            <span style="color: #00ad07">{{ version }}</span>
           </p>
           <p class="q-my-sm">
-            Daemon Version:
+            Daemon {{ this.$t("strings.version") }}:
             <span style="color: #00ad07">{{ daemonVersion }}</span>
           </p>
           <p class="q-my-sm">

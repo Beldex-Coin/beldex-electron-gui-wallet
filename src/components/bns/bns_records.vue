@@ -34,11 +34,11 @@
       </div>
 
       <div v-if="decrypting" class="q-mb-md" style="color: #20d030">
-        Fetching BNS record from the network...
+        {{ $t("strings.bns.fetchNewRecord") }}
       </div>
 
       <div class="records-group">
-        <span class="record-type-title">BNS Records </span>
+        <span class="record-type-title">{{ $t("strings.bns.records") }} </span>
         <BNSRecordList
           :record-list="bns_record"
           :is-belnet="true"
@@ -73,8 +73,7 @@
         />
       </svg>
       <div class="hintmsg">
-        Here you can find all the BNS Names owned by this wallet. Decrypting a
-        record you own will return the name and value of that BNS record
+        {{ $t("strings.bnsDescription") }}
       </div>
     </div>
 

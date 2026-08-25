@@ -69,7 +69,7 @@
 </template>
 
 <script>
-import { clipboard } from "electron";
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import { required } from "vuelidate/lib/validators";
 import { master_node_key } from "src/validators/common";

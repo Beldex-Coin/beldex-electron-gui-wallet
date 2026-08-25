@@ -165,7 +165,7 @@
                 'flex',
                 'items-center',
                 'ft-semibold',
-                'q-pl-md'
+                'q-px-md'
               ]"
             >
               <q-radio
@@ -186,7 +186,7 @@
                 'flex',
                 'items-center',
                 'ft-semibold',
-                'q-pl-md'
+                'q-px-md'
               ]"
             >
               <q-radio
@@ -217,7 +217,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import FormatOxen from "components/format_oxen";
 import WalletSettings from "components/menus/wallet_settings";

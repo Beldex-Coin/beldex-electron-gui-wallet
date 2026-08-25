@@ -1,6 +1,6 @@
 {
   "name": "beldex-electron-wallet",
-  "version": "6.0.2",
+  "version": "7.1.0",
   "description": "Modern GUI interface for Beldex Currency",
   "productName": "Beldex Electron Wallet",
   "repository": {
@@ -22,36 +22,35 @@
     "ready": "npm run lint && npm run format"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.18.0",
+    "better-sqlite3": "^13.0.2",
     "bunyan": "^1.8.14",
-    "electron-is-dev": "^1.0.1",
-    "electron-updater": "^4.2.0",
+    "electron-is-dev": "^3.0.1",
+    "electron-updater": "^6.8.9",
     "electron-window-state": "^5.0.3",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^11.3.5",
     "https": "^1.0.0",
-    "node-request-queue": "^1.0.2",
     "object-assign-deep": "^0.4.0",
     "portscanner": "^2.2.0",
     "promise-queue": "^2.2.5",
-    "qrcode.vue": "^1.6.1",
-    "quasar": "^1.13.1",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.4",
+    "qrcode.vue": "^1.7.0",
+    "quasar": "1.22.10",
     "semver": "^7.3.2",
-    "upath": "^1.2.0",
-    "vue-i18n": "^8.9.0",
+    "upath": "^3.0.7",
+    "vue-i18n": "^8.28.2",
     "vue-timeago": "^5.1.2",
     "vuelidate": "^0.7.4"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.3.0",
-    "@quasar/app": "^2.0.8",
+    "@electron/notarize": "^3.1.1",
+    "@quasar/app": "2.4.4",
     "@quasar/extras": "^1.9.4",
+    "autoprefixer": "^9.8.8",
     "babel-eslint": "^10.1.0",
     "devtron": "^1.4.0",
-    "dotenv": "^8.1.0",
-    "electron": "^15.1.0",
-    "electron-builder": "23.0.2",
+    "dotenv": "^17.4.2",
+    "electron": "42.4.1",
+    "electron-builder": "26.15.3",
     "electron-debug": "^2.1.0",
     "electron-devtools-installer": "^2.2.4",
     "eslint": "^5.16.0",
@@ -65,10 +64,14 @@
     "eslint-plugin-vue": "^5.2.3",
     "husky": "^4.2.3",
     "lint-staged": "^10.0.8",
-    "node-sass": "^4.13.1",
     "prettier": "^1.19.1",
-    "sass-loader": "^7.1.0",
-    "strip-ansi": "^3.0.1"
+    "sass": "1.32.12",
+    "sass-loader": "7.3.1",
+    "strip-ansi": "^3.0.1",
+    "vue": "^2.7.16",
+    "vue-router": "^3.6.5",
+    "vue-template-compiler": "^2.7.16",
+    "vuex": "^3.6.2"
   },
   "husky": {
     "hooks": {
@@ -83,7 +86,7 @@
     "*.+(json|yml|yaml|css|md)": "prettier --write"
   },
   "engines": {
-    "node": ">= 8.9.0",
+    "node": ">= 24.15.0 < 25",
     "npm": ">= 5.6.0",
     "yarn": ">= 1.6.0"
   },

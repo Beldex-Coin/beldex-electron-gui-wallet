@@ -335,8 +335,8 @@
           <article class="version-wrapper">
             <div class="version ft-regular">
               <svg
-                width="18"
-                height="18"
+                width="15"
+                height="15"
                 viewBox="0 0 26 26"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -348,7 +348,7 @@
                 />
               </svg>
 
-              <span>Version {{ version }}</span>
+              <span> {{ this.$t("strings.version") }} {{ version }}</span>
             </div>
           </article>
         </section>
@@ -466,7 +466,7 @@
 <script>
 import { openURL } from "quasar";
 import { mapState } from "vuex";
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import WalletDetails from "components/wallet_details";
 import StatusFooter from "components/footer";
 import MainMenu from "components/menus/mainmenu";
@@ -528,13 +528,13 @@ export default {
       //   `dialog.keyImages.${this.key_image.type.toLowerCase()}`
       // );
       let passwordDialog = await this.showPasswordConfirmation({
-        title: "Show master node",
-        noPasswordMessage: "Do you want to continue?",
+        title: this.$t("dialog.showMasterNode.title"),
+        noPasswordMessage: this.$t("dialog.showMasterNode.message"),
         // this.$t("dialog.keyImages.message", {
         //   type: type.toLocaleLowerCase(this.locale)
         // })
         ok: {
-          label: "Master node",
+          label: this.$t("dialog.showMasterNode.masterNode"),
           color: "primary"
         },
         cancel: {
@@ -616,8 +616,8 @@ export default {
     span {
       color: #77778b;
       font-family: "Poppins-Medium";
-      font-size: 18px;
-      margin-left: 10px;
+      font-size: 14px;
+      margin-left: 6px;
     }
   }
 }

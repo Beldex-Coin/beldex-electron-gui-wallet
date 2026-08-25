@@ -1,6 +1,20 @@
 /* eslint-disable no-template-curly-in-string */
 // Configuration for your app
 
+const path = require("path");
+const envVars = require("dotenv").config().parsed || {};
+
+const whitelistedEnv = {
+  CHANGELLY_SWAP_API_KEY: envVars.CHANGELLY_SWAP_API_KEY || "",
+  CHANGELLY_PRIVACY_SWAP_API_KEY: envVars.CHANGELLY_PRIVACY_SWAP_API_KEY || "",
+  CHANGELLY_SWAP_PRIVATE_KEY: envVars.CHANGELLY_SWAP_PRIVATE_KEY || "",
+  CHANGELLY_PRIVACY_SWAP_PRIVATE_KEY:
+    envVars.CHANGELLY_PRIVACY_SWAP_PRIVATE_KEY || "",
+  QUICKEX_SWAP_PUPLIC_KEY: envVars.QUICKEX_SWAP_PUPLIC_KEY || "",
+  QUICKEX_SWAP_SECRET_KEY: envVars.QUICKEX_SWAP_SECRET_KEY || "",
+  QUICKEX_REFERRER_ID: envVars.QUICKEX_REFERRER_ID || ""
+};
+
 module.exports = function() {
   return {
     // app boot (/src/boot)
@@ -18,19 +32,18 @@ module.exports = function() {
     build: {
       scopeHoisting: true,
       vueRouterMode: "history",
+      env: whitelistedEnv,
       // vueCompiler: true,
       // gzip: true,
       // analyze: true,
       // extractCSS: false,
-      extendWebpack() {
-        /*
-                cfg.module.rules.push({
-                    enforce: "pre",
-                    test: /\.(js|vue)$/,
-                    loader: "eslint-loader",
-                    exclude: /(node_modules|quasar)/
-                })
-                */
+      extendWebpack(cfg) {
+        cfg.resolve = cfg.resolve || {};
+        cfg.resolve.alias = cfg.resolve.alias || {};
+        cfg.resolve.alias.electron = path.resolve(
+          __dirname,
+          "src/shims/electron-renderer.js"
+        );
       }
     },
     devServer: {
@@ -135,6 +148,7 @@ module.exports = function() {
       // id: "org.cordova.quasar.app"
     },
     electron: {
+      nodeIntegration: false,
       bundler: "builder", // or "packager"
       extendWebpack() {
         // cfg
@@ -176,6 +190,7 @@ module.exports = function() {
           target: ["dmg", "zip"],
           icon: "src-electron/icons/icon.icns",
           category: "public.app-category.finance",
+          binaries: ["bin/beldexd", "bin/beldex-wallet-rpc"],
           // Notarizing: https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
           hardenedRuntime: true,
           gatekeeperAssess: false,

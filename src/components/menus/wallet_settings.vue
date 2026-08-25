@@ -87,9 +87,9 @@
           <template v-if="secret.mnemonic">
             <h6 class="q-mb-xs ft-semibold q-pl-md">
               {{ $t("strings.seedWords") }} -
-              <span class="rSeed_hint"
-                >Please Copy and save these in a secure location!</span
-              >
+              <span class="rSeed_hint">{{
+                $t("strings.saveSeedWarning")
+              }}</span>
             </h6>
             <div class="row seed_box q-pa-md">
               <div class="col ft-medium">{{ secret.mnemonic }}</div>
@@ -444,7 +444,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import WalletPassword from "src/mixins/wallet_password";
 import OxenField from "components/oxen_field";
@@ -522,13 +522,13 @@ export default {
     }
   },
   created() {
-    const path = require("upath");
-    this.modals.key_image.export_path = path.join(
+    const joinPath = (...parts) => parts.filter(Boolean).join("/");
+    this.modals.key_image.export_path = joinPath(
       this.wallet_data_dir,
       "images",
       this.info.name
     );
-    this.modals.key_image.import_path = path.join(
+    this.modals.key_image.import_path = joinPath(
       this.wallet_data_dir,
       "images",
       this.info.name,
@@ -547,10 +547,20 @@ export default {
     },
     copyPrivateKey(type, event) {
       event.stopPropagation();
-      for (let i = 0; i < event.path.length; i++) {
-        if (event.path[i].tagName == "BUTTON") {
-          event.path[i].blur();
-          break;
+
+      const path =
+        event.path || (event.composedPath && event.composedPath()) || [];
+      if (path && path.length) {
+        for (let i = 0; i < path.length; i++) {
+          if (path[i] && path[i].tagName === "BUTTON") {
+            path[i].blur();
+            break;
+          }
+        }
+      } else if (event.target && event.target.closest) {
+        const button = event.target.closest("button");
+        if (button) {
+          button.blur();
         }
       }
 
@@ -884,6 +894,7 @@ export default {
     color: #fff !important;
     text-overflow: ellipsis;
     overflow: hidden;
+    width: 275px !important;
   }
   input {
     overflow: ellipsis;

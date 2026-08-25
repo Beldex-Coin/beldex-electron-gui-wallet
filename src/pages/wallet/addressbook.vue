@@ -130,7 +130,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import AddressBookDetails from "components/address_book_details";
 import ContextMenu from "components/menus/contextmenu";

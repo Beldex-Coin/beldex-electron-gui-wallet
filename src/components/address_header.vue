@@ -57,7 +57,7 @@
 </template>
 
 <script>
-const { clipboard } = require("electron");
+import { clipboard } from "src/shims/electron-renderer";
 import ContextMenu from "components/menus/contextmenu";
 
 export default {

@@ -5,15 +5,81 @@
     </q-inner-loading>
     <div v-if="this.routes === 'mainPage'">
       <div class="flex row justify-between">
-        <header class="text-h6 ft-bold">
-          {{ this.$t("titles.swap.exchange") }}
-        </header>
+        <div class="flex row privacy-swap-container">
+          <header class="text-h6 ft-bold q-mr-md">
+            {{ this.$t("titles.swap.exchange") }}
+          </header>
+          <q-btn
+            v-if="this.currentExchange !== 'quickex'"
+            flat
+            round
+            dense
+            padding="0"
+            style="cursor:pointer;height:17px;width:17px;"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 26 26"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M13 1C6.38702 1 1 6.38702 1 13C1 19.613 6.38702 25 13 25C19.613 25 25 19.613 25 13C25 6.38702 19.613 1 13 1ZM13 2.84615C18.6178 2.84615 23.1538 7.38221 23.1538 13C23.1538 18.6178 18.6178 23.1538 13 23.1538C7.38221 23.1538 2.84615 18.6178 2.84615 13C2.84615 7.38221 7.38221 2.84615 13 2.84615ZM12.0769 6.53846V8.38462H13.9231V6.53846H12.0769ZM12.0769 10.2308V19.4615H13.9231V10.2308H12.0769Z"
+                fill="#8787A8"
+                stroke="#8787A8"
+              />
+            </svg>
+            <q-menu
+              v-model="showPrivacyPopup"
+              :offset="[0, 5]"
+              class="privacy-popup-menu"
+            >
+              <div class="privacy-popup">
+                <div class="popup-content">
+                  {{ this.$t("titles.swap.privacySwapDescription") }}
+                </div>
 
-        <q-btn
-          color="accent"
-          class="history-btn"
-          @click="routes = 'txnHistory'"
-        >
+                <q-btn
+                  flat
+                  round
+                  dense
+                  padding="0"
+                  class="close-btn"
+                  @click="showPrivacyPopup = false"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <g clip-path="url(#clip0_119_4983)">
+                      <path
+                        d="M19.0711 4.92849C15.1721 1.0295 8.82792 1.0295 4.92893 4.92849C1.02995 8.82748 1.02995 15.1716 4.92893 19.0706C8.82792 22.9696 15.1721 22.9696 19.0711 19.0706C22.9701 15.1716 22.9701 8.82748 19.0711 4.92849ZM14.4749 15.5351L12 13.0602L9.52513 15.5351C9.23203 15.8282 8.75756 15.8282 8.46447 15.5351C8.17137 15.242 8.17137 14.7675 8.46447 14.4744L10.9393 11.9996L8.46447 9.52468C8.17137 9.23159 8.17137 8.75712 8.46447 8.46402C8.75756 8.17093 9.23203 8.17093 9.52513 8.46402L12 10.9389L14.4749 8.46402C14.768 8.17093 15.2424 8.17093 15.5355 8.46402C15.8286 8.75712 15.8286 9.23159 15.5355 9.52468L13.0607 11.9996L15.5355 14.4744C15.8286 14.7675 15.8286 15.242 15.5355 15.5351C15.2424 15.8282 14.768 15.8282 14.4749 15.5351Z"
+                        fill="#77778B"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_119_4983">
+                        <rect width="24" height="24" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                </q-btn>
+              </div>
+            </q-menu>
+          </q-btn>
+          <q-toggle
+            v-if="this.currentExchange !== 'quickex'"
+            v-model="privacySwap"
+            :label="$t('titles.swap.privacySwap')"
+            left-label
+            class="privacySwap q-ml-xs"
+          />
+        </div>
+        <q-btn color="accent" class="history-btn" @click="navigateToHistory">
           <svg
             width="18"
             height="18"
@@ -62,93 +128,16 @@
               @sendAmountValidator="sendAmountValidator"
               @searchCurrency="val => searchCurrency(val)"
             />
-            <!-- <q-btn class="currency-btn dropdown-send-type" @click="isVisible=true" >
-              <div v-html="sendAmounType.label"></div>
-            </q-btn>-->
-
-            <!-- <q-select
-              v-model="sendAmounType"
-              :options="
-                currencyList.filter(item => item.enabledFrom && item.enabled)
-              "
-              borderless
-              dense
-              class="ft-semibold q-pl-sm dropdown-send-type"
-              popup-content-class="exchage-option"
-              dropdown-icon="expand_more"
-              :menu-offset="[170, 10]"
-              @input="value => sendAmountValidator(value)"
-            >
-              <template v-slot:option="scope">
-            
-                <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
-                  <q-item-section class="swapdropDown-option">
-                    <q-img
-                      class="q-mr-sm"
-                      :src="scope.opt.image"
-                      style="
-                        height: 20px;
-                        max-width: 20px;
-                        filter: grayscale(150);
-                      "
-                    />
-                    <q-item-label class="ft-bold q-mr-xs"
-                      >{{ scope.opt.name }}
-                    </q-item-label>
-                    <q-item-label class="currency-name ft-regular">
-                      - {{ scope.opt.fullName }}</q-item-label
-                    >
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>-->
           </OxenField>
-
-          <!-- <div class="optionView">
-            <div class="innerWrapper q-px-lg">
-              
-              <OxenField class="q-mt-md ft-regular" label="Search">
-                <input
-                  :value="searchTxt"
-                  class="search-input"
-                  @input="(event) => this.searchCurrency(event.target.value)"
-                />
-              </OxenField>
-              <div
-                v-for="currency in this.filtercurrency"
-                :key="currency.value"
-                @click="sendAmountValidator(currency)"
-              >
-                <q-item-section
-                  class="swapdropDown-option q-mt-md"
-                  v-if="currency.enabledFrom && currency.enabled"
-                >
-                  <q-img
-                    class="q-mr-sm"
-                    :src="currency.image"
-                    style="
-                      height: 20px;
-                      max-width: 20px;
-                      filter: grayscale(150);
-                    "
-                  />
-                  <q-item-label class="ft-bold q-mr-xs"
-                    >{{ currency.name }}
-                  </q-item-label>
-                  <q-item-label class="currency-name ft-regular">
-                    - {{ currency.fullName }}</q-item-label
-                  >
-                </q-item-section>
-              </div>
-            </div>
-          </div>-->
 
           <div
             class="flex"
             :style="
               this.minMaxWarningContent === 'min' ||
               this.minMaxWarningContent === 'max' ||
-              (this.pairsMinMax?.from && !this.pairsMinMax?.minAmountFloat)
+              (this.pairsMinMax?.from &&
+                !this.pairsMinMax?.minAmountFloat &&
+                !this.pairsMinMax?.maxAmountFloat)
                 ? 'justify-content: space-between;'
                 : 'justify-content: flex-end;'
             "
@@ -157,7 +146,9 @@
               v-if="
                 this.minMaxWarningContent === 'min' ||
                   this.minMaxWarningContent === 'max' ||
-                  (this.pairsMinMax?.from && !this.pairsMinMax?.minAmountFloat)
+                  (this.pairsMinMax?.from &&
+                    !this.pairsMinMax?.minAmountFloat &&
+                    !this.pairsMinMax?.maxAmountFloat)
               "
               class="q-mt-sm validMinMaxAmount-wrapper"
             >
@@ -165,7 +156,8 @@
                 v-if="
                   this.pairsMinMax?.from &&
                     this.pairsMinMax?.to &&
-                    !this.pairsMinMax?.minAmountFloat
+                    !this.pairsMinMax?.minAmountFloat &&
+                    !this.pairsMinMax?.maxAmountFloat
                 "
                 >{{ this.$t("titles.swap.unsupportedpair") }}</span
               >
@@ -280,40 +272,6 @@
               @sendAmountValidator="getAmountValidator"
               @searchCurrency="val => searchCurrency(val)"
             />
-            <!-- <q-select
-              v-model="receiveAmountType"
-              :options="currencyList.filter((item) => item.enabledTo)"
-              borderless
-              dense
-              :menu-offset="[170, 10]"
-              :options-html="receiveAmountType"
-              class="ft-semibold q-pl-sm dropdown-send-type"
-              popup-content-class="exchage-option"
-              dropdown-icon="expand_more"
-              @input="(value) => getAmountValidator(value)"
-            >
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
-                  <q-item-section class="swapdropDown-option">
-                    <q-img
-                      class="q-mr-sm"
-                      :src="scope.opt.image"
-                      style="
-                        height: 20px;
-                        max-width: 20px;
-                        filter: grayscale(150);
-                      "
-                    />
-                    <q-item-label class="ft-bold q-mr-xs"
-                      >{{ scope.opt.name }}
-                    </q-item-label>
-                    <q-item-label class="currency-name ft-regular">
-                      - {{ scope.opt.fullName }}</q-item-label
-                    >
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>-->
           </OxenField>
         </article>
         <article style="width: 48%">
@@ -365,12 +323,7 @@
             <tr v-if="this.exechangeRateType == 'float'">
               <td>{{ this.$t("titles.swap.serviceFee") }}</td>
               <td class="uppercase">
-                {{
-                  exchange_amount.fee
-                    ? Number(exchange_amount.fee).toFixed(8)
-                    : "--"
-                }}
-                {{ this.receiveAmountType.name }}
+                {{ getFeeAmount() }} {{ receiveAmountType.name }}
               </td>
             </tr>
 
@@ -414,175 +367,6 @@
           </table>
         </article>
       </section>
-      <!-- <section>
-        <article
-          v-if="
-            this.sendAmounType.hasOwnProperty('notifications')
-              ? this.sendAmounType.notifications.payin
-              : false
-          "
-          class="flex row info-wrapper q-my-md"
-        >
-          <div style="width: 4%; padding-top: 5px" class="flex justify-center">
-            <q-icon name="o_info" size="14px" />
-          </div>
-          <div style="width: 95%">
-            {{ this.sendAmounType.notifications.payin }}
-          </div>
-        </article>
-        <article
-          v-if="
-            this.receiveAmountType.hasOwnProperty('notifications')
-              ? this.receiveAmountType.notifications.payout
-              : false
-          "
-          class="flex row info-wrapper q-my-md"
-        >
-          <div style="width: 4%; padding-top: 5px" class="flex justify-center">
-            <q-icon name="o_info" size="14px" />
-          </div>
-          <div style="width: 95%">
-            {{ this.receiveAmountType.notifications.payout }}
-          </div>
-        </article>
-      </section>
-      <section
-        v-if="
-          this.receiveAmountType.fixRateEnabled &&
-            this.sendAmounType.fixRateEnabled
-        "
-        class="exerate-wrapper q-mt-md"
-      >
-        <article
-          :class="
-            `flex row exerate-inner-wrapper q-py-md ${
-              this.exechangeRateType === 'float' ? 'active' : ''
-            }`
-          "
-          @click="(exechangeRateType = 'float'), (refundAddress.val = '')"
-        >
-          <div class="col-1 flex justify-center items-center">
-            <span class="flex justify-center items-center icon" style>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="icons8-padlock 1">
-                  <path
-                    id="Vector"
-                    d="M12 1C14.8722 1 17.2811 3.04615 17.877 5.78711L15.9219 6.21289C15.5177 4.35385 13.9278 3 12 3C9.72381 3 8 4.72381 8 7V8H18C19.1 8 20 8.9 20 10V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V10C4 8.9 4.9 8 6 8V7C6 3.67619 8.67619 1 12 1ZM12 13C10.9 13 10 13.9 10 15C10 16.1 10.9 17 12 17C13.1 17 14 16.1 14 15C14 13.9 13.1 13 12 13Z"
-                    fill="#A9A9CD"
-                  />
-                </g>
-              </svg>
-            </span>
-          </div>
-          <div class="col-10 flex items-center justify-between">
-            <span class="ft-semibold content">{{
-              this.$t("titles.swap.floatingExchangeRate")
-            }}</span>
-            <br />
-            <span>
-              ~
-              {{
-                exchange_amount.rate
-                  ? Number(exchange_amount.amountTo).toFixed(8)
-                  : ""
-              }}
-            </span>
-          </div>
-        </article>
-
-        <article
-          :class="
-            ` exerate-inner-wrapper q-py-md q-mt-sm ${
-              this.exechangeRateType === 'fixed' ? 'active' : ''
-            }`
-          "
-          :style="{
-            cursor:
-              this.sendAmount <= Number(this.pairsMinMax.minAmountFixed) ||
-              this.sendAmount >= Number(this.pairsMinMax.maxAmountFixed)
-                ? 'not-allowed'
-                : ''
-          }"
-          @click="
-            () => {
-              this.sendAmount > Number(this.pairsMinMax.minAmountFixed) &&
-              this.sendAmount < Number(this.pairsMinMax.maxAmountFixed) &&
-              !this.fixedCreateTxnValidation()
-                ? (exechangeRateType = 'fixed')
-                : '';
-            }
-          "
-        >
-          <div class="flex row">
-            <div class="col-1 flex justify-center items-center">
-              <span class="flex justify-center items-center icon" style>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g id="icons8-lock 3">
-                    <path
-                      id="Vector"
-                      d="M12 1C8.67619 1 6 3.67619 6 7V8C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8V7C18 3.67619 15.3238 1 12 1ZM12 3C14.2762 3 16 4.72381 16 7V8H8V7C8 4.72381 9.72381 3 12 3ZM12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13Z"
-                      fill="#A9A9CD"
-                    />
-                  </g>
-                </svg>
-              </span>
-            </div>
-            <div class="col-10 flex items-center justify-between">
-              <span class="ft-semibold content">{{
-                this.$t("titles.swap.fixedExchangeRate")
-              }}</span>
-              <br />
-              <span>
-                {{
-                  fixedExchangeRate.result
-                    ? Number(fixedExchangeRate.amountTo).toFixed(8)
-                    : ""
-                }}
-              </span>
-            </div>
-          </div>
-
-          <div v-if="this.fixedCreateTxnValidation()" class="warningMsg">
-            {{ this.$t("titles.swap.stillProcessing") }}
-          </div>
-          <div
-            v-if="
-              this.sendAmount < this.pairsMinMax.minAmountFixed &&
-                !this.fixedCreateTxnValidation()
-            "
-            class="warningMsg"
-          >
-            {{ this.$t("titles.swap.minimumExchangeAmtAbove") }}
-            {{ Number(this.pairsMinMax.minAmountFixed) }}
-            {{ this.$t("titles.swap.for") }}
-            <span class="uppercase">{{ this.sendAmounType.ticker }}</span>
-          </div>
-          <div
-            v-if="
-              this.sendAmount > Number(this.pairsMinMax.maxAmountFixed) &&
-                !this.fixedCreateTxnValidation()
-            "
-            class="warningMsg"
-          >
-            {{ this.$t("titles.swap.maximumExchangeAmtUnder") }}
-            {{ this.pairsMinMax.maxAmountFixed }}
-            {{ this.$t("titles.swap.for") }}
-            <span class="uppercase">{{ this.sendAmounType.ticker }}</span>
-          </div>
-        </article>
-      </section> -->
 
       <div class="flex row info-wrapper q-mt-md">
         <div style="width: 4%; padding-top: 5px" class="flex justify-center">
@@ -611,13 +395,14 @@
             this.receiveAmountType.protocol
           }}</span>
         </div>
-        <!-- @blur="() => this.recipientAddressValidator()" -->
         <q-input
           :value="recipientAddress.val"
           borderless
           dense
           :placeholder="
-            `Enter your ${this.receiveAmountType.name} recipient address`
+            this.$t('placeholders.enterRecipientAddress', {
+              coin: this.receiveAmountType.name
+            })
           "
           @input="val => this.recipientAddressValidator(val)"
         />
@@ -627,22 +412,12 @@
         <div style="width: 4%; padding-top: 5px" class="flex justify-center">
           <q-icon name="o_info" size="14px" />
         </div>
-        <div
-          v-if="this.receiveAmountType.hasOwnProperty('blockchain')"
-          style="width: 95%"
-        >
-          {{
-            this.$t("titles.swap.giveCorrectAddress", {
-              type: this.receiveAmountType.blockchain.replaceAll("_", " ")
-            })
-          }}
+        <div style="width: 95%">
+          {{ this.$t("titles.swap.giveCorrectAddress") }}
         </div>
       </div>
       <div
-        v-if="
-          // this.exechangeRateType === 'float' &&
-          this.receiveAmountType.hasOwnProperty('extraIdName')
-        "
+        v-if="this.receiveAmountType?.extraIdName"
         class="destination-tag-wrapper q-mt-md"
       >
         <span class="ft-Light hint">
@@ -674,7 +449,12 @@
         borderless
         dense
       />
-      <article v-if="this.exechangeRateType === 'fixed'">
+      <article
+        v-if="
+          this.exechangeRateType === 'fixed' ||
+            this.currentExchange === 'quickex'
+        "
+      >
         <OxenField
           class="q-mt-md ft-regular address-wrapper"
           label="Refund wallet Address"
@@ -691,7 +471,9 @@
             borderless
             dense
             :placeholder="
-              `Enter your ${this.sendAmounType.name} recipient address`
+              this.$t('placeholders.enterRecipientAddress', {
+                type: this.sendAmounType.name
+              })
             "
             @input="val => this.refundAddressValidator(val)"
           />
@@ -701,7 +483,9 @@
 
       <div
         v-if="
-          this.exechangeRateType === 'fixed' &&
+          (this.exechangeRateType === 'fixed' ||
+            (this.currentExchange === 'quickex' &&
+              refundDestinationTag === 'yes')) &&
             this.sendAmounType.hasOwnProperty('extraIdName')
         "
         class="destination-tag-wrapper q-mt-md"
@@ -753,13 +537,12 @@
             @click="openExternalLink('https://changelly.com/privacy-policy')"
             >{{ this.$t("titles.swap.privacyPolicy") }}</a
           >
-          <!-- <a href>AML/KYC</a> -->
         </span>
       </div>
 
       <div class="flex justify-center q-my-lg">
         <q-btn
-          label="Next"
+          :label="$t('buttons.next')"
           color="primary"
           :disable="!this.disableValidation()"
           @click="this.next"
@@ -783,6 +566,7 @@
     />
     <SwapTxnHistory
       v-if="this.routes === 'txnHistory'"
+      :privacy-swap="this.privacySwap"
       @goback="
         () => {
           navigation('mainPage', 1), clearState();
@@ -796,6 +580,7 @@
       :fixed-rate="this.fixedExchangeRate"
       :receive-chain-details="this.receiveAmountType"
       :send-chain-details="this.sendAmounType"
+      :is-privacy-swap="this.privacySwap"
       @clearAllintervals="clearAllintervals"
       @goback="
         () => {
@@ -826,7 +611,7 @@
 </template>
 
 <script>
-const moment = require("moment");
+import moment from "moment";
 
 import { required, decimal } from "vuelidate/lib/validators";
 import OxenField from "components/oxen_field";
@@ -851,9 +636,7 @@ export default {
     Dropdown
   },
   watch: {
-    // whenever question changes, this function will run
     isValidRecipientAddress(newisValidRecipientAddress) {
-      // console.log('newisValidRecipientAddress',newisValidRecipientAddress)
       if (!this.recipientAddress.val) {
         this.recipientLoader = false;
         this.recipientAddress.error = false;
@@ -870,7 +653,6 @@ export default {
       }
     },
     isValidRefundAddress(isValidRefundAddress) {
-      // console.log("isValidRefundAddress  fn", isValidRefundAddress);
       if (!this.refundAddress.val) {
         this.refundLoader = false;
         this.refundAddress.error = false;
@@ -882,7 +664,6 @@ export default {
           this.refundAddress.error = false;
         } else {
           this.refundLoader = false;
-
           this.refundAddress.error = true;
         }
       }
@@ -892,12 +673,25 @@ export default {
       this.minMaxAmoutValidator(newvalue);
       this.getExchangeRate();
       this.validateFixedIsEnabled();
-      // this.getFixedExchangeAmount();
     },
-    pairsMinMax() {
+    pairsMinMax(newVal) {
+      this.checkExchangeFallback(newVal);
       this.minMaxAmoutValidator(this.sendAmount);
     },
+    exchange_amount(newVal) {
+      this.checkExchangeFallback(newVal);
+    },
+    fixedExchangeRate(newVal) {
+      this.checkExchangeFallback(newVal);
+    },
     currencyList(newValue) {
+      // Check if backend flagged maintenance (API failure)
+      const rawCurrencyList = this.$store.state.gateway.currencyList;
+      if (rawCurrencyList?.maintenance) {
+        this.swaploading = false;
+        this.navigation("maintenance", 1);
+        return;
+      }
       if (newValue && newValue.length > 0) {
         this.swaploading = false;
         newValue.sort(function(a, b) {
@@ -912,8 +706,16 @@ export default {
         this.filtercurrency = newValue;
         let fromCoin;
         let toCoin;
-        let btcCoin = newValue.find(item => item.name === "BTC");
-        let bdxCoin = newValue.find(item => item.name === "BDX");
+        let btcCoin = newValue.find(
+          item =>
+            item.name.toLowerCase() === "btc" &&
+            item.protocol.toLowerCase() === "btc"
+        );
+        let bdxCoin = newValue.find(
+          item =>
+            item.name.toLowerCase() === "bdx" &&
+            item.protocol.toLowerCase() === "bdx"
+        );
         if (bdxCoin.enabledTo) {
           fromCoin = btcCoin;
           toCoin = bdxCoin;
@@ -943,19 +745,10 @@ export default {
         filterCoin.unshift(toCoin);
         this.privacyCurrency = filterCoin;
         if (toCoin.enabled && fromCoin.enabled) {
-          // clearInterval(this.refreshMinMax);
           this.bdxCoinDetails = toCoin;
           this.receiveAmountType = toCoin;
-
-          this.minMaxPair();
-          this.clearAllintervals();
-          this.getExchangeRate();
-          this.validateFixedIsEnabled();
-
-          // this.getFixedExchangeAmount();
+          this.restartAllIntervals();
         } else {
-          // let EthDetails = newValue.find(item => item.name === "ETH");
-          // this.receiveAmountType = EthDetails;
           this.navigation("maintenance", 1);
         }
       }
@@ -963,26 +756,46 @@ export default {
 
     createdTxnDetails(newTxn) {
       if (newTxn.result) {
-        // console.log("newTxn ", newTxn);
         this.swaploading = false;
         this.get_transaction_status();
       }
     },
     txnStatus(newStatus) {
-      if (newStatus.hasOwnProperty("result")) {
-        // console.log("txnStatustxnStatus ", newStatus);
-        if (newStatus.result[0].status === "finished") {
-          this.clearAllintervals();
-          this.navigation("txnCompleted", 5);
-        }
-        if (
-          newStatus.result[0].status === "confirming" ||
-          newStatus.result[0].status === "exchanging"
+      if (
+        newStatus.hasOwnProperty("result") &&
+        Array.isArray(newStatus.result) &&
+        newStatus.result.length > 0
+      ) {
+        const status = newStatus.result[0].status;
+        const terminalStatuses = [
+          "finished",
+          "failed",
+          "refunded",
+          "expired",
+          "overdue"
+        ];
+        if (terminalStatuses.includes(status)) {
+          if (this.refreshTxnStatus) {
+            clearInterval(this.refreshTxnStatus);
+            this.refreshTxnStatus = null;
+          }
+          if (status === "finished") {
+            this.navigation("txnCompleted", 5);
+          }
+        } else if (
+          status === "confirming" ||
+          status === "exchanging" ||
+          status === "sending"
         ) {
-          // console.log("txnStatustxnStatus 2", newStatus.result[0].status);
           this.navigation("swapStatus", 4);
+          if (!this.refreshTxnStatus) {
+            this.get_transaction_status();
+          }
         }
       }
+    },
+    privacySwap() {
+      this.clearState();
     }
   },
 
@@ -993,12 +806,10 @@ export default {
       if (data) {
         Object.keys(data).length > 0 &&
           data.map(item => {
-            (item.label = `${item.name}<span class='currency-name ft-regular'> -${item.fullName}<span>`),
-              (item.value = item.ticker);
+            item.value = item.ticker;
             pushedData.push(item);
           });
       }
-      // console.log("data coin::", JSON.stringify(pushedData));
       return pushedData;
     },
 
@@ -1006,20 +817,27 @@ export default {
       let data = state.gateway.exchangeAmount;
       let result = {};
       if (data.hasOwnProperty("result")) {
-        // this.swaploading = false;
-        if (state.gateway.exchangeAmount.status) {
-          result = state.gateway.exchangeAmount.result[0];
+        if (
+          state.gateway.exchangeAmount.status &&
+          state.gateway.exchangeAmount.result
+        ) {
+          result = { ...state.gateway.exchangeAmount.result[0] };
+          if (data.exchange_type) result.exchange_type = data.exchange_type;
         }
       } else {
-        result = data;
+        result = { ...data };
       }
       return result;
     },
     fixedExchangeRate: state => {
       let data = state.gateway.fixedExchangeRate;
       let result = {};
-      if (data.hasOwnProperty("result")) {
-        result = state.gateway.fixedExchangeRate.result[0];
+      if (
+        data.hasOwnProperty("result") &&
+        state.gateway.fixedExchangeRate.result
+      ) {
+        result = { ...state.gateway.fixedExchangeRate.result[0] };
+        if (data.exchange_type) result.exchange_type = data.exchange_type;
       }
       return result;
     },
@@ -1033,8 +851,9 @@ export default {
     pairsMinMax: state => {
       let data = state.gateway.pairsMinMax;
       let result = {};
-      if (data.hasOwnProperty("result")) {
-        result = state.gateway.pairsMinMax.result[0];
+      if (data.hasOwnProperty("result") && state.gateway.pairsMinMax.result) {
+        result = { ...state.gateway.pairsMinMax.result[0] };
+        if (data.exchange_type) result.exchange_type = data.exchange_type;
       }
       return result;
     },
@@ -1063,7 +882,6 @@ export default {
       refundDestinationTagValue: "",
       refundAddress: { error: false, val: "" },
       routes: "mainPage",
-      // routes: "",
 
       exechangeRateType: "float",
       recipientAddress: { error: false, val: "" },
@@ -1079,14 +897,6 @@ export default {
           "<span>BTC<span class='currency-name ft-regular'> -Bitcoin<span><span>",
         value: "btc"
       },
-      // receiveAmountType: {
-      //   label: "BDX<span class='currency-name ft-regular'> -Beldex<span>",
-      //   value: "bdx"
-      // },
-      // receiveAmountType: {
-      //   label: "ETH<span class='currency-name ft-regular'> -Etherium<span>",
-      //   value: "eth"
-      // },
       receiveAmountType: {
         label: "",
         value: ""
@@ -1096,12 +906,16 @@ export default {
       searchTxt: "",
       recipientLoader: false,
       refundLoader: false,
-      privacyCurrency: []
-      // pairStatusContent:''
+      privacyCurrency: [],
+      privacySwap: false,
+      showPrivacyPopup: false,
+      currentExchange: "changelly"
     };
   },
   created() {
-    this.$gateway.send("swap", "currency_list", {});
+    this.$gateway.send("swap", "currency_list", {
+      walletAddress: this.info.address
+    });
   },
 
   beforeDestroy() {
@@ -1117,6 +931,10 @@ export default {
       });
       this.routes = page;
     },
+    navigateToHistory() {
+      this.clearAllintervals();
+      this.navigation("txnHistory", 1);
+    },
     sendAmounts(newvalue) {
       this.sendAmount = newvalue;
       this.clearAllintervals();
@@ -1128,8 +946,10 @@ export default {
     minMaxPair() {
       clearInterval(this.refreshMinMax);
       let data = {
-        from: this.sendAmounType.value,
-        to: this.receiveAmountType.value
+        fromDetails: this.sendAmounType,
+        toDetails: this.receiveAmountType,
+        privacySwap: this.privacySwap,
+        amountFrom: this.sendAmount
       };
       this.$gateway.send("swap", "get_min_max", data);
       this.refreshMinMax = setInterval(() => {
@@ -1137,7 +957,6 @@ export default {
       }, 30000);
     },
     searchCurrency(txt) {
-      // console.log("searchCurrency searchCurrency searchCurrency", txt);
       this.searchTxt = txt;
       if (this.searchTxt) {
         this.filtercurrency = this.currencyList.filter(item =>
@@ -1146,7 +965,6 @@ export default {
       } else {
         this.filtercurrency = this.currencyList;
       }
-      // console.log("searchCurrency ::", txt);
     },
     keyHandler(evt) {
       if (
@@ -1158,82 +976,69 @@ export default {
         evt.preventDefault();
       }
     },
+    restartAllIntervals() {
+      this.clearAllintervals();
+      clearInterval(this.refreshMinMax);
+      this.minMaxPair();
+      this.getExchangeRate();
+      this.validateFixedIsEnabled();
+    },
+    checkExchangeFallback(newVal) {
+      const exchangeType =
+        newVal?.exchange_type ||
+        this.$store.state.gateway.exchangeAmount?.exchange_type ||
+        this.$store.state.gateway.pairsMinMax?.exchange_type ||
+        this.$store.state.gateway.fixedExchangeRate?.exchange_type;
+
+      if (exchangeType) {
+        if (this.currentExchange !== exchangeType) {
+          this.currentExchange = exchangeType;
+          if (this.routes === "mainPage") {
+            this.restartAllIntervals();
+          }
+        }
+      }
+    },
     sendAmountValidator() {
       this.refundAddress = { val: "", error: false };
       this.refundDestinationTag = "no";
       this.refundDestinationTagValue = "";
-
       if (
         this.sendAmounType.value === "bdx" &&
-        this.receiveAmountType.value === "bdx"
+        this.receiveAmountType.value === "btc"
       ) {
         this.receiveAmountType = this.btcCoinDetails;
       } else if (this.sendAmounType.value === this.receiveAmountType.value) {
-        // this.sendAmounType = this.bdxCoinDetails;
         this.receiveAmountType = this.bdxCoinDetails;
       }
-      // else if (this.sendAmounType.value !== "bdx") {
-      //   this.receiveAmountType = this.bdxCoinDetails;
-      // }
-      // else if (this.sendAmounType.value !== "bdx") {
-      //   this.receiveAmountType= this.bdxCoinDetails;
-      // }
-      this.minMaxPair();
-
-      // if (this.exechangeRateType === "float") {
-      this.clearAllintervals();
-      this.getExchangeRate();
-      // } else {
-      // this.getFixedExchangeAmount();
-
+      this.restartAllIntervals();
       if (
-        this.sendAmounType.fixRateEnabled &&
-        this.receiveAmountType.fixRateEnabled
+        !this.sendAmounType.fixRateEnabled ||
+        !this.receiveAmountType.fixRateEnabled
       ) {
-        this.getFixedExchangeAmount();
-      } else {
         this.exechangeRateType = "float";
-        // clearInterval(this.refreshFixedExchangeRate);
       }
-      // }
-      // this.getExchangeRate();
     },
     getAmountValidator() {
-      // console.log('getAmountValidator in swap',this.sendAmounType.value, this.receiveAmountType.value)
       this.recipientAddress = { val: "", error: false };
       this.refundAddress = { val: "", error: false };
       this.destinationTag = "no";
       this.destinationTagValue = "";
-      // this.recipientAddress.error = false;
 
       if (
         this.sendAmounType.value === "bdx" &&
         this.receiveAmountType.value === "bdx"
       ) {
-        // console.log('bdx =')
         this.sendAmounType = this.btcCoinDetails;
       } else if (this.sendAmounType.value === this.receiveAmountType.value) {
         this.sendAmounType = this.bdxCoinDetails;
-        // this.receiveAmountType = this.bdxCoinDetails;
       }
-      //else if (this.receiveAmountType !== "bdx") {
-      //this.sendAmounType = this.bdxCoinDetails;
-      //}
-      this.minMaxPair();
-      // if (this.exechangeRateType === "float") {
-      this.clearAllintervals();
-      this.getExchangeRate();
-      // } else {
-      // this.getFixedExchangeAmount();
-      // }
+      this.restartAllIntervals();
       if (
-        this.sendAmounType.fixRateEnabled &&
-        this.receiveAmountType.fixRateEnabled
+        !this.sendAmounType.fixRateEnabled ||
+        !this.receiveAmountType.fixRateEnabled
       ) {
-        this.getFixedExchangeAmount();
-      } else {
         this.exechangeRateType = "float";
-        // clearInterval(this.refreshFixedExchangeRate);
       }
     },
     swapCurrencyType() {
@@ -1242,10 +1047,6 @@ export default {
         this.sendAmounType
       ];
       this.swaploading = true;
-      // this.recipientAddress.val = '';
-      // this.recipientAddress.error = false;
-      clearInterval(this.refreshMinMax);
-      this.clearAllintervals();
       this.destinationTagValue = "";
       this.refundDestinationTagValue = "";
       this.recipientAddress = { val: "", error: false };
@@ -1254,14 +1055,13 @@ export default {
       this.$store.commit("gateway/set_pairsMinMax", {
         result: [{ from: "", to: "", minAmountFloat: 0, maxAmountFloat: 0 }]
       });
-      this.minMaxPair();
-      // if (this.exechangeRateType === "float") {
-      this.getExchangeRate();
-      this.validateFixedIsEnabled();
-      // } else {
-      // this.getFixedExchangeAmount();
-      // }
-      // this.getExchangeRate();
+      this.restartAllIntervals();
+      if (
+        !this.sendAmounType.fixRateEnabled ||
+        !this.receiveAmountType.fixRateEnabled
+      ) {
+        this.exechangeRateType = "float";
+      }
     },
     minMaxAmoutValidator(amount) {
       if (this.exchange_amount.hasOwnProperty("error")) {
@@ -1301,17 +1101,6 @@ export default {
           this.minMaxWarningContent = "";
         }
       }
-      // if (
-      //   this.pairsMinMax.from &&
-      //   this.pairsMinMax.to &&
-      //   !this.pairsMinMax.minAmountFloat
-      // ) {
-      //   // this.pairStatusContent='Unsupported exchange pair'
-      //   console.log("not found the pair");
-      // }
-      // else{
-      //   this.pairStatusContent=''
-      // }
       this.swaploading = false;
     },
     clearState() {
@@ -1325,16 +1114,12 @@ export default {
       this.refundDestinationTagValue = "";
       this.$store.commit("gateway/set_createdTxnDetails", {});
       clearInterval(this.refreshTxnStatus);
-      // console.log("cleaar all state");
       this.minMaxPair();
-      // if (this.exechangeRateType === "float") {
       this.clearAllintervals();
       this.getExchangeRate();
       this.validateFixedIsEnabled();
     },
     fixedCreateTxnValidation() {
-      // console.log('button',this.sendAmount > Number(this.pairsMinMax.minAmountFixed) , this.sendAmount < Number(this.pairsMinMax.maxAmountFixed),  )
-      // console.log('cursor validsation',this.sendAmount > Number(this.pairsMinMax.minAmountFixed) , this.sendAmount < Number(this.pairsMinMax.maxAmountFixed))
       let previousTxnCreatedTime = localStorage.getItem("createdFixedTxnTime");
       if (!previousTxnCreatedTime) {
         return false;
@@ -1345,7 +1130,6 @@ export default {
         pdate = pdate.setMinutes(pdate.getMinutes() + 15);
         const currentTime = new Date();
         const sub = pdate > currentTime;
-        // console.log("createdFixedTxnTime ::", sub);
 
         return sub;
       } else {
@@ -1353,30 +1137,30 @@ export default {
       }
     },
     disableValidation() {
-      // console.log(
-      //   "this.isValidRecipientAddress ::",
-      //   this.isValidRecipientAddress
-      // );
       let fixed_validation;
-      if (this.exechangeRateType === "fixed") {
-        // let
-        // if(Object.hasOwn(this.isValidRefundAddress, 'result'))
-        // {
-        // console.log("this.isValidRefundAddress", this.isValidRefundAddress);
+      if (
+        this.exechangeRateType === "fixed" ||
+        this.currentExchange === "quickex"
+      ) {
         fixed_validation = this.isValidRefundAddress.result;
-        // }
       } else {
         fixed_validation = true;
       }
 
       let receiveFund = "";
       let refundAdd = "";
-      if (this.exechangeRateType === "float") {
+      if (
+        this.exechangeRateType === "float" &&
+        this.currentExchange !== "quickex"
+      ) {
         receiveFund = this.exchange_amount.amountTo;
         refundAdd = true;
       } else {
         refundAdd = this.refundAddress.val;
-        receiveFund = this.fixedExchangeRate.amountTo;
+        receiveFund =
+          this.exechangeRateType === "float"
+            ? this.exchange_amount.amountTo
+            : this.fixedExchangeRate.amountTo;
       }
       let destiniTag;
       if (this.destinationTag === "yes") {
@@ -1390,7 +1174,6 @@ export default {
       } else {
         refundDestiniTag = true;
       }
-      //  this.swaploading = false;
 
       return (
         this.sendAmount > 0 &&
@@ -1405,23 +1188,19 @@ export default {
       );
     },
     openExternalLink(url) {
-      // console.log("openExternalLink", url);
       this.$gateway.send("core", "open_url", { url });
     },
     getExchangeRate() {
       clearInterval(this.refreshFloatExchangeRate);
-
       this.$store.commit("gateway/set_exchangeAmount", { result: [] });
 
       let data = {
-        from: this.sendAmounType.value,
-        to: this.receiveAmountType.value,
-        amountFrom: this.sendAmount
+        fromDetails: this.sendAmounType,
+        toDetails: this.receiveAmountType,
+        amountFrom: this.sendAmount,
+        privacySwap: this.privacySwap
       };
-      // console.log("getExchangeRate..........");
-      // clearInterval(this.refreshFloatExchangeRate);
       this.$gateway.send("swap", "exchange_amount", data);
-      // let count = 1;
       this.refreshFloatExchangeRate = setInterval(() => {
         this.$gateway.send("swap", "exchange_amount", data);
       }, 30000);
@@ -1429,8 +1208,11 @@ export default {
     clearAllintervals() {
       clearInterval(this.refreshFixedExchangeRate);
       clearInterval(this.refreshFloatExchangeRate);
-      clearInterval(this.refreshTxnStatus);
-      // clearInterval(this.refreshMinMax);
+      if (this.routes !== "swapStatus" && this.routes !== "settlement") {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
+      clearInterval(this.refreshMinMax);
     },
 
     getFixedExchangeAmount() {
@@ -1440,10 +1222,9 @@ export default {
       let data = {
         from: this.sendAmounType.value,
         to: this.receiveAmountType.value,
-        amountFrom: this.sendAmount
+        amountFrom: this.sendAmount,
+        privacySwap: this.privacySwap
       };
-      // let count = 1;
-      // clearInterval(this.refreshFixedExchangeRate);
 
       this.$gateway.send("swap", "fixed_exchange_amount", data);
       this.refreshFixedExchangeRate = setInterval(() => {
@@ -1455,17 +1236,9 @@ export default {
         this.sendAmounType.fixRateEnabled &&
         this.receiveAmountType.fixRateEnabled
       ) {
-        // console.log("validateFixedIsEnabled validateFixedIsEnabled");
         this.getFixedExchangeAmount();
       }
     },
-    // fixedInterval() {
-    //   // let count = 1;
-    //   this.refreshFixedExchangeRate = setInterval(
-    //     this.getFixedExchangeAmount(),
-    //     30000
-    //   );
-    // },
     exchangeData() {
       let result;
       if (this.exechangeRateType === "float") {
@@ -1485,7 +1258,9 @@ export default {
       });
       let params = {
         address: this.recipientAddress.val,
-        currency: this.receiveAmountType.value
+        currency: this.receiveAmountType.value,
+        currencyNetWork: this.receiveAmountType.protocol,
+        privacySwap: this.privacySwap
       };
       if (this.recipientAddress.val) {
         this.$gateway.send("swap", "validate_address", params);
@@ -1499,33 +1274,25 @@ export default {
       });
       let params = {
         address: this.refundAddress.val,
-        currency: this.sendAmounType.value
+        currency: this.sendAmounType.value,
+        privacySwap: this.privacySwap,
+        currencyNetWork: this.sendAmounType.protocol
       };
-      // console.log("refund address ",this.refundAddress.val)
-      // let params = {
-      //   address: this.refundAddress.val,
-      //   currency: 'eth'
-      // };
       if (this.refundAddress.val) {
         this.$gateway.send("swap", "refundAddressValidation", params);
       }
     },
     next() {
       let refundAdderss =
-        this.exechangeRateType === "fixed"
+        this.exechangeRateType === "fixed" || this.currentExchange === "quickex"
           ? this.isValidRefundAddress.result
           : true;
-      // console.log("next",this.sendAmount > 0 &&
-      // this.agree === "yes" &&
-      // this.isValidRecipientAddress.result &&
-      // refundAdderss,this.isValidRecipientAddress)
       if (
         this.sendAmount > 0 &&
         this.agree === "yes" &&
         this.isValidRecipientAddress.result &&
         refundAdderss
       ) {
-        // this.clearAllintervals();
         this.routes = "makePayment";
         this.$gateway.send("wallet", "set_stepperPosition", {
           data: 2
@@ -1550,63 +1317,81 @@ export default {
     createtxn() {
       let data = {
         from: this.sendAmounType.value,
+        networkFrom: this.sendAmounType.protocol,
         to: this.receiveAmountType.value,
+        networkTo: this.receiveAmountType.protocol,
         address: this.recipientAddress.val,
         amountFrom: this.sendAmount,
-        walletAddress: this.info.address
+        walletAddress: this.info.address,
+        privacySwap: this.privacySwap
       };
+      if (this.refundAddress && this.refundAddress.val) {
+        data.refundAddress = this.refundAddress.val;
+      }
       if (this.destinationTag === "yes") {
         data.extraId = this.destinationTagValue;
       }
-      // console.log("create_transaction", data);
+      if (this.refundDestinationTag === "yes") {
+        data.refundExtraId = this.refundDestinationTagValue;
+      }
       this.$gateway.send("swap", "create_transaction", data);
       this.swaploading = true;
       this.navigation("settlement", 3);
     },
     create_fixed_transaction() {
-      // from: "btc",
-      // to: "eth",
-      // address: "0x410afe72a5f18cce5f758c731bb2a9b90e74e5c7",
-      // amountFrom: "0.1",
-      // rateId: "xnsnh0&jcqJG4awmG8La0y5pLGIpIQ",
-      // refundAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
       let data = {
         from: this.sendAmounType.value,
         to: this.receiveAmountType.value,
         address: this.recipientAddress.val,
         amountFrom: this.sendAmount,
         rateId: this.fixedExchangeRate.id,
-        refundAddress: this.refundAddress.val,
+        id: this.createdTxnDetails?.result?.id,
+        privacySwap: this.privacySwap || false,
         walletAddress: this.info.address
       };
       if (this.destinationTag === "yes") {
         data.extraId = this.destinationTagValue;
       }
-      // console.log("create_fixed_transaction", data);
+      if (this.refundDestinationTag === "yes") {
+        data.refundExtraId = this.refundDestinationTagValue;
+      }
       this.$gateway.send("swap", "create_fixed_transaction", data);
       this.swaploading = true;
       this.navigation("settlement", 3);
       localStorage.setItem("createdFixedTxnTime", new Date());
     },
-    get_transaction_status() {
-      // this.navigation("swapStatus", 4);
-      // let data = {
-      //   id: "eukaew8lktw5nlwn" //create transaction id
-      // };
-
+    get_transaction_status(params) {
+      const txnId =
+        this.createdTxnDetails?.result?.id ||
+        params?.id ||
+        this.txnStatus?.result?.[0]?.id;
+      if (!txnId) return;
       let data = {
-        id: this.createdTxnDetails.result.id
+        id: txnId,
+        privacySwap: this.privacySwap || params?.privacySwap || false,
+        walletAddress: this.info?.address
       };
-      // console.log("get_transaction_status data", data);
-      // let count = 1;
+      if (params?.exchange_type || params?.exchange) {
+        data.exchange = params.exchange_type || params.exchange;
+      }
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+      }
+      this.$gateway.send("swap", "transaction_status", data);
       this.refreshTxnStatus = setInterval(() => {
-        // console.log("get status ::", count++);
-
-        // this.$gateway.send("swap", "transaction_history", data);
-
-        // this.$gateway.send("swap", "transaction_status", data);
         this.$gateway.send("swap", "transaction_status", data);
       }, 30000);
+    },
+    getFeeAmount() {
+      if (this.exchange_amount?.fee) {
+        return Number(this.exchange_amount.fee).toFixed(8);
+      }
+
+      if (this.exchange_amount?.networkFee) {
+        return "0";
+      }
+
+      return "--";
     }
   }
 };

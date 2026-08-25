@@ -52,7 +52,9 @@
             color="green"
             :disable="contentUpdate === 'Owner'"
           />
-          <div style="width: 100px; color: white">Address</div>
+          <div style="width: 100px; color: white">
+            {{ $t("fieldLabels.address") }}
+          </div>
           <OxenField class="full-width" optional :error="$v.address.$error">
             <q-input
               v-model="address"
@@ -138,9 +140,8 @@
     </div>
     <div class="updatesNotes flex row q-px-md">
       <div>
-        <span style="font-weight: 600">Note :</span> You can only update owner
-        address or values at a time. If you want to update both, you can either
-        update the value before ownership or after transferring ownership.
+        <span style="font-weight: 600">{{ $t("fieldLabels.notes") }} :</span>
+        {{ $t("strings.bnsUpdateDescription") }}
       </div>
     </div>
     <div class="buttons flex justify-center q-mt-sm">
@@ -164,7 +165,7 @@
           alt="Update"
           style="height: 24px; width: auto;margin-right: 5px;"
         />
-        Update
+        {{ $t("buttons.update") }}
       </q-btn>
     </div>
   </div>
@@ -344,7 +345,6 @@ export default {
 
       if (this.contentUpdate === "Values" && this.ethAddressRef) {
         this.$v.ethAddress.$touch();
-        // console.log("this.$v.ethAddress.$error:",this.$v.ethAddress.$error)
         if (this.$v.ethAddress.$error) {
           this.toastmsg("Invalid ETH Address");
           return;

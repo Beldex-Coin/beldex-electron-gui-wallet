@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { clipboard } from "electron";
+import { clipboard } from "src/shims/electron-renderer";
 import ContextMenu from "components/menus/contextmenu";
 import FormatOxen from "components/format_oxen";
 import MasterNodeMixin from "src/mixins/master_node_mixin";

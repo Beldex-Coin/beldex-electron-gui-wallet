@@ -1,10 +1,5 @@
 <template>
   <div v-if="isVisible" class="swapTxnHistory">
-    <!-- <q-inner-loading :showing="this.txnHistory.length > 0 ? false : true">
-      <q-spinner color="primary" size="30" />
-    </q-inner-loading> -->
-    <!-- <q-header>
-    <q-toolbar top>-->
     <header class="flex row items-center q-mb-md justify-between">
       <div class="flex items-center back-arrow-btn" @click="backToSwap">
         <svg
@@ -20,41 +15,81 @@
           />
         </svg>
         <div class="ft-semibold q-ml-md header-txt">
-          {{ this.$t("titles.swap.history") }}
+          {{ $t("titles.swap.history") }}
         </div>
       </div>
+      <div class="row items-center no-wrap q-mr-sm">
+        <div v-if="totalPages > 1" class="custom-pagination  q-mr-sm">
+          <q-btn
+            flat
+            no-caps
+            label="Prev"
+            class="page-btn nav-btn"
+            :disable="isLoading || currentPage === 1"
+            @click="changePage(currentPage - 1)"
+          />
 
-      <q-btn
-        v-if="this.txnHistory.length > 0"
-        color="primary"
-        class="downloadCsv-btn"
-        @click="downloadCsv"
-      >
-        <svg
-          width="18"
-          height="16"
-          viewBox="0 0 18 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          <q-btn
+            v-for="page in visiblePages"
+            :key="page"
+            :label="page === '...' ? '...' : String(page)"
+            :disable="page === '...' || isLoading"
+            unelevated
+            no-caps
+            class="page-btn"
+            :class="{ active: page === currentPage }"
+            @click="page !== '...' && changePage(page)"
+          />
+
+          <q-btn
+            flat
+            no-caps
+            label="Next"
+            class="page-btn nav-btn"
+            :disable="isLoading || currentPage === totalPages"
+            @click="changePage(currentPage + 1)"
+          />
+        </div>
+
+        <q-btn
+          v-if="this.txnHistory.length > 0"
+          color="primary"
+          class="downloadCsv-btn"
+          :loading="isCsvExporting"
+          :disable="isCsvExporting"
+          @click="downloadCsv"
         >
-          <g id="csv" clip-path="url(#clip0_1350_3876)">
-            <path
-              id="Vector"
-              d="M5.00022 1C4.08629 1 3.33355 1.75274 3.33355 2.66667V7.66667H4.44466V2.66667C4.44466 2.35392 4.68747 2.11111 5.00022 2.11111H10.0002V5.44444H13.3335V7.66667H14.4447V4.65885L10.7858 1H5.00022ZM11.1113 2.8967L12.548 4.33333H11.1113V2.8967ZM1.66471 8.77778C0.75079 8.77778 -0.00195312 9.53052 -0.00195312 10.4444V11.5556V12.6667C-0.00195312 13.5806 0.75079 14.3333 1.66471 14.3333C2.57864 14.3333 3.33138 13.5806 3.33138 12.6667H2.22027C2.22027 12.9794 1.97746 13.2222 1.66471 13.2222C1.35197 13.2222 1.10916 12.9794 1.10916 12.6667V11.5556V10.4444C1.10916 10.1317 1.35197 9.88889 1.66471 9.88889C1.97746 9.88889 2.22027 10.1317 2.22027 10.4444H3.33138C3.33138 9.53052 2.57864 8.77778 1.66471 8.77778ZM6.10916 8.77778C5.4536 8.77778 5.07016 9.04273 4.8635 9.26606C4.40683 9.75828 4.44133 10.4133 4.44466 10.4444C4.44466 11.3422 5.26076 11.7472 5.85742 12.0438C6.33075 12.2783 6.66471 12.4598 6.66471 12.6753C6.66471 12.6776 6.65402 12.9464 6.50846 13.0942C6.47735 13.1264 6.38249 13.2222 6.10916 13.2222H4.54666C4.61332 13.4344 4.7177 13.6699 4.91992 13.8754C5.12437 14.0843 5.49805 14.3333 6.10916 14.3333C6.72027 14.3333 7.0939 14.0833 7.30056 13.8733C7.7739 13.3922 7.77694 12.7311 7.77582 12.6667C7.77582 11.7556 6.95115 11.3466 6.35004 11.0477C5.88449 10.8166 5.55471 10.6375 5.5536 10.4097C5.5536 10.4075 5.54614 10.158 5.67947 10.0191C5.76169 9.93354 5.90582 9.88889 6.10916 9.88889H7.68034C7.49367 9.33 7.01582 8.77778 6.10916 8.77778ZM8.88694 8.77778L9.99805 14.3333H11.1092L12.2203 8.77778H11.1092L10.5536 11.9722L9.99805 8.77778H8.88694ZM14.4447 9.88889V10.4444V13.2222H12.2224L14.4447 15.4444L15.0002 16L15.5558 15.4444L17.778 13.2222H15.5558V10.4444V9.88889H14.4447Z"
-              fill="white"
-            />
-          </g>
-          <defs>
-            <clipPath id="clip0_1350_3876">
-              <rect width="18" height="16" fill="white" />
-            </clipPath>
-          </defs>
-        </svg>
-        <span class="q-ml-xs">{{ this.$t("titles.swap.downloadCsv") }}</span>
-      </q-btn>
+          <svg
+            width="18"
+            height="16"
+            viewBox="0 0 18 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g id="csv" clip-path="url(#clip0_1350_3876)">
+              <path
+                id="Vector"
+                d="M5.00022 1C4.08629 1 3.33355 1.75274 3.33355 2.66667V7.66667H4.44466V2.66667C4.44466 2.35392 4.68747 2.11111 5.00022 2.11111H10.0002V5.44444H13.3335V7.66667H14.4447V4.65885L10.7858 1H5.00022ZM11.1113 2.8967L12.548 4.33333H11.1113V2.8967ZM1.66471 8.77778C0.75079 8.77778 -0.00195312 9.53052 -0.00195312 10.4444V11.5556V12.6667C-0.00195312 13.5806 0.75079 14.3333 1.66471 14.3333C2.57864 14.3333 3.33138 13.5806 3.33138 12.6667H2.22027C2.22027 12.9794 1.97746 13.2222 1.66471 13.2222C1.35197 13.2222 1.10916 12.9794 1.10916 12.6667V11.5556V10.4444C1.10916 10.1317 1.35197 9.88889 1.66471 9.88889C1.97746 9.88889 2.22027 10.1317 2.22027 10.4444H3.33138C3.33138 9.53052 2.57864 8.77778 1.66471 8.77778ZM6.10916 8.77778C5.4536 8.77778 5.07016 9.04273 4.8635 9.26606C4.40683 9.75828 4.44133 10.4133 4.44466 10.4444C4.44466 11.3422 5.26076 11.7472 5.85742 12.0438C6.33075 12.2783 6.66471 12.4598 6.66471 12.6753C6.66471 12.6776 6.65402 12.9464 6.50846 13.0942C6.47735 13.1264 6.38249 13.2222 6.10916 13.2222H4.54666C4.61332 13.4344 4.7177 13.6699 4.91992 13.8754C5.12437 14.0843 5.49805 14.3333 6.10916 14.3333C6.72027 14.3333 7.0939 14.0833 7.30056 13.8733C7.7739 13.3922 7.77694 12.7311 7.77582 12.6667C7.77582 11.7556 6.95115 11.3466 6.35004 11.0477C5.88449 10.8166 5.55471 10.6375 5.5536 10.4097C5.5536 10.4075 5.54614 10.158 5.67947 10.0191C5.76169 9.93354 5.90582 9.88889 6.10916 9.88889H7.68034C7.49367 9.33 7.01582 8.77778 6.10916 8.77778ZM8.88694 8.77778L9.99805 14.3333H11.1092L12.2203 8.77778H11.1092L10.5536 11.9722L9.99805 8.77778H8.88694ZM14.4447 9.88889V10.4444V13.2222H12.2224L14.4447 15.4444L15.0002 16L15.5558 15.4444L17.778 13.2222H15.5558V10.4444V9.88889H14.4447Z"
+                fill="white"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_1350_3876">
+                <rect width="18" height="16" fill="white" />
+              </clipPath>
+            </defs>
+          </svg>
+          <span class="q-ml-xs">{{ $t("titles.swap.downloadCsv") }}</span>
+        </q-btn>
+      </div>
     </header>
 
-    <div v-if="this.txnHistory.length === 0">
+    <div v-if="isLoading" class="q-mt-lg">
+      <q-inner-loading :showing="true">
+        <q-spinner color="primary" size="30" />
+      </q-inner-loading>
+    </div>
+    <div v-else-if="this.txnHistory.length === 0">
       <template>
         <section
           class="flex column justify-center items-center"
@@ -73,19 +108,23 @@
       </template>
     </div>
     <section v-else class="q-mt-lg">
+      <q-inner-loading :showing="isLoading">
+        <q-spinner color="primary" size="30" />
+      </q-inner-loading>
       <table style="width: 100%" class="txn-details-wrapper">
         <tr>
-          <th>{{ this.$t("titles.swap.status") }}</th>
-          <th>{{ this.$t("titles.swap.date") }}</th>
-          <th>{{ this.$t("titles.swap.exchangeAmount") }}</th>
-          <th>{{ this.$t("titles.swap.exchangeRate") }}</th>
-          <th>{{ this.$t("titles.swap.receiver") }}</th>
-          <th>{{ this.$t("titles.swap.amountReceived") }}</th>
+          <th>{{ $t("titles.swap.status") }}</th>
+          <th>{{ $t("titles.swap.date") }}</th>
+          <th>{{ $t("titles.swap.exchangeAmount") }}</th>
+          <th>{{ $t("titles.swap.exchangeRate") }}</th>
+          <th>{{ $t("titles.swap.receiver") }}</th>
+          <th>{{ $t("titles.swap.amountReceived") }}</th>
+          <th>Type</th>
         </tr>
         <tr
-          v-for="(item, i) in this.txnHistory"
-          :key="i"
-          @click="setTxnDetails(i)"
+          v-for="(item, i) in paginatedHistory"
+          :key="item.id || i"
+          @click="setTxnDetails(item)"
         >
           <td v-if="item" class="cursor">
             <svg
@@ -142,9 +181,8 @@
             </svg>
           </td>
           <td v-if="item" class="ft-medium cursor">
-            {{ convertHumanReadableFormat(item.createdAt) }}
+            {{ formatTime(item.createdAt || item.created_at) }}
           </td>
-
           <td v-if="item" class="ft-semibold cursor">
             {{ item.amountExpectedFrom }}
           </td>
@@ -154,12 +192,14 @@
           </td>
           <td v-if="item" class="ft-medium cursor">
             {{
-              item.payoutAddress.substr(0, 3) +
-                ".." +
-                item.payoutAddress.substr(
-                  item.payoutAddress.length - 3,
-                  item.payoutAddress.length
-                )
+              item.payoutAddress
+                ? item.payoutAddress.substr(0, 4) +
+                  "..." +
+                  item.payoutAddress.substr(
+                    item.payoutAddress.length - 4,
+                    item.payoutAddress.length
+                  )
+                : "N/A"
             }}
           </td>
           <td
@@ -169,6 +209,15 @@
           >
             {{ amountReceived(item) }}
             <!-- ≈ {{ Number(item.amountExpectedTo).toFixed(4) + " " + item.currencyTo }} -->
+          </td>
+          <td
+            class="ft-semibold cursor"
+            style="font-size: 1rem;"
+            :class="[!item.privacySwap ? 'swap_indicator_normal' : '']"
+          >
+            {{
+              item.privacySwap ? $t("strings.privacy") : $t("strings.normal")
+            }}
           </td>
         </tr>
 
@@ -218,49 +267,28 @@
         </tr>-->
       </table>
     </section>
-
-    <!-- <div class="flex justify-center q-mt-sm">
-        <q-btn c color="primary" label="Confirm & Make payment" />
-      </div>
-    -->
-    <!-- </q-toolbar>
-    </q-header>-->
   </div>
   <SwapTxnCompeleted
-    v-else-if="this.txnDetails.status === 'finished'"
-    :txn-status="this.txnDetails"
+    v-else-if="txnDetails?.status === 'finished'"
+    :txn-status="txnDetails"
     from="history"
-    @goback="
-      () => {
-        (isVisible = true), (txnDetails = '');
-      }
-    "
+    @goback="backToHistoryList"
   />
-  <!-- :floating-rate="this.exchange_amount"
-    :fixed-rate="this.fixedExchangeRate"
-    :receive-chain-details="this.receiveAmountType"
-    :send-chain-details="this.sendAmounType"
-  @clearAllintervals="clearAllintervals"-->
   <swapWaitingTxnHistory
-    v-else-if="this.txnDetails.status === 'waiting'"
-    :txn-details="this.txnDetails"
-    @goback="
-      () => {
-        (isVisible = true), (txnDetails = '');
-      }
-    "
+    v-else-if="txnDetails?.status === 'waiting'"
+    :txn-details="txnDetails"
+    @goback="backToHistoryList"
     @backToSwap="backToSwap"
   />
   <SwapTxnDetails
     v-else
     :txn-details="this.txnDetails"
-    @goback="isVisible = true"
+    @goback="backToHistoryList"
     @backToSwap="backToSwap"
   />
 </template>
 
 <script>
-const moment = require("moment");
 import swapWaitingTxnHistory from "./swapWaitingTxnHistory.vue";
 import { mapState } from "vuex";
 import SwapTxnDetails from "./swapTxnDetails.vue";
@@ -277,38 +305,223 @@ export default {
     goback: {
       type: Function,
       required: false
+    },
+    privacySwap: {
+      type: Boolean,
+      required: false
     }
   },
   data() {
     return {
       isVisible: true,
+      refreshTxnStatus: null,
       refreshTxnHistory: "",
-      txnDetails: ""
+      txnDetails: "",
+      currentPage: 1,
+      rowsPerPage: 7,
+      csvExportPageSize: 100000,
+      isLoading: false,
+      isCsvExporting: false
     };
   },
   created() {
-    this.get_transaction_History();
+    this.get_transaction_History(this.privacySwap, 1);
   },
-  computed: mapState({
-    txnHistory: state => {
-      // console.log("txnHistory ::", state.gateway.txnHistory);
-      let sortedHistory = state.gateway.txnHistory.sort(function(a, b) {
-        // Turn your strings into dates, and then subtract them
-        // to get a value that is either negative, positive, or zero.
-        return new Date(b.createdAt / 1000) - new Date(a.createdAt / 1000);
-      });
-      return sortedHistory;
+  beforeDestroy() {
+    if (this.refreshTxnStatus) {
+      clearInterval(this.refreshTxnStatus);
+      this.refreshTxnStatus = null;
+    }
+  },
+  computed: {
+    ...mapState({
+      txnHistory: state => {
+        return [...(state.gateway.txnHistory || [])].sort((a, b) => {
+          const ta = new Date(
+            (a && (a.createdAt || a.created_at)) || 0
+          ).getTime();
+          const tb = new Date(
+            (b && (b.createdAt || b.created_at)) || 0
+          ).getTime();
+          return tb - ta;
+        });
+      },
+      txnHistoryMeta: state => {
+        return (
+          state.gateway.txnHistoryMeta || {
+            totalCount: 0,
+            totalPages: 0,
+            page: 1,
+            pageSize: 7
+          }
+        );
+      },
+      info: state => state.gateway.wallet.info,
+      storeTxnStatus: state => state.gateway.txnStatus
+    }),
+
+    totalPages() {
+      const totalCount = Number(this.txnHistoryMeta.totalCount || 0);
+      if (!totalCount) {
+        return 0;
+      }
+      return Math.ceil(totalCount / this.rowsPerPage);
     },
-    info: state => state.gateway.wallet.info
-  }),
+
+    paginatedHistory() {
+      return this.txnHistory;
+    },
+    visiblePages() {
+      const total = this.totalPages;
+      const current = this.currentPage;
+
+      if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+      }
+
+      if (current <= 2) {
+        return [1, 2, 3, "...", total];
+      }
+
+      if (current === 3) {
+        return [1, 2, 3, 4, "...", total];
+      }
+
+      if (current >= total - 2) {
+        return [1, "...", total - 2, total - 1, total];
+      }
+
+      return [1, "...", current - 1, current, current + 1, "...", total];
+    }
+  },
+  watch: {
+    txnHistoryMeta: {
+      deep: true,
+      handler() {
+        if (this.isLoading) {
+          this.isLoading = false;
+        }
+      }
+    },
+    txnHistory: {
+      deep: true,
+      handler(newValue) {
+        if (this.isCsvExporting) {
+          this.exportCsvFromHistory(newValue);
+        }
+      }
+    },
+    storeTxnStatus(newStatus) {
+      if (
+        newStatus &&
+        newStatus.hasOwnProperty("result") &&
+        Array.isArray(newStatus.result) &&
+        newStatus.result.length > 0
+      ) {
+        const details = newStatus.result[0];
+        if (
+          this.txnDetails &&
+          (this.txnDetails.id === details.id ||
+            this.txnDetails.id === newStatus.id)
+        ) {
+          const cleanDetails = Object.keys(details).reduce((acc, key) => {
+            if (
+              details[key] !== undefined &&
+              details[key] !== null &&
+              details[key] !== ""
+            ) {
+              acc[key] = details[key];
+            }
+            return acc;
+          }, {});
+          this.txnDetails = { ...this.txnDetails, ...cleanDetails };
+          const terminalStatuses = [
+            "finished",
+            "failed",
+            "refunded",
+            "expired",
+            "overdue"
+          ];
+          if (terminalStatuses.includes(details.status)) {
+            if (this.refreshTxnStatus) {
+              clearInterval(this.refreshTxnStatus);
+              this.refreshTxnStatus = null;
+            }
+          }
+        }
+      }
+    }
+  },
 
   methods: {
     backToSwap() {
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
       this.$emit("goback");
     },
-    convertHumanReadableFormat(date) {
-      return moment(date / 1000).format("DD MMM YYYY, h:mm:ss");
+    backToHistoryList() {
+      this.get_transaction_History(this.privacySwap, this.currentPage || 1);
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
+      this.isVisible = true;
+      this.txnDetails = "";
     },
+
+    formatTime(value, { utc = false } = {}) {
+      if (!value) return "N/A";
+      let date;
+      if (typeof value === "string" && isNaN(value)) {
+        date = new Date(value);
+      } else {
+        let num = Number(value);
+        if (isNaN(num)) return "N/A";
+        const digits = Math.floor(Math.abs(num)).toString().length;
+        let ms;
+        if (digits >= 16) {
+          ms = Math.floor(num / 1000);
+        } else if (digits <= 10) {
+          ms = num * 1000;
+        } else {
+          ms = num;
+        }
+        date = new Date(ms);
+      }
+      if (isNaN(date.getTime())) return "N/A";
+
+      const getDay = utc ? date.getUTCDate() : date.getDate();
+      const getMonthIdx = utc ? date.getUTCMonth() : date.getMonth();
+      const getYear = utc ? date.getUTCFullYear() : date.getFullYear();
+      const getHours = utc ? date.getUTCHours() : date.getHours();
+      const getMinutes = utc ? date.getUTCMinutes() : date.getMinutes();
+      const getSeconds = utc ? date.getUTCSeconds() : date.getSeconds();
+
+      const day = getDay.toString().padStart(2, "0");
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+      ];
+      const month = months[getMonthIdx];
+      const hours = getHours.toString().padStart(2, "0");
+      const minutes = getMinutes.toString().padStart(2, "0");
+      const seconds = getSeconds.toString().padStart(2, "0");
+
+      return `${day} ${month} ${getYear} ${hours}:${minutes}:${seconds}`;
+    },
+
     amountReceived(item) {
       if (item.status == "finished") {
         return `${Number(item.amountExpectedTo).toFixed(4) +
@@ -319,83 +532,183 @@ export default {
         " " +
         item.currencyTo}`;
     },
-    setTxnDetails(index) {
-      this.txnDetails = this.txnHistory[index];
+    setTxnDetails(item) {
+      if (this.refreshTxnStatus) {
+        clearInterval(this.refreshTxnStatus);
+        this.refreshTxnStatus = null;
+      }
+      this.txnDetails = item;
       this.isVisible = false;
+
+      if (!item || !item.id) return;
+
+      const data = {
+        id: item.id,
+        privacySwap: Boolean(item.privacySwap),
+        exchange: item.exchange_type || item.exchange,
+        walletAddress: this.info?.address
+      };
+
+      const terminalStatuses = [
+        "finished",
+        "failed",
+        "refunded",
+        "expired",
+        "overdue"
+      ];
+      if (!terminalStatuses.includes(item.status)) {
+        this.$gateway.send("swap", "transaction_status", data);
+        this.refreshTxnStatus = setInterval(() => {
+          this.$gateway.send("swap", "transaction_status", data);
+        }, 30000);
+      }
+    },
+    changePage(page) {
+      if (this.isLoading || page < 1 || page > this.totalPages) {
+        return;
+      }
+      this.currentPage = page;
+      this.get_transaction_History(this.privacySwap, this.currentPage);
+    },
+    getTransactionTimestamp(item) {
+      if (!item) return 0;
+      const value = item.createdAt || item.created_at || 0;
+      if (typeof value === "string" && isNaN(value)) {
+        const date = new Date(value);
+        return isNaN(date.getTime()) ? 0 : date.getTime();
+      }
+      let num = Number(value);
+      if (isNaN(num)) return 0;
+      const digits = Math.floor(Math.abs(num)).toString().length;
+      if (digits >= 16) return Math.floor(num / 1000);
+      if (digits <= 10) return num * 1000;
+      return num;
     },
     downloadCsv() {
-      let customizeCsv = [];
-      let csv = "";
-      this.txnHistory.length > 0 &&
-        this.txnHistory.map(item => {
+      this.isCsvExporting = true;
+      this.get_transaction_History(this.privacySwap, 1, { isCsvExport: true });
+    },
+    exportCsvFromHistory(history = this.txnHistory) {
+      try {
+        let customizeCsv = [];
+        let csv = "";
+        const historyToExport = [...(history || [])].sort((a, b) => {
+          const ta = this.getTransactionTimestamp(a);
+          const tb = this.getTransactionTimestamp(b);
+          return tb - ta;
+        });
+
+        if (historyToExport.length === 0) {
+          this.$q.notify({
+            type: "negative",
+            timeout: 2000,
+            message: this.$t("notification.errors.errorSavingItem", {
+              item: "CSV Report"
+            })
+          });
+          return;
+        }
+
+        historyToExport.forEach(item => {
+          if (!item) return;
           let csvObj = {};
-          csvObj.Date = moment(item.createdAt / 1000).format(
-            "DD MMM YYYY-h:mm:ss"
-          );
-          csvObj.Status = item.status;
-          csvObj.Exchange_Amount = item.amountExpectedFrom;
-          csvObj.Exchange_rate = item.rate;
-          csvObj.Receiver = item.payoutAddress;
-          csvObj.Amount_Received = item.amountExpectedTo;
+          const ts = item.createdAt || item.created_at || null;
+          csvObj.Date = ts ? this.formatTime(ts) : "N/A";
+          csvObj.Status = item.status || "N/A";
+          csvObj.Exchange_Currency =
+            (item.currencyFrom || "").toUpperCase() +
+            " -> " +
+            (item.currencyTo || "").toUpperCase();
+          csvObj.Exchange_Amount = item.amountExpectedFrom ?? "N/A";
+          csvObj.Exchange_rate = item.rate ?? "N/A";
+          csvObj.Received_Amount = item.amountExpectedTo ?? "N/A";
+          csvObj.Swap_Type = item.privacySwap ? "Privacy" : "Normal";
+          csvObj.Receiver_Address = item.payoutAddress || "N/A";
           customizeCsv.push(csvObj);
         });
-      // Loop the array of objects
-      let header = true;
-      for (let row = 0; row < customizeCsv.length; row++) {
-        let keysAmount = Object.keys(customizeCsv[row]).length;
-        let keysCounter = 0;
-        // If this is the first row, generate the headings
-        if (header) {
-          // Loop each property of the object
-          for (let key in customizeCsv[row]) {
-            // This is to not add a comma at the last cell
-            // The '\r\n' adds a new line
-            csv += key + (keysCounter + 1 < keysAmount ? "," : "\r\n");
-            header = false;
-          }
-          csv += "\r\n";
-        }
-        for (let key in customizeCsv[row]) {
-          csv +=
-            customizeCsv[row][key] +
-            (keysCounter + 1 < keysAmount ? "," : "\r\n");
-          keysCounter++;
-        }
-        keysCounter = 0;
-      }
 
-      const anchor = document.createElement("a");
-      anchor.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-      anchor.target = "_blank";
-      anchor.download = "Beldex_wallet_swap_transaction_report.csv";
-      anchor.click();
+        if (customizeCsv.length === 0) {
+          this.$q.notify({
+            type: "negative",
+            timeout: 2000,
+            message: this.$t("notification.errors.errorSavingItem", {
+              item: "CSV Report"
+            })
+          });
+          return;
+        }
+
+        const headers = Object.keys(customizeCsv[0]);
+        const csvRows = [
+          headers.join(","),
+          ...customizeCsv.map(row =>
+            headers
+              .map(key => {
+                const val = row[key] ?? "";
+                const str = String(val).replace(/"/g, '""');
+                return str.includes(",") ||
+                  str.includes('"') ||
+                  str.includes("\n")
+                  ? `"${str}"`
+                  : str;
+              })
+              .join(",")
+          )
+        ];
+        csv = csvRows.join("\r\n");
+
+        if (!csv || !csv.trim()) {
+          this.$q.notify({
+            type: "negative",
+            timeout: 2000,
+            message: this.$t("notification.errors.errorSavingItem", {
+              item: "CSV Report"
+            })
+          });
+          return;
+        }
+
+        this.$gateway.send("core", "save_csv", {
+          defaultFilename: "Beldex_wallet_swap_transaction_report.csv",
+          csv
+        });
+      } catch (err) {
+        console.error("[SwapTxnHistory] exportCsvFromHistory error:", err);
+        this.$q.notify({
+          type: "negative",
+          timeout: 2000,
+          message: this.$t("notification.errors.errorSavingItem", {
+            item: "CSV Report"
+          })
+        });
+      } finally {
+        this.isCsvExporting = false;
+        this.get_transaction_History(this.privacySwap, this.currentPage);
+      }
     },
-    get_transaction_History() {
+    get_transaction_History(privacySwap, page = 1, options = {}) {
+      const isCsvExport = Boolean(options.isCsvExport);
+      if (this.isLoading && !isCsvExport) {
+        return;
+      }
+      if (isCsvExport) {
+        this.isCsvExporting = true;
+      } else {
+        this.isLoading = true;
+      }
+      if (!isCsvExport) {
+        this.currentPage = page;
+      }
       let data = {
         // id: this.createdTxnDetails.result.id
         // id:'eukaew8lktw5nlwn',
-        walletAddress: this.info.address
+        walletAddress: this.info.address,
+        privacySwap: privacySwap,
+        page: isCsvExport ? 1 : this.currentPage,
+        pageSize: isCsvExport ? this.csvExportPageSize : this.rowsPerPage,
+        isCsvExport
       };
-      // console.log("get_transaction_history data", data);
-      // let count = 1;
-      // this.refreshTxnHistory = setInterval(() => {
-      //   console.log("get status ::", count++);
-
-      // this.$gateway.send("swap", "transaction_history", data);
-
-      // this.$gateway.send("swap", "transaction_status", data);
       this.$gateway.send("swap", "transaction_history", data);
-      //   if (this.txnStatus.hasOwnProperty("result")) {
-      //     console.log("txnStatustxnStatus ", this.txnStatus);
-      //     if (this.txnStatus.result[0].status !== "waiting") {
-      //       console.log(
-      //         "txnStatustxnStatus 2",
-      //         this.txnStatus.result[0].status
-      //       );
-      //       this.navigation("swapStatus", 4);
-      //     }
-      //   }
-      // }, 30000);
     }
   }
 };
