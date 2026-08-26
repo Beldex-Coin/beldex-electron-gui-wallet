@@ -269,8 +269,9 @@ export class Backend {
     this.token = config.token;
 
     this.wss = new WebSocket.Server({
+      host: "127.0.0.1",
       port: config.port,
-      maxPayload: Number.POSITIVE_INFINITY
+      maxPayload: 1024 * 1024
     });
 
     this.wss.on("connection", ws => {
@@ -295,7 +296,16 @@ export class Backend {
   }
 
   receive(data) {
-    let decrypted_data = JSON.parse(this.scee.decryptString(data, this.token));
+    let decrypted_data;
+    try {
+      decrypted_data = JSON.parse(this.scee.decryptString(data, this.token));
+    } catch (error) {
+      console.error(
+        "[Backend] Failed to decrypt/parse incoming message:",
+        error
+      );
+      return;
+    }
     // console.log("decrypted_data:", decrypted_data);
     // route incoming request to either the daemon, wallet, or here
     switch (decrypted_data.module) {
@@ -411,7 +421,7 @@ export class Backend {
           path = "master_node";
         }
 
-        if (path) {
+        if (path && /^[0-9a-fA-F]{64}$/.test(params.id)) {
           const baseUrl =
             net_type === "testnet"
               ? "https://testnet.beldex.dev"
@@ -948,7 +958,7 @@ export class Backend {
   isSafeExternalUrl(url) {
     try {
       const parsedUrl = new URL(url);
-      return parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:";
+      return parsedUrl.protocol === "https:";
     } catch (error) {
       return false;
     }

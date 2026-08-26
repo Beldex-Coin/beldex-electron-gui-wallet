@@ -42,7 +42,7 @@
               <q-item-section class="swapdropDown-option q-py-sm q-pl-md">
                 <q-img
                   class="q-mr-sm"
-                  :src="currency.image"
+                  :src="safeImageSrc(currency.image)"
                   style="height: 20px; max-width: 20px; filter: grayscale(150)"
                 />
                 <q-item-label class="ft-bold q-mr-xs"
@@ -71,7 +71,7 @@
             <q-item-section class="swapdropDown-option q-py-sm q-pl-md">
               <q-img
                 class="q-mr-sm"
-                :src="currency.image"
+                :src="safeImageSrc(currency.image)"
                 style="height: 20px; max-width: 20px; filter: grayscale(150)"
               />
               <q-item-label class="ft-bold q-mr-xs"
@@ -139,6 +139,14 @@ export default {
     document.removeEventListener("click", this.close);
   },
   methods: {
+    safeImageSrc(url) {
+      try {
+        return new URL(url).protocol === "https:" ? url : undefined;
+      } catch (error) {
+        return undefined;
+      }
+    },
+
     set_searchCurrency(val) {
       this.searchTxt = val;
       this.$emit("searchCurrency", val);

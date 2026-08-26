@@ -16,9 +16,47 @@ export class SwapDatabaseManager {
 
   _getDefaultDbDir() {
     if (os.platform() === "win32") {
-      return `${os.homedir()}\\Documents\\Beldex`;
+      const appDataDir = `${os.homedir()}\\AppData\\Roaming`;
+      return `${appDataDir}\\Beldex`;
     }
     return path.join(os.homedir(), "Beldex");
+  }
+
+  _getLegacyWindowsDbDir() {
+    return `${os.homedir()}\\Documents\\Beldex`;
+  }
+
+  _migrateLegacyWindowsDb(newDbPath) {
+    if (os.platform() !== "win32") {
+      return;
+    }
+    try {
+      const legacyDbPath = path.join(
+        this._getLegacyWindowsDbDir(),
+        DB_FILE_NAME
+      );
+      if (fs.existsSync(legacyDbPath) && !fs.existsSync(newDbPath)) {
+        fs.mkdirpSync(path.dirname(newDbPath));
+        fs.moveSync(legacyDbPath, newDbPath);
+        console.log(
+          `[SwapDatabaseManager] Migrated legacy DB from ${legacyDbPath} to ${newDbPath}`
+        );
+      }
+    } catch (err) {
+      console.error("[SwapDatabaseManager] Legacy DB migration error:", err);
+    }
+  }
+
+  _restrictFilePermissions(dbPath) {
+    try {
+      fs.chmodSync(this.dbDir, 0o700);
+      fs.chmodSync(dbPath, 0o600);
+    } catch (err) {
+      console.error(
+        "[SwapDatabaseManager] Failed to restrict DB file permissions:",
+        err
+      );
+    }
   }
 
   getDbPath() {
@@ -33,12 +71,14 @@ export class SwapDatabaseManager {
     try {
       fs.mkdirpSync(this.dbDir);
       const dbPath = this.getDbPath();
+      this._migrateLegacyWindowsDb(dbPath);
       this.db = new Database(dbPath);
       this.db.pragma("journal_mode = WAL");
       this.db.pragma("synchronous = NORMAL");
 
       this._createTables();
       this._prepareStatements();
+      this._restrictFilePermissions(dbPath);
       console.log(`[SwapDatabaseManager] Database initialized at: ${dbPath}`);
     } catch (err) {
       console.error("[SwapDatabaseManager] Database init error:", err);
