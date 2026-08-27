@@ -195,6 +195,8 @@ import TxDetails from "components/tx_details";
 import moment from "moment";
 import DateRangeFilterMixin from "src/mixins/date_range_filter_mixin";
 
+const firstBlockDate = moment(1525305600000).format("YYYY/MM/DD");
+
 export default {
   components: {
     TxList,
@@ -235,7 +237,9 @@ export default {
       this.pendingStartDate = null;
     },
     dateRangeOptions(dateStr) {
-      return dateStr <= moment().format("YYYY/MM/DD");
+      return (
+        dateStr >= firstBlockDate && dateStr <= moment().format("YYYY/MM/DD")
+      );
     },
     onDraftDateRangeInput(value) {
       this.draft_date_range =

@@ -143,15 +143,14 @@
             :key="item.key"
             class="startup-progress-item"
           >
-            <div class="startup-progress-row">
-              <span class="startup-progress-label">{{ item.label }}</span>
-              <span class="startup-progress-value">{{ item.status }}</span>
-            </div>
             <div class="startup-progress-bar">
               <div
                 class="startup-progress-fill"
                 :style="{ width: `${item.percent}%` }"
               ></div>
+            </div>
+            <div class="startup-progress-value">
+              Rescanning {{ item.percent }}%
             </div>
           </div>
         </div>
@@ -284,21 +283,6 @@ export default {
       if (this.daemonProgressItem) {
         return this.$t("strings.syncingDaemon");
       }
-
-      switch (this.status.code) {
-        case 1:
-          return this.$t("strings.connectingToBackend");
-        case 2:
-          return this.$t("strings.loadingSettings");
-        case 3:
-          return this.$t("strings.startingDaemon");
-        case 6:
-          return this.$t("strings.startingWallet");
-        case 7:
-          return this.$t("strings.readingWalletList");
-        default:
-          return this.$t("strings.connectingToBackend");
-      }
     }
   }),
   watch: {
@@ -423,6 +407,10 @@ export default {
   width: min(520px, 88vw);
   margin: 0 auto;
   text-align: left;
+
+  position: absolute;
+  bottom: -200px;
+  left: -47px;
 }
 .startup-progress-item + .startup-progress-item {
   margin-top: 16px;
@@ -440,11 +428,13 @@ export default {
   font-size: 16px;
 }
 .startup-progress-value {
-  font-family: "Poppins-Medium";
+  font-family: "Poppins-light";
+  margin-top: 10px;
+  text-align: center;
 }
 .startup-progress-bar {
   width: 100%;
-  height: 8px;
+  height: 5px;
   border-radius: 999px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.12);
