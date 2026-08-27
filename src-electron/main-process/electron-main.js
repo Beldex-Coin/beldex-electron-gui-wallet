@@ -53,7 +53,6 @@ const inputMenu = Menu.buildFromTemplate([
 const rendererConnectSrc = [
   "'self'",
   "ws://127.0.0.1:12313",
-  "https://api.beldex.dev",
   "https://api.changelly.com"
 ];
 
