@@ -403,6 +403,7 @@ export default {
       copyWalletFail: "Failed to copy wallet",
       copyingPrivateKeys: "Error copying private keys",
       dataPathNotFound: "Data storage path not found",
+      dataPathCreateFailed: "Failed to create data storage directory",
       // decryptBNSRecord: "Failed to decrypt BNS Record for {name}",
       decryptBNSRecord:
         "The given BNS record doesn't exist or does not belong to this wallet",
@@ -457,6 +458,7 @@ export default {
       unknownError: "An unknown error occurred",
       walletAlreadyExists: "Wallet with name already exists",
       walletPathNotFound: "Wallet data storage path not found",
+      walletPathCreateFailed: "Failed to create wallet data storage directory",
       zeroAmount: "Amount must be greater than zero",
       greaterHeight: "Entered value is greater than current block height"
     },

@@ -403,6 +403,7 @@ export default {
       copyWalletFail: "Fehler beim Kopieren der Wallet",
       copyingPrivateKeys: "Fehler beim Kopieren der Private Keys",
       dataPathNotFound: "Pfad zur Speicherung nicht gefunden",
+      dataPathCreateFailed: "Speicherpfad konnte nicht erstellt werden",
       differentNetType: "Remote Node benutzt einen anderen „nettype“",
       enterSeedWords: "Seed Wörter eingeben",
       enterTransactionId: "Enter transaction ID",
@@ -456,6 +457,7 @@ export default {
       unknownError: "Ein unbekannter Fehler ist aufgetreten ",
       walletAlreadyExists: "Wallet mit diesem Namen existiert bereits",
       walletPathNotFound: "Wallet Daten Pfad nicht gefunden",
+      walletPathCreateFailed: "Wallet-Datenpfad konnte nicht erstellt werden",
       zeroAmount: "Betrag muss grösser als null sein",
       greaterHeight:
         "Der eingegebene Wert ist größer als die aktuelle Blockhöhe"

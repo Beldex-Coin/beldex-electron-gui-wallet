@@ -13,6 +13,7 @@ const electron = require("electron");
 const os = require("os");
 const fs = require("fs-extra");
 const path = require("upath");
+const { execFileSync } = require("child_process");
 import objectAssignDeep from "object-assign-deep";
 
 const { ipcMain: ipc, safeStorage } = electron;
@@ -595,6 +596,59 @@ export class Backend {
     });
   }
 
+  // Windows' Controlled Folder Access (ransomware protection) blocks
+  // unrecognized apps from creating files/folders under Documents and
+  // similar protected locations. There's no silent/unattended way around
+  // that by design - the only sanctioned path is an elevated (admin)
+  // PowerShell call, which itself pops Windows' own UAC consent prompt.
+  // This only runs after the user has explicitly agreed via our own dialog.
+  requestControlledFolderAccessExemption() {
+    if (os.platform() !== "win32") return false;
+
+    const targetPath = process.execPath;
+    const scriptPath = path.join(
+      os.tmpdir(),
+      `beldex-cfa-allow-${Date.now()}.ps1`
+    );
+
+    try {
+      fs.writeFileSync(
+        scriptPath,
+        `Add-MpPreference -ControlledFolderAccessAllowedApplications '${targetPath.replace(
+          /'/g,
+          "''"
+        )}'`,
+        "utf8"
+      );
+
+      execFileSync(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-Command",
+          `Start-Process powershell -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"'`
+        ],
+        { windowsHide: true, timeout: 60000 }
+      );
+
+      return true;
+    } catch (error) {
+      // User declined the UAC prompt, isn't an admin, or the machine's
+      // policy blocks this outright (e.g. org-managed Defender settings).
+      this.log?.error(
+        "Failed to obtain Controlled Folder Access exemption",
+        error
+      );
+      return false;
+    } finally {
+      try {
+        fs.removeSync(scriptPath);
+      } catch (cleanupError) {
+        // best-effort cleanup only
+      }
+    }
+  }
+
   startup() {
     this.send("set_app_data", {
       remotes: this.remotes,
@@ -671,7 +725,71 @@ export class Backend {
       // Make the wallet dir
       const { wallet_data_dir, data_dir } = this.config_data.app;
       if (!fs.existsSync(wallet_data_dir)) {
-        fs.mkdirpSync(wallet_data_dir);
+        const tryCreateWalletDir = () => {
+          try {
+            fs.mkdirpSync(wallet_data_dir);
+            return true;
+          } catch (error) {
+            this.log?.error(
+              "Failed to create wallet data directory, retrying",
+              error
+            );
+            try {
+              // Retry with Node's own recursive mkdir, in case fs-extra's
+              // mkdirpSync hit an edge case it doesn't recover from.
+              fs.mkdirSync(wallet_data_dir, { recursive: true });
+              return true;
+            } catch (retryError) {
+              this.log?.error(
+                "Failed to create wallet data directory",
+                retryError
+              );
+              return false;
+            }
+          }
+        };
+
+        let created = tryCreateWalletDir();
+
+        // On Windows this almost always means Controlled Folder Access
+        // (ransomware protection) is blocking us. Ask the user if we
+        // should request Windows' permission before giving up entirely.
+        if (!created && os.platform() === "win32") {
+          const response = dialog.showMessageBoxSync(this.mainWindow, {
+            type: "question",
+            buttons: ["Allow access", "Not now"],
+            defaultId: 0,
+            cancelId: 1,
+            title: "Wallet folder blocked by Windows",
+            message:
+              "Beldex Wallet needs permission to set up its wallet folder.",
+            detail:
+              'Click "Allow access" to continue. Windows may ask you to confirm as an administrator.'
+          });
+
+          if (response === 0) {
+            const elevated = this.requestControlledFolderAccessExemption();
+            if (elevated) {
+              created = tryCreateWalletDir();
+            }
+          }
+        }
+
+        if (!created) {
+          this.send("show_notification", {
+            type: "negative",
+            i18n: "notification.errors.walletPathCreateFailed",
+            timeout: 3000
+          });
+
+          // Go back to config
+          this.send("set_app_data", {
+            status: {
+              code: -1 // Return to config screen
+            }
+          });
+          return;
+        }
       }
 
       // Check to see if data and wallet directories exist
@@ -715,13 +833,30 @@ export class Backend {
 
       // Make sure we have the directories we need
       const net_dir = dirs[net_type];
-      if (!fs.existsSync(net_dir)) {
-        fs.mkdirpSync(net_dir);
-      }
-
       const log_dir = path.join(net_dir, "logs");
-      if (!fs.existsSync(log_dir)) {
-        fs.mkdirpSync(log_dir);
+      try {
+        if (!fs.existsSync(net_dir)) {
+          fs.mkdirpSync(net_dir);
+        }
+
+        if (!fs.existsSync(log_dir)) {
+          fs.mkdirpSync(log_dir);
+        }
+      } catch (error) {
+        this.log?.error("Failed to create data/log directory", error);
+        this.send("show_notification", {
+          type: "negative",
+          i18n: "notification.errors.dataPathCreateFailed",
+          timeout: 3000
+        });
+
+        // Go back to config
+        this.send("set_app_data", {
+          status: {
+            code: -1 // Return to config screen
+          }
+        });
+        return;
       }
 
       this.initLogger(log_dir);

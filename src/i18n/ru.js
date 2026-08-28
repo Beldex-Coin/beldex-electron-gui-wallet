@@ -396,6 +396,7 @@ export default {
       copyWalletFail: "Не удалось скопировать кошелек",
       copyingPrivateKeys: "Не удалось скопировать приватные ключи",
       dataPathNotFound: "Папка хранилища данных не найдена",
+      dataPathCreateFailed: "Не удалось создать папку хранилища данных",
       differentNetType: "Удаленная нода использует другой тип сети (nettype)",
       enterSeedWords: "Введите Семя-фразу",
       enterTransactionId: "Введите идентификатор транзакции",
@@ -449,6 +450,8 @@ export default {
       unknownError: "Произошла неизвестная ошибка",
       walletAlreadyExists: "Кошелек с таким именем уже существует",
       walletPathNotFound: "Путь к хранилищу данных кошелька не найден",
+      walletPathCreateFailed:
+        "Не удалось создать путь к хранилищу данных кошелька",
       zeroAmount: "Сумма должна быть больше нуля",
       greaterHeight: "Введенное значение больше текущей высоты блока"
     },

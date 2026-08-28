@@ -394,6 +394,8 @@ export default {
       copyWalletFail: "Cópia da carteira falhou",
       copyingPrivateKeys: "Erro ao copiar as chaves privadas",
       dataPathNotFound: "Directoria de armazenamento de dados não encontrada",
+      dataPathCreateFailed:
+        "Não foi possível criar o diretório de armazenamento de dados",
       differentNetType: "Nódulo remoto está usando um tipo de rede diferente",
       enterSeedWords: "Introduzir palavras semente",
       enterTransactionId: "Enter transaction ID",
@@ -448,6 +450,8 @@ export default {
       walletAlreadyExists: "Carteira com esse nome já existe",
       walletPathNotFound:
         "Caminho de armazenamento dos dados da carteira não encontrado",
+      walletPathCreateFailed:
+        "Não foi possível criar o caminho de armazenamento dos dados da carteira",
       zeroAmount: "Quantidade tem de ser superior a zero",
       greaterHeight: "O valor inserido é maior que a altura do bloco atual"
     },
