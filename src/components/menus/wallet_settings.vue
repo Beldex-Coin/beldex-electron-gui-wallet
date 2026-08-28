@@ -83,22 +83,44 @@
     <q-dialog v-model="modals.private_keys.visible" @hide="closePrivateKeys()">
       <div class="modal private-key-modal">
         <div class="modal-header ft-bold">{{ $t("titles.privateKeys") }}</div>
-        <div class="q-ma-md">
-          <template v-if="secret.mnemonic">
-            <h6 class="q-mb-xs ft-semibold q-pl-md">
-              {{ $t("strings.seedWords") }} -
-              <span class="rSeed_hint">{{
-                $t("strings.saveSeedWarning")
-              }}</span>
-            </h6>
-            <div class="row seed_box q-pa-md">
-              <div class="col ft-medium">{{ secret.mnemonic }}</div>
+        <div class="pk-body">
+          <div v-if="info.address" class="pk-section">
+            <div class="pk-label ft-bold">
+              {{ $t("footer.wallet") }} :
+              <span class="ft-semibold">{{ info.name }}</span>
+            </div>
+            <div class="pk-box row items-center q-px-md q-py-md">
+              <div class="col pk-text ft-medium">{{ info.address }}</div>
               <div class="col-auto">
                 <q-btn
-                  class="copy-btn"
-                  color="secondary"
-                  padding="10px 35px"
-                  size="md"
+                  class="pk-copy-btn"
+                  unelevated
+                  icon-right="content_copy"
+                  :label="this.$t('buttons.copy')"
+                  @click="copyAddress(info.address)"
+                >
+                  <q-tooltip
+                    anchor="center left"
+                    self="center right"
+                    :offset="[5, 10]"
+                    >{{ $t("menuItems.copyAddress") }}</q-tooltip
+                  >
+                </q-btn>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="secret.mnemonic" class="pk-section">
+            <div class="pk-label ft-bold">
+              {{ $t("strings.seedWords") }} -
+              <span class="pk-hint">{{ $t("strings.saveSeedWarning") }}</span>
+            </div>
+            <div class="pk-box pk-box-tall row items-center q-px-md">
+              <div class="col pk-text ft-medium">{{ secret.mnemonic }}</div>
+              <div class="col-auto">
+                <q-btn
+                  class="pk-copy-btn"
+                  unelevated
                   icon-right="content_copy"
                   :label="this.$t('buttons.copy')"
                   @click="copyPrivateKey('mnemonic', $event)"
@@ -112,22 +134,21 @@
                 </q-btn>
               </div>
             </div>
-          </template>
+          </div>
 
-          <template v-if="secret.view_key != secret.spend_key">
-            <h6 class="q-mb-xs ft-semibold q-pl-md">
-              {{ $t("strings.viewKey") }}
-            </h6>
-            <div class="row viewKey_box q-pa-md">
-              <div class="col ft-medium" style="word-break: break-all">
+          <div
+            v-if="secret.view_key != secret.spend_key"
+            class="pk-section pk-section-plain"
+          >
+            <div class="pk-label ft-bold">{{ $t("strings.viewKey") }}</div>
+            <div class="row items-start no-wrap pk-plain-row q-pr-md">
+              <div class="col pk-text ft-medium" style="word-break: break-all">
                 {{ secret.view_key }}
               </div>
               <div class="col-auto">
                 <q-btn
-                  class="copy-btn"
-                  color="secondary"
-                  padding="10px 35px"
-                  size="md"
+                  class="pk-copy-btn"
+                  unelevated
                   icon-right="content_copy"
                   :label="this.$t('buttons.copy')"
                   @click="copyPrivateKey('view_key', $event)"
@@ -141,22 +162,23 @@
                 </q-btn>
               </div>
             </div>
-          </template>
+          </div>
 
-          <template v-if="!/^0*$/.test(secret.spend_key)">
-            <h6 class="q-mb-xs ft-semibold q-pl-md">
-              {{ $t("strings.spendKey") }}
-            </h6>
-            <div class="row q-pa-md">
-              <div class="col ft-medium" style="word-break: break-all">
+          <div v-if="!/^0*$/.test(secret.spend_key)" class="pk-divider"></div>
+
+          <div
+            v-if="!/^0*$/.test(secret.spend_key)"
+            class="pk-section pk-section-plain"
+          >
+            <div class="pk-label ft-bold">{{ $t("strings.spendKey") }}</div>
+            <div class="row items-start no-wrap pk-plain-row q-pr-md">
+              <div class="col pk-text ft-medium" style="word-break: break-all">
                 {{ secret.spend_key }}
               </div>
               <div class="col-auto">
                 <q-btn
-                  class="copy-btn"
-                  color="secondary"
-                  padding="10px 35px"
-                  size="md"
+                  class="pk-copy-btn"
+                  unelevated
                   icon-right="content_copy"
                   :label="this.$t('buttons.copy')"
                   @click="copyPrivateKey('spend_key', $event)"
@@ -170,11 +192,12 @@
                 </q-btn>
               </div>
             </div>
-          </template>
+          </div>
 
-          <div class="q-mt-lg flex justify-center">
+          <div class="pk-actions flex justify-center">
             <q-btn
-              color="primary"
+              class="pk-close-btn ft-semibold"
+              unelevated
               :label="$t('buttons.close')"
               @click="hideModal('private_keys')"
             />
@@ -627,6 +650,14 @@ export default {
         .onDismiss(() => {})
         .onCancel(() => {});
     },
+    copyAddress(address) {
+      clipboard.writeText(address);
+      this.$q.notify({
+        type: "positive",
+        timeout: 1000,
+        message: this.$t("notification.positive.addressCopied")
+      });
+    },
     closePrivateKeys() {
       this.hideModal("private_keys");
       setTimeout(() => {
@@ -899,13 +930,95 @@ export default {
   background: transparent !important;
 }
 
-.private-key-modal {
-  // background: #2f2f40;
+.modal.private-key-modal {
+  background-color: #242433;
   color: #fff;
-  border-radius: 10px !important;
+  border-radius: 20px !important;
+  max-width: 70%;
 
-  .copy-btn {
-    margin-left: 8px;
+  .modal-header {
+    font-size: 28px;
+  }
+
+  .pk-body {
+    padding: 8px 32px 28px;
+  }
+
+  .pk-section {
+    margin-top: 22px;
+
+    &:first-child {
+      margin-top: 4px;
+    }
+  }
+
+  .pk-label {
+    font-size: 17px;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  .pk-hint {
+    color: #00e509;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .pk-box {
+    border: 1px solid #484856;
+    border-radius: 10px;
+    min-height: 58px;
+  }
+
+  .pk-box-tall {
+    min-height: 110px;
+    align-items: center;
+  }
+
+  .pk-text {
+    font-size: 15px;
+    color: #fff;
+    word-break: break-all;
+  }
+
+  .pk-divider {
+    height: 1px;
+    background-color: #484856;
+    margin: 22px 0;
+  }
+
+  .pk-copy-btn {
+    margin-left: 12px;
+    background-color: #2879fb;
+    color: #fff;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 14px;
+
+    &:hover {
+      background-color: #478eff;
+    }
+
+    .q-icon {
+      font-size: 15px;
+      margin-left: 6px;
+    }
+  }
+
+  .pk-actions {
+    margin-top: 30px;
+  }
+
+  .pk-close-btn {
+    background-color: #00ad07;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 17px;
+    padding: 4px 40px;
+
+    &:hover {
+      background-color: #00d409;
+    }
   }
 }
 .sub_menu_txt {
