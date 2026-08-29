@@ -409,6 +409,11 @@ export default {
       failedWalletImport: "Falhou importação da carteira",
       failedWalletOpen: "Falhou abertura da carteira. Por favor tente de novo.",
       failedWalletRead: "Falha ao ler as carteiras",
+      failedWalletRestore:
+        "Falha ao restaurar a carteira. Por favor, tente novamente.",
+      failedWalletCreation:
+        "Falha ao criar a carteira. Por favor, tente novamente.",
+
       internalError: "Erro interno",
       invalidAddress: "Endereço não válido",
       invalidAmount: "Quantidade não válida",

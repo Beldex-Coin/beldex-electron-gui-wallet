@@ -237,9 +237,17 @@ export default {
       this.pendingStartDate = null;
     },
     dateRangeOptions(dateStr) {
-      return (
-        dateStr >= firstBlockDate && dateStr <= moment().format("YYYY/MM/DD")
-      );
+      if (dateStr < firstBlockDate || dateStr > moment().format("YYYY/MM/DD")) {
+        return false;
+      }
+      if (this.pendingStartDate) {
+        const startDateStr = moment(
+          `${this.pendingStartDate.year}-${this.pendingStartDate.month}-${this.pendingStartDate.day}`,
+          "YYYY-M-D"
+        ).format("YYYY/MM/DD");
+        return dateStr >= startDateStr;
+      }
+      return true;
     },
     onDraftDateRangeInput(value) {
       this.draft_date_range =

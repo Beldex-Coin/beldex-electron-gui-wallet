@@ -422,6 +422,10 @@ export default {
       failedWalletOpen:
         "Echec de l'ouverture du portefeuille : veuillez essayer de nouveau.",
       failedWalletRead: "Impossible de lire les portefeuilles",
+      failedWalletRestore:
+        "Echec de la restauration du portefeuille. Veuillez réessayer.",
+      failedWalletCreation:
+        "Echec de la création du portefeuille. Veuillez réessayer.",
       internalError: "Erreur interne",
       invalidAddress: "Adresse non valide",
       invalidAmount: "Montant non valide",

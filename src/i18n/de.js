@@ -419,6 +419,9 @@ export default {
       failedWalletOpen:
         "Fehler beim Öffnen der Wallet. Bitte versuche es erneut",
       failedWalletRead: "Fehler beim Lesen der Wallets",
+      failedWalletRestore: "Fehler beim Wiederherstellen der Wallet",
+      failedWalletCreation:
+        "Fehler beim Erstellen der Wallet. Bitte versuche es erneut.",
       internalError: "Interner Fehler",
       invalidAddress: "Adresse nicht gültig",
       invalidAmount: "Betrag nicht gültig",

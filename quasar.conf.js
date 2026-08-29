@@ -33,7 +33,7 @@ const whitelistedEnv = {
 module.exports = function() {
   return {
     // app boot (/src/boot)
-    boot: ["i18n", "axios", "vuelidate", "gateway", "timeago"],
+    boot: ["icon-map", "i18n", "axios", "vuelidate", "gateway", "timeago"],
     css: ["app.styl"],
     extras: [
       // ctx.theme.mat ? "roboto-font" : null,

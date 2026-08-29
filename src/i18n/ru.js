@@ -410,7 +410,11 @@ export default {
       failedToSetLanguage: "Не удалось переключить язык: {lang}",
       failedWalletImport: "Не удалось импортировать кошелек",
       failedWalletOpen: "Не удалось открыть кошелек. Попробуйте еще раз.",
-      failedWalletRead: "Failed to read wallets",
+      failedWalletRead: "Не удалось прочитать кошельки",
+      failedWalletRestore:
+        "Не удалось восстановить кошелек. Пожалуйста, попробуйте снова.",
+      failedWalletCreation:
+        "Не удалось создать кошелек. Пожалуйста, попробуйте снова.",
       internalError: "Внутренняя ошибка",
       invalidAddress: "Адрес не верен",
       invalidAmount: "Сумма не верна",

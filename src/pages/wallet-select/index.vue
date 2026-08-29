@@ -25,7 +25,7 @@
               />
             </svg>
           </q-btn>
-          <span style="padding-top: 10px;">{{ this.$t("buttons.back") }}</span>
+          <span>{{ this.$t("buttons.back") }}</span>
         </div>
       </div>
       <div
@@ -357,8 +357,8 @@ export default {
     width: 832px;
     .back-btn {
       cursor: pointer;
-      width: 40px;
-      height: 40px;
+      // width: 40px;
+      // height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -370,8 +370,8 @@ export default {
     span {
       font-family: "Poppins-Bold";
       font-size: 26px;
-      padding-bottom: 5px;
-      margin-left: 10px;
+      // padding-bottom: 5px;
+      // margin-left: 10px;
     }
   }
 }

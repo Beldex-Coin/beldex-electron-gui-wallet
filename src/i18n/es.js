@@ -420,6 +420,9 @@ export default {
       failedWalletImport: "Fallo al importar el monedero",
       failedWalletOpen: "Fallo al abrir el monedero. Inténtelo de nuevo.",
       failedWalletRead: "No se pudieron leer las billeteras",
+      failedWalletRestore:
+        "Fallo al restaurar el monedero. Inténtelo de nuevo.",
+      failedWalletCreation: "Fallo al crear el monedero. Inténtelo de nuevo.",
       internalError: "Error interno",
       invalidAddress: "Dirección no válida",
       invalidAmount: "Cantidad no válida",
