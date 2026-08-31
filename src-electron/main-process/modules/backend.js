@@ -272,7 +272,43 @@ export class Backend {
     this.wss = new WebSocket.Server({
       host: "127.0.0.1",
       port: config.port,
-      maxPayload: 1024 * 1024
+      // Local, token-authenticated loopback channel only - not reachable
+      // over the network. 1MB was too tight for legitimate traffic: CSV
+      // exports (txhistory.vue / swapTxnHistory.vue, up to ~100k rows) can
+      // exceed 1MB of JSON+encrypted+base64 payload and would silently fail
+      // to send. 50MB comfortably covers that while still being a bounded cap.
+      maxPayload: 50 * 1024 * 1024,
+      // Binding to 127.0.0.1 keeps LAN peers out, but any page open in a
+      // normal browser on this same machine can still try
+      // ws://127.0.0.1:<port> - WebSocket handshakes aren't subject to
+      // CORS. Real cross-origin pages always send an Origin header
+      // identifying themselves; this app's own renderer either sends none
+      // (common for a file:// page) or one of the origins below. Reject
+      // only when an Origin header IS present and doesn't match, so this
+      // never has a chance of blocking the app's own connection.
+      verifyClient: (info, callback) => {
+        const origin = info.req.headers.origin;
+        if (!origin) {
+          callback(true);
+          return;
+        }
+        const allowedOrigins = ["file://", "null"];
+        try {
+          if (process.env.APP_URL) {
+            allowedOrigins.push(new URL(process.env.APP_URL).origin);
+          }
+        } catch (err) {
+          // Malformed/unset APP_URL - fall back to the static allowlist.
+        }
+        const allowed = allowedOrigins.includes(origin);
+        if (!allowed) {
+          console.error(
+            "[Backend] Rejected WebSocket connection from unexpected origin:",
+            origin
+          );
+        }
+        callback(allowed, 403, "Forbidden");
+      }
     });
 
     this.wss.on("connection", ws => {
@@ -332,7 +368,10 @@ export class Backend {
   }
 
   handle(data) {
-    let params = data.data;
+    // Guard against a token-holding caller sending {module:"core", method:...}
+    // with no "data" at all - several cases below (open_explorer among them)
+    // dereference params fields directly and would throw uncaught otherwise.
+    let params = data.data || {};
 
     // check if config has changed
     let config_changed = false;

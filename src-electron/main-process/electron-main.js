@@ -79,7 +79,9 @@ function getContentSecurityPolicy() {
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     `style-src ${styleSrc.join(" ")}`,
-    "img-src 'self' data: https:",
+    // Currency icons only ever come from Changelly/QuickEx - see the
+    // matching hostname allowlist in currencyDropDown.vue's safeImageSrc().
+    "img-src 'self' data: https://changelly.com https://*.changelly.com https://quickex.io https://*.quickex.io",
     "font-src 'self' data:",
     `connect-src ${connectSrc.join(" ")}`,
     "object-src 'none'",

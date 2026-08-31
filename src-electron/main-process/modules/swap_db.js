@@ -3,9 +3,30 @@ import path from "upath";
 import os from "os";
 import fs from "fs-extra";
 import crypto from "crypto";
+import { safeStorage } from "electron";
 import { toMsEpoch } from "../../utils.js";
 
 const DB_FILE_NAME = "beldex_wallet.db";
+
+// Prefix marking a column value as safeStorage-encrypted (base64 ciphertext
+// follows). Rows written before this fix - or written on a machine where
+// OS-level encryption isn't available - have no prefix and are returned
+// as-is, so older databases keep working without a migration step.
+const ENCRYPTED_FIELD_PREFIX = "encv1:";
+
+// Columns that can hold a third-party exchange's addresses/memos or its full
+// raw response - the fields actually worth protecting at rest. wallet_address,
+// exchange, txn_id and the rest stay plaintext: they're used in WHERE clauses
+// and indexes, and aren't independently sensitive the way an address is.
+const ENCRYPTED_FIELDS = [
+  "payin_address",
+  "payin_address_memo",
+  "payout_address",
+  "payout_address_memo",
+  "refund_address",
+  "refund_address_memo",
+  "raw_response"
+];
 
 export class SwapDatabaseManager {
   constructor(dbDir = null) {
@@ -19,37 +40,77 @@ export class SwapDatabaseManager {
       const appDataDir = `${os.homedir()}\\AppData\\Roaming`;
       return `${appDataDir}\\Beldex`;
     }
-    return path.join(os.homedir(), "Beldex");
-  }
-
-  _getLegacyWindowsDbDir() {
-    return `${os.homedir()}\\Documents\\Beldex`;
-  }
-
-  _migrateLegacyWindowsDb(newDbPath) {
-    if (os.platform() !== "win32") {
-      return;
-    }
-    try {
-      const legacyDbPath = path.join(
-        this._getLegacyWindowsDbDir(),
-        DB_FILE_NAME
+    if (os.platform() === "darwin") {
+      return path.join(
+        os.homedir(),
+        "Library",
+        "Application Support",
+        "Beldex"
       );
-      if (fs.existsSync(legacyDbPath) && !fs.existsSync(newDbPath)) {
+    }
+    // Linux and anything else: honour XDG_CONFIG_HOME when set, matching the
+    // Windows/macOS moves above to an app-data location instead of a plain,
+    // always-visible folder directly under the home directory.
+    const xdgConfigHome =
+      process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
+    return path.join(xdgConfigHome, "Beldex");
+  }
+
+  // Pre-fix default on every platform was a plain "Beldex" folder directly
+  // under the home directory (Windows additionally had a "Documents\Beldex"
+  // variant even further back) - used to locate and move forward any
+  // existing DB when a caller falls back to _getDefaultDbDir().
+  _getLegacyDbDirs() {
+    if (os.platform() === "win32") {
+      return [`${os.homedir()}\\Documents\\Beldex`];
+    }
+    return [path.join(os.homedir(), "Beldex")];
+  }
+
+  _migrateLegacyDb(newDbPath) {
+    try {
+      for (const legacyDir of this._getLegacyDbDirs()) {
+        const legacyDbPath = path.join(legacyDir, DB_FILE_NAME);
+        if (legacyDbPath === newDbPath) {
+          continue;
+        }
+        if (!fs.existsSync(legacyDbPath) || fs.existsSync(newDbPath)) {
+          continue;
+        }
         fs.mkdirpSync(path.dirname(newDbPath));
-        fs.moveSync(legacyDbPath, newDbPath);
+        // Move the main DB file plus its WAL-mode sidecar files together -
+        // leaving -wal/-shm behind can strand committed-but-not-yet-
+        // checkpointed rows in the old location.
+        for (const suffix of ["", "-wal", "-shm"]) {
+          const src = `${legacyDbPath}${suffix}`;
+          const dest = `${newDbPath}${suffix}`;
+          if (fs.existsSync(src)) {
+            fs.moveSync(src, dest);
+          }
+        }
         console.log(
           `[SwapDatabaseManager] Migrated legacy DB from ${legacyDbPath} to ${newDbPath}`
         );
+        return;
       }
     } catch (err) {
       console.error("[SwapDatabaseManager] Legacy DB migration error:", err);
     }
   }
 
-  _restrictFilePermissions(dbPath) {
+  _restrictDirPermissions() {
     try {
       fs.chmodSync(this.dbDir, 0o700);
+    } catch (err) {
+      console.error(
+        "[SwapDatabaseManager] Failed to restrict DB directory permissions:",
+        err
+      );
+    }
+  }
+
+  _restrictFilePermissions(dbPath) {
+    try {
       fs.chmodSync(dbPath, 0o600);
     } catch (err) {
       console.error(
@@ -57,6 +118,57 @@ export class SwapDatabaseManager {
         err
       );
     }
+  }
+
+  _isEncryptionAvailable() {
+    return (
+      safeStorage &&
+      typeof safeStorage.isEncryptionAvailable === "function" &&
+      safeStorage.isEncryptionAvailable()
+    );
+  }
+
+  _encryptField(value) {
+    if (value == null) return value;
+    if (!this._isEncryptionAvailable()) return value;
+    try {
+      const encrypted = safeStorage.encryptString(String(value));
+      return `${ENCRYPTED_FIELD_PREFIX}${encrypted.toString("base64")}`;
+    } catch (err) {
+      console.error("[SwapDatabaseManager] Failed to encrypt field:", err);
+      return value;
+    }
+  }
+
+  _decryptField(value) {
+    if (
+      typeof value !== "string" ||
+      !value.startsWith(ENCRYPTED_FIELD_PREFIX)
+    ) {
+      return value;
+    }
+    if (!this._isEncryptionAvailable()) {
+      // Can't decrypt on this machine right now (OS keychain locked/
+      // unavailable) - surface as unavailable rather than returning ciphertext.
+      return null;
+    }
+    try {
+      return safeStorage.decryptString(
+        Buffer.from(value.slice(ENCRYPTED_FIELD_PREFIX.length), "base64")
+      );
+    } catch (err) {
+      console.error("[SwapDatabaseManager] Failed to decrypt field:", err);
+      return null;
+    }
+  }
+
+  _decryptRow(row) {
+    if (!row) return row;
+    const decrypted = { ...row };
+    for (const field of ENCRYPTED_FIELDS) {
+      decrypted[field] = this._decryptField(decrypted[field]);
+    }
+    return decrypted;
   }
 
   getDbPath() {
@@ -70,15 +182,17 @@ export class SwapDatabaseManager {
 
     try {
       fs.mkdirpSync(this.dbDir);
+      this._restrictDirPermissions();
       const dbPath = this.getDbPath();
-      this._migrateLegacyWindowsDb(dbPath);
+      console.log(`[SwapDatabaseManager] Initializing database at: ${dbPath}`);
+      this._migrateLegacyDb(dbPath);
       this.db = new Database(dbPath);
+      this._restrictFilePermissions(dbPath);
       this.db.pragma("journal_mode = WAL");
       this.db.pragma("synchronous = NORMAL");
 
       this._createTables();
       this._prepareStatements();
-      this._restrictFilePermissions(dbPath);
       console.log(`[SwapDatabaseManager] Database initialized at: ${dbPath}`);
     } catch (err) {
       console.error("[SwapDatabaseManager] Database init error:", err);
@@ -240,21 +354,22 @@ export class SwapDatabaseManager {
       network_from: tx.network_from || null,
       currency_to: tx.currency_to || "",
       network_to: tx.network_to || null,
-      payin_address: tx.payin_address || null,
-      payin_address_memo: tx.payin_address_memo || null,
-      payout_address: tx.payout_address || null,
-      payout_address_memo: tx.payout_address_memo || null,
-      refund_address: tx.refund_address || null,
+      payin_address: this._encryptField(tx.payin_address || null),
+      payin_address_memo: this._encryptField(tx.payin_address_memo || null),
+      payout_address: this._encryptField(tx.payout_address || null),
+      payout_address_memo: this._encryptField(tx.payout_address_memo || null),
+      refund_address: this._encryptField(tx.refund_address || null),
       refund_status: tx.refund_status || "not_returned",
-      refund_address_memo: tx.refund_address_memo || null,
+      refund_address_memo: this._encryptField(tx.refund_address_memo || null),
       amount_from: tx.amount_from != null ? Number(tx.amount_from) : null,
       amount_to: tx.amount_to != null ? Number(tx.amount_to) : null,
       network_fee: tx.network_fee != null ? Number(tx.network_fee) : 0,
       platform_fee: tx.platform_fee != null ? Number(tx.platform_fee) : 0,
-      raw_response:
+      raw_response: this._encryptField(
         typeof tx.raw_response === "object"
           ? JSON.stringify(tx.raw_response)
-          : tx.raw_response || null,
+          : tx.raw_response || null
+      ),
       created_at: createdAt,
       updated_at: tx.updated_at ? Number(tx.updated_at) : now
     };
@@ -277,13 +392,17 @@ export class SwapDatabaseManager {
     if (!walletAddress) return [];
     const limit = Math.max(1, Number(pageSize) || 7);
     const offset = Math.max(0, (Math.max(1, Number(page) || 1) - 1) * limit);
-    return this.statements.getOrderHistory.all(walletAddress, limit, offset);
+    return this.statements.getOrderHistory
+      .all(walletAddress, limit, offset)
+      .map(row => this._decryptRow(row));
   }
 
   getAllOrderHistory(walletAddress) {
     this.init();
     if (!walletAddress) return [];
-    return this.statements.getAllOrderHistory.all(walletAddress);
+    return this.statements.getAllOrderHistory
+      .all(walletAddress)
+      .map(row => this._decryptRow(row));
   }
 
   getOrderHistoryCount(walletAddress) {
@@ -296,13 +415,17 @@ export class SwapDatabaseManager {
   getTxnByProviderId(exchange, txnId) {
     this.init();
     if (!exchange || !txnId) return null;
-    return this.statements.getTxnByProviderId.get(exchange, txnId) || null;
+    return this._decryptRow(
+      this.statements.getTxnByProviderId.get(exchange, txnId) || null
+    );
   }
 
   getTxnById(txnId) {
     this.init();
     if (!txnId) return null;
-    return this.statements.getTxnById.get(String(txnId)) || null;
+    return this._decryptRow(
+      this.statements.getTxnById.get(String(txnId)) || null
+    );
   }
 
   getExistingTxnIds(walletAddress) {

@@ -98,6 +98,20 @@
 <script>
 import OxenField from "components/oxen_field";
 
+// Currency icon URLs come straight from the Changelly/QuickEx API responses
+// (see swap_mappers.js) and are rendered as <img> sources - an "https only"
+// check alone still lets either provider (or anyone able to influence what
+// they return) point this at an arbitrary host. Restrict to the two swap
+// providers' own domains, which is where their currency icons are actually
+// served from (e.g. Changelly's are documented at cdn.changelly.com).
+const TRUSTED_IMAGE_HOSTS = ["changelly.com", "quickex.io"];
+
+function isTrustedImageHost(hostname) {
+  return TRUSTED_IMAGE_HOSTS.some(
+    domain => hostname === domain || hostname.endsWith(`.${domain}`)
+  );
+}
+
 export default {
   name: "Dropdown",
   components: {
@@ -141,7 +155,11 @@ export default {
   methods: {
     safeImageSrc(url) {
       try {
-        return new URL(url).protocol === "https:" ? url : undefined;
+        const parsed = new URL(url);
+        return parsed.protocol === "https:" &&
+          isTrustedImageHost(parsed.hostname)
+          ? url
+          : undefined;
       } catch (error) {
         return undefined;
       }
