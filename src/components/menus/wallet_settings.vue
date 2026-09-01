@@ -82,15 +82,15 @@
     <!-- PRIVATE KEY MODAL -->
     <q-dialog v-model="modals.private_keys.visible" @hide="closePrivateKeys()">
       <div class="modal private-key-modal">
-        <div class="modal-header ft-bold">{{ $t("titles.privateKeys") }}</div>
+        <div class="modal-header">{{ $t("titles.privateKeys") }}</div>
         <div class="pk-body">
-          <div v-if="info.address" class="pk-section">
-            <div class="pk-label ft-bold">
+          <div v-if="info.address" class="pk-section ">
+            <div class="pk-label  q-mb-sm">
               {{ $t("footer.wallet") }} :
               <span class="ft-semibold">{{ info.name }}</span>
             </div>
             <div class="pk-box row items-center q-px-md q-py-md">
-              <div class="col pk-text ft-medium">{{ info.address }}</div>
+              <div class="col pk-text ">{{ info.address }}</div>
               <div class="col-auto">
                 <q-btn
                   class="pk-copy-btn"
@@ -111,12 +111,17 @@
           </div>
 
           <div v-if="secret.mnemonic" class="pk-section">
-            <div class="pk-label ft-bold">
-              {{ $t("strings.seedWords") }} -
-              <span class="pk-hint">{{ $t("strings.saveSeedWarning") }}</span>
+            <div class="row items-start no-wrap pk-plain-row q-pr-md q-mb-sm">
+              <div class="pk-label ft-medium">
+                {{ $t("strings.seedWords") }} -
+              </div>
+              <div class="pk-hint ft-regular">
+                {{ $t("strings.saveSeedWarning") }}
+              </div>
             </div>
+
             <div class="pk-box pk-box-tall row items-center q-px-md">
-              <div class="col pk-text ft-medium">{{ secret.mnemonic }}</div>
+              <div class="col pk-text ">{{ secret.mnemonic }}</div>
               <div class="col-auto">
                 <q-btn
                   class="pk-copy-btn"
@@ -140,10 +145,14 @@
             v-if="secret.view_key != secret.spend_key"
             class="pk-section pk-section-plain"
           >
-            <div class="pk-label ft-bold">{{ $t("strings.viewKey") }}</div>
             <div class="row items-start no-wrap pk-plain-row q-pr-md">
-              <div class="col pk-text ft-medium" style="word-break: break-all">
-                {{ secret.view_key }}
+              <div class="col">
+                <div class="pk-label ft-medium">
+                  {{ $t("strings.viewKey") }}
+                </div>
+                <div class=" pk-text " style="word-break: break-all">
+                  {{ secret.view_key }}
+                </div>
               </div>
               <div class="col-auto">
                 <q-btn
@@ -170,10 +179,14 @@
             v-if="!/^0*$/.test(secret.spend_key)"
             class="pk-section pk-section-plain"
           >
-            <div class="pk-label ft-bold">{{ $t("strings.spendKey") }}</div>
             <div class="row items-start no-wrap pk-plain-row q-pr-md">
-              <div class="col pk-text ft-medium" style="word-break: break-all">
-                {{ secret.spend_key }}
+              <div class="col">
+                <div class="pk-label ft-medium">
+                  {{ $t("strings.spendKey") }}
+                </div>
+                <div class="pk-text " style="word-break: break-all">
+                  {{ secret.spend_key }}
+                </div>
               </div>
               <div class="col-auto">
                 <q-btn
@@ -881,17 +894,21 @@ export default {
   .q-item-type + .q-item-type {
     border: unset !important;
   }
+
   .q-item {
     padding: 0;
   }
+
   .q-hoverable:hover > .q-focus-helper {
     background-color: #40405e !important;
     border-radius: 10px;
   }
 }
+
 .q-placeholder {
   color: #fff;
 }
+
 .password-modal {
   background: #242433;
   color: #fff;
@@ -902,6 +919,7 @@ export default {
     color: #fff;
   }
 }
+
 .q-field__label {
   color: #fff !important;
 }
@@ -922,10 +940,12 @@ export default {
     overflow: hidden;
     width: 275px !important;
   }
+
   input {
     overflow: ellipsis;
   }
 }
+
 .q-radio__inner:before {
   background: transparent !important;
 }
@@ -938,6 +958,7 @@ export default {
 
   .modal-header {
     font-size: 28px;
+    font-weight: 700;
   }
 
   .pk-body {
@@ -953,15 +974,17 @@ export default {
   }
 
   .pk-label {
-    font-size: 17px;
+    font-size: 18px;
     color: #fff;
-    margin-bottom: 10px;
+    font-weight: 700;
+    // margin-bottom: 10px;
   }
 
   .pk-hint {
     color: #00e509;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
+    margin-left: 5px;
   }
 
   .pk-box {
@@ -994,6 +1017,7 @@ export default {
     border-radius: 10px;
     padding: 4px 10px;
     font-size: 14px;
+    margin-top: 3px;
 
     &:hover {
       background-color: #478eff;
@@ -1021,6 +1045,7 @@ export default {
     }
   }
 }
+
 .sub_menu_txt {
   color: white;
   font-size: 18px;

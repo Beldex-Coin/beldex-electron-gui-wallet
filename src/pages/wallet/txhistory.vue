@@ -86,10 +86,13 @@
                           :value="qDateValue"
                           range
                           minimal
+                          no-unset
                           :options="dateRangeOptions"
+                          :default-year-month="viewedYearMonth"
                           @input="onDraftDateRangeInput"
                           @range-start="onRangeStart"
                           @range-end="onRangeEnd"
+                          @navigation="onCalendarNavigation"
                         />
                         <div
                           class="row items-center justify-end q-gutter-sm q-pa-sm"
@@ -211,7 +214,12 @@ export default {
       txnDetails: "",
       date_range: { from: null, to: null },
       draft_date_range: { from: null, to: null },
-      pendingStartDate: null
+      pendingStartDate: null,
+      // Anchor month q-date should fall back to when its :value goes
+      // empty mid-selection, so it stays put instead of jumping to today.
+      // Must never be null: q-date treats an explicit null (vs. undefined)
+      // as a real value and crashes calling .split('/') on it.
+      viewedYearMonth: moment().format("YYYY/MM")
     };
   },
   methods: {
@@ -226,6 +234,14 @@ export default {
     onDateRangePopupShow() {
       this.draft_date_range = this.cloneDateRange(this.date_range);
       this.pendingStartDate = null;
+      const anchor = this.draft_date_range.from || this.draft_date_range.to;
+      this.viewedYearMonth = moment(
+        anchor || undefined,
+        anchor ? "YYYY/MM/DD" : undefined
+      ).format("YYYY/MM");
+    },
+    onCalendarNavigation({ year, month }) {
+      this.viewedYearMonth = `${year}/${String(month).padStart(2, "0")}`;
     },
     applyDateRange() {
       if (!this.hasDraftDateRange) return;

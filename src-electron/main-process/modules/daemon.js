@@ -11,7 +11,13 @@ const SHOULD_LOG_PROCESS_OUTPUT = process.env.BELDEX_VERBOSE_LOGS === "true";
 const PROCESS_OUTPUT_TAIL_LIMIT = 20;
 const LOCAL_DAEMON_START_TIMEOUT_MS =
   process.platform === "win32" ? 120000 : 45000;
+// Safety ceiling only: a first-time or long-idle local daemon can spend many
+// minutes replaying already-downloaded blocks into the master-node/BNS
+// indexes before RPC responds. LOCAL_DAEMON_START_TIMEOUT_MS is treated as a
+// liveness re-check interval while the process is alive, not a hard failure.
+const LOCAL_DAEMON_HARD_TIMEOUT_MS = 10 * 60 * 1000;
 const START_POLL_INTERVAL_MS = 1000;
+const KILL_PROCESS_FORCE_TIMEOUT_MS = 10000;
 
 export class Daemon {
   constructor(backend) {
@@ -223,12 +229,24 @@ export class Daemon {
       this.hostname = daemon.rpc_bind_ip;
       this.port = daemon.rpc_bind_port;
 
-      portscanner
-        .checkPortStatus(this.port, this.hostname)
-        .catch(() => "closed")
+      const p2pHostname =
+        daemon.p2p_bind_ip === "0.0.0.0" ? "127.0.0.1" : daemon.p2p_bind_ip;
+
+      Promise.all([
+        portscanner.checkPortStatus(this.port, this.hostname),
+        portscanner.checkPortStatus(daemon.p2p_bind_port, p2pHostname)
+      ])
+        .then(([rpcStatus, p2pStatus]) =>
+          rpcStatus === "closed" && p2pStatus === "closed" ? "closed" : "open"
+        )
+        // A failed probe tells us nothing about whether the port is free,
+        // so assume the worst rather than spawning a daemon that may race
+        // an existing one for the same port.
+        .catch(() => "open")
         .then(status => {
           if (status === "closed") {
             let didSettle = false;
+            const startedAt = Date.now();
             const finishStart = error => {
               if (didSettle) {
                 return;
@@ -303,16 +321,28 @@ export class Daemon {
             });
 
             // To let caller know when the daemon is ready
-            this.startupTimeout = setTimeout(() => {
-              this.killProcess();
-              finishStart(
-                new Error(
-                  this.getProcessFailureDetails(
-                    "Timed out while starting local daemon"
+            const scheduleStartupTimeout = () => {
+              this.startupTimeout = setTimeout(() => {
+                if (
+                  this.daemonProcess &&
+                  Date.now() - startedAt < LOCAL_DAEMON_HARD_TIMEOUT_MS
+                ) {
+                  // Still alive and within the hard ceiling: likely still
+                  // doing initial catch-up work, not actually stuck.
+                  scheduleStartupTimeout();
+                  return;
+                }
+                this.killProcess();
+                finishStart(
+                  new Error(
+                    this.getProcessFailureDetails(
+                      "Timed out while starting local daemon"
+                    )
                   )
-                )
-              );
-            }, LOCAL_DAEMON_START_TIMEOUT_MS);
+                );
+              }, LOCAL_DAEMON_START_TIMEOUT_MS);
+            };
+            scheduleStartupTimeout();
 
             this.startupPoll = setInterval(() => {
               this.sendRPC("get_info", {}, { timeout: 5000 }).then(data => {
@@ -351,10 +381,16 @@ export class Daemon {
 
   killProcess() {
     this.clearStartTimers();
-    if (this.daemonProcess) {
-      this.daemonProcess.kill();
-      this.daemonProcess = null;
+    if (!this.daemonProcess) {
+      return;
     }
+    const proc = this.daemonProcess;
+    this.daemonProcess = null;
+    const forceKill = setTimeout(() => {
+      proc.kill("SIGKILL");
+    }, KILL_PROCESS_FORCE_TIMEOUT_MS);
+    proc.once("close", () => clearTimeout(forceKill));
+    proc.kill("SIGTERM");
   }
 
   handle(data) {

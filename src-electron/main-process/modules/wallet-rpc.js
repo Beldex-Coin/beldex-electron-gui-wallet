@@ -20,6 +20,8 @@ const START_POLL_INTERVAL_MS = 1000;
 const WALLET_RPC_CLOSE_TIMEOUT_MS =
   process.platform === "win32" ? 15000 : 10000;
 const WALLET_RPC_FORCE_KILL_TIMEOUT_MS = 20000;
+const HEARTBEAT_EXTENDED_MAX_RETRIES = 3;
+const HEARTBEAT_EXTENDED_RETRY_DELAY_MS = 1000;
 
 export class WalletRPC {
   constructor(backend) {
@@ -32,6 +34,7 @@ export class WalletRPC {
     this.net_type = "mainnet";
     this.heartbeat = null;
     this.lnsHeartbeat = null;
+    this.heartbeatRetryTimeout = null;
     this.wallet_state = {
       open: false,
       name: "",
@@ -723,7 +726,12 @@ export class WalletRPC {
       language
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletCreation"
+          }
+        });
         return;
       }
 
@@ -783,7 +791,12 @@ export class WalletRPC {
       restore_height
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletRestore"
+          }
+        });
         return;
       }
 
@@ -851,7 +864,12 @@ export class WalletRPC {
       refresh_start_height
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletRestore"
+          }
+        });
         return;
       }
 
@@ -919,7 +937,12 @@ export class WalletRPC {
       restore_height
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletRestore"
+          }
+        });
         return;
       }
 
@@ -997,7 +1020,10 @@ export class WalletRPC {
             if (fs.existsSync(destination + ".keys"))
               fs.unlinkSync(destination + ".keys");
             this.sendGateway("set_wallet_error", {
-              status: data.error
+              status: {
+                code: -1,
+                i18n: "notification.errors.failedWalletImport"
+              }
             });
             return;
           }
@@ -1030,6 +1056,10 @@ export class WalletRPC {
       this.sendRPC("query_key", { key_type: "view_key" })
     ]).then(data => {
       let wallet = {
+        status: {
+          code: 0,
+          message: "OK"
+        },
         info: {
           name: filename,
           address: "",
@@ -1100,7 +1130,12 @@ export class WalletRPC {
       password
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletOpen"
+          }
+        });
         return;
       }
 
@@ -1173,7 +1208,7 @@ export class WalletRPC {
 
     this.updateLocalBNSRecords();
   }
-  heartbeatAction(extended = false) {
+  heartbeatAction(extended = false, attempt = 0) {
     Promise.all([
       this.sendRPC("get_address", { account_index: 0 }, 5000),
       this.sendRPC("getheight", {}, 5000),
@@ -1256,7 +1291,20 @@ export class WalletRPC {
       // Set the wallet state on initial heartbeat
       if (extended) {
         if (!didError) {
-          this.sendGateway("set_wallet_data", wallet);
+          if (
+            !wallet.info.address &&
+            this.wallet_state.open &&
+            attempt < HEARTBEAT_EXTENDED_MAX_RETRIES
+          ) {
+            // get_address didn't resolve in time this round — retry the
+            // extended heartbeat instead of telling the UI the wallet is
+            // ready with a blank address.
+            this.heartbeatRetryTimeout = setTimeout(() => {
+              this.heartbeatAction(true, attempt + 1);
+            }, HEARTBEAT_EXTENDED_RETRY_DELAY_MS);
+          } else {
+            this.sendGateway("set_wallet_data", wallet);
+          }
         } else {
           this.closeWallet().then(() => {
             this.sendGateway("set_wallet_error", {
@@ -2331,6 +2379,7 @@ export class WalletRPC {
   rescanBlockchain() {
     clearInterval(this.heartbeat);
     clearInterval(this.lnsHeartbeat);
+    clearTimeout(this.heartbeatRetryTimeout);
     this.wallet_state.balance = null;
     this.wallet_state.unlocked_balance = null;
     this.sendRPC("rescan_blockchain");
@@ -3114,6 +3163,7 @@ export class WalletRPC {
   async closeWallet() {
     clearInterval(this.heartbeat);
     clearInterval(this.lnsHeartbeat);
+    clearTimeout(this.heartbeatRetryTimeout);
     this.wallet_state = {
       open: false,
       name: "",
