@@ -405,6 +405,7 @@ export default {
       copyWalletFail: "Error al copiar el monedero",
       copyingPrivateKeys: "Error al copiar las claves privadas",
       dataPathNotFound: "No se ha encontrado la ruta de almacenamiento",
+      dataPathCreateFailed: "No se pudo crear la ruta de almacenamiento",
       differentNetType: "El nodo remoto usa un tipo de red diferente",
       enterSeedWords: "Introduzca las palabras semilla",
       enterTransactionId: "Introduzca ID de la transacción",
@@ -459,6 +460,8 @@ export default {
       unknownError: "Ha ocurrido un error inesperado",
       walletAlreadyExists: "Ya existe un monedero con este nombre",
       walletPathNotFound: "Ruta no encontrada",
+      walletPathCreateFailed:
+        "No se pudo crear la ruta de almacenamiento del monedero",
       zeroAmount: "La cantidad debe ser mayor que cero",
       greaterHeight:
         "El valor ingresado es mayor que la altura del bloque actual"

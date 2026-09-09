@@ -175,6 +175,18 @@ class SCEE {
 
 const scee = new SCEE();
 
+// Only allow https:// targets to reach the OS shell. Without this, any
+// script that ever runs in the renderer (e.g. a future XSS) could pass
+// file://, a UNC path, or a registered custom protocol here and get
+// code execution / credential relay via shell.openExternal.
+function isSafeExternalUrl(url) {
+  try {
+    return new URL(url).protocol === "https:";
+  } catch (error) {
+    return false;
+  }
+}
+
 const electronAPI = {
   clipboard: {
     writeText: text => clipboard.writeText(text),
@@ -214,7 +226,11 @@ const electronAPI = {
       scee.decryptString(ciphertext, password)
   },
   shell: {
-    openExternal: url => shell.openExternal(url)
+    openExternal: url => {
+      if (isSafeExternalUrl(url)) {
+        shell.openExternal(url);
+      }
+    }
   }
 };
 

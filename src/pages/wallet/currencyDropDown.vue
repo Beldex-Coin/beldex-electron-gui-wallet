@@ -42,7 +42,7 @@
               <q-item-section class="swapdropDown-option q-py-sm q-pl-md">
                 <q-img
                   class="q-mr-sm"
-                  :src="currency.image"
+                  :src="safeImageSrc(currency.image)"
                   style="height: 20px; max-width: 20px; filter: grayscale(150)"
                 />
                 <q-item-label class="ft-bold q-mr-xs"
@@ -71,7 +71,7 @@
             <q-item-section class="swapdropDown-option q-py-sm q-pl-md">
               <q-img
                 class="q-mr-sm"
-                :src="currency.image"
+                :src="safeImageSrc(currency.image)"
                 style="height: 20px; max-width: 20px; filter: grayscale(150)"
               />
               <q-item-label class="ft-bold q-mr-xs"
@@ -97,6 +97,20 @@
 
 <script>
 import OxenField from "components/oxen_field";
+
+// Currency icon URLs come straight from the Changelly/QuickEx API responses
+// (see swap_mappers.js) and are rendered as <img> sources - an "https only"
+// check alone still lets either provider (or anyone able to influence what
+// they return) point this at an arbitrary host. Restrict to the two swap
+// providers' own domains, which is where their currency icons are actually
+// served from (e.g. Changelly's are documented at cdn.changelly.com).
+const TRUSTED_IMAGE_HOSTS = ["changelly.com", "quickex.io"];
+
+function isTrustedImageHost(hostname) {
+  return TRUSTED_IMAGE_HOSTS.some(
+    domain => hostname === domain || hostname.endsWith(`.${domain}`)
+  );
+}
 
 export default {
   name: "Dropdown",
@@ -139,6 +153,18 @@ export default {
     document.removeEventListener("click", this.close);
   },
   methods: {
+    safeImageSrc(url) {
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === "https:" &&
+          isTrustedImageHost(parsed.hostname)
+          ? url
+          : undefined;
+      } catch (error) {
+        return undefined;
+      }
+    },
+
     set_searchCurrency(val) {
       this.searchTxt = val;
       this.$emit("searchCurrency", val);

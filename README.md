@@ -21,7 +21,7 @@ Please submit any changes as pull requests to the development branch, all change
 #### Commands
 
 ```
-nvm use 14.14.0
+nvm use 24.15.0
 npm install -g @quasar/cli
 git clone https://github.com/Beldex-Coin/beldex-electron-gui-wallet
 cd beldex-electron-gui-wallet
@@ -60,6 +60,4 @@ Adding a new language is fairly simple.
      - E.G if you have a string `A {index}` then you may translate it as `B {index}` or `{index} B` depending on how the string makes sense in your language. You are allowed to reposition the placeholders for the string to make sense **BUT DO NOT DELETE OR REPLACE THE PLACEHOLDERS WITH OTHER VALUES**
 3. Add the language to the `languages` array in `src/i18n/index.js`. The `flag` property is the [ISO 3166-1-alpha-2 code](https://www.iso.org/obp/ui/#search/code/) of a country.
    - **NOTE: DO NOT ADD THE LANGUAGE TO `export default`**. Dynamic language loading is handled by the application.
-4. Add your language locale to Vue Timeago. Add it in `src/plugins/timeago.js` under `locales`.
-   - Ref: https://github.com/egoist/vue-timeago#update-locale-globally
-5. Submit a PR with your changes.
+4. Submit a PR with your changes.
