@@ -8,6 +8,7 @@ const path = require("upath");
 const crypto = require("crypto");
 const portscanner = require("portscanner");
 const { Swap } = require("./swap");
+const { app, Notification, BrowserWindow } = require("electron");
 
 const PASSWORD_HASH_PBKDF2_ITERATIONS = 600000;
 const PASSWORD_HASH_KEY_LENGTH = 64;
@@ -35,6 +36,15 @@ export class WalletRPC {
     };
     this.isRPCSyncing = false;
     this.dirs = null;
+    // Incoming-payment desktop notifications: txids we've already seen/
+    // notified for, and whether the set has been seeded yet for the
+    // currently open wallet (avoids notifying for the wallet's entire
+    // existing history the moment it's opened).
+    this.seenIncomingTxids = new Set();
+    this.seenIncomingTxidsInitialized = false;
+    // Dock/taskbar badge count of payment notifications the user hasn't
+    // seen yet (cleared when the wallet window regains focus).
+    this.unreadPaymentNotificationCount = 0;
     this.last_height_send_time = Date.now();
 
     // save a pending tx here, so we don't have to send the
@@ -1006,6 +1016,12 @@ export class WalletRPC {
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
+      // Reset incoming-payment notification tracking for this wallet -
+      // each wallet gets its own seed/notify cycle.
+      this.seenIncomingTxids = new Set();
+      this.seenIncomingTxidsInitialized = false;
+      this.clearPaymentNotificationBadge();
+
       this.startHeartbeat();
 
       this.purchasedNames = {};
@@ -1128,6 +1144,16 @@ export class WalletRPC {
                 wallet[key] = Object.assign(wallet[key], n[key]);
               });
             }
+            // getTransactions() resolves {} (no "transactions" key) when its
+            // RPC call errors, vs. { transactions: { tx_list: [...] } } on
+            // success - that distinction matters for seeding below.
+            const transactionsFetchSucceeded = Boolean(
+              data[0] && data[0].hasOwnProperty("transactions")
+            );
+            this.notifyNewIncomingTransactions(
+              wallet.transactions.tx_list,
+              transactionsFetchSucceeded
+            );
             this.sendGateway("set_wallet_data", wallet);
           });
         }
@@ -2397,6 +2423,82 @@ export class WalletRPC {
     });
   }
 
+  // Fires an OS-level desktop notification for transactions that are new
+  // since the last time we checked and represent money coming IN to this
+  // wallet (matched against INCOMING_TYPES below) - never for our own
+  // outgoing/pending sends. The first successful call after a wallet is
+  // opened only seeds the seen-txid set (so opening a wallet with existing
+  // history doesn't fire a notification for every past transaction); every
+  // call after that notifies for genuinely new incoming txids only, once
+  // each, ever.
+  //
+  // fetchSucceeded tells us whether this cycle's getTransactions() RPC call
+  // actually came back with data, vs. erroring (wallet still syncing, RPC
+  // busy, etc). Seeding must wait for a real success - if we seeded off an
+  // errored/empty result, the next successful fetch would see the wallet's
+  // entire real history as "new" and fire a notification for every past
+  // transaction at once.
+  notifyNewIncomingTransactions(tx_list, fetchSucceeded = true) {
+    if (!Array.isArray(tx_list)) return;
+
+    // Matches the same "incoming" definition tx_list.vue's filterTxList()
+    // uses for its "all_in" view - "in" alone misses unconfirmed (pool)
+    // incoming payments and mnode/gov/bns/miner earnings.
+    const INCOMING_TYPES = ["in", "pool", "miner", "mnode", "gov", "bns"];
+    const incoming = tx_list.filter(
+      tx => tx && tx.txid && INCOMING_TYPES.includes(tx.type)
+    );
+
+    if (!this.seenIncomingTxidsInitialized) {
+      if (!fetchSucceeded) return;
+      incoming.forEach(tx => this.seenIncomingTxids.add(tx.txid));
+      this.seenIncomingTxidsInitialized = true;
+      return;
+    }
+
+    const newIncoming = incoming.filter(
+      tx => !this.seenIncomingTxids.has(tx.txid)
+    );
+    if (newIncoming.length === 0) return;
+
+    newIncoming.forEach(tx => this.seenIncomingTxids.add(tx.txid));
+
+    if (!Notification.isSupported()) return;
+
+    // Bump the dock/taskbar badge once for this whole batch of new
+    // payments, cleared again when the wallet window regains focus.
+    this.unreadPaymentNotificationCount += newIncoming.length;
+    app.setBadgeCount(this.unreadPaymentNotificationCount);
+
+    for (const tx of newIncoming) {
+      const amount = (tx.amount || 0) / 1e9;
+      const notification = new Notification({
+        title: "Payment received",
+        body: `You received ${amount} BDX`,
+        silent: false
+      });
+
+      notification.on("click", () => {
+        const windows = BrowserWindow.getAllWindows();
+        const win = windows[0];
+        if (!win) return;
+        if (win.isMinimized()) win.restore();
+        win.show();
+        win.focus();
+        this.clearPaymentNotificationBadge();
+      });
+
+      notification.show();
+    }
+  }
+
+  // Clears the dock/taskbar unread-payment badge - called when the wallet
+  // window regains focus, or when a wallet is opened/closed.
+  clearPaymentNotificationBadge() {
+    this.unreadPaymentNotificationCount = 0;
+    app.setBadgeCount(0);
+  }
+
   getAddressBook() {
     return new Promise(resolve => {
       this.sendRPC("get_address_book").then(data => {
@@ -2991,6 +3093,9 @@ export class WalletRPC {
       unlocked_balance: null,
       bnsRecords: []
     };
+    this.seenIncomingTxids = new Set();
+    this.seenIncomingTxidsInitialized = false;
+    this.clearPaymentNotificationBadge();
 
     this.purchasedNames = {};
 
