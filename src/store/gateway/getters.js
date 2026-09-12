@@ -21,12 +21,8 @@ const isWalletReady = state => {
   const target_height = getTargetHeight(state);
   const walletHeight = toSafeHeight(state.wallet.info.height);
 
-  if (state.wallet.isRPCSyncing === true) {
-    return false;
-  }
-
   if (target_height === 0) {
-    return true;
+    return walletHeight > 0;
   }
 
   return walletHeight >= target_height - 1;

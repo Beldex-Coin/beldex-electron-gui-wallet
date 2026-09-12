@@ -100,9 +100,9 @@ export default {
       const daemonType = this.config_daemon.type;
       const isSyncing = this.daemon_height < this.target_height;
       const hasSyncTarget = this.target_height > 0;
-      const isScanning =
-        this.isWalletRpcSyncing ||
-        (hasSyncTarget && this.wallet_height < this.target_height - 1);
+      const isScanning = hasSyncTarget
+        ? this.wallet_height < this.target_height - 1
+        : this.isWalletRpcSyncing;
 
       if (this.update_required) {
         // i18n string and class of statusbar
