@@ -382,6 +382,7 @@ export class Swap {
         amountExpectedFrom: amountFrom,
         amountExpectedTo: amountTo,
         networkFee: row.network_fee != null ? Number(row.network_fee) : 0,
+        platformFee: row.platform_fee != null ? Number(row.platform_fee) : 0,
         rate,
         createdAt: row.created_at,
         created_at: row.created_at,
@@ -433,7 +434,13 @@ export class Swap {
     if (data?.status && Array.isArray(data.result) && data.result.length > 0) {
       const details = data.result[0];
       const txnId = params.id || details.id;
-      if (txnId && walletAddress) {
+      if (txnId && data.statusOnly) {
+        this.swapTxnHistory.updateTransactionStatus(
+          txnId,
+          exchange,
+          details.status
+        );
+      } else if (txnId && walletAddress) {
         this.swapTxnHistory.updateTransactionDetails(
           txnId,
           walletAddress,

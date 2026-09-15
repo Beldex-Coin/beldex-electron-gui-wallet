@@ -144,7 +144,7 @@ export class SwapTxnHistory {
       amount_from: details.amountExpectedFrom ?? details.amountFrom ?? null,
       amount_to: details.amountExpectedTo ?? details.amountTo ?? null,
       network_fee: details.networkFee ?? details.apiExtraFee ?? 0,
-      platform_fee: details.platformFee ?? details.changellyFee ?? 0,
+      platform_fee: details.platformFee ?? 0,
       raw_response: details.raw_response ?? details,
       created_at: createdAt,
       updated_at: now
@@ -183,6 +183,30 @@ export class SwapTxnHistory {
         err.message
       );
       return null;
+    }
+  }
+
+  updateTransactionStatus(txn_id, exchange_type, status) {
+    if (!txn_id || !exchange_type || !status) {
+      console.error(
+        "[SwapTxnHistory] Skipped status update: missing txn_id, exchange or status",
+        { txn_id, exchange_type, status }
+      );
+      return false;
+    }
+    try {
+      const result = this._getDbManager().updateTransactionStatus(
+        exchange_type,
+        txn_id,
+        status
+      );
+      return Boolean(result && result.changes > 0);
+    } catch (err) {
+      console.error(
+        `updateTransactionStatus failed for txn_id ${txn_id}:`,
+        err.message
+      );
+      return false;
     }
   }
 

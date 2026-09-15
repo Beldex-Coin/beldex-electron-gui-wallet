@@ -124,7 +124,8 @@ export function normalizeCreatedTransaction(data) {
     id: data.orderId,
     type: "float",
     networkFee: data.claimedNetworkFee,
-    platformFee: data?.claimedPublicRate?.platformFee_Absolute || 0,
+    platformFee:
+      data?.platformFee ?? data?.claimedPublicRate?.platformFee_Absolute ?? 0,
     apiExtraFee: data.claimedNetworkFee,
     payinAddress: _extractAddr(data.depositAddress, "depositAddress"),
     payinExtraId: _extractAddr(data.depositAddress, "depositAddressMemo"),
@@ -194,6 +195,8 @@ export function normalizeTransactionStatus(data) {
       amountExpectedTo,
       rate: rate || 0,
       networkFee: tx.claimedNetworkFee || tx.networkFee || 0,
+      platformFee:
+        tx.platformFee ?? tx.claimedPublicRate?.platformFee_Absolute ?? 0,
       moneyReceived:
         tx.moneyReceived ||
         tx.money_received ||

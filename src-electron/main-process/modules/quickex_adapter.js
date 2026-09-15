@@ -76,6 +76,12 @@ function _handleError(method, err, errorData, params) {
   return { status: false, method, error: { message: errMessage } };
 }
 
+const QUICKEX_ORDER_EXPIRED_CODE = "ERR_ORDER_EXPIRED";
+
+function _isOrderExpiredError(errorData) {
+  return errorData?.status === QUICKEX_ORDER_EXPIRED_CODE;
+}
+
 function _parseExpectedFromMessage(msg) {
   if (!msg) return null;
   const match = msg.match(/expected[:\s]+(\d+\.?\d*)/i);
@@ -258,7 +264,17 @@ export async function getTransactionStatus(params, dbManager) {
     const result = normalizeTransactionStatus(res.data);
     return { status: true, method, result };
   } catch (err) {
-    return _handleError(method, err, err.response?.data || {}, params);
+    const errorData = err.response?.data || {};
+    if (_isOrderExpiredError(errorData)) {
+      return {
+        status: true,
+        method,
+        statusOnly: true,
+        result: [{ id: orderId, status: "expired" }]
+      };
+    }
+
+    return _handleError(method, err, errorData, params);
   }
 }
 
@@ -277,10 +293,17 @@ export async function getTransactions(params, dbManager) {
       dbManager
     );
     if (res?.status && Array.isArray(res.result) && res.result.length > 0)
-      return res.result[0];
+      return { detail: res.result[0], statusOnly: Boolean(res.statusOnly) };
     return null;
   });
 
-  const results = (await Promise.all(fetchPromises)).filter(Boolean);
-  return { status: true, method, result: results, exchange_type: "quickex" };
+  const settled = (await Promise.all(fetchPromises)).filter(Boolean);
+  return {
+    status: true,
+    method,
+    result: settled.map(entry => entry.detail),
+    // Callers persist result[0] only, so the envelope flag tracks that entry.
+    statusOnly: settled.length > 0 ? settled[0].statusOnly : false,
+    exchange_type: "quickex"
+  };
 }

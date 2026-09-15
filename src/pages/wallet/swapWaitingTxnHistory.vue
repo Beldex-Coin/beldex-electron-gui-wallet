@@ -270,7 +270,7 @@
           <tr v-if="txnDetails.type == 'float'">
             <td>{{ this.$t("titles.swap.serviceFee") }}</td>
             <td class="uppercase">
-              {{ txnDetails.fee ? Number(txnDetails.fee).toFixed(8) : "0" }}
+              {{ Number(txnDetails.platformFee || 0).toFixed(8) }}
               {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
             </td>
           </tr>

@@ -152,10 +152,17 @@ export class SwapDatabaseManager {
         amount_from = COALESCE(excluded.amount_from, swap_transactions_history.amount_from),
         amount_to = COALESCE(excluded.amount_to, swap_transactions_history.amount_to),
         network_fee = COALESCE(excluded.network_fee, swap_transactions_history.network_fee),
-        platform_fee = COALESCE(excluded.platform_fee, swap_transactions_history.platform_fee),
         raw_response = COALESCE(excluded.raw_response, swap_transactions_history.raw_response),
         created_at = swap_transactions_history.created_at,
         updated_at = excluded.updated_at;
+    `);
+
+    this.statements.updateTxnStatus = this.db.prepare(`
+      UPDATE swap_transactions_history
+         SET txn_status = @txn_status, updated_at = @updated_at
+       WHERE exchange = @exchange
+         AND txn_id = @txn_id
+         AND txn_status NOT IN ('finished', 'refunded');
     `);
 
     this.statements.getOrderHistory = this.db.prepare(`
@@ -243,6 +250,21 @@ export class SwapDatabaseManager {
     const result = this.statements.upsertTxn.run(payload);
     console.log(
       `[SwapDB] upsert txn_id=${payload.txn_id} | network_from=${payload.network_from} | network_to=${payload.network_to} tx.created_at=${tx.created_at}, tx.createdAt=${tx.createdAt}, now=${now}`
+    );
+    return result;
+  }
+
+  updateTransactionStatus(exchange, txnId, status) {
+    this.init();
+    if (!exchange || !txnId || !status) return null;
+    const result = this.statements.updateTxnStatus.run({
+      exchange,
+      txn_id: String(txnId),
+      txn_status: status,
+      updated_at: Date.now()
+    });
+    console.log(
+      `[SwapDB] status-only update txn_id=${txnId} | exchange=${exchange} | status=${status} | changes=${result.changes}`
     );
     return result;
   }
