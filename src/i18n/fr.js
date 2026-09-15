@@ -797,7 +797,7 @@ export default {
       exchangeRate: "Taux de change",
       fixedRate: "Taux fixe",
       fixedRateUpdateSec: "Le taux fixe est mis à jour toutes les 30 secondes",
-      serviceFee: "Frais de service 0,25%",
+      serviceFee: "Frais de service",
       fees: "Frais",
       allTheFees: "Tous frais inclus dans le tarif",
       networkFee: "Frais de réseau",

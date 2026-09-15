@@ -781,7 +781,7 @@ export default {
       exchangeRate: "Exchange rate",
       fixedRate: "Fixed rate",
       fixedRateUpdateSec: "The fixed rate is updated every 30 Seconds",
-      serviceFee: "Service fee 0.25%",
+      serviceFee: "Service fee",
       fees: "Fees",
       allTheFees: "All fees inclueded in the rate",
       networkFee: "Network fee",

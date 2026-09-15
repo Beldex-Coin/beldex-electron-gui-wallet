@@ -791,7 +791,7 @@ export default {
       exchangeRate: "Tauschrate",
       fixedRate: "Fester Zinssatz",
       fixedRateUpdateSec: "Die feste Rate wird alle 30 Sekunden aktualisiert",
-      serviceFee: "Servicegebühr 0,25 %",
+      serviceFee: "Servicegebühr",
       fees: "Gebühren",
       allTheFees: "Alle Gebühren im Preis inbegriffen",
       networkFee: "Netzwerkgebühr",

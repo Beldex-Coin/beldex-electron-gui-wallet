@@ -304,9 +304,20 @@ export class Gateway extends EventEmitter {
         break;
 
       case "set_wallet_data":
-      case "set_wallet_error":
         this.app.store.commit("gateway/set_wallet_data", decrypted_data.data);
         break;
+
+      case "set_wallet_error": {
+        const data = { ...decrypted_data.data };
+        if (data.status && data.status.i18n) {
+          data.status = {
+            ...data.status,
+            message: this.geti18n(data.status.i18n)
+          };
+        }
+        this.app.store.commit("gateway/set_wallet_data", data);
+        break;
+      }
 
       case "reset_wallet_error":
         this.app.store.dispatch("gateway/resetWalletStatus");

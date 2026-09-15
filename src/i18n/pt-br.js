@@ -779,7 +779,7 @@ export default {
       exchangeRate: "Taxa de câmbio",
       fixedRate: "Taxa fixa",
       fixedRateUpdateSec: "A taxa fixa é atualizada a cada 30 segundos",
-      serviceFee: "Taxa de serviço 0,25%",
+      serviceFee: "Taxa de serviço",
       fees: "Tarifas",
       allTheFees: "Todas as taxas incluídas na tarifa",
       networkFee: "Taxa de rede",

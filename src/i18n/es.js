@@ -789,7 +789,7 @@ export default {
       exchangeRate: "Tipo de cambio",
       fixedRate: "Tipo de interés fijo",
       fixedRateUpdateSec: "La tarifa fija se actualiza cada 30 segundos.",
-      serviceFee: "Tarifa de servicio 0,25%",
+      serviceFee: "Tarifa de servicio",
       fees: "Honorarios",
       allTheFees: "Todos los honorarios incluidos en la tarifa.",
       networkFee: "Tarifa de red",

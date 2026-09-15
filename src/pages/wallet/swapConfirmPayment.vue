@@ -204,9 +204,10 @@
           </div>
           <div>{{ this.$t("fieldLabels.recipientAddress") }}</div>
           <div
+            style="padding-right: 15px"
             :class="[
               this.refundAddress
-                ? 'ft-semibold amount-txt'
+                ? 'ft-medium amount-txt'
                 : 'ft-medium recipt-address'
             ]"
           >
@@ -220,9 +221,10 @@
               this.refundAddress ||
                 this.floatingRate.exchange_type !== 'changelly'
             "
+            style="padding-right: 15px"
             :class="[
               this.refundAddress
-                ? 'ft-semibold amount-txt'
+                ? 'ft-medium amount-txt'
                 : 'ft-medium recipt-address'
             ]"
           >
