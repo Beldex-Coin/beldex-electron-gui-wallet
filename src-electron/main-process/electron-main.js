@@ -132,6 +132,12 @@ function createWindow() {
     }
   });
 
+  // Clear the unread-payment-notification badge once the user actually
+  // looks at the wallet again.
+  mainWindow.on("focus", () => {
+    backend?.walletd?.clearPaymentNotificationBadge?.();
+  });
+
   mainWindow.on("close", e => {
     // Don't ask for confirmation if we're installing an update
     if (installUpdate) {
@@ -242,6 +248,12 @@ powerMonitor.on("resume", () => {
 });
 
 app.on("ready", () => {
+  // Required on Windows for desktop notifications (and taskbar grouping)
+  // to show this app's own name/icon instead of a generic Electron one.
+  if (process.platform === "win32") {
+    app.setAppUserModelId("com.beldex.electronwallet");
+  }
+
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
