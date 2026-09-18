@@ -61,7 +61,7 @@
                       ref="dateRangeProxy"
                       transition-show="scale"
                       transition-hide="scale"
-                      @show="onDateRangePopupShow"
+                      @before-show="onDateRangePopupShow"
                     >
                       <div class="date-range-popup">
                         <div class="row date-range-summary">

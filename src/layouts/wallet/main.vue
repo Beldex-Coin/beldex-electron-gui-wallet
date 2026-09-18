@@ -541,7 +541,8 @@ export default {
           color: "accent"
         },
         dark: this.theme == "dark",
-        color: this.theme == "dark" ? "white" : "dark"
+        color: this.theme == "dark" ? "white" : "dark",
+        noRouteDismiss: true
       });
       passwordDialog
         .onOk(password => {
