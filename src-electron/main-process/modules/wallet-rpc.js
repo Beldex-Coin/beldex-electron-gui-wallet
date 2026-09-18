@@ -47,6 +47,7 @@ export class WalletRPC {
     this.isRPCSyncing = false;
     this.dirs = null;
     this.last_height_send_time = Date.now();
+    this.heightEpoch = 0;
 
     // save a pending tx here, so we don't have to send the
     // whole thing to the renderer
@@ -275,11 +276,9 @@ export class WalletRPC {
                 }
                 if (height && Date.now() - this.last_height_send_time > 1000) {
                   this.last_height_send_time = Date.now();
-                  this.sendGateway("set_wallet_data", {
-                    info: {
-                      height
-                    }
-                  });
+                  // The log gives the index of the block just added; getheight
+                  // returns the block count
+                  this.sendWalletHeight(Number(height) + 1);
                 }
               });
               this.walletRPCProcess.stderr.on("data", data => {
@@ -1047,9 +1046,10 @@ export class WalletRPC {
   }
 
   finalizeNewWallet(filename) {
+    const heightEpoch = this.heightEpoch;
     Promise.all([
       this.sendRPC("get_address"),
-      this.sendRPC("getheight"),
+      this.sendHeightWhenReceived(this.sendRPC("getheight"), heightEpoch),
       this.sendRPC("getbalance", { account_index: 0 }),
       this.sendRPC("query_key", { key_type: "mnemonic" }),
       this.sendRPC("query_key", { key_type: "spend_key" }),
@@ -1065,7 +1065,6 @@ export class WalletRPC {
           address: "",
           balance: 0,
           unlocked_balance: 0,
-          height: 0,
           view_only: false,
           load_balance: false
         },
@@ -1087,8 +1086,6 @@ export class WalletRPC {
         }
         if (n.method == "get_address") {
           wallet.info.address = n.result.address;
-        } else if (n.method == "getheight") {
-          wallet.info.height = n.result.height;
         } else if (n.method == "getbalance") {
           wallet.info.balance = n.result.balance;
           wallet.info.unlocked_balance = n.result.unlocked_balance;
@@ -1130,10 +1127,13 @@ export class WalletRPC {
       password
     }).then(data => {
       if (data.hasOwnProperty("error")) {
+        const invalidPassword = data.error.code === -22;
         this.sendGateway("set_wallet_error", {
           status: {
-            code: -1,
-            i18n: "notification.errors.failedWalletOpen"
+            code: invalidPassword ? -22 : -1,
+            i18n: invalidPassword
+              ? "notification.errors.invalidPassword"
+              : "notification.errors.failedWalletOpen"
           }
         });
         return;
@@ -1194,6 +1194,7 @@ export class WalletRPC {
 
   startHeartbeat() {
     clearInterval(this.heartbeat);
+    this.heightEpoch++;
     this.heartbeat = setInterval(() => {
       this.heartbeatAction();
     }, 8000);
@@ -1208,10 +1209,34 @@ export class WalletRPC {
 
     this.updateLocalBNSRecords();
   }
+  sendHeightWhenReceived(request, heightEpoch) {
+    return request.then(data => {
+      if (data.hasOwnProperty("result")) {
+        this.sendWalletHeight(data.result.height, heightEpoch);
+      }
+      return data;
+    });
+  }
+
+  sendWalletHeight(height, heightEpoch = this.heightEpoch) {
+    if (heightEpoch !== this.heightEpoch) {
+      return;
+    }
+    this.sendGateway("set_wallet_data", {
+      info: {
+        height
+      }
+    });
+  }
+
   heartbeatAction(extended = false, attempt = 0) {
+    const heightEpoch = this.heightEpoch;
     Promise.all([
       this.sendRPC("get_address", { account_index: 0 }, 5000),
-      this.sendRPC("getheight", {}, 5000),
+      this.sendHeightWhenReceived(
+        this.sendRPC("getheight", {}, 5000),
+        heightEpoch
+      ),
       this.sendRPC("getbalance", { account_index: 0 }, 5000)
     ]).then(data => {
       let didError = false;
@@ -1245,14 +1270,7 @@ export class WalletRPC {
           continue;
         }
 
-        if (n.method == "getheight") {
-          wallet.info.height = n.result.height;
-          this.sendGateway("set_wallet_data", {
-            info: {
-              height: n.result.height
-            }
-          });
-        } else if (n.method == "get_address") {
+        if (n.method == "get_address") {
           wallet.info.address = n.result.address;
           this.sendGateway("set_wallet_data", {
             info: {
@@ -2383,6 +2401,7 @@ export class WalletRPC {
     this.wallet_state.balance = null;
     this.wallet_state.unlocked_balance = null;
     this.sendRPC("rescan_blockchain");
+    this.sendWalletHeight(0);
     this.startHeartbeat();
   }
 

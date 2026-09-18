@@ -128,6 +128,7 @@ function createWindow() {
     minHeight: 650,
     icon: require("path").join(__statics, "icon.png"),
     title,
+    backgroundColor: "#1c1c26",
     webPreferences: {
       nodeIntegration: false,
       nodeIntegrationInWorker: false,

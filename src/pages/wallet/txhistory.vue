@@ -289,7 +289,7 @@ export default {
       const all_in = ["in", "pool", "miner", "mnode", "gov", "bns"];
       const all_out = ["out", "pending", "stake"];
       const all_pending = ["pending", "pool"];
-      this.tx_list_filtered = this.tx_list.filter(tx => {
+      return this.tx_list.filter(tx => {
         if (!this.isTxInDateRange(tx, this.date_range)) {
           return false;
         }
@@ -313,7 +313,6 @@ export default {
         }
         return valid;
       });
-      return this.tx_list_filtered;
     },
     goback(data) {
       this.txnDetails = data;
@@ -337,28 +336,24 @@ export default {
             item.payment_id != "0000000000000000" ? item.payment_id : "N/A";
           customizeCsv.push(csvObj);
         });
-      let header = true;
-      for (let row = 0; row < customizeCsv.length; row++) {
-        let keysAmount = Object.keys(customizeCsv[row]).length;
-        let keysCounter = 0;
-        // If this is the first row, generate the headings
-        if (header) {
-          // Loop each property of the object
-          for (let key in customizeCsv[row]) {
-            // This is to not add a comma at the last cell
-            // The '\r\n' adds a new line
-            csv += key + (keysCounter + 1 < keysAmount ? "," : "\r\n");
-            header = false;
-          }
-          csv += "\r\n";
-        }
-        for (let key in customizeCsv[row]) {
-          csv +=
-            customizeCsv[row][key] +
-            (keysCounter + 1 < keysAmount ? "," : "\r\n");
-          keysCounter++;
-        }
-        keysCounter = 0;
+      if (customizeCsv.length > 0) {
+        const headers = Object.keys(customizeCsv[0]);
+        csv = [
+          headers.join(","),
+          ...customizeCsv.map(row =>
+            headers
+              .map(key => {
+                const val = row[key] ?? "";
+                const str = String(val).replace(/"/g, '""');
+                return str.includes(",") ||
+                  str.includes('"') ||
+                  str.includes("\n")
+                  ? `"${str}"`
+                  : str;
+              })
+              .join(",")
+          )
+        ].join("\r\n");
       }
       if (!csv || !csv.trim()) {
         this.$q.notify({

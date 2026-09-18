@@ -12,7 +12,8 @@ const WebSocket = require("ws");
 const electron = require("electron");
 const os = require("os");
 const fs = require("fs-extra");
-const path = require("upath");
+const upath = require("upath");
+const path = require("path");
 import objectAssignDeep from "object-assign-deep";
 
 const { ipcMain: ipc, safeStorage } = electron;
@@ -188,9 +189,9 @@ export class Backend {
       legacyBeldexConfigDir = "C:\\ProgramData\\beldex\\";
       this.wallet_dir = `${os.homedir()}\\Documents\\Beldex`;
     } else {
-      configDir = path.join(os.homedir(), ".beldex");
-      legacyBeldexConfigDir = path.join(os.homedir(), ".beldex/");
-      this.wallet_dir = path.join(os.homedir(), "Beldex");
+      configDir = upath.join(os.homedir(), ".beldex");
+      legacyBeldexConfigDir = upath.join(os.homedir(), ".beldex/");
+      this.wallet_dir = upath.join(os.homedir(), "Beldex");
     }
 
     // if the user has used beldex before, just keep the same stuff
@@ -204,11 +205,11 @@ export class Backend {
       }
     }
 
-    if (!fs.existsSync(path.join(this.config_dir, "gui"))) {
-      fs.mkdirpSync(path.join(this.config_dir, "gui"));
+    if (!fs.existsSync(upath.join(this.config_dir, "gui"))) {
+      fs.mkdirpSync(upath.join(this.config_dir, "gui"));
     }
 
-    this.config_file = path.join(this.config_dir, "gui", "config.json");
+    this.config_file = upath.join(this.config_dir, "gui", "config.json");
 
     const daemon = {
       type: "remote",
@@ -468,7 +469,7 @@ export class Backend {
           });
           break;
         }
-        const defaultFilename = path.basename(
+        const defaultFilename = upath.basename(
           params.defaultFilename || "beldex_wallet_report.csv"
         );
         dialog
@@ -588,7 +589,7 @@ export class Backend {
       streams: [
         {
           type: "rotating-file",
-          path: path.join(logPath, "electron.log"),
+          path: upath.join(logPath, "electron.log"),
           period: "1d", // daily rotation
           count: 4 // keep 4 days of logs
         }
@@ -726,8 +727,8 @@ export class Backend {
 
       const dirs = {
         mainnet: this.config_data.app.data_dir,
-        stagenet: path.join(this.config_data.app.data_dir, "stagenet"),
-        testnet: path.join(this.config_data.app.data_dir, "testnet")
+        stagenet: upath.join(this.config_data.app.data_dir, "stagenet"),
+        testnet: upath.join(this.config_data.app.data_dir, "testnet")
       };
 
       // Make sure we have the directories we need
@@ -736,7 +737,7 @@ export class Backend {
         fs.mkdirpSync(net_dir);
       }
 
-      const log_dir = path.join(net_dir, "logs");
+      const log_dir = upath.join(net_dir, "logs");
       if (!fs.existsSync(log_dir)) {
         fs.mkdirpSync(log_dir);
       }

@@ -25,7 +25,7 @@
         </template>
 
         <div>
-          {{ $t("footer.wallet") }}: {{ wallet.info.height }} /
+          {{ $t("footer.wallet") }}: {{ wallet_display_height }} /
           {{ target_height }} ({{ wallet_pct }}%)
         </div>
       </div>
@@ -59,12 +59,16 @@ export default {
         this.daemon.info.height_without_bootstrap
       );
 
-      if (this.config_daemon.type === "local") {
-        return Math.max(daemonHeight, daemonTargetHeight, localHeight);
-      }
-
-      if (this.config_daemon.type === "local_remote") {
-        return Math.max(daemonHeight, daemonTargetHeight, localHeight);
+      if (
+        this.config_daemon.type === "local" ||
+        this.config_daemon.type === "local_remote"
+      ) {
+        return Math.max(
+          daemonHeight,
+          daemonTargetHeight,
+          localHeight,
+          this.wallet_height
+        );
       }
 
       return daemonHeight;
@@ -86,39 +90,46 @@ export default {
     },
     wallet_pct() {
       return this.calculatePercent(
-        this.toSafeHeight(this.wallet.info.height),
+        this.wallet_display_height,
         this.target_height
       );
     },
     wallet_height() {
       return this.toSafeHeight(this.wallet.info.height);
     },
-    isWalletRpcSyncing() {
-      return this.wallet.isRPCSyncing === true;
+    wallet_display_height() {
+      if (this.config_daemon.type === "local") {
+        return Math.min(this.wallet_height, this.daemon_height);
+      }
+
+      return this.wallet_height;
     },
     status() {
       const daemonType = this.config_daemon.type;
       const isSyncing = this.daemon_height < this.target_height;
-      const hasSyncTarget = this.target_height > 0;
-      const isScanning = hasSyncTarget
-        ? this.wallet_height < this.target_height - 1
-        : this.isWalletRpcSyncing;
+      const isAwaitingHeights =
+        this.wallet_height === 0 ||
+        this.toSafeHeight(this.daemon.info.height) === 0;
 
       if (this.update_required) {
         // i18n string and class of statusbar
         return "updateRequired";
       }
 
+      if (isAwaitingHeights) {
+        return "scanning";
+      }
+
       if (daemonType === "local") {
-        if (isSyncing) {
-          return "syncing";
-        } else if (isScanning) {
+        if (this.wallet_display_height < this.daemon_height - 1) {
           return "scanning";
+        } else if (isSyncing) {
+          return "syncing";
         } else {
           return "ready";
         }
       } else {
-        if (isScanning) {
+        if (this.wallet_height < this.target_height - 1) {
           return "scanning";
         } else if (daemonType === "local_remote" && isSyncing) {
           return "syncing";
