@@ -435,11 +435,11 @@ export class Swap {
       const details = data.result[0];
       const txnId = params.id || details.id;
       if (txnId && data.statusOnly) {
-        this.swapTxnHistory.updateTransactionStatus(
+        this.swapTxnHistory.updateTransactionStatus({
           txnId,
           exchange,
-          details.status
-        );
+          status: details.status
+        });
       } else if (txnId && walletAddress) {
         this.swapTxnHistory.updateTransactionDetails(
           txnId,

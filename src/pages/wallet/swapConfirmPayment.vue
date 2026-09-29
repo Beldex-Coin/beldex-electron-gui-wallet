@@ -136,7 +136,7 @@
           >
             {{ this.$t("titles.swap.blockchain") }} :
             <span>{{
-              receiveChainDtails.blockchain.replaceAll("_", " ") || ""
+              receiveChainDtails.blockchain.replaceAll("_", " ")
             }}</span>
           </div>
         </div>

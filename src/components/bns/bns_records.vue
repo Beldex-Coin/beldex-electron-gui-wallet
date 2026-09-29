@@ -89,6 +89,14 @@ import OxenField from "components/oxen_field";
 import { bchat_name_or_belnet_name } from "src/validators/common";
 import BNSRecordList from "./bns_record_list";
 
+// Same rationale as HAS_PASSWORD_TIMEOUT_MS in wallet_password.js:
+// gateway.send() can drop this message with no signal back to us (eg.
+// mid appSuspend/appResumed), and decrypt_record_result is otherwise
+// awaited with no timeout - without this, `decrypting` would stay
+// true forever, leaving the field and button disabled with no way to
+// retry.
+const DECRYPT_RECORD_TIMEOUT_MS = 15000;
+
 export default {
   name: "BNSRecords",
   components: {
@@ -214,7 +222,24 @@ export default {
       // const name = this.name.trim().toLowerCase();
       const name = validateName;
 
+      let settled = false;
+      const timeoutId = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+
+        this.decrypting = false;
+        this.$q.notify({
+          type: "negative",
+          timeout: 3000,
+          message: this.$t("notification.errors.decryptBNSRecord", { name })
+        });
+      }, DECRYPT_RECORD_TIMEOUT_MS);
+
       this.$gateway.once("decrypt_record_result", data => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+
         if (data.decrypted) {
           this.$q.notify({
             type: "positive",

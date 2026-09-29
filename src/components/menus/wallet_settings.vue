@@ -173,12 +173,9 @@
             </div>
           </div>
 
-          <div v-if="!/^0*$/.test(secret.spend_key)" class="pk-divider"></div>
+          <div v-if="hasSpendKey" class="pk-divider"></div>
 
-          <div
-            v-if="!/^0*$/.test(secret.spend_key)"
-            class="pk-section pk-section-plain"
-          >
+          <div v-if="hasSpendKey" class="pk-section pk-section-plain">
             <div class="row items-start no-wrap pk-plain-row q-pr-md">
               <div class="col">
                 <div class="pk-label ft-medium">
@@ -465,6 +462,7 @@
 import { clipboard, dialog } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import WalletPassword from "src/mixins/wallet_password";
+import ClipboardCopyMixin from "src/mixins/clipboard_copy_mixin";
 import OxenField from "components/oxen_field";
 
 export default {
@@ -472,7 +470,7 @@ export default {
   components: {
     OxenField
   },
-  mixins: [WalletPassword],
+  mixins: [WalletPassword, ClipboardCopyMixin],
   data() {
     return {
       modals: {
@@ -509,6 +507,9 @@ export default {
     },
     locale() {
       return this.$q.lang.getLocale();
+    },
+    hasSpendKey() {
+      return !!this.secret.spend_key && !/^0*$/.test(this.secret.spend_key);
     }
   }),
   watch: {
@@ -542,31 +543,41 @@ export default {
   },
   methods: {
     setDefaultKeyImagePaths() {
-      // Only seed defaults on first open; don't clobber a path the user already browsed to.
-      if (
-        this.modals.key_image.export_path ||
-        this.modals.key_image.import_path
-      ) {
-        return;
-      }
+      // Only seed a default for whichever path hasn't been set yet; don't
+      // clobber a path the user already browsed to. Checked independently
+      // so browsing for one path (which happens as soon as the user picks
+      // it) doesn't block the other one from ever getting its default.
       const joinPath = (...parts) => parts.filter(Boolean).join("/");
-      this.modals.key_image.export_path = joinPath(
-        this.wallet_data_dir,
-        "images",
-        this.info.name
-      );
-      this.modals.key_image.import_path = joinPath(
-        this.wallet_data_dir,
-        "images",
-        this.info.name,
-        "key_image_export"
-      );
+      if (!this.modals.key_image.export_path) {
+        this.modals.key_image.export_path = joinPath(
+          this.wallet_data_dir,
+          "images",
+          this.info.name
+        );
+      }
+      if (!this.modals.key_image.import_path) {
+        this.modals.key_image.import_path = joinPath(
+          this.wallet_data_dir,
+          "images",
+          this.info.name,
+          "key_image_export"
+        );
+      }
     },
     async showModal(which) {
       if (!this.is_ready) return;
       if (which === "key_image") {
         this.setDefaultKeyImagePaths();
-        if (this.view_only) {
+        // View-only wallets can only import key images. Guard on the
+        // current type rather than force-resetting it unconditionally on
+        // every open, so this doesn't silently clobber a mode the user
+        // picked if a future mode besides Export is ever added that's also
+        // valid for view-only wallets.
+        const viewOnlyAllowedTypes = ["Import"];
+        if (
+          this.view_only &&
+          !viewOnlyAllowedTypes.includes(this.modals.key_image.type)
+        ) {
           this.modals.key_image.type = "Import";
         }
       }
@@ -664,12 +675,11 @@ export default {
         .onCancel(() => {});
     },
     copyAddress(address) {
-      clipboard.writeText(address);
-      this.$q.notify({
-        type: "positive",
-        timeout: 1000,
-        message: this.$t("notification.positive.addressCopied")
-      });
+      this.copyToClipboardAndNotify(
+        address,
+        this.$t("notification.positive.addressCopied"),
+        1000
+      );
     },
     closePrivateKeys() {
       this.hideModal("private_keys");

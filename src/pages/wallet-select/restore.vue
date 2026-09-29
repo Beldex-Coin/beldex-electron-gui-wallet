@@ -141,6 +141,20 @@
                 <!-- </div> -->
               </div>
 
+              <article
+                v-if="wallet.refresh_type == 'date'"
+                class="restore-date-hint"
+              >
+                <q-icon name="o_info" size="16px" class="hint-icon" />
+                <span class="q-ml-sm hint-txt">
+                  Restoring from the very first block
+                  <strong class="hint-date">{{ firstBlockDate }}</strong> so no
+                  transactions are missed. If you know roughly when this wallet
+                  was created, choosing a later date here will make restoring
+                  much faster.
+                </span>
+              </article>
+
               <OxenField class="q-mt-md" :label="$t('fieldLabels.password')">
                 <q-input
                   v-model="wallet.password"
@@ -339,6 +353,20 @@
               <!-- </div> -->
             </div>
 
+            <article
+              v-if="walletKeys.refresh_type == 'date'"
+              class="restore-date-hint"
+            >
+              <q-icon name="o_info" size="16px" class="hint-icon" />
+              <span class="q-ml-sm hint-txt">
+                Restoring from the very first block
+                <strong class="hint-date">{{ firstBlockDate }}</strong> so no
+                transactions are missed. If you know roughly when this wallet
+                was created, choosing a later date here will make restoring much
+                faster.
+              </span>
+            </article>
+
             <OxenField class="q-mt-md" :label="$t('fieldLabels.password')">
               <q-input
                 v-model="walletKeys.password"
@@ -402,7 +430,6 @@ import { privkey } from "src/validators/common";
 const timeStampFirstBlock = 1525305600000;
 const qDateFormat = "YYYY/MM/DD";
 let dateFirstBlock = date.formatDate(timeStampFirstBlock, qDateFormat);
-let defaultRestoreDate = date.formatDate(Date.now(), qDateFormat);
 
 export default {
   components: {
@@ -416,7 +443,7 @@ export default {
         seed: "",
         refresh_type: "date",
         refresh_start_height: 0,
-        refresh_start_date: defaultRestoreDate, // timestamp of block 1
+        refresh_start_date: dateFirstBlock, // default to the first block - the date field is an opt-in to scan less
         password: "",
         password_confirm: ""
       },
@@ -427,17 +454,22 @@ export default {
         spendkey: "",
         refresh_type: "date",
         refresh_start_height: 0,
-        refresh_start_date: defaultRestoreDate, // timestamp of block 1
+        refresh_start_date: dateFirstBlock, // default to the first block - the date field is an opt-in to scan less
         password: "",
         password_confirm: ""
       }
     };
   },
-  computed: mapState({
-    theme: state => state.gateway.app.config.appearance.theme,
-    status: state => state.gateway.wallet.status,
-    daemon: state => state.gateway.daemon
-  }),
+  computed: {
+    ...mapState({
+      theme: state => state.gateway.app.config.appearance.theme,
+      status: state => state.gateway.wallet.status,
+      daemon: state => state.gateway.daemon
+    }),
+    firstBlockDate() {
+      return dateFirstBlock;
+    }
+  },
   watch: {
     status: {
       handler(val, old) {

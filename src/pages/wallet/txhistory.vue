@@ -124,7 +124,11 @@
                   size="12px"
                   class="date-range-indicator-clear cursor-pointer"
                   @click.stop="clearDateRange"
-                />
+                >
+                  <q-tooltip>{{
+                    $t("strings.transactions.clearDateRange")
+                  }}</q-tooltip>
+                </q-icon>
                 <span>{{ formattedDateRange }}</span>
               </div>
             </OxenField>

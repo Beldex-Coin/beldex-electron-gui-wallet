@@ -6,9 +6,16 @@ const http = require("http");
 const fs = require("fs");
 const path = require("upath");
 const portscanner = require("portscanner");
+import {
+  SHOULD_LOG_PROCESS_OUTPUT,
+  START_POLL_INTERVAL_MS,
+  appendProcessOutput,
+  formatRPCError,
+  getProcessFailureDetails,
+  clearStartTimers,
+  terminateProcess
+} from "./process-supervisor";
 
-const SHOULD_LOG_PROCESS_OUTPUT = process.env.BELDEX_VERBOSE_LOGS === "true";
-const PROCESS_OUTPUT_TAIL_LIMIT = 20;
 const LOCAL_DAEMON_START_TIMEOUT_MS =
   process.platform === "win32" ? 120000 : 45000;
 // Safety ceiling only: a first-time or long-idle local daemon can spend many
@@ -16,8 +23,12 @@ const LOCAL_DAEMON_START_TIMEOUT_MS =
 // indexes before RPC responds. LOCAL_DAEMON_START_TIMEOUT_MS is treated as a
 // liveness re-check interval while the process is alive, not a hard failure.
 const LOCAL_DAEMON_HARD_TIMEOUT_MS = 10 * 60 * 1000;
-const START_POLL_INTERVAL_MS = 1000;
 const KILL_PROCESS_FORCE_TIMEOUT_MS = 10000;
+// Was a bare `20000` inline in quit() - named for clarity. Kept distinct
+// from KILL_PROCESS_FORCE_TIMEOUT_MS (10s) rather than unified, since
+// that's a real behavior difference between the two call paths, not
+// just duplication, and changing either value wasn't asked for here.
+const DAEMON_QUIT_FORCE_KILL_TIMEOUT_MS = 20000;
 
 export class Daemon {
   constructor(backend) {
@@ -40,45 +51,6 @@ export class Daemon {
     this.stderrTail = [];
     this.startupPoll = null;
     this.startupTimeout = null;
-  }
-
-  appendProcessOutput(target, data) {
-    const value = data.toString().trim();
-    if (!value) {
-      return;
-    }
-
-    target.push(value);
-    if (target.length > PROCESS_OUTPUT_TAIL_LIMIT) {
-      target.shift();
-    }
-  }
-
-  clearStartTimers() {
-    clearInterval(this.startupPoll);
-    clearTimeout(this.startupTimeout);
-    this.startupPoll = null;
-    this.startupTimeout = null;
-  }
-
-  formatRPCError(error, fallbackMessage) {
-    if (!error) {
-      return fallbackMessage;
-    }
-
-    if (typeof error === "string") {
-      return error;
-    }
-
-    const cause = error.cause || {};
-    return error.message || cause.message || cause.code || fallbackMessage;
-  }
-
-  getProcessFailureDetails(prefix) {
-    const stderr = this.stderrTail.join("\n");
-    const stdout = this.stdoutTail.join("\n");
-    const detail = stderr || stdout;
-    return detail ? `${prefix}\n${detail}` : prefix;
   }
 
   checkVersion() {
@@ -156,10 +128,7 @@ export class Daemon {
           } else {
             reject(
               new Error(
-                this.formatRPCError(
-                  data.error,
-                  "Could not connect to remote daemon"
-                )
+                formatRPCError(data.error, "Could not connect to remote daemon")
               )
             );
           }
@@ -253,7 +222,7 @@ export class Daemon {
               }
 
               didSettle = true;
-              this.clearStartTimers();
+              clearStartTimers(this);
 
               if (error) {
                 reject(error);
@@ -278,19 +247,19 @@ export class Daemon {
             }
 
             this.daemonProcess.stdout.on("data", data => {
-              this.appendProcessOutput(this.stdoutTail, data);
+              appendProcessOutput(this.stdoutTail, data);
               if (SHOULD_LOG_PROCESS_OUTPUT) {
                 process.stdout.write(`Daemon: ${data}`);
               }
             });
             this.daemonProcess.stderr.on("data", data => {
-              this.appendProcessOutput(this.stderrTail, data);
+              appendProcessOutput(this.stderrTail, data);
               if (SHOULD_LOG_PROCESS_OUTPUT) {
                 process.stderr.write(`Daemon: ${data}`);
               }
             });
             this.daemonProcess.on("error", err => {
-              this.appendProcessOutput(
+              appendProcessOutput(
                 this.stderrTail,
                 Buffer.from(String(err && err.message ? err.message : err))
               );
@@ -299,7 +268,11 @@ export class Daemon {
               }
               finishStart(
                 new Error(
-                  this.getProcessFailureDetails("Failed to start local daemon")
+                  getProcessFailureDetails(
+                    "Failed to start local daemon",
+                    this.stderrTail,
+                    this.stdoutTail
+                  )
                 )
               );
             });
@@ -312,8 +285,10 @@ export class Daemon {
               if (!didSettle) {
                 finishStart(
                   new Error(
-                    this.getProcessFailureDetails(
-                      `Local daemon exited with code ${code}`
+                    getProcessFailureDetails(
+                      `Local daemon exited with code ${code}`,
+                      this.stderrTail,
+                      this.stdoutTail
                     )
                   )
                 );
@@ -335,8 +310,10 @@ export class Daemon {
                 this.killProcess();
                 finishStart(
                   new Error(
-                    this.getProcessFailureDetails(
-                      "Timed out while starting local daemon"
+                    getProcessFailureDetails(
+                      "Timed out while starting local daemon",
+                      this.stderrTail,
+                      this.stdoutTail
                     )
                   )
                 );
@@ -360,11 +337,13 @@ export class Daemon {
                     this.killProcess();
                     finishStart(
                       new Error(
-                        this.getProcessFailureDetails(
-                          this.formatRPCError(
+                        getProcessFailureDetails(
+                          formatRPCError(
                             data.error,
                             "Could not connect to local daemon"
-                          )
+                          ),
+                          this.stderrTail,
+                          this.stdoutTail
                         )
                       )
                     );
@@ -380,17 +359,21 @@ export class Daemon {
   }
 
   killProcess() {
-    this.clearStartTimers();
+    clearStartTimers(this);
     if (!this.daemonProcess) {
       return;
     }
     const proc = this.daemonProcess;
+    // Cleared before the process has actually exited (SIGTERM is
+    // asynchronous and terminateProcess's up-to-10s force-kill window
+    // hasn't run yet) so a re-entrant call to killProcess() during that
+    // window sees no process and returns immediately above, instead of
+    // trying to terminate the same proc twice. Anything else that reads
+    // this.daemonProcess to decide "is a daemon running" - the startup
+    // poll and the liveness re-check both do - will see null during that
+    // same window, which is intentional here but worth knowing about.
     this.daemonProcess = null;
-    const forceKill = setTimeout(() => {
-      proc.kill("SIGKILL");
-    }, KILL_PROCESS_FORCE_TIMEOUT_MS);
-    proc.once("close", () => clearTimeout(forceKill));
-    proc.kill("SIGTERM");
+    terminateProcess(proc, "SIGTERM", KILL_PROCESS_FORCE_TIMEOUT_MS);
   }
 
   handle(data) {
@@ -789,25 +772,15 @@ export class Daemon {
 
   quit() {
     clearInterval(this.heartbeat);
-    return new Promise(resolve => {
-      if (this.daemonProcess) {
-        this.daemonProcess.on("close", () => {
-          this.agent.destroy();
-          clearTimeout(this.forceKill);
-          resolve();
-        });
-
-        // Force kill after 20 seconds
-        this.forceKill = setTimeout(() => {
-          if (this.daemonProcess) {
-            this.daemonProcess.kill("SIGKILL");
-          }
-        }, 20000);
-
-        const signal = this.isDaemonSyncing ? "SIGKILL" : "SIGTERM";
-        this.daemonProcess.kill(signal);
-      } else {
-        resolve();
+    const proc = this.daemonProcess;
+    const signal = this.isDaemonSyncing ? "SIGKILL" : "SIGTERM";
+    return terminateProcess(
+      proc,
+      signal,
+      DAEMON_QUIT_FORCE_KILL_TIMEOUT_MS
+    ).then(() => {
+      if (proc) {
+        this.agent.destroy();
       }
     });
   }

@@ -152,9 +152,12 @@
             }}</span
             ><br />
 
-            <span class="ft-semibold uppercase" style="color: #00ad07"
+            <span
+              v-if="this.txnDetails.networkFrom"
+              class="ft-semibold uppercase"
+              style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
-              {{ this.txnDetails.networkFrom || "" }}</span
+              {{ this.txnDetails.networkFrom }}</span
             >
             <br />
             <span
@@ -292,7 +295,7 @@
               {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
             </td>
           </tr>
-          <tr v-if="getConfirmationCount()">
+          <tr v-if="getConfirmationCount() !== null">
             <td>{{ $t("titles.swap.confirmations") }}</td>
             <td class="uppercase">{{ getConfirmationCount() }} Blocks</td>
           </tr>

@@ -128,6 +128,11 @@ function getPrintableError(error) {
   return error && error.stack ? error.stack : error;
 }
 
+// dialog.showMessageBox() has returned a Promise (and ignored a third
+// callback argument) since Electron 6 - the old
+// `showMessageBox(win, options, callback)` form used to hang here forever,
+// since that callback was never invoked, so none of these three dialogs'
+// promises ever settled.
 async function showUpdateDialog(mainWindow) {
   const RESTART_BUTTON = 0;
   const LATER_BUTTON = 1;
@@ -140,11 +145,8 @@ async function showUpdateDialog(mainWindow) {
     defaultId: LATER_BUTTON,
     cancelId: RESTART_BUTTON
   };
-  return new Promise(resolve => {
-    dialog.showMessageBox(mainWindow, options, response => {
-      resolve(response === RESTART_BUTTON);
-    });
-  });
+  const { response } = await dialog.showMessageBox(mainWindow, options);
+  return response === RESTART_BUTTON;
 }
 
 async function showManualUpdateDialog(mainWindow, latestVersion) {
@@ -161,15 +163,10 @@ async function showManualUpdateDialog(mainWindow, latestVersion) {
     cancelId: LATER_BUTTON
   };
 
-  return new Promise(resolve => {
-    dialog.showMessageBox(mainWindow, options, response => {
-      if (response === DOWNLOAD_BUTTON) {
-        shell.openExternal(RELEASES_URL);
-      }
-
-      resolve();
-    });
-  });
+  const { response } = await dialog.showMessageBox(mainWindow, options);
+  if (response === DOWNLOAD_BUTTON) {
+    shell.openExternal(RELEASES_URL);
+  }
 }
 
 async function showCannotUpdateDialog(mainWindow) {
@@ -181,11 +178,7 @@ async function showCannotUpdateDialog(mainWindow) {
       "Beldex Electron Wallet failed to update but there is a new version available. Please go to https://beldex.io/ and install the new version manually."
   };
 
-  return new Promise(resolve => {
-    dialog.showMessageBox(mainWindow, options, () => {
-      resolve();
-    });
-  });
+  await dialog.showMessageBox(mainWindow, options);
 }
 
 export { checkForUpdate };

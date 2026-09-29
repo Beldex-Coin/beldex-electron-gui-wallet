@@ -150,7 +150,7 @@
               ></div>
             </div>
             <div class="startup-progress-value">
-              Rescanning {{ item.percent }}%
+              {{ item.label }} {{ item.percent.toFixed(1) }}%
             </div>
           </div>
         </div>
@@ -283,6 +283,13 @@ export default {
       if (this.daemonProgressItem) {
         return this.$t("strings.syncingDaemon");
       }
+
+      // Neither progress item exists yet during the early startup stages
+      // (connecting to backend, loading settings, starting the daemon
+      // before its first height arrives, starting the wallet, reading the
+      // wallet list) - fall back to a generic message instead of leaving
+      // this computed (and the element it renders into) empty.
+      return this.$t("strings.connectingToBackend");
     }
   }),
   watch: {

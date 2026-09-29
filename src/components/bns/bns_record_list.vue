@@ -212,13 +212,24 @@ import { mapState } from "vuex";
 import { i18n } from "boot/i18n";
 import ContextMenu from "components/menus/contextmenu";
 
-import { clipboard } from "src/shims/electron-renderer";
+import ClipboardCopyMixin from "src/mixins/clipboard_copy_mixin";
 
 export default {
   name: "BNSRecordList",
+  filters: {
+    blockHeight(value) {
+      const heightString = i18n.t("strings.blockHeight");
+      return `${heightString}: ${value}`;
+    },
+    expirationHeight(value) {
+      const expirationHeightString = i18n.t("strings.expirationHeight");
+      return `${expirationHeightString}: ${value}`;
+    }
+  },
   components: {
     ContextMenu
   },
+  mixins: [ClipboardCopyMixin],
   props: {
     recordList: {
       type: Array,
@@ -238,16 +249,6 @@ export default {
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme
   }),
-  filters: {
-    blockHeight(value) {
-      const heightString = i18n.t("strings.blockHeight");
-      return `${heightString}: ${value}`;
-    },
-    expirationHeight(value) {
-      const expirationHeightString = i18n.t("strings.expirationHeight");
-      return `${expirationHeightString}: ${value}`;
-    }
-  },
   methods: {
     isLocked(record) {
       return !record.name || !record.value;
@@ -307,13 +308,7 @@ export default {
       this.copy(record.value, message);
     },
     copy(value, message) {
-      if (!value) return;
-      clipboard.writeText(value.trim());
-      this.$q.notify({
-        type: "positive",
-        timeout: 2000,
-        message
-      });
+      this.copyToClipboardAndNotify(value, message);
     }
   }
 };

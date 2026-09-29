@@ -154,6 +154,70 @@ export class Backend {
 
     fs.writeFile(this.config_file, serialized, "utf8", callback);
   }
+
+  // Builds a shallow copy of config_data with one net_type's daemon.type
+  // overridden. Used when a runtime fallback (remote unreachable, local
+  // daemon failed to start, binary missing, etc.) needs to change how the
+  // app behaves *this session* without mutating the user's saved
+  // preference - so `pending_config` (what the Settings screen shows and
+  // echoes back on save) never picks up a session-only downgrade.
+  buildConfigWithDaemonType(net_type, type) {
+    return {
+      ...this.config_data,
+      daemons: {
+        ...this.config_data.daemons,
+        [net_type]: {
+          ...this.config_data.daemons[net_type],
+          type
+        }
+      }
+    };
+  }
+
+  // Starts the wallet RPC once the daemon (local or remote) is up, and
+  // brings the app to "ready". The primary startup path and the
+  // local_remote-failed-over-to-remote fallback both need this exact
+  // sequence; they used to each hand-roll their own copy and had already
+  // drifted apart (the fallback's copy was missing the killProcess() call
+  // on a wallet-start failure). One shared implementation now backs both.
+  finishDaemonStartup() {
+    this.send("set_app_data", {
+      status: {
+        code: 6 // Starting wallet
+      }
+    });
+
+    return this.walletd
+      .start(this.config_data)
+      .then(() => {
+        this.send("set_app_data", {
+          status: {
+            code: 7 // Reading wallet list
+          }
+        });
+
+        this.walletd.listWallets(true);
+
+        this.send("set_app_data", {
+          status: {
+            code: 0 // Ready
+          }
+        });
+      })
+      .catch(error => {
+        this.daemon.killProcess();
+        this.send("show_notification", {
+          type: "negative",
+          message: error.message,
+          timeout: 3000
+        });
+        this.send("set_app_data", {
+          status: {
+            code: -1 // Return to config screen
+          }
+        });
+      });
+  }
   wait(ms) {
     return new Promise(resolve => {
       setTimeout(resolve, ms);
@@ -168,12 +232,26 @@ export class Backend {
         return lastResult;
       }
 
-      if (
-        daemonConfig?.type === "local" ||
-        attempt === REMOTE_NODE_RETRY_ATTEMPTS
-      ) {
+      // checkRemote() resolves without an error for daemonConfig.type ===
+      // "local" (it never hits the network for a local daemon), so that
+      // case is already handled by the !lastResult.error return above -
+      // this only needs to stop the retry loop on the final attempt.
+      if (attempt === REMOTE_NODE_RETRY_ATTEMPTS) {
         return lastResult;
       }
+
+      // Each attempt's RPC can take up to 20s, so a fully unreachable
+      // remote node otherwise leaves the user on "Starting daemon" with
+      // no feedback for ~64s before the first error appears. Let them
+      // know we're still trying between attempts.
+      this.send("show_notification", {
+        type: "warning",
+        timeout: REMOTE_NODE_RETRY_DELAY_MS,
+        i18n: [
+          "notification.warnings.retryingRemoteNode",
+          { attempt, total: REMOTE_NODE_RETRY_ATTEMPTS }
+        ]
+      });
 
       await this.wait(REMOTE_NODE_RETRY_DELAY_MS);
     }
@@ -760,10 +838,14 @@ export class Backend {
         if (data.error) {
           // If we can default to local then we do so, otherwise we tell the user  to re-set the node
           if (config_daemon.type === "local_remote") {
+            const preservedDaemonType = config_daemon.type;
             this.config_data.daemons[net_type].type = "local";
             this.send("set_app_data", {
               config: this.config_data,
-              pending_config: this.config_data
+              pending_config: this.buildConfigWithDaemonType(
+                net_type,
+                preservedDaemonType
+              )
             });
             this.send("show_notification", {
               type: "warning",
@@ -817,67 +899,38 @@ export class Backend {
               });
             } else {
               // daemon not found, probably removed by AV, set to remote node
+              const preservedDaemonType = this.config_data.daemons[net_type]
+                .type;
               this.config_data.daemons[net_type].type = "remote";
               this.send("set_app_data", {
                 status: {
                   code: 5
                 },
                 config: this.config_data,
-                pending_config: this.config_data
+                pending_config: this.buildConfigWithDaemonType(
+                  net_type,
+                  preservedDaemonType
+                )
               });
             }
 
             this.daemon
               .start(this.config_data)
-              .then(() => {
-                this.send("set_app_data", {
-                  status: {
-                    code: 6 // Starting wallet
-                  }
-                });
-
-                this.walletd
-                  .start(this.config_data)
-                  .then(() => {
-                    this.send("set_app_data", {
-                      status: {
-                        code: 7 // Reading wallet list
-                      }
-                    });
-
-                    this.walletd.listWallets(true);
-
-                    this.send("set_app_data", {
-                      status: {
-                        code: 0 // Ready
-                      }
-                    });
-                    // eslint-disable-next-line
-                  })
-                  .catch(error => {
-                    this.daemon.killProcess();
-                    this.send("show_notification", {
-                      type: "negative",
-                      message: error.message,
-                      timeout: 3000
-                    });
-                    this.send("set_app_data", {
-                      status: {
-                        code: -1 // Return to config screen
-                      }
-                    });
-                  });
-                // eslint-disable-next-line
-              })
+              .then(() => this.finishDaemonStartup())
               .catch(error => {
                 if (
                   this.config_data.daemons[net_type].type === "local_remote"
                 ) {
+                  const preservedDaemonType = this.config_data.daemons[net_type]
+                    .type;
                   this.daemon.killProcess();
                   this.config_data.daemons[net_type].type = "remote";
                   this.send("set_app_data", {
                     config: this.config_data,
-                    pending_config: this.config_data
+                    pending_config: this.buildConfigWithDaemonType(
+                      net_type,
+                      preservedDaemonType
+                    )
                   });
                   this.send("show_notification", {
                     type: "warning",
@@ -888,30 +941,7 @@ export class Backend {
 
                   this.daemon
                     .start(this.config_data)
-                    .then(() => {
-                      this.send("set_app_data", {
-                        status: {
-                          code: 6 // Starting wallet
-                        }
-                      });
-
-                      return this.walletd.start(this.config_data);
-                    })
-                    .then(() => {
-                      this.send("set_app_data", {
-                        status: {
-                          code: 7 // Reading wallet list
-                        }
-                      });
-
-                      this.walletd.listWallets(true);
-
-                      this.send("set_app_data", {
-                        status: {
-                          code: 0 // Ready
-                        }
-                      });
-                    })
+                    .then(() => this.finishDaemonStartup())
                     .catch(fallbackError => {
                       this.send("show_notification", {
                         type: "negative",

@@ -301,8 +301,15 @@ export async function getTransactions(params, dbManager) {
   return {
     status: true,
     method,
-    result: settled.map(entry => entry.detail),
-    // Callers persist result[0] only, so the envelope flag tracks that entry.
+    // Each entry carries its own statusOnly (a future caller that iterates
+    // the full array, rather than just result[0], needs the per-entry
+    // value - collapsing to one envelope-level flag would let one expired
+    // entry get applied to every other entry in the batch).
+    result: settled.map(entry => ({
+      ...entry.detail,
+      statusOnly: entry.statusOnly
+    })),
+    // Kept for the current caller, which only reads result[0]/this flag.
     statusOnly: settled.length > 0 ? settled[0].statusOnly : false,
     exchange_type: "quickex"
   };

@@ -48,13 +48,27 @@ async function _post(method, params, isPrivacySwap) {
 }
 
 function changellyPlatformFee(order) {
+  // Changelly's own totalFee (an absolute amount in payout currency) is
+  // preferred when the response carries it - it's not a reconstruction,
+  // it's the number Changelly itself computed.
+  const totalFee = Number(order?.totalFee);
+  if (Number.isFinite(totalFee) && totalFee > 0) return totalFee;
+
+  // Fallback: reconstruct from changellyFee (a percentage) and an amount.
+  // Per Changelly's API docs, amountTo/amountExpectedTo are already NET of
+  // changellyFee (it says amountTo "includes Changelly plus partner extra
+  // fee" already deducted) - only the network fee is still to be
+  // subtracted from them. So recovering the fee amount from a net figure
+  // and a percentage means dividing by (100 - rate), not by 100: if
+  // amountTo = gross * (1 - rate/100), then gross - amountTo =
+  // amountTo * rate / (100 - rate).
   const rate = Number(order?.changellyFee);
-  if (!Number.isFinite(rate) || rate <= 0) return 0;
+  if (!Number.isFinite(rate) || rate <= 0 || rate >= 100) return 0;
   const amountTo = [order?.amountExpectedTo, order?.amountTo]
     .map(Number)
     .find(n => Number.isFinite(n) && n > 0);
   if (!amountTo) return 0;
-  return (amountTo * rate) / 100;
+  return (amountTo * rate) / (100 - rate);
 }
 
 function _withPlatformFee(res) {

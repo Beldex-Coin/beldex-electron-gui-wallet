@@ -3,8 +3,12 @@ import { EventEmitter } from "events";
 import { i18n, changeLanguage } from "src/boot/i18n";
 import { appIpc } from "src/shims/electron-renderer";
 
-const WS_RETRY_DELAY_MS = 1000;
+const WS_RETRY_BASE_DELAY_MS = 1000;
+const WS_RETRY_MAX_DELAY_MS = 15000;
 const WS_CONNECT_WARN_AFTER_ATTEMPTS = 5;
+// Once the initial warning has shown, remind the user again every N
+// further attempts instead of staying silent for the rest of the outage.
+const WS_CONNECT_WARN_REPEAT_ATTEMPTS = 30;
 export class Gateway extends EventEmitter {
   constructor(app, router) {
     super();
@@ -17,7 +21,6 @@ export class Gateway extends EventEmitter {
     this.wsRetryAttempts = 0;
     this.wsConfig = null;
     this.isSuspended = false;
-    this.hasShownBackendRetryNotice = false;
 
     // Set the initial language
     let language = LocalStorage.has("language")
@@ -115,10 +118,15 @@ export class Gateway extends EventEmitter {
       return;
     }
 
+    const delay = Math.min(
+      WS_RETRY_BASE_DELAY_MS * 2 ** Math.max(this.wsRetryAttempts - 1, 0),
+      WS_RETRY_MAX_DELAY_MS
+    );
+
     this.wsRetryTimer = setTimeout(() => {
       this.wsRetryTimer = null;
       this.connectToBackend(this.wsConfig, isResume);
-    }, WS_RETRY_DELAY_MS);
+    }, delay);
   }
 
   connectToBackend(config, isResume = false) {
@@ -135,7 +143,6 @@ export class Gateway extends EventEmitter {
 
     ws.onopen = () => {
       this.wsRetryAttempts = 0;
-      this.hasShownBackendRetryNotice = false;
 
       if (isResume) {
         console.log("WS reconnected");
@@ -165,11 +172,13 @@ export class Gateway extends EventEmitter {
       }
 
       this.wsRetryAttempts += 1;
+      const attemptsPastWarn =
+        this.wsRetryAttempts - WS_CONNECT_WARN_AFTER_ATTEMPTS;
       if (
-        !this.hasShownBackendRetryNotice &&
-        this.wsRetryAttempts >= WS_CONNECT_WARN_AFTER_ATTEMPTS
+        attemptsPastWarn === 0 ||
+        (attemptsPastWarn > 0 &&
+          attemptsPastWarn % WS_CONNECT_WARN_REPEAT_ATTEMPTS === 0)
       ) {
-        this.hasShownBackendRetryNotice = true;
         Notify.create({
           type: "warning",
           timeout: 2000,
@@ -245,9 +254,18 @@ export class Gateway extends EventEmitter {
     }, 0);
   }
 
+  // Returns whether the message actually went out. Every renderer call
+  // site today is fire-and-forget (send() + gateway.once(<event>)) and
+  // ignores this return value, so adding it is backward compatible -
+  // it lets a call site opt into checking for a drop instead of only
+  // ever finding out via a timeout (or never, if it doesn't have one).
   send(module, method, data = {}) {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN || !this.token) {
-      return;
+      console.warn(
+        `[gateway] Dropped ${module}.${method} - socket not ready` +
+          (this.isSuspended ? " (app suspended)" : "")
+      );
+      return false;
     }
     let message = {
       module,
@@ -259,6 +277,7 @@ export class Gateway extends EventEmitter {
       this.token
     );
     this.ws.send(encrypted_data);
+    return true;
   }
 
   geti18n(key) {

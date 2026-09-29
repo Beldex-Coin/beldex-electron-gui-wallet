@@ -469,6 +469,8 @@ export default {
     },
     warnings: {
       noKeyImageExport: "No key images found to export",
+      retryingRemoteNode:
+        "Still trying to reach the remote node (attempt {attempt} of {total})...",
       usingLocalNode: "Could not access remote node, switching to local only",
       usingRemoteNode: "beldexd not found, using remote node"
     }

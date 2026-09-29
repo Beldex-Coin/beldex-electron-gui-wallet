@@ -220,11 +220,11 @@
             v-if="item"
             class="ft-semibold cursor uppercase"
             :style="{
-              color: item.status == 'finished' && '#20D030',
-              textAlign: item.status !== 'finished' && 'center'
+              color: item.status == 'finished' ? '#20D030' : undefined,
+              textAlign: hasKnownAmount(item.status) ? undefined : 'center'
             }"
           >
-            {{ item.status == "finished" ? amountReceived(item) : "---" }}
+            {{ hasKnownAmount(item.status) ? amountReceived(item) : "---" }}
             <!-- ≈ {{ Number(item.amountExpectedTo).toFixed(4) + " " + item.currencyTo }} -->
           </td>
           <td
@@ -539,6 +539,16 @@ export default {
       return `${day} ${month} ${getYear} ${hours}:${minutes}:${seconds}`;
     },
 
+    // finished, sending, confirming and exchanging all have a real
+    // currencyTo/amountExpectedTo to show (as an estimate until finished).
+    // Excludes refunded: a refund returns the original currencyFrom
+    // amount, which amountReceived() doesn't compute, so it stays "---"
+    // rather than showing the wrong currency.
+    hasKnownAmount(status) {
+      return ["finished", "sending", "confirming", "exchanging"].includes(
+        status
+      );
+    },
     amountReceived(item) {
       if (item.status == "finished") {
         return `${Number(item.amountExpectedTo).toFixed(4) +

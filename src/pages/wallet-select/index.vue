@@ -357,21 +357,13 @@ export default {
     width: 832px;
     .back-btn {
       cursor: pointer;
-      // width: 40px;
-      // height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    // .back-btn:hover {
-    //   background: rgba(119, 119, 151, 0.3) !important;
-    //   border-radius: 20px;
-    // }
     span {
       font-family: "Poppins-Bold";
       font-size: 26px;
-      // padding-bottom: 5px;
-      // margin-left: 10px;
     }
   }
 }

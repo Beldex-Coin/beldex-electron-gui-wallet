@@ -152,6 +152,10 @@ export class SwapDatabaseManager {
         amount_from = COALESCE(excluded.amount_from, swap_transactions_history.amount_from),
         amount_to = COALESCE(excluded.amount_to, swap_transactions_history.amount_to),
         network_fee = COALESCE(excluded.network_fee, swap_transactions_history.network_fee),
+        platform_fee = COALESCE(
+          NULLIF(excluded.platform_fee, 0),
+          swap_transactions_history.platform_fee
+        ),
         raw_response = COALESCE(excluded.raw_response, swap_transactions_history.raw_response),
         created_at = swap_transactions_history.created_at,
         updated_at = excluded.updated_at;
@@ -162,7 +166,7 @@ export class SwapDatabaseManager {
          SET txn_status = @txn_status, updated_at = @updated_at
        WHERE exchange = @exchange
          AND txn_id = @txn_id
-         AND txn_status NOT IN ('finished', 'refunded');
+         AND txn_status NOT IN ('finished', 'refunded', 'failed');
     `);
 
     this.statements.getOrderHistory = this.db.prepare(`
@@ -247,26 +251,29 @@ export class SwapDatabaseManager {
       updated_at: tx.updated_at ? Number(tx.updated_at) : now
     };
 
-    const result = this.statements.upsertTxn.run(payload);
-    console.log(
-      `[SwapDB] upsert txn_id=${payload.txn_id} | network_from=${payload.network_from} | network_to=${payload.network_to} tx.created_at=${tx.created_at}, tx.createdAt=${tx.createdAt}, now=${now}`
-    );
-    return result;
+    // Do not log txn_id/network/timestamp fields here: for wallet software,
+    // the exchange order ID plus timing is enough to correlate a user with
+    // an on-chain transaction, and this ran on every write to stdout
+    // (terminal scrollback, journald, crash-reporting pipelines). backend.js
+    // removed an equivalent full-payload console.log from receive() for the
+    // same reason; this had no matching redaction rule anyway (txn_id and
+    // timestamps aren't secrets REDACT_LOG_KEY_PATTERN would catch), so the
+    // fix is to just not print it.
+    return this.statements.upsertTxn.run(payload);
   }
 
-  updateTransactionStatus(exchange, txnId, status) {
+  updateTransactionStatus({ txnId, exchange, status } = {}) {
     this.init();
     if (!exchange || !txnId || !status) return null;
-    const result = this.statements.updateTxnStatus.run({
+    // Same privacy concern as upsertTransaction() above: txn_id + exchange
+    // is enough to correlate a user with an on-chain transaction, so this
+    // isn't printed to stdout.
+    return this.statements.updateTxnStatus.run({
       exchange,
       txn_id: String(txnId),
       txn_status: status,
       updated_at: Date.now()
     });
-    console.log(
-      `[SwapDB] status-only update txn_id=${txnId} | exchange=${exchange} | status=${status} | changes=${result.changes}`
-    );
-    return result;
   }
 
   batchUpsertTransactions(txArray) {
