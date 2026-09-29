@@ -15,7 +15,7 @@ jobs:
         include:
           - os: windows-latest
           - os: macos-latest
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v1
@@ -63,9 +63,19 @@ jobs:
         run: ls ./bin
         shell: bash
 
-      - name: Build window and linux binaries
-        if: runner.os != 'macOS'
+      - name: Build windows binaries
+        if: runner.os == 'Windows'
         run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Builds inside the node:24-bullseye container from
+      # build/linux-compat.Dockerfile so the shipped Linux binary links
+      # against an older glibc than the ubuntu-latest runner itself has,
+      # instead of just building directly on the runner's own glibc.
+      - name: Build linux binaries
+        if: runner.os == 'Linux'
+        run: npm run build:linux:compat
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -14,7 +14,7 @@
   },
   "private": true,
   "scripts": {
-    "dev": "ELECTRON_DISABLE_SANDBOX=1 quasar dev -m electron",
+    "dev": "quasar dev -m electron",
     "build": "quasar build -m electron --publish=never",
     "build:linux:compat": "bash ./build/build-linux-compat.sh build",
     "release": "quasar build -m electron --publish=always",
