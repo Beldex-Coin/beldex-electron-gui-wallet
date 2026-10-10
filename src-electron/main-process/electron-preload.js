@@ -175,6 +175,26 @@ class SCEE {
 
 const scee = new SCEE();
 
+// Node returns large Buffer.toString() results (~1 MB+) as V8 external
+// strings backed by Node's memory. Blink assumes every external string is
+// its own ParkableString, so handing one to a web API (WebSocket.send in
+// the gateway) reads a garbage pointer and crashes the renderer
+// (blink::ParkableString::ToString, exit code 139). Copy large strings
+// into ordinary V8 strings before they cross into the page.
+const PAGE_STRING_CHUNK = 256 * 1024;
+
+function toPageString(value) {
+  if (typeof value !== "string" || value.length <= PAGE_STRING_CHUNK) {
+    return value;
+  }
+
+  const parts = [];
+  for (let i = 0; i < value.length; i += PAGE_STRING_CHUNK) {
+    parts.push(value.slice(i, i + PAGE_STRING_CHUNK));
+  }
+  return parts.join("");
+}
+
 const electronAPI = {
   clipboard: {
     writeText: text => clipboard.writeText(text),
@@ -209,9 +229,9 @@ const electronAPI = {
   },
   secureCrypto: {
     encryptString: (plaintext, password) =>
-      scee.encryptString(plaintext, password),
+      toPageString(scee.encryptString(plaintext, password)),
     decryptString: (ciphertext, password) =>
-      scee.decryptString(ciphertext, password)
+      toPageString(scee.decryptString(ciphertext, password))
   },
   shell: {
     openExternal: url => shell.openExternal(url)

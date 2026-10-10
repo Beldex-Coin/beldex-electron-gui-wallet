@@ -16,9 +16,7 @@
   "scripts": {
     "dev": "quasar dev -m electron",
     "build": "quasar build -m electron --publish=never",
-    "build:linux:compat": "bash ./build/build-linux-compat.sh build",
     "release": "quasar build -m electron --publish=always",
-    "release:linux:compat": "bash ./build/build-linux-compat.sh release",
     "lint": "eslint --fix .",
     "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|md|vue)\"",
     "ready": "npm run lint && npm run format"
