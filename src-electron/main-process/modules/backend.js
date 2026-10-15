@@ -935,7 +935,7 @@ export class Backend {
                   this.send("show_notification", {
                     type: "warning",
                     textColor: "black",
-                    i18n: "notification.warnings.usingRemoteNode",
+                    i18n: "notification.warnings.localNodeFailedUsingRemote",
                     timeout: 3000
                   });
 

@@ -469,9 +469,13 @@ export default {
         "Der eingegebene Wert ist größer als die aktuelle Blockhöhe"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Private Keys können angezeigt werden, sobald die Wallet synchronisiert ist.",
       noKeyImageExport: "Keine Key Images zum Exportieren gefunden",
       usingLocalNode:
         "Zugang zur Remote Node nicht möglich, wechsle zur lokalen Node",
+      localNodeFailedUsingRemote:
+        "Lokale Node konnte nicht gestartet werden, benutze eine Remote Node",
       usingRemoteNode: "lbeldexd nicht gefunden, benutze eine Remote Node"
     }
   },
@@ -636,6 +640,8 @@ export default {
     saveSeedWarning:
       'Bitte kopiere und verwahre deinen "Seed" an einem sicheren Ort',
     saveToAddressBook: "In Adressbuch speichern",
+    keysAvailableAfterSync:
+      "Verfügbar, sobald die Wallet die Synchronisierung abgeschlossen hat.",
     seedWords: "Seed Wörter",
     walletCreated: "Wallet erstellt",
     selectLanguage: "Sprache auswählen",

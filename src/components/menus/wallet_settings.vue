@@ -473,6 +473,9 @@ export default {
   mixins: [WalletPassword, ClipboardCopyMixin],
   data() {
     return {
+      // Only show keys that this menu asked for, not secrets that reach the
+      // store some other way (e.g. a late update after creating a wallet).
+      awaitingPrivateKeys: false,
       modals: {
         private_keys: {
           visible: false
@@ -516,9 +519,9 @@ export default {
     secret: {
       handler(val, old) {
         if (val.view_key == old.view_key) return;
+        if (this.secret.view_key === "" || !this.awaitingPrivateKeys) return;
+        this.awaitingPrivateKeys = false;
         switch (this.secret.view_key) {
-          case "":
-            break;
           case -1:
             this.$q.notify({
               type: "negative",
@@ -650,7 +653,14 @@ export default {
         });
     },
     async getPrivateKeys() {
-      if (!this.is_ready) return;
+      if (!this.is_ready) {
+        this.$q.notify({
+          type: "warning",
+          timeout: 3000,
+          message: this.$t("notification.warnings.privateKeysAfterSync")
+        });
+        return;
+      }
       let passwordDialog = await this.showPasswordConfirmation({
         title: this.$t("dialog.showPrivateKeys.title"),
         noPasswordMessage: this.$t("dialog.showPrivateKeys.message"),
@@ -667,6 +677,7 @@ export default {
         .onOk(password => {
           // if no password set
           password = password || "";
+          this.awaitingPrivateKeys = true;
           this.$gateway.send("wallet", "get_private_keys", {
             password
           });

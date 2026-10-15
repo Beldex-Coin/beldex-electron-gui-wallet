@@ -462,9 +462,13 @@ export default {
       greaterHeight: "O valor inserido é maior que a altura do bloco atual"
     },
     warnings: {
+      privateKeysAfterSync:
+        "As chaves privadas poderão ser exibidas quando a carteira terminar de sincronizar.",
       noKeyImageExport: "Nenhuma chave de imagem encontrada para exportar",
       usingLocalNode:
         "Não foi possível aceder ao nódulo remoto, mudando para nódulo local apenas",
+      localNodeFailedUsingRemote:
+        "Não foi possível iniciar o nódulo local, utilizando nódulo remoto",
       usingRemoteNode: "beldexd não encontrado, utilizando nódulo remoto"
     }
   },
@@ -625,6 +629,8 @@ export default {
       "Seleccione examinação completa ou examinação de outputs gastos apenas.",
     saveSeedWarning: "Por favor copie e salve estes num lugar seguro!",
     saveToAddressBook: "Salvar para o livro de endereço",
+    keysAvailableAfterSync:
+      "Disponível quando a carteira terminar de sincronizar.",
     seedWords: "Palavras semente",
     walletCreated: "Carteira criada",
     selectLanguage: "Selecione língua",

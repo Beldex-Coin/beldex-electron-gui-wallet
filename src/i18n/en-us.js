@@ -468,10 +468,14 @@ export default {
       greaterHeight: "Entered value is greater than current block height"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Private keys can be shown once the wallet has finished syncing.",
       noKeyImageExport: "No key images found to export",
       retryingRemoteNode:
         "Still trying to reach the remote node (attempt {attempt} of {total})...",
       usingLocalNode: "Could not access remote node, switching to local only",
+      localNodeFailedUsingRemote:
+        "Local node failed to start, using remote node",
       usingRemoteNode: "beldexd not found, using remote node"
     }
   },
@@ -631,6 +635,7 @@ export default {
       "Select full rescan or rescan of spent outputs only.",
     saveSeedWarning: "Please copy and save these in a secure location!",
     saveToAddressBook: "Save to address book",
+    keysAvailableAfterSync: "Available once the wallet has finished syncing.",
     seedWords: "Recovery Seed",
     walletCreated: "Wallet Created",
     selectLanguage: "Select a language",

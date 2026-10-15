@@ -475,9 +475,13 @@ export default {
         "La valeur saisie est supérieure à la hauteur actuelle du bloc"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Les clés privées pourront être affichées lorsque le portefeuille aura terminé sa synchronisation.",
       noKeyImageExport: "Aucune clé image n'a été trouvé pour l'export",
       usingLocalNode:
         "Impossible d'accéder au nœud distant, basculement en local uniquement",
+      localNodeFailedUsingRemote:
+        "Le nœud local n'a pas pu démarrer, utilisation du nœud distant",
       usingRemoteNode: "beldexd introuvable, utilisation du nœud distant"
     }
   },
@@ -644,6 +648,8 @@ export default {
     saveSeedWarning:
       "Veuillez copier et enregistrer cela dans un lieu sécurisé !",
     saveToAddressBook: "Enregistrez dans le carnet d'adresses",
+    keysAvailableAfterSync:
+      "Disponible lorsque le portefeuille aura terminé sa synchronisation.",
     seedWords: "Mots clés",
     walletCreated: "Portefeuille créé",
     selectLanguage: "Sélectionnez une langue",

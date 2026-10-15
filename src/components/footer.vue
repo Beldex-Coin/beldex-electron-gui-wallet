@@ -121,16 +121,14 @@ export default {
       }
 
       if (daemonType === "local") {
-        if (this.wallet_display_height < this.daemon_height - 1) {
-          return "scanning";
-        } else if (isSyncing) {
+        if (this.wallet_display_height < this.daemon_height - 1 || isSyncing) {
           return "syncing";
         } else {
           return "ready";
         }
       } else {
         if (this.wallet_height < this.target_height - 1) {
-          return "scanning";
+          return "syncing";
         } else if (daemonType === "local_remote" && isSyncing) {
           return "syncing";
         } else {

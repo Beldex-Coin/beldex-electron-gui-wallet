@@ -472,9 +472,13 @@ export default {
         "El valor ingresado es mayor que la altura del bloque actual"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Las claves privadas se podrán mostrar cuando la billetera termine de sincronizarse.",
       noKeyImageExport: "No se han encontrado claves para exportar",
       usingLocalNode:
         "No se ha podido acceder al nodo remoto, volviendo al modo local",
+      localNodeFailedUsingRemote:
+        "No se pudo iniciar el nodo local, utilizando nodo remoto",
       usingRemoteNode: "beldexd no encontrado, utilizando nodo remoto"
     }
   },
@@ -635,6 +639,8 @@ export default {
       "Escoja entre un examen completo o examinar solo las salidas gastadas.",
     saveSeedWarning: "¡Por favor, cópielas y guárdelas en un sitio seguro!",
     saveToAddressBook: "Guardar en la libreta de direcciones",
+    keysAvailableAfterSync:
+      "Disponible cuando la billetera termine de sincronizarse.",
     seedWords: "Palabras semilla",
     walletCreated: "Cartera creada",
     selectLanguage: "Escoja un idioma",

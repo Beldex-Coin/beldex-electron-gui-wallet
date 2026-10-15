@@ -23,6 +23,9 @@ const LOCAL_DAEMON_START_TIMEOUT_MS =
 // indexes before RPC responds. LOCAL_DAEMON_START_TIMEOUT_MS is treated as a
 // liveness re-check interval while the process is alive, not a hard failure.
 const LOCAL_DAEMON_HARD_TIMEOUT_MS = 10 * 60 * 1000;
+// How long a local_remote daemon may keep failing get_info (bootstrap node
+// slow or unreachable) during startup before we give up and use remote.
+const LOCAL_DAEMON_BOOTSTRAP_GRACE_MS = 60 * 1000;
 const KILL_PROCESS_FORCE_TIMEOUT_MS = 10000;
 // Was a bare `20000` inline in quit() - named for clarity. Kept distinct
 // from KILL_PROCESS_FORCE_TIMEOUT_MS (10s) rather than unified, since
@@ -321,18 +324,40 @@ export class Daemon {
             };
             scheduleStartupTimeout();
 
+            // With --bootstrap-daemon-address and a node that is behind,
+            // beldexd forwards every RPC call to the bootstrap node first, so
+            // get_info can time out or fail for a while even though the local
+            // daemon is running fine. Keep waiting through that for up to
+            // LOCAL_DAEMON_BOOTSTRAP_GRACE_MS instead of killing it.
+            let firstBootstrapErrorAt = null;
+            let pollInFlight = false;
             this.startupPoll = setInterval(() => {
+              if (pollInFlight) {
+                return;
+              }
+              pollInFlight = true;
               this.sendRPC("get_info", {}, { timeout: 5000 }).then(data => {
+                pollInFlight = false;
+                if (didSettle) {
+                  return;
+                }
                 if (!data.hasOwnProperty("error")) {
                   this.startHeartbeat();
                   finishStart();
                 } else {
-                  if (
-                    this.daemonProcess &&
-                    data.error.cause &&
-                    data.error.cause.code === "ECONNREFUSED"
-                  ) {
+                  const errorCode = data.error.cause && data.error.cause.code;
+                  if (this.daemonProcess && errorCode === "ECONNREFUSED") {
                     // Ignore
+                  } else if (
+                    this.daemonProcess &&
+                    daemon.type === "local_remote" &&
+                    (firstBootstrapErrorAt === null ||
+                      Date.now() - firstBootstrapErrorAt <
+                        LOCAL_DAEMON_BOOTSTRAP_GRACE_MS)
+                  ) {
+                    if (firstBootstrapErrorAt === null) {
+                      firstBootstrapErrorAt = Date.now();
+                    }
                   } else {
                     this.killProcess();
                     finishStart(
@@ -449,54 +474,70 @@ export class Daemon {
 
       this.getRPC("block_header_by_height", {
         height: estimated_height
-      }).then(data => {
-        if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
-          if (data.error.code == -2) {
-            // Too big height
-            this.getRPC("last_block_header").then(data => {
-              if (
-                data.hasOwnProperty("error") ||
-                !data.hasOwnProperty("result")
-              ) {
-                return reject();
-              }
+      })
+        .then(data => {
+          if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+            if (data.error.code == -2) {
+              // Too big height
+              this.getRPC("last_block_header")
+                .then(data => {
+                  if (
+                    data.hasOwnProperty("error") ||
+                    !data.hasOwnProperty("result")
+                  ) {
+                    return reject();
+                  }
 
-              let new_pivot = [
-                data.result.block_header.height,
-                data.result.block_header.timestamp
-              ];
+                  // A local node that is still syncing answers with status BUSY
+                  // and no block_header. Its chain ends before the requested
+                  // date, so use the pivot: a block we already found to be
+                  // earlier than the date, which is a safe restore height.
+                  if (!data.result.block_header) {
+                    return resolve(pivot[0]);
+                  }
 
-              // If we are within an hour that is good enough
-              // If for some reason there is a > 1h gap between blocks
-              // the recursion limit will take care of infinite loop
-              if (Math.abs(timestamp - new_pivot[1]) < 3600) {
-                return resolve(new_pivot[0]);
-              }
+                  let new_pivot = [
+                    data.result.block_header.height,
+                    data.result.block_header.timestamp
+                  ];
 
-              // Continue recursion with new pivot
-              resolve(new_pivot);
-            });
-            return;
-          } else {
+                  // If we are within an hour that is good enough
+                  // If for some reason there is a > 1h gap between blocks
+                  // the recursion limit will take care of infinite loop
+                  if (Math.abs(timestamp - new_pivot[1]) < 3600) {
+                    return resolve(new_pivot[0]);
+                  }
+
+                  // Continue recursion with new pivot
+                  resolve(new_pivot);
+                })
+                .catch(reject);
+              return;
+            } else {
+              return reject();
+            }
+          }
+
+          if (!data.result.block_header) {
             return reject();
           }
-        }
 
-        let new_pivot = [
-          data.result.block_header.height,
-          data.result.block_header.timestamp
-        ];
+          let new_pivot = [
+            data.result.block_header.height,
+            data.result.block_header.timestamp
+          ];
 
-        // If we are within an hour that is good enough
-        // If for some reason there is a > 1h gap between blocks
-        // the recursion limit will take care of infinite loop
-        if (Math.abs(timestamp - new_pivot[1]) < 3600) {
-          return resolve(new_pivot[0]);
-        }
+          // If we are within an hour that is good enough
+          // If for some reason there is a > 1h gap between blocks
+          // the recursion limit will take care of infinite loop
+          if (Math.abs(timestamp - new_pivot[1]) < 3600) {
+            return resolve(new_pivot[0]);
+          }
 
-        // Continue recursion with new pivot
-        resolve(new_pivot);
-      });
+          // Continue recursion with new pivot
+          resolve(new_pivot);
+        })
+        .catch(reject);
     })
       .then(pivot_or_height => {
         return Array.isArray(pivot_or_height)

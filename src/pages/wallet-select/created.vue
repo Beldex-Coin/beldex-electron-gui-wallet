@@ -114,7 +114,25 @@
       </template>
 
       <div style="margin-top: 18px; padding: 10px 20px">
-        <template v-if="secret.view_key != secret.spend_key">
+        <template v-if="viewKeyPending || spendKeyPending">
+          <div class="row" style="color: #fff">
+            <div class="col">
+              <h6 class="q-mb-xs title">
+                {{
+                  viewKeyPending && spendKeyPending
+                    ? $t("strings.viewKey") + " / " + $t("strings.spendKey")
+                    : viewKeyPending
+                    ? $t("strings.viewKey")
+                    : $t("strings.spendKey")
+                }}
+              </h6>
+              <p style="font-family: Poppins-Regular; color: #afafbe">
+                {{ $t("strings.keysAvailableAfterSync") }}
+              </p>
+            </div>
+          </div>
+        </template>
+        <template v-if="showViewKey">
           <div class="row justify-between">
             <div class="col-7" style="word-break: break-all; color: #fff">
               <h6 class="q-mb-xs title">{{ $t("strings.viewKey") }}</h6>
@@ -147,7 +165,7 @@
         </template>
         <hr color="#3E3E5B" width="98%" />
 
-        <template v-if="!/^0*$/.test(secret.spend_key)">
+        <template v-if="showSpendKey">
           <div class="row justify-between">
             <div class="col-7" style="word-break: break-all; color: #fff">
               <h6 class="q-mb-xs title">{{ $t("strings.spendKey") }}</h6>
@@ -207,8 +225,33 @@ export default {
     theme: state => state.gateway.app.config.appearance.theme,
     walletName() {
       return `${this.info.name}`;
+    },
+    // After a seed restore wallet-rpc answers query_key only once its scan
+    // is done, so the keys arrive later than the address and seed.
+    viewKeyPending() {
+      return !this.secret.view_key && !this.$store.getters["gateway/isReady"];
+    },
+    spendKeyPending() {
+      return (
+        !this.secret.spend_key &&
+        !this.info.view_only &&
+        !this.$store.getters["gateway/isReady"]
+      );
+    },
+    showViewKey() {
+      return (
+        !!this.secret.view_key && this.secret.view_key != this.secret.spend_key
+      );
+    },
+    showSpendKey() {
+      return !!this.secret.spend_key && !/^0*$/.test(this.secret.spend_key);
     }
   }),
+  beforeDestroy() {
+    // Stops the post-scan update from re-sending the secrets once this page
+    // is gone (see finalizeNewWallet).
+    this.$gateway.send("wallet", "forget_new_wallet_secrets");
+  },
   methods: {
     open() {
       setTimeout(() => {
