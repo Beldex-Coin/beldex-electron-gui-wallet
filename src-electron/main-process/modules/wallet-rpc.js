@@ -988,7 +988,10 @@ export class WalletRPC {
       );
     }
 
-    if (!fs.existsSync(import_path)) {
+    // A wallet can be imported from just its .keys file; wallet-rpc
+    // rebuilds the cache on open.
+    const has_cache = fs.existsSync(import_path);
+    if (!has_cache && !fs.existsSync(import_path + ".keys")) {
       this.sendGateway("set_wallet_error", {
         status: {
           code: -1,
@@ -1009,7 +1012,9 @@ export class WalletRPC {
       }
 
       try {
-        fs.copySync(import_path, destination, { errorOnExist: true });
+        if (has_cache) {
+          fs.copySync(import_path, destination, { errorOnExist: true });
+        }
         if (fs.existsSync(import_path + ".keys")) {
           fs.copySync(import_path + ".keys", destination + ".keys", {
             errorOnExist: true
@@ -1028,7 +1033,7 @@ export class WalletRPC {
         filename: wallet_name,
         password
       })
-        .then(data => {
+        .then(async data => {
           if (data.hasOwnProperty("error")) {
             if (fs.existsSync(destination)) fs.unlinkSync(destination);
             if (fs.existsSync(destination + ".keys"))
@@ -1041,13 +1046,27 @@ export class WalletRPC {
             });
             return;
           }
+          // An imported wallet is usually behind the chain, and wallet-rpc's
+          // background refresh can start its catch-up scan within a few
+          // hundred ms of open_wallet, after which it answers nothing until
+          // the scan is done. Ask for the address and seed first, before the
+          // blocking password hash below, so the wallet can be shown right
+          // away; on timeout finalizeNewWallet fetches them after the scan.
+          const [address, mnemonic] = await Promise.all([
+            this.sendRPC("get_address", { account_index: 0 }, 3000),
+            this.sendRPC("query_key", { key_type: "mnemonic" }, 3000)
+          ]);
+          const known = {
+            address: address.result ? address.result.address : "",
+            mnemonic: mnemonic.result ? mnemonic.result.key : ""
+          };
           // store hash of the password so we can check against it later when requesting private keys, or for sending txs
           this.wallet_state.password_hash = this.derivePasswordHashSync(
             password
           ).toString("hex");
           this.wallet_state.name = wallet_name;
           this.wallet_state.open = true;
-          this.finalizeNewWallet(wallet_name);
+          this.finalizeNewWallet(wallet_name, known.address ? known : null);
         })
         .catch(() => {
           this.sendGateway("set_wallet_error", {
