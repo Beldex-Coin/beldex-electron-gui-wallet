@@ -112,16 +112,6 @@
           </div>
         </div>
       </template>
-      <template v-else-if="mnemonicPending">
-        <div class="row" style="color: #fff; padding: 0px 20px">
-          <div class="col">
-            <h6 class="q-mb-xs title">{{ $t("strings.seedWords") }}</h6>
-            <p style="font-family: Poppins-Regular; color: #afafbe">
-              {{ $t("strings.keysAvailableAfterSync") }}
-            </p>
-          </div>
-        </div>
-      </template>
 
       <div style="margin-top: 18px; padding: 10px 20px">
         <template v-if="viewKeyPending || spendKeyPending">
@@ -236,16 +226,7 @@ export default {
     walletName() {
       return `${this.info.name}`;
     },
-    // After a restore or import wallet-rpc answers query_key only once its
-    // scan is done, so the keys (and, for an import, the seed) can arrive
-    // later than the address.
-    mnemonicPending() {
-      return (
-        !this.secret.mnemonic &&
-        !this.info.view_only &&
-        !this.$store.getters["gateway/isReady"]
-      );
-    },
+
     viewKeyPending() {
       return !this.secret.view_key && !this.$store.getters["gateway/isReady"];
     },

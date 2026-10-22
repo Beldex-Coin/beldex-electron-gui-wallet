@@ -529,12 +529,12 @@
         ></q-checkbox>
         <span>
           {{ this.$t("titles.swap.agreeWith") }}
-          <a @click="openExternalLink('https://changelly.com/terms-of-use')">
+          <a @click="openExternalLink(getTermsandprivacy().termsLink)">
             {{ this.$t("titles.swap.termOfUse") }}
           </a>
           {{ this.$t("titles.swap.and") }}
           <a
-            @click="openExternalLink('https://changelly.com/privacy-policy')"
+            @click="openExternalLink(getTermsandprivacy().privacyPolicyLink)"
             >{{ this.$t("titles.swap.privacyPolicy") }}</a
           >
         </span>
@@ -623,6 +623,17 @@ import SwapTxnCompeleted from "./swapTxnCompeleted.vue";
 import SwapUnderMaintenance from "./swapUnderMaintenance.vue";
 import { mapState } from "vuex";
 import Dropdown from "./currencyDropDown.vue";
+
+const EXCHANGE_LINKS = {
+  quickex: {
+    termsLink: "https://quickex.io/docs/terms-of-use",
+    privacyPolicyLink: "https://quickex.io/docs/privacy-policy"
+  },
+  changelly: {
+    termsLink: "https://changelly.com/terms-of-use",
+    privacyPolicyLink: "https://changelly.com/privacy-policy"
+  }
+};
 
 export default {
   components: {
@@ -1383,6 +1394,9 @@ export default {
       this.refreshTxnStatus = setInterval(() => {
         this.$gateway.send("swap", "transaction_status", data);
       }, 30000);
+    },
+    getTermsandprivacy() {
+      return EXCHANGE_LINKS[this.currentExchange] ?? EXCHANGE_LINKS.changelly;
     },
     getFeeAmount() {
       if (this.exchange_amount?.fee) {
