@@ -1058,7 +1058,9 @@ export class WalletRPC {
           ]);
           const known = {
             address: address.result ? address.result.address : "",
-            mnemonic: mnemonic.result ? mnemonic.result.key : ""
+            mnemonic: mnemonic.result ? mnemonic.result.key : "",
+            // wallet-rpc refuses the seed of a watch-only wallet with -29
+            view_only: mnemonic.error?.code == -29
           };
           // store hash of the password so we can check against it later when requesting private keys, or for sending txs
           this.wallet_state.password_hash = this.derivePasswordHashSync(

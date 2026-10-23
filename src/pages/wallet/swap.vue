@@ -529,14 +529,13 @@
         ></q-checkbox>
         <span>
           {{ this.$t("titles.swap.agreeWith") }}
-          <a @click="openExternalLink(getTermsandprivacy().termsLink)">
+          <a @click="openExternalLink(exchangeLinks.termsLink)">
             {{ this.$t("titles.swap.termOfUse") }}
           </a>
           {{ this.$t("titles.swap.and") }}
-          <a
-            @click="openExternalLink(getTermsandprivacy().privacyPolicyLink)"
-            >{{ this.$t("titles.swap.privacyPolicy") }}</a
-          >
+          <a @click="openExternalLink(exchangeLinks.privacyPolicyLink)">{{
+            this.$t("titles.swap.privacyPolicy")
+          }}</a>
         </span>
       </div>
 
@@ -868,7 +867,10 @@ export default {
       }
       return result;
     },
-    info: state => state.gateway.wallet.info
+    info: state => state.gateway.wallet.info,
+    exchangeLinks() {
+      return EXCHANGE_LINKS[this.currentExchange] ?? EXCHANGE_LINKS.changelly;
+    }
   }),
 
   validations: {
@@ -1004,6 +1006,8 @@ export default {
       if (exchangeType) {
         if (this.currentExchange !== exchangeType) {
           this.currentExchange = exchangeType;
+          // Consent was given for the other provider's terms.
+          this.agree = "no";
           if (this.routes === "mainPage") {
             this.restartAllIntervals();
           }
@@ -1394,9 +1398,6 @@ export default {
       this.refreshTxnStatus = setInterval(() => {
         this.$gateway.send("swap", "transaction_status", data);
       }, 30000);
-    },
-    getTermsandprivacy() {
-      return EXCHANGE_LINKS[this.currentExchange] ?? EXCHANGE_LINKS.changelly;
     },
     getFeeAmount() {
       if (this.exchange_amount?.fee) {

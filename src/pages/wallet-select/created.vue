@@ -114,18 +114,10 @@
       </template>
 
       <div style="margin-top: 18px; padding: 10px 20px">
-        <template v-if="viewKeyPending || spendKeyPending">
+        <template v-if="pendingSecretsTitle">
           <div class="row" style="color: #fff">
             <div class="col">
-              <h6 class="q-mb-xs title">
-                {{
-                  viewKeyPending && spendKeyPending
-                    ? $t("strings.viewKey") + " / " + $t("strings.spendKey")
-                    : viewKeyPending
-                    ? $t("strings.viewKey")
-                    : $t("strings.spendKey")
-                }}
-              </h6>
+              <h6 class="q-mb-xs title">{{ pendingSecretsTitle }}</h6>
               <p style="font-family: Poppins-Regular; color: #afafbe">
                 {{ $t("strings.keysAvailableAfterSync") }}
               </p>
@@ -226,7 +218,9 @@ export default {
     walletName() {
       return `${this.info.name}`;
     },
-
+    // After a restore or import wallet-rpc answers query_key only once its
+    // scan is done, so the keys can arrive later than the address. The seed
+    // is not listed: wallets restored from keys never have one.
     viewKeyPending() {
       return !this.secret.view_key && !this.$store.getters["gateway/isReady"];
     },
@@ -236,6 +230,14 @@ export default {
         !this.info.view_only &&
         !this.$store.getters["gateway/isReady"]
       );
+    },
+    pendingSecretsTitle() {
+      return [
+        this.viewKeyPending && this.$t("strings.viewKey"),
+        this.spendKeyPending && this.$t("strings.spendKey")
+      ]
+        .filter(Boolean)
+        .join(" / ");
     },
     showViewKey() {
       return (
