@@ -86,7 +86,7 @@
     "*.+(json|yml|yaml|css|md)": "prettier --write"
   },
   "engines": {
-    "node": ">= 24.15.0 < 25",
+    "node": ">= 26.12.1 < 27",
     "npm": ">= 5.6.0",
     "yarn": ">= 1.6.0"
   },
