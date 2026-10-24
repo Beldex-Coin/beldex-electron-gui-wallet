@@ -130,7 +130,6 @@ const inputMenu = Menu.buildFromTemplate([
 const rendererConnectSrc = [
   "'self'",
   "ws://127.0.0.1:12313",
-  "https://api.beldex.dev",
   "https://api.changelly.com"
 ];
 
@@ -157,7 +156,9 @@ function getContentSecurityPolicy() {
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     `style-src ${styleSrc.join(" ")}`,
-    "img-src 'self' data: https:",
+    // Currency icons only ever come from Changelly/QuickEx - see the
+    // matching hostname allowlist in currencyDropDown.vue's safeImageSrc().
+    "img-src 'self' data: https://changelly.com https://*.changelly.com https://quickex.io https://*.quickex.io",
     "font-src 'self' data:",
     `connect-src ${connectSrc.join(" ")}`,
     "object-src 'none'",
@@ -217,6 +218,12 @@ function createWindow() {
   }
 
   mainWindow = new BrowserWindow(windowOptions);
+
+  // Clear the unread-payment-notification badge once the user actually
+  // looks at the wallet again.
+  mainWindow.on("focus", () => {
+    backend?.walletd?.clearPaymentNotificationBadge?.();
+  });
 
   mainWindow.on("close", e => {
     // Don't ask for confirmation if we're installing an update
@@ -356,6 +363,12 @@ powerMonitor.on("resume", () => {
 });
 
 app.on("ready", () => {
+  // Required on Windows for desktop notifications (and taskbar grouping)
+  // to show this app's own name/icon instead of a generic Electron one.
+  if (process.platform === "win32") {
+    app.setAppUserModelId("com.beldex.electronwallet");
+  }
+
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {

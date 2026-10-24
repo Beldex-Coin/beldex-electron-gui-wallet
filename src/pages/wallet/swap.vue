@@ -906,8 +906,8 @@ export default {
       bdxCoinDetails: {},
       btcCoinDetails: {},
       sendAmounType: {
-        label:
-          "<span>BTC<span class='currency-name ft-regular'> -Bitcoin<span><span>",
+        name: "BTC",
+        fullName: "Bitcoin",
         value: "btc"
       },
       receiveAmountType: {

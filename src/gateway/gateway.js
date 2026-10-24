@@ -56,6 +56,56 @@ export class Gateway extends EventEmitter {
     const getIpcPayload = (eventOrData, maybeData) =>
       typeof maybeData === "undefined" ? eventOrData : maybeData;
 
+    // The previous version only ever handled "open"/"message" on the first
+    // connection, and logged-but-ignored an unexpected drop after resume -
+    // there was no actual reconnect. This tracks connection state so an
+    // unexpected close (backend hiccup, OS network blip, etc.) retries with
+    // backoff instead of leaving the renderer talking to a dead socket.
+    this._wsPort = null;
+    this._explicitClose = false;
+    this._reconnectAttempts = 0;
+    this._maxReconnectAttempts = 10;
+    this._reconnectTimer = null;
+
+    const connectWebSocket = (port, { isInitialConnect }) => {
+      this._wsPort = port;
+      this.ws = new WebSocket("ws://127.0.0.1:" + port);
+
+      this.ws.addEventListener("open", () => {
+        this._reconnectAttempts = 0;
+        if (isInitialConnect) {
+          this.open();
+        } else {
+          console.log("WS (re)connected");
+        }
+      });
+
+      this.ws.addEventListener("message", e => {
+        this.receive(e.data);
+      });
+
+      this.ws.addEventListener("error", event => {
+        console.log("WS error", event);
+      });
+
+      this.ws.addEventListener("close", () => {
+        console.log("WS closed");
+        if (this._explicitClose) {
+          return;
+        }
+        if (this._reconnectAttempts >= this._maxReconnectAttempts) {
+          console.log("WS reconnect attempts exhausted, giving up");
+          return;
+        }
+        const attempt = this._reconnectAttempts++;
+        const delay = Math.min(1000 * 2 ** attempt, 15000);
+        this._reconnectTimer = setTimeout(() => {
+          connectWebSocket(this._wsPort, { isInitialConnect: false });
+        }, delay);
+      });
+    };
+    this._connectWebSocket = connectWebSocket;
+
     appIpc.on("initialize", (eventOrData, maybeData) => {
       const data = getIpcPayload(eventOrData, maybeData);
       this.token = data.token;

@@ -409,6 +409,8 @@ export default {
       copyWalletFail: "Echec de la copie du portefeuille",
       copyingPrivateKeys: "Erreur de la copie des clés privées",
       dataPathNotFound: "Chemin de stockage des données introuvable",
+      dataPathCreateFailed:
+        "Impossible de créer le chemin de stockage des données",
       differentNetType: "Le nœud distant utilise un 'nettoype' différent",
       enterSeedWords: "Entrez les mots clés",
       enterTransactionId: "Enter transaction ID",
@@ -470,6 +472,8 @@ export default {
       walletAlreadyExists: "Un portefeuille avec ce nom existe déjà",
       walletPathNotFound:
         "Chemin de stockage des données du portefeuille introuvable",
+      walletPathCreateFailed:
+        "Impossible de créer le chemin de stockage des données du portefeuille",
       zeroAmount: "Le montant doit être supérieur à zéro",
       greaterHeight:
         "La valeur saisie est supérieure à la hauteur actuelle du bloc"
