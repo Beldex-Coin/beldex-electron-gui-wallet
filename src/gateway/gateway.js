@@ -3,6 +3,12 @@ import { EventEmitter } from "events";
 import { i18n, changeLanguage } from "src/boot/i18n";
 import { appIpc } from "src/shims/electron-renderer";
 
+const WS_RETRY_BASE_DELAY_MS = 1000;
+const WS_RETRY_MAX_DELAY_MS = 15000;
+const WS_CONNECT_WARN_AFTER_ATTEMPTS = 5;
+// Once the initial warning has shown, remind the user again every N
+// further attempts instead of staying silent for the rest of the outage.
+const WS_CONNECT_WARN_REPEAT_ATTEMPTS = 30;
 export class Gateway extends EventEmitter {
   constructor(app, router) {
     super();
@@ -10,6 +16,11 @@ export class Gateway extends EventEmitter {
     this.router = router;
     this.token = null;
     this.secureCrypto = window.electronAPI.secureCrypto;
+    this.ws = null;
+    this.wsRetryTimer = null;
+    this.wsRetryAttempts = 0;
+    this.wsConfig = null;
+    this.isSuspended = false;
 
     // Set the initial language
     let language = LocalStorage.has("language")
@@ -98,11 +109,8 @@ export class Gateway extends EventEmitter {
     appIpc.on("initialize", (eventOrData, maybeData) => {
       const data = getIpcPayload(eventOrData, maybeData);
       this.token = data.token;
-      this._explicitClose = false;
-      this._reconnectAttempts = 0;
-      setTimeout(() => {
-        connectWebSocket(data.port, { isInitialConnect: true });
-      }, 1000);
+      this.isSuspended = false;
+      this.connectToBackend(data);
     });
 
     appIpc.on("confirmClose", () => {
@@ -116,28 +124,121 @@ export class Gateway extends EventEmitter {
     });
 
     appIpc.on("appSuspend", () => {
-      this._explicitClose = true;
-      if (this._reconnectTimer) {
-        clearTimeout(this._reconnectTimer);
-        this._reconnectTimer = null;
-      }
-      if (this.ws) {
-        this.ws.close();
-      }
-      // this.token = null;
+      this.isSuspended = true;
+      this.clearWebSocketRetry();
+      this.closeWebSocket();
     });
 
     appIpc.on("appResumed", (eventOrData, maybeData) => {
       const data = getIpcPayload(eventOrData, maybeData);
       this.token = data.token;
-      this._explicitClose = false;
-      this._reconnectAttempts = 0;
-      setTimeout(() => {
-        connectWebSocket(data.port, { isInitialConnect: false });
-      }, 1000);
+      this.isSuspended = false;
+      this.connectToBackend(data, true);
     });
   }
+  clearWebSocketRetry() {
+    if (this.wsRetryTimer) {
+      clearTimeout(this.wsRetryTimer);
+      this.wsRetryTimer = null;
+    }
+  }
 
+  closeWebSocket() {
+    if (!this.ws) {
+      return;
+    }
+
+    this.ws.onopen = null;
+    this.ws.onmessage = null;
+    this.ws.onerror = null;
+    this.ws.onclose = null;
+
+    if (
+      this.ws.readyState === WebSocket.OPEN ||
+      this.ws.readyState === WebSocket.CONNECTING
+    ) {
+      this.ws.close();
+    }
+
+    this.ws = null;
+  }
+
+  scheduleBackendReconnect(isResume = false) {
+    if (this.isSuspended || !this.wsConfig || this.wsRetryTimer) {
+      return;
+    }
+
+    const delay = Math.min(
+      WS_RETRY_BASE_DELAY_MS * 2 ** Math.max(this.wsRetryAttempts - 1, 0),
+      WS_RETRY_MAX_DELAY_MS
+    );
+
+    this.wsRetryTimer = setTimeout(() => {
+      this.wsRetryTimer = null;
+      this.connectToBackend(this.wsConfig, isResume);
+    }, delay);
+  }
+
+  connectToBackend(config, isResume = false) {
+    if (!config || !config.port) {
+      return;
+    }
+
+    this.wsConfig = config;
+    this.clearWebSocketRetry();
+    this.closeWebSocket();
+
+    const ws = new WebSocket(`ws://127.0.0.1:${config.port}`);
+    this.ws = ws;
+
+    ws.onopen = () => {
+      this.wsRetryAttempts = 0;
+
+      if (isResume) {
+        console.log("WS reconnected");
+        return;
+      }
+
+      this.open();
+    };
+
+    ws.onmessage = event => {
+      this.receive(event.data);
+    };
+
+    ws.onerror = () => {
+      if (this.ws === ws) {
+        ws.close();
+      }
+    };
+
+    ws.onclose = () => {
+      if (this.ws === ws) {
+        this.ws = null;
+      }
+
+      if (this.isSuspended) {
+        return;
+      }
+
+      this.wsRetryAttempts += 1;
+      const attemptsPastWarn =
+        this.wsRetryAttempts - WS_CONNECT_WARN_AFTER_ATTEMPTS;
+      if (
+        attemptsPastWarn === 0 ||
+        (attemptsPastWarn > 0 &&
+          attemptsPastWarn % WS_CONNECT_WARN_REPEAT_ATTEMPTS === 0)
+      ) {
+        Notify.create({
+          type: "warning",
+          timeout: 2000,
+          message: "Retrying backend connection..."
+        });
+      }
+
+      this.scheduleBackendReconnect(isResume);
+    };
+  }
   open() {
     this.app.store.commit("gateway/set_app_data", {
       status: {
@@ -152,7 +253,7 @@ export class Gateway extends EventEmitter {
       return;
     }
     this.closeDialog = true;
-
+    Loading.hide();
     const key = restart ? "restart" : "exit";
 
     // if (restart) {
@@ -177,39 +278,44 @@ export class Gateway extends EventEmitter {
     //   return 0;
     // }
 
-    Dialog.create({
-      title: i18n.t(`dialog.${key}.title`),
-      message: msg,
-      ok: {
-        label: i18n.t(`dialog.${key}.ok`),
-        color: key !== "exit" ? "primary" : "red"
-      },
-      cancel: {
-        label: i18n.t("dialog.buttons.cancel"),
-        color: "accent"
-      }
-    })
-      .onOk(() => {
-        this.closeDialog = false;
-        Loading.hide();
-        this.router.replace({ path: "/quit" });
-        appIpc.send("confirmClose", restart);
+    setTimeout(() => {
+      Dialog.create({
+        title: i18n.t(`dialog.${key}.title`),
+        message: msg,
+        class: "exit-confirm-dialog",
+        ok: {
+          label: i18n.t(`dialog.${key}.ok`),
+          color: key !== "exit" ? "primary" : "red"
+        },
+        cancel: {
+          label: i18n.t("dialog.buttons.cancel"),
+          color: "accent"
+        }
       })
-      .onCancel(() => {
-        this.closeDialog = false;
-      });
+        .onOk(() => {
+          this.closeDialog = false;
+          Loading.hide();
+          this.router.replace({ path: "/quit" });
+          appIpc.send("confirmClose", restart);
+        })
+        .onCancel(() => {
+          this.closeDialog = false;
+        });
+    }, 0);
   }
 
+  // Returns whether the message actually went out. Every renderer call
+  // site today is fire-and-forget (send() + gateway.once(<event>)) and
+  // ignores this return value, so adding it is backward compatible -
+  // it lets a call site opt into checking for a drop instead of only
+  // ever finding out via a timeout (or never, if it doesn't have one).
   send(module, method, data = {}) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      console.log(
-        "WS not open (readyState:",
-        this.ws && this.ws.readyState,
-        ") - dropping send for",
-        module,
-        method
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN || !this.token) {
+      console.warn(
+        `[gateway] Dropped ${module}.${method} - socket not ready` +
+          (this.isSuspended ? " (app suspended)" : "")
       );
-      return;
+      return false;
     }
     let message = {
       module,
@@ -221,6 +327,7 @@ export class Gateway extends EventEmitter {
       this.token
     );
     this.ws.send(encrypted_data);
+    return true;
   }
 
   geti18n(key) {
@@ -266,9 +373,20 @@ export class Gateway extends EventEmitter {
         break;
 
       case "set_wallet_data":
-      case "set_wallet_error":
         this.app.store.commit("gateway/set_wallet_data", decrypted_data.data);
         break;
+
+      case "set_wallet_error": {
+        const data = { ...decrypted_data.data };
+        if (data.status && data.status.i18n) {
+          data.status = {
+            ...data.status,
+            message: this.geti18n(data.status.i18n)
+          };
+        }
+        this.app.store.commit("gateway/set_wallet_data", data);
+        break;
+      }
 
       case "reset_wallet_error":
         this.app.store.dispatch("gateway/resetWalletStatus");

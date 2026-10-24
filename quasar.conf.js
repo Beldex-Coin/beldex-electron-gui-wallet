@@ -3,6 +3,21 @@
 
 const path = require("path");
 const envVars = require("dotenv").config().parsed || {};
+function addCommonJsExternals(cfg, moduleNames) {
+  if (Array.isArray(cfg.externals)) {
+    moduleNames.forEach(moduleName => {
+      cfg.externals.push({
+        [moduleName]: `commonjs ${moduleName}`
+      });
+    });
+    return;
+  }
+
+  cfg.externals = cfg.externals || {};
+  moduleNames.forEach(moduleName => {
+    cfg.externals[moduleName] = `commonjs ${moduleName}`;
+  });
+}
 
 const whitelistedEnv = {
   CHANGELLY_SWAP_API_KEY: envVars.CHANGELLY_SWAP_API_KEY || "",
@@ -18,7 +33,7 @@ const whitelistedEnv = {
 module.exports = function() {
   return {
     // app boot (/src/boot)
-    boot: ["i18n", "axios", "vuelidate", "gateway", "timeago"],
+    boot: ["icon-map", "i18n", "axios", "vuelidate", "gateway", "timeago"],
     css: ["app.styl"],
     extras: [
       // ctx.theme.mat ? "roboto-font" : null,
@@ -44,6 +59,7 @@ module.exports = function() {
           __dirname,
           "src/shims/electron-renderer.js"
         );
+        addCommonJsExternals(cfg, ["bufferutil", "utf-8-validate"]);
       }
     },
     devServer: {
@@ -150,9 +166,8 @@ module.exports = function() {
     electron: {
       nodeIntegration: false,
       bundler: "builder", // or "packager"
-      extendWebpack() {
-        // cfg
-        // do something with Electron process Webpack cfg
+      extendWebpack(cfg) {
+        addCommonJsExternals(cfg, ["bufferutil", "utf-8-validate"]);
       },
       packager: {
         // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
@@ -174,14 +189,42 @@ module.exports = function() {
         appId: "com.beldex.electronwallet",
         productName: "Beldex Electron Wallet",
         copyright: "Copyright © 2018-2021 Beldex, 2018 Ryo Currency Project",
+        // Linux: rebuild better-sqlite3 for glibc 2.31 and verify the
+        // package runs on Ubuntu 20.04+ (see build/linux-glibc-compat).
+        beforePack: "build/linux-glibc-compat/before-pack.js",
+        afterPack: "build/linux-glibc-compat/after-pack.js",
         afterSign: "build/notarize.js",
         artifactName: "beldex-electron-wallet-${version}-${os}.${ext}",
-        publish: "github",
+        publish: {
+          provider: "generic",
+          url:
+            "https://github.com/Beldex-coin/beldex-electron-gui-wallet/releases/latest/download/"
+        },
 
         linux: {
           target: ["deb", "AppImage"],
           icon: "src-electron/icon.png",
           category: "Finance"
+        },
+
+        deb: {
+          // electron-builder's defaults, plus libgbm1 and ALSA, which
+          // Electron links against but the defaults omit (the app fails
+          // to start on minimal Ubuntu installs without them). ALSA is
+          // libasound2t64 on Ubuntu 24.04 and libasound2 on 20.04/22.04.
+          depends: [
+            "libgtk-3-0",
+            "libnotify4",
+            "libnss3",
+            "libxss1",
+            "libxtst6",
+            "xdg-utils",
+            "libatspi2.0-0",
+            "libuuid1",
+            "libsecret-1-0",
+            "libgbm1",
+            "libasound2t64 | libasound2"
+          ]
         },
 
         mac: {

@@ -47,6 +47,47 @@ async function _post(method, params, isPrivacySwap) {
   }
 }
 
+function changellyPlatformFee(order) {
+  // Changelly's own totalFee (an absolute amount in payout currency) is
+  // preferred when the response carries it - it's not a reconstruction,
+  // it's the number Changelly itself computed.
+  const totalFee = Number(order?.totalFee);
+  if (Number.isFinite(totalFee) && totalFee > 0) return totalFee;
+
+  // Fallback: reconstruct from changellyFee (a percentage) and an amount.
+  // Per Changelly's API docs, amountTo/amountExpectedTo are already NET of
+  // changellyFee (it says amountTo "includes Changelly plus partner extra
+  // fee" already deducted) - only the network fee is still to be
+  // subtracted from them. So recovering the fee amount from a net figure
+  // and a percentage means dividing by (100 - rate), not by 100: if
+  // amountTo = gross * (1 - rate/100), then gross - amountTo =
+  // amountTo * rate / (100 - rate).
+  const rate = Number(order?.changellyFee);
+  if (!Number.isFinite(rate) || rate <= 0 || rate >= 100) return 0;
+  const amountTo = [order?.amountExpectedTo, order?.amountTo]
+    .map(Number)
+    .find(n => Number.isFinite(n) && n > 0);
+  if (!amountTo) return 0;
+  return (amountTo * rate) / (100 - rate);
+}
+
+function _withPlatformFee(res) {
+  if (!res?.status) return res;
+  if (Array.isArray(res.result)) {
+    res.result = res.result.map(order =>
+      order && typeof order === "object"
+        ? { ...order, platformFee: changellyPlatformFee(order) }
+        : order
+    );
+  } else if (res.result && typeof res.result === "object") {
+    res.result = {
+      ...res.result,
+      platformFee: changellyPlatformFee(res.result)
+    };
+  }
+  return res;
+}
+
 export async function getCurrenciesFull(params = {}) {
   const res = await _post("getCurrenciesFull", {}, Boolean(params.privacySwap));
   if (res.status && Array.isArray(res.result)) {
@@ -86,14 +127,29 @@ export async function validateAddress(params) {
 }
 
 export async function createTransaction(params) {
-  return _post("createTransaction", params, Boolean(params.privacySwap));
+  const res = await _post(
+    "createTransaction",
+    params,
+    Boolean(params.privacySwap)
+  );
+  return _withPlatformFee(res);
 }
 
 export async function createFixTransaction(params) {
-  return _post("createFixTransaction", params, Boolean(params.privacySwap));
+  const res = await _post(
+    "createFixTransaction",
+    params,
+    Boolean(params.privacySwap)
+  );
+  return _withPlatformFee(res);
 }
 
 export async function getTransactions(params) {
   const ids = Array.isArray(params.id) ? params.id : [params.id];
-  return _post("getTransactions", { id: ids }, Boolean(params.privacySwap));
+  const res = await _post(
+    "getTransactions",
+    { id: ids },
+    Boolean(params.privacySwap)
+  );
+  return _withPlatformFee(res);
 }

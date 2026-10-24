@@ -22,6 +22,7 @@ export default {
     decrypt: "РАСШИФРОВАТЬ",
     addRecord: "Добавить БНС",
     delete: "УДАЛИТЬ",
+    done: "Готово",
     edit: "Редактировать",
     editNotes: "Редактировать примечания",
     enter: "Входить",
@@ -252,6 +253,8 @@ export default {
     expirationHeight: " Высота истечения срока действия",
     data: "Данные",
     filter: "Фильтр",
+    startDate: "Дата начала",
+    endDate: "Дата окончания",
     filterTransactionType: "ТИП ТРАНЗАКЦИИ",
     internalWalletPort: "Внутренний порт кошелька",
     keyImages: {
@@ -408,7 +411,11 @@ export default {
       failedToSetLanguage: "Не удалось переключить язык: {lang}",
       failedWalletImport: "Не удалось импортировать кошелек",
       failedWalletOpen: "Не удалось открыть кошелек. Попробуйте еще раз.",
-      failedWalletRead: "Failed to read wallets",
+      failedWalletRead: "Не удалось прочитать кошельки",
+      failedWalletRestore:
+        "Не удалось восстановить кошелек. Пожалуйста, попробуйте снова.",
+      failedWalletCreation:
+        "Не удалось создать кошелек. Пожалуйста, попробуйте снова.",
       internalError: "Внутренняя ошибка",
       invalidAddress: "Адрес не верен",
       invalidAmount: "Сумма не верна",
@@ -436,7 +443,9 @@ export default {
       keyImages: {
         exporting: "Ошибка экспорта ключевых образов",
         reading: "Ошибка чтения ключевых образов",
-        importing: "Ошибка импорта ключевых образов"
+        importing: "Ошибка импорта ключевых образов",
+        notSyncedFarEnough:
+          "Этот кошелёк ещё недостаточно синхронизирован, чтобы соответствовать экспортированным ключевым образам. Дождитесь завершения синхронизации и повторите попытку импорта."
       },
       negativeAmount: "Сумма не может быть отрицательной",
       newPasswordNoMatch: "Новые пароли не совпадают",
@@ -456,9 +465,13 @@ export default {
       greaterHeight: "Введенное значение больше текущей высоты блока"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Приватные ключи можно будет показать после завершения синхронизации кошелька.",
       noKeyImageExport: "Не найдено ключевых образов для экспорта",
       usingLocalNode:
         "Не удалось подключиться к удаленной ноде, переключаемся на локальную ноду",
+      localNodeFailedUsingRemote:
+        "Не удалось запустить локальную ноду, используется удаленная нода",
       usingRemoteNode: "Не найден файл beldexd, используется удаленная нода"
     }
   },
@@ -621,6 +634,8 @@ export default {
     saveSeedWarning:
       "Пожалуйста, скопируйте фразу и храните ее в безопасном месте!",
     saveToAddressBook: "Сохранить в адресной книге",
+    keysAvailableAfterSync:
+      "Будет доступно после завершения синхронизации кошелька.",
     seedWords: "Семя-фраза",
     walletCreated: "Кошелек создан",
     selectLanguage: "Выберите язык",
@@ -670,6 +685,8 @@ export default {
       sentTo: "Транзакция отправлена: {type}",
       timestamp: "Отметка времени",
       date: "Дата",
+      filterByDate: "Фильтр по дате",
+      clearDateRange: "Очистить фильтр по дате",
       types: {
         all: "Все",
         incoming: "Получать",
@@ -773,7 +790,7 @@ export default {
       fixedRate: "Фиксированная ставка",
       fixedRateUpdateSec:
         "Фиксированная скорость обновляется каждые 30 секунд.",
-      serviceFee: "Комиссия за обслуживание 0,25%",
+      serviceFee: "Комиссия за обслуживание",
       fees: "Сборы",
       allTheFees: "Все сборы включены в стоимость проживания",
       networkFee: "Сетевая плата",

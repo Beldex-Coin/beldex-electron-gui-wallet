@@ -496,12 +496,28 @@ export default {
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
     info: state => state.gateway.wallet.info,
+    status: state => state.gateway.wallet.status,
     update_required: state => state.gateway.update_required,
     stepperPosition: state => state.gateway.stepperPosition,
     is_able_to_send() {
       return this.$store.state.gateway.update_required;
     }
   }),
+  watch: {
+    // The wallet is shown before its first heartbeat completes (see
+    // openWallet in wallet-rpc.js). If that heartbeat then fails, the backend
+    // closes the wallet and reports -1, so go back to the wallet list.
+    "status.code"(code) {
+      if (code !== -1) return;
+      this.$q.notify({
+        type: "negative",
+        timeout: 1000,
+        message: this.status.message
+      });
+      this.$router.replace({ path: "/wallet-select" });
+      this.$store.dispatch("gateway/resetWalletData");
+    }
+  },
   mounted() {
     this.update_required == true ? this.showAbout() : "";
   },
@@ -541,7 +557,8 @@ export default {
           color: "accent"
         },
         dark: this.theme == "dark",
-        color: this.theme == "dark" ? "white" : "dark"
+        color: this.theme == "dark" ? "white" : "dark",
+        noRouteDismiss: true
       });
       passwordDialog
         .onOk(password => {

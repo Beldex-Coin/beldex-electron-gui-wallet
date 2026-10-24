@@ -21,6 +21,7 @@ export default {
     decrypt: "DESCRIPTO",
     addRecord: "Adicionar BNS",
     delete: "APAGAR",
+    done: "FEITO",
     edit: "EDITAR",
     editNotes: "Editar notas",
     enter: "Digitar",
@@ -250,6 +251,8 @@ export default {
     expirationHeight: "Altura de expiração",
     data: "Dados",
     filter: "Filtro",
+    startDate: "Data de início",
+    endDate: "Data de término",
     filterTransactionType: "FILTRAR POR TIPO DE TRANSAÇÃO",
     internalWalletPort: "PORTA INTERNA DA CARTEIRA",
     keyImages: {
@@ -408,6 +411,11 @@ export default {
       failedWalletImport: "Falhou importação da carteira",
       failedWalletOpen: "Falhou abertura da carteira. Por favor tente de novo.",
       failedWalletRead: "Falha ao ler as carteiras",
+      failedWalletRestore:
+        "Falha ao restaurar a carteira. Por favor, tente novamente.",
+      failedWalletCreation:
+        "Falha ao criar a carteira. Por favor, tente novamente.",
+
       internalError: "Erro interno",
       invalidAddress: "Endereço não válido",
       invalidAmount: "Quantidade não válida",
@@ -435,7 +443,9 @@ export default {
       keyImages: {
         exporting: "Erro ao exportar as chaves de imagem",
         reading: "Erro ao ler as chaves de imagem",
-        importing: "Erro ao importar as chaves de imagem"
+        importing: "Erro ao importar as chaves de imagem",
+        notSyncedFarEnough:
+          "Esta carteira ainda não sincronizou o suficiente para corresponder às chaves de imagem exportadas. Aguarde a sincronização terminar e tente importar novamente."
       },
       negativeAmount: "Quantidade não pode ser negativa",
       newPasswordNoMatch: "Nova palavra-passe não coincide",
@@ -456,9 +466,13 @@ export default {
       greaterHeight: "O valor inserido é maior que a altura do bloco atual"
     },
     warnings: {
+      privateKeysAfterSync:
+        "As chaves privadas poderão ser exibidas quando a carteira terminar de sincronizar.",
       noKeyImageExport: "Nenhuma chave de imagem encontrada para exportar",
       usingLocalNode:
         "Não foi possível aceder ao nódulo remoto, mudando para nódulo local apenas",
+      localNodeFailedUsingRemote:
+        "Não foi possível iniciar o nódulo local, utilizando nódulo remoto",
       usingRemoteNode: "beldexd não encontrado, utilizando nódulo remoto"
     }
   },
@@ -619,6 +633,8 @@ export default {
       "Seleccione examinação completa ou examinação de outputs gastos apenas.",
     saveSeedWarning: "Por favor copie e salve estes num lugar seguro!",
     saveToAddressBook: "Salvar para o livro de endereço",
+    keysAvailableAfterSync:
+      "Disponível quando a carteira terminar de sincronizar.",
     seedWords: "Palavras semente",
     walletCreated: "Carteira criada",
     selectLanguage: "Selecione língua",
@@ -667,6 +683,8 @@ export default {
       sentTo: "{type} transacão enviada a",
       timestamp: "Data e hora",
       date: "Data",
+      filterByDate: "Filtrar por data",
+      clearDateRange: "Limpar filtro de data",
       types: {
         all: "Todos",
         incoming: "Receber",
@@ -771,7 +789,7 @@ export default {
       exchangeRate: "Taxa de câmbio",
       fixedRate: "Taxa fixa",
       fixedRateUpdateSec: "A taxa fixa é atualizada a cada 30 segundos",
-      serviceFee: "Taxa de serviço 0,25%",
+      serviceFee: "Taxa de serviço",
       fees: "Tarifas",
       allTheFees: "Todas as taxas incluídas na tarifa",
       networkFee: "Taxa de rede",

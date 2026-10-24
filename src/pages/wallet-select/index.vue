@@ -11,7 +11,7 @@
     >
       <div v-if="backbtn" class="flex items-center back-btn-box">
         <div class="flex items-center">
-          <qbtn flat class="back-btn" @click="backbtn = false">
+          <q-btn flat class="back-btn" @click="backbtn = false">
             <svg
               width="26"
               height="26"
@@ -24,8 +24,8 @@
                 fill="white"
               />
             </svg>
-          </qbtn>
-          <span style="padding-top: 10px;">{{ this.$t("buttons.back") }}</span>
+          </q-btn>
+          <span>{{ this.$t("buttons.back") }}</span>
         </div>
       </div>
       <div
@@ -268,6 +268,7 @@ export default {
     }
   },
   created() {
+    this.$q.loading.hide();
     this.$gateway.send("wallet", "list_wallets");
   },
   methods: {
@@ -356,21 +357,13 @@ export default {
     width: 832px;
     .back-btn {
       cursor: pointer;
-      width: 40px;
-      height: 40px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    // .back-btn:hover {
-    //   background: rgba(119, 119, 151, 0.3) !important;
-    //   border-radius: 20px;
-    // }
     span {
       font-family: "Poppins-Bold";
       font-size: 26px;
-      padding-bottom: 5px;
-      margin-left: 10px;
     }
   }
 }

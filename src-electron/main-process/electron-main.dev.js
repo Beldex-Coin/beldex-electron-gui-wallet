@@ -11,13 +11,29 @@ require("electron-debug")({
 });
 
 // Install `vue-devtools`
+// Install `vue-devtools` only when explicitly requested.
+// Newer Electron versions or locked-down environments can fail while
+// downloading the extension, which should not block local development.
+
 require("electron").app.on("ready", () => {
+  if (process.env.BELDEX_INSTALL_VUE_DEVTOOLS !== "true") {
+    console.info(
+      "Skipping `vue-devtools` auto-install. Set BELDEX_INSTALL_VUE_DEVTOOLS=true to enable it."
+    );
+    return;
+  }
+
   let installExtension = require("electron-devtools-installer");
   installExtension
     .default(installExtension.VUEJS_DEVTOOLS)
-    .then(() => {})
+    .then(() => {
+      console.info("Installed `vue-devtools`.");
+    })
     .catch(err => {
-      console.log("Unable to install `vue-devtools`: \n", err);
+      console.warn(
+        "Unable to install `vue-devtools`. Continuing without it.\n",
+        err
+      );
     });
 });
 

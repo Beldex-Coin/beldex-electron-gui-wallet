@@ -529,14 +529,13 @@
         ></q-checkbox>
         <span>
           {{ this.$t("titles.swap.agreeWith") }}
-          <a @click="openExternalLink('https://changelly.com/terms-of-use')">
+          <a @click="openExternalLink(exchangeLinks.termsLink)">
             {{ this.$t("titles.swap.termOfUse") }}
           </a>
           {{ this.$t("titles.swap.and") }}
-          <a
-            @click="openExternalLink('https://changelly.com/privacy-policy')"
-            >{{ this.$t("titles.swap.privacyPolicy") }}</a
-          >
+          <a @click="openExternalLink(exchangeLinks.privacyPolicyLink)">{{
+            this.$t("titles.swap.privacyPolicy")
+          }}</a>
         </span>
       </div>
 
@@ -623,6 +622,17 @@ import SwapTxnCompeleted from "./swapTxnCompeleted.vue";
 import SwapUnderMaintenance from "./swapUnderMaintenance.vue";
 import { mapState } from "vuex";
 import Dropdown from "./currencyDropDown.vue";
+
+const EXCHANGE_LINKS = {
+  quickex: {
+    termsLink: "https://quickex.io/docs/terms-of-use",
+    privacyPolicyLink: "https://quickex.io/docs/privacy-policy"
+  },
+  changelly: {
+    termsLink: "https://changelly.com/terms-of-use",
+    privacyPolicyLink: "https://changelly.com/privacy-policy"
+  }
+};
 
 export default {
   components: {
@@ -857,7 +867,10 @@ export default {
       }
       return result;
     },
-    info: state => state.gateway.wallet.info
+    info: state => state.gateway.wallet.info,
+    exchangeLinks() {
+      return EXCHANGE_LINKS[this.currentExchange] ?? EXCHANGE_LINKS.changelly;
+    }
   }),
 
   validations: {
@@ -993,6 +1006,8 @@ export default {
       if (exchangeType) {
         if (this.currentExchange !== exchangeType) {
           this.currentExchange = exchangeType;
+          // Consent was given for the other provider's terms.
+          this.agree = "no";
           if (this.routes === "mainPage") {
             this.restartAllIntervals();
           }
@@ -1323,7 +1338,9 @@ export default {
         address: this.recipientAddress.val,
         amountFrom: this.sendAmount,
         walletAddress: this.info.address,
-        privacySwap: this.privacySwap
+        privacySwap: this.privacySwap,
+        blockchainFrom: this.sendAmounType.blockchain || null,
+        blockchainTo: this.receiveAmountType.blockchain || null
       };
       if (this.refundAddress && this.refundAddress.val) {
         data.refundAddress = this.refundAddress.val;

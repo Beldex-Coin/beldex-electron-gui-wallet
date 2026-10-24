@@ -12,7 +12,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+          - os: macos-latest
+          - os: ubuntu-24.04
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v1
@@ -60,8 +63,21 @@ jobs:
         run: ls ./bin
         shell: bash
 
-      - name: Build window and linux binaries
-        if: runner.os != 'macOS'
+      - name: Build windows binaries
+        if: runner.os == 'Windows'
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Zig lets the beforePack hook (build/linux-glibc-compat) compile
+      # better-sqlite3 against glibc 2.31, so the package built on this
+      # Ubuntu 24.04 runner also runs on Ubuntu 20.04 and 22.04.
+      - name: Install zig
+        if: runner.os == 'Linux'
+        run: bash build/linux-glibc-compat/install-zig.sh
+
+      - name: Build linux binaries
+        if: runner.os == 'Linux'
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

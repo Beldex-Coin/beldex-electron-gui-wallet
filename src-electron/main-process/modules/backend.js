@@ -12,8 +12,8 @@ const WebSocket = require("ws");
 const electron = require("electron");
 const os = require("os");
 const fs = require("fs-extra");
-const path = require("upath");
-const { execFileSync } = require("child_process");
+const upath = require("upath");
+const path = require("path");
 import objectAssignDeep from "object-assign-deep";
 
 const { ipcMain: ipc, safeStorage } = electron;
@@ -21,6 +21,8 @@ const { ipcMain: ipc, safeStorage } = electron;
 const LOG_LEVELS = ["fatal", "error", "warn", "info", "debug", "trace"];
 const CONFIG_ENVELOPE_VERSION = 1;
 const CONFIG_ENCRYPTION_SCHEME = "electron-safe-storage";
+const REMOTE_NODE_RETRY_ATTEMPTS = 3;
+const REMOTE_NODE_RETRY_DELAY_MS = 2000;
 const REDACTED_LOG_VALUE = "[REDACTED]";
 const REDACT_LOG_KEY_PATTERN = /(password|seed|mnemonic|secret|spend[_-]?key|view[_-]?key|private[_-]?key|auth|token)/i;
 const REDACT_LOG_STRING_PATTERNS = [
@@ -153,6 +155,110 @@ export class Backend {
     fs.writeFile(this.config_file, serialized, "utf8", callback);
   }
 
+  // Builds a shallow copy of config_data with one net_type's daemon.type
+  // overridden. Used when a runtime fallback (remote unreachable, local
+  // daemon failed to start, binary missing, etc.) needs to change how the
+  // app behaves *this session* without mutating the user's saved
+  // preference - so `pending_config` (what the Settings screen shows and
+  // echoes back on save) never picks up a session-only downgrade.
+  buildConfigWithDaemonType(net_type, type) {
+    return {
+      ...this.config_data,
+      daemons: {
+        ...this.config_data.daemons,
+        [net_type]: {
+          ...this.config_data.daemons[net_type],
+          type
+        }
+      }
+    };
+  }
+
+  // Starts the wallet RPC once the daemon (local or remote) is up, and
+  // brings the app to "ready". The primary startup path and the
+  // local_remote-failed-over-to-remote fallback both need this exact
+  // sequence; they used to each hand-roll their own copy and had already
+  // drifted apart (the fallback's copy was missing the killProcess() call
+  // on a wallet-start failure). One shared implementation now backs both.
+  finishDaemonStartup() {
+    this.send("set_app_data", {
+      status: {
+        code: 6 // Starting wallet
+      }
+    });
+
+    return this.walletd
+      .start(this.config_data)
+      .then(() => {
+        this.send("set_app_data", {
+          status: {
+            code: 7 // Reading wallet list
+          }
+        });
+
+        this.walletd.listWallets(true);
+
+        this.send("set_app_data", {
+          status: {
+            code: 0 // Ready
+          }
+        });
+      })
+      .catch(error => {
+        this.daemon.killProcess();
+        this.send("show_notification", {
+          type: "negative",
+          message: error.message,
+          timeout: 3000
+        });
+        this.send("set_app_data", {
+          status: {
+            code: -1 // Return to config screen
+          }
+        });
+      });
+  }
+  wait(ms) {
+    return new Promise(resolve => {
+      setTimeout(resolve, ms);
+    });
+  }
+  async checkRemoteWithRetry(daemonConfig) {
+    let lastResult = {};
+
+    for (let attempt = 1; attempt <= REMOTE_NODE_RETRY_ATTEMPTS; attempt += 1) {
+      lastResult = await this.daemon.checkRemote(daemonConfig);
+      if (!lastResult.error) {
+        return lastResult;
+      }
+
+      // checkRemote() resolves without an error for daemonConfig.type ===
+      // "local" (it never hits the network for a local daemon), so that
+      // case is already handled by the !lastResult.error return above -
+      // this only needs to stop the retry loop on the final attempt.
+      if (attempt === REMOTE_NODE_RETRY_ATTEMPTS) {
+        return lastResult;
+      }
+
+      // Each attempt's RPC can take up to 20s, so a fully unreachable
+      // remote node otherwise leaves the user on "Starting daemon" with
+      // no feedback for ~64s before the first error appears. Let them
+      // know we're still trying between attempts.
+      this.send("show_notification", {
+        type: "warning",
+        timeout: REMOTE_NODE_RETRY_DELAY_MS,
+        i18n: [
+          "notification.warnings.retryingRemoteNode",
+          { attempt, total: REMOTE_NODE_RETRY_ATTEMPTS }
+        ]
+      });
+
+      await this.wait(REMOTE_NODE_RETRY_DELAY_MS);
+    }
+
+    return lastResult;
+  }
+
   init(config) {
     let configDir;
     let legacyBeldexConfigDir;
@@ -161,9 +267,9 @@ export class Backend {
       legacyBeldexConfigDir = "C:\\ProgramData\\beldex\\";
       this.wallet_dir = `${os.homedir()}\\Documents\\Beldex`;
     } else {
-      configDir = path.join(os.homedir(), ".beldex");
-      legacyBeldexConfigDir = path.join(os.homedir(), ".beldex/");
-      this.wallet_dir = path.join(os.homedir(), "Beldex");
+      configDir = upath.join(os.homedir(), ".beldex");
+      legacyBeldexConfigDir = upath.join(os.homedir(), ".beldex/");
+      this.wallet_dir = upath.join(os.homedir(), "Beldex");
     }
 
     // if the user has used beldex before, just keep the same stuff
@@ -177,11 +283,11 @@ export class Backend {
       }
     }
 
-    if (!fs.existsSync(path.join(this.config_dir, "gui"))) {
-      fs.mkdirpSync(path.join(this.config_dir, "gui"));
+    if (!fs.existsSync(upath.join(this.config_dir, "gui"))) {
+      fs.mkdirpSync(upath.join(this.config_dir, "gui"));
     }
 
-    this.config_file = path.join(this.config_dir, "gui", "config.json");
+    this.config_file = upath.join(this.config_dir, "gui", "config.json");
 
     const daemon = {
       type: "remote",
@@ -333,17 +439,7 @@ export class Backend {
   }
 
   receive(data) {
-    let decrypted_data;
-    try {
-      decrypted_data = JSON.parse(this.scee.decryptString(data, this.token));
-    } catch (error) {
-      console.error(
-        "[Backend] Failed to decrypt/parse incoming message:",
-        error
-      );
-      return;
-    }
-    // console.log("decrypted_data:", decrypted_data);
+    let decrypted_data = JSON.parse(this.scee.decryptString(data, this.token));
     // route incoming request to either the daemon, wallet, or here
     switch (decrypted_data.module) {
       case "core":
@@ -491,7 +587,7 @@ export class Backend {
           });
           break;
         }
-        const defaultFilename = path.basename(
+        const defaultFilename = upath.basename(
           params.defaultFilename || "beldex_wallet_report.csv"
         );
         dialog
@@ -611,7 +707,7 @@ export class Backend {
       streams: [
         {
           type: "rotating-file",
-          path: path.join(logPath, "electron.log"),
+          path: upath.join(logPath, "electron.log"),
           period: "1d", // daily rotation
           count: 4 // keep 4 days of logs
         }
@@ -866,36 +962,19 @@ export class Backend {
 
       const dirs = {
         mainnet: this.config_data.app.data_dir,
-        stagenet: path.join(this.config_data.app.data_dir, "stagenet"),
-        testnet: path.join(this.config_data.app.data_dir, "testnet")
+        stagenet: upath.join(this.config_data.app.data_dir, "stagenet"),
+        testnet: upath.join(this.config_data.app.data_dir, "testnet")
       };
 
       // Make sure we have the directories we need
       const net_dir = dirs[net_type];
-      const log_dir = path.join(net_dir, "logs");
-      try {
-        if (!fs.existsSync(net_dir)) {
-          fs.mkdirpSync(net_dir);
-        }
+      if (!fs.existsSync(net_dir)) {
+        fs.mkdirpSync(net_dir);
+      }
 
-        if (!fs.existsSync(log_dir)) {
-          fs.mkdirpSync(log_dir);
-        }
-      } catch (error) {
-        this.log?.error("Failed to create data/log directory", error);
-        this.send("show_notification", {
-          type: "negative",
-          i18n: "notification.errors.dataPathCreateFailed",
-          timeout: 3000
-        });
-
-        // Go back to config
-        this.send("set_app_data", {
-          status: {
-            code: -1 // Return to config screen
-          }
-        });
-        return;
+      const log_dir = upath.join(net_dir, "logs");
+      if (!fs.existsSync(log_dir)) {
+        fs.mkdirpSync(log_dir);
       }
 
       this.initLogger(log_dir);
@@ -912,14 +991,18 @@ export class Backend {
 
       // Make sure the remote node provided is accessible
       const config_daemon = this.config_data.daemons[net_type];
-      this.daemon.checkRemote(config_daemon).then(data => {
+      this.checkRemoteWithRetry(config_daemon).then(data => {
         if (data.error) {
           // If we can default to local then we do so, otherwise we tell the user  to re-set the node
           if (config_daemon.type === "local_remote") {
+            const preservedDaemonType = config_daemon.type;
             this.config_data.daemons[net_type].type = "local";
             this.send("set_app_data", {
               config: this.config_data,
-              pending_config: this.config_data
+              pending_config: this.buildConfigWithDaemonType(
+                net_type,
+                preservedDaemonType
+              )
             });
             this.send("show_notification", {
               type: "warning",
@@ -973,59 +1056,63 @@ export class Backend {
               });
             } else {
               // daemon not found, probably removed by AV, set to remote node
+              const preservedDaemonType = this.config_data.daemons[net_type]
+                .type;
               this.config_data.daemons[net_type].type = "remote";
               this.send("set_app_data", {
                 status: {
                   code: 5
                 },
                 config: this.config_data,
-                pending_config: this.config_data
+                pending_config: this.buildConfigWithDaemonType(
+                  net_type,
+                  preservedDaemonType
+                )
               });
             }
 
             this.daemon
               .start(this.config_data)
-              .then(() => {
-                this.send("set_app_data", {
-                  status: {
-                    code: 6 // Starting wallet
-                  }
-                });
-
-                this.walletd
-                  .start(this.config_data)
-                  .then(() => {
-                    this.send("set_app_data", {
-                      status: {
-                        code: 7 // Reading wallet list
-                      }
-                    });
-
-                    this.walletd.listWallets(true);
-
-                    this.send("set_app_data", {
-                      status: {
-                        code: 0 // Ready
-                      }
-                    });
-                    // eslint-disable-next-line
-                  })
-                  .catch(error => {
-                    this.daemon.killProcess();
-                    this.send("show_notification", {
-                      type: "negative",
-                      message: error.message,
-                      timeout: 3000
-                    });
-                    this.send("set_app_data", {
-                      status: {
-                        code: -1 // Return to config screen
-                      }
-                    });
-                  });
-                // eslint-disable-next-line
-              })
+              .then(() => this.finishDaemonStartup())
               .catch(error => {
+                if (
+                  this.config_data.daemons[net_type].type === "local_remote"
+                ) {
+                  const preservedDaemonType = this.config_data.daemons[net_type]
+                    .type;
+                  this.daemon.killProcess();
+                  this.config_data.daemons[net_type].type = "remote";
+                  this.send("set_app_data", {
+                    config: this.config_data,
+                    pending_config: this.buildConfigWithDaemonType(
+                      net_type,
+                      preservedDaemonType
+                    )
+                  });
+                  this.send("show_notification", {
+                    type: "warning",
+                    textColor: "black",
+                    i18n: "notification.warnings.localNodeFailedUsingRemote",
+                    timeout: 3000
+                  });
+
+                  this.daemon
+                    .start(this.config_data)
+                    .then(() => this.finishDaemonStartup())
+                    .catch(fallbackError => {
+                      this.send("show_notification", {
+                        type: "negative",
+                        message: fallbackError.message,
+                        timeout: 3000
+                      });
+                      this.send("set_app_data", {
+                        status: {
+                          code: -1 // Return to config screen
+                        }
+                      });
+                    });
+                  return;
+                }
                 if (this.config_data.daemons[net_type].type == "remote") {
                   this.send("show_notification", {
                     type: "negative",

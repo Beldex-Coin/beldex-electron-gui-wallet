@@ -22,6 +22,7 @@ export default {
     decrypt: "DECRYPT",
     addRecord: "Add BNS",
     delete: "Delete",
+    done: "Done",
     edit: "Edit",
     editNotes: "Edit Notes",
     enter: "Enter",
@@ -257,6 +258,8 @@ export default {
     expirationHeight: "Expiration Height",
     filter: "Filter",
     filterTransactionType: "FILTER BY TRANSACTION TYPE",
+    startDate: "Start Date",
+    endDate: "End Date",
     internalWalletPort: "Internal Wallet Port",
     keyImages: {
       exportDirectory: "Key Image Export Directory",
@@ -416,9 +419,11 @@ export default {
       errorSavingItem: "Error saving {item}",
       failedMasterNodeUnlock: "Failed to unlock master node",
       failedToSetLanguage: "Failed to set language: {lang}",
+      failedWalletCreation: "Failed to create wallet. Please try again.",
       failedWalletImport: "Failed to import wallet",
       failedWalletOpen: "Failed to open wallet. Please try again.",
       failedWalletRead: "Failed to read wallets",
+      failedWalletRestore: "Failed to restore wallet. Please try again.",
       internalError: "Internal error",
       invalidAddress: "Address not valid",
       invalidAmount: "Amount not valid",
@@ -445,7 +450,9 @@ export default {
       keyImages: {
         exporting: "Error exporting key images",
         reading: "Error reading key images",
-        importing: "Error importing key images"
+        importing: "Error importing key images",
+        notSyncedFarEnough:
+          "This wallet hasn't synced far enough to match the exported key images yet. Wait until it finishes syncing, then try importing again."
       },
       negativeAmount: "Amount cannot be negative",
       newPasswordNoMatch: "New passwords do not match",
@@ -463,8 +470,14 @@ export default {
       greaterHeight: "Entered value is greater than current block height"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Private keys can be shown once the wallet has finished syncing.",
       noKeyImageExport: "No key images found to export",
+      retryingRemoteNode:
+        "Still trying to reach the remote node (attempt {attempt} of {total})...",
       usingLocalNode: "Could not access remote node, switching to local only",
+      localNodeFailedUsingRemote:
+        "Local node failed to start, using remote node",
       usingRemoteNode: "beldexd not found, using remote node"
     }
   },
@@ -624,6 +637,7 @@ export default {
       "Select full rescan or rescan of spent outputs only.",
     saveSeedWarning: "Please copy and save these in a secure location!",
     saveToAddressBook: "Save to address book",
+    keysAvailableAfterSync: "Available once the wallet has finished syncing.",
     seedWords: "Recovery Seed",
     walletCreated: "Wallet Created",
     selectLanguage: "Select a language",
@@ -672,6 +686,8 @@ export default {
       sentTo: "{type} transaction sent to",
       timestamp: "Timestamp",
       date: "Date",
+      filterByDate: "Filter by date",
+      clearDateRange: "Clear date filter",
       types: {
         all: "All",
         incoming: "Receive",
@@ -774,7 +790,7 @@ export default {
       exchangeRate: "Exchange rate",
       fixedRate: "Fixed rate",
       fixedRateUpdateSec: "The fixed rate is updated every 30 Seconds",
-      serviceFee: "Service fee 0.25%",
+      serviceFee: "Service fee",
       fees: "Fees",
       allTheFees: "All fees inclueded in the rate",
       networkFee: "Network fee",

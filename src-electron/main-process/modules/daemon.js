@@ -6,6 +6,32 @@ const http = require("http");
 const fs = require("fs");
 const path = require("upath");
 const portscanner = require("portscanner");
+import {
+  SHOULD_LOG_PROCESS_OUTPUT,
+  START_POLL_INTERVAL_MS,
+  appendProcessOutput,
+  formatRPCError,
+  getProcessFailureDetails,
+  clearStartTimers,
+  terminateProcess
+} from "./process-supervisor";
+
+const LOCAL_DAEMON_START_TIMEOUT_MS =
+  process.platform === "win32" ? 120000 : 45000;
+// Safety ceiling only: a first-time or long-idle local daemon can spend many
+// minutes replaying already-downloaded blocks into the master-node/BNS
+// indexes before RPC responds. LOCAL_DAEMON_START_TIMEOUT_MS is treated as a
+// liveness re-check interval while the process is alive, not a hard failure.
+const LOCAL_DAEMON_HARD_TIMEOUT_MS = 10 * 60 * 1000;
+// How long a local_remote daemon may keep failing get_info (bootstrap node
+// slow or unreachable) during startup before we give up and use remote.
+const LOCAL_DAEMON_BOOTSTRAP_GRACE_MS = 60 * 1000;
+const KILL_PROCESS_FORCE_TIMEOUT_MS = 10000;
+// Was a bare `20000` inline in quit() - named for clarity. Kept distinct
+// from KILL_PROCESS_FORCE_TIMEOUT_MS (10s) rather than unified, since
+// that's a real behavior difference between the two call paths, not
+// just duplication, and changing either value wasn't asked for here.
+const DAEMON_QUIT_FORCE_KILL_TIMEOUT_MS = 20000;
 
 export class Daemon {
   constructor(backend) {
@@ -24,6 +50,10 @@ export class Daemon {
     this.PIVOT_BLOCK_HEIGHT = 119681;
     this.PIVOT_BLOCK_TIMESTAMP = 1539676273;
     this.PIVOT_BLOCK_TIME = 120;
+    this.stdoutTail = [];
+    this.stderrTail = [];
+    this.startupPoll = null;
+    this.startupTimeout = null;
   }
 
   checkVersion() {
@@ -99,14 +129,19 @@ export class Daemon {
             this.startHeartbeat();
             resolve();
           } else {
-            reject();
+            reject(
+              new Error(
+                formatRPCError(data.error, "Could not connect to remote daemon")
+              )
+            );
           }
         });
       });
     }
     return new Promise((resolve, reject) => {
       this.local = true;
-
+      this.stdoutTail = [];
+      this.stderrTail = [];
       const args = [
         "--data-dir",
         options.app.data_dir,
@@ -166,11 +201,39 @@ export class Daemon {
       this.hostname = daemon.rpc_bind_ip;
       this.port = daemon.rpc_bind_port;
 
-      portscanner
-        .checkPortStatus(this.port, this.hostname)
-        .catch(() => "closed")
+      const p2pHostname =
+        daemon.p2p_bind_ip === "0.0.0.0" ? "127.0.0.1" : daemon.p2p_bind_ip;
+
+      Promise.all([
+        portscanner.checkPortStatus(this.port, this.hostname),
+        portscanner.checkPortStatus(daemon.p2p_bind_port, p2pHostname)
+      ])
+        .then(([rpcStatus, p2pStatus]) =>
+          rpcStatus === "closed" && p2pStatus === "closed" ? "closed" : "open"
+        )
+        // A failed probe tells us nothing about whether the port is free,
+        // so assume the worst rather than spawning a daemon that may race
+        // an existing one for the same port.
+        .catch(() => "open")
         .then(status => {
           if (status === "closed") {
+            let didSettle = false;
+            const startedAt = Date.now();
+            const finishStart = error => {
+              if (didSettle) {
+                return;
+              }
+
+              didSettle = true;
+              clearStartTimers(this);
+
+              if (error) {
+                reject(error);
+                return;
+              }
+
+              resolve();
+            };
             if (process.platform === "win32") {
               this.daemonProcess = child_process.spawn(
                 path.join(__ryo_bin, "beldexd.exe"),
@@ -186,44 +249,133 @@ export class Daemon {
               );
             }
 
-            this.daemonProcess.stdout.on("data", data =>
-              process.stdout.write(`Daemon: ${data}`)
-            );
-            this.daemonProcess.on("error", err =>
-              process.stderr.write(`Daemon: ${err}`)
-            );
+            this.daemonProcess.stdout.on("data", data => {
+              appendProcessOutput(this.stdoutTail, data);
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stdout.write(`Daemon: ${data}`);
+              }
+            });
+            this.daemonProcess.stderr.on("data", data => {
+              appendProcessOutput(this.stderrTail, data);
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stderr.write(`Daemon: ${data}`);
+              }
+            });
+            this.daemonProcess.on("error", err => {
+              appendProcessOutput(
+                this.stderrTail,
+                Buffer.from(String(err && err.message ? err.message : err))
+              );
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stderr.write(`Daemon: ${err}`);
+              }
+              finishStart(
+                new Error(
+                  getProcessFailureDetails(
+                    "Failed to start local daemon",
+                    this.stderrTail,
+                    this.stdoutTail
+                  )
+                )
+              );
+            });
             this.daemonProcess.on("close", code => {
-              process.stderr.write(`Daemon: exited with code ${code} \n`);
+              if (SHOULD_LOG_PROCESS_OUTPUT) {
+                process.stderr.write(`Daemon: exited with code ${code} \n`);
+              }
               this.daemonProcess = null;
               this.agent.destroy();
-              if (code === null) {
-                reject(new Error("Failed to start local daemon"));
+              if (!didSettle) {
+                finishStart(
+                  new Error(
+                    getProcessFailureDetails(
+                      `Local daemon exited with code ${code}`,
+                      this.stderrTail,
+                      this.stdoutTail
+                    )
+                  )
+                );
               }
             });
 
             // To let caller know when the daemon is ready
-            // We can't apply timeout to this because the local daemon might be syncing in the background
-            let intrvl = setInterval(() => {
-              this.sendRPC("get_info").then(data => {
+            const scheduleStartupTimeout = () => {
+              this.startupTimeout = setTimeout(() => {
+                if (
+                  this.daemonProcess &&
+                  Date.now() - startedAt < LOCAL_DAEMON_HARD_TIMEOUT_MS
+                ) {
+                  // Still alive and within the hard ceiling: likely still
+                  // doing initial catch-up work, not actually stuck.
+                  scheduleStartupTimeout();
+                  return;
+                }
+                this.killProcess();
+                finishStart(
+                  new Error(
+                    getProcessFailureDetails(
+                      "Timed out while starting local daemon",
+                      this.stderrTail,
+                      this.stdoutTail
+                    )
+                  )
+                );
+              }, LOCAL_DAEMON_START_TIMEOUT_MS);
+            };
+            scheduleStartupTimeout();
+
+            // With --bootstrap-daemon-address and a node that is behind,
+            // beldexd forwards every RPC call to the bootstrap node first, so
+            // get_info can time out or fail for a while even though the local
+            // daemon is running fine. Keep waiting through that for up to
+            // LOCAL_DAEMON_BOOTSTRAP_GRACE_MS instead of killing it.
+            let firstBootstrapErrorAt = null;
+            let pollInFlight = false;
+            this.startupPoll = setInterval(() => {
+              if (pollInFlight) {
+                return;
+              }
+              pollInFlight = true;
+              this.sendRPC("get_info", {}, { timeout: 5000 }).then(data => {
+                pollInFlight = false;
+                if (didSettle) {
+                  return;
+                }
                 if (!data.hasOwnProperty("error")) {
                   this.startHeartbeat();
-                  clearInterval(intrvl);
-                  resolve();
+                  finishStart();
                 } else {
-                  if (
-                    this.daemonProcess &&
-                    data.error.cause &&
-                    data.error.cause.code === "ECONNREFUSED"
-                  ) {
+                  const errorCode = data.error.cause && data.error.cause.code;
+                  if (this.daemonProcess && errorCode === "ECONNREFUSED") {
                     // Ignore
+                  } else if (
+                    this.daemonProcess &&
+                    daemon.type === "local_remote" &&
+                    (firstBootstrapErrorAt === null ||
+                      Date.now() - firstBootstrapErrorAt <
+                        LOCAL_DAEMON_BOOTSTRAP_GRACE_MS)
+                  ) {
+                    if (firstBootstrapErrorAt === null) {
+                      firstBootstrapErrorAt = Date.now();
+                    }
                   } else {
-                    clearInterval(intrvl);
                     this.killProcess();
-                    reject(new Error("Could not connect to local daemon"));
+                    finishStart(
+                      new Error(
+                        getProcessFailureDetails(
+                          formatRPCError(
+                            data.error,
+                            "Could not connect to local daemon"
+                          ),
+                          this.stderrTail,
+                          this.stdoutTail
+                        )
+                      )
+                    );
                   }
                 }
               });
-            }, 1000);
+            }, START_POLL_INTERVAL_MS);
           } else {
             reject(new Error(`Local daemon port ${this.port} is in use`));
           }
@@ -232,10 +384,21 @@ export class Daemon {
   }
 
   killProcess() {
-    if (this.daemonProcess) {
-      this.daemonProcess.kill();
-      this.daemonProcess = null;
+    clearStartTimers(this);
+    if (!this.daemonProcess) {
+      return;
     }
+    const proc = this.daemonProcess;
+    // Cleared before the process has actually exited (SIGTERM is
+    // asynchronous and terminateProcess's up-to-10s force-kill window
+    // hasn't run yet) so a re-entrant call to killProcess() during that
+    // window sees no process and returns immediately above, instead of
+    // trying to terminate the same proc twice. Anything else that reads
+    // this.daemonProcess to decide "is a daemon running" - the startup
+    // poll and the liveness re-check both do - will see null during that
+    // same window, which is intentional here but worth knowing about.
+    this.daemonProcess = null;
+    terminateProcess(proc, "SIGTERM", KILL_PROCESS_FORCE_TIMEOUT_MS);
   }
 
   handle(data) {
@@ -311,54 +474,70 @@ export class Daemon {
 
       this.getRPC("block_header_by_height", {
         height: estimated_height
-      }).then(data => {
-        if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
-          if (data.error.code == -2) {
-            // Too big height
-            this.getRPC("last_block_header").then(data => {
-              if (
-                data.hasOwnProperty("error") ||
-                !data.hasOwnProperty("result")
-              ) {
-                return reject();
-              }
+      })
+        .then(data => {
+          if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+            if (data.error.code == -2) {
+              // Too big height
+              this.getRPC("last_block_header")
+                .then(data => {
+                  if (
+                    data.hasOwnProperty("error") ||
+                    !data.hasOwnProperty("result")
+                  ) {
+                    return reject();
+                  }
 
-              let new_pivot = [
-                data.result.block_header.height,
-                data.result.block_header.timestamp
-              ];
+                  // A local node that is still syncing answers with status BUSY
+                  // and no block_header. Its chain ends before the requested
+                  // date, so use the pivot: a block we already found to be
+                  // earlier than the date, which is a safe restore height.
+                  if (!data.result.block_header) {
+                    return resolve(pivot[0]);
+                  }
 
-              // If we are within an hour that is good enough
-              // If for some reason there is a > 1h gap between blocks
-              // the recursion limit will take care of infinite loop
-              if (Math.abs(timestamp - new_pivot[1]) < 3600) {
-                return resolve(new_pivot[0]);
-              }
+                  let new_pivot = [
+                    data.result.block_header.height,
+                    data.result.block_header.timestamp
+                  ];
 
-              // Continue recursion with new pivot
-              resolve(new_pivot);
-            });
-            return;
-          } else {
+                  // If we are within an hour that is good enough
+                  // If for some reason there is a > 1h gap between blocks
+                  // the recursion limit will take care of infinite loop
+                  if (Math.abs(timestamp - new_pivot[1]) < 3600) {
+                    return resolve(new_pivot[0]);
+                  }
+
+                  // Continue recursion with new pivot
+                  resolve(new_pivot);
+                })
+                .catch(reject);
+              return;
+            } else {
+              return reject();
+            }
+          }
+
+          if (!data.result.block_header) {
             return reject();
           }
-        }
 
-        let new_pivot = [
-          data.result.block_header.height,
-          data.result.block_header.timestamp
-        ];
+          let new_pivot = [
+            data.result.block_header.height,
+            data.result.block_header.timestamp
+          ];
 
-        // If we are within an hour that is good enough
-        // If for some reason there is a > 1h gap between blocks
-        // the recursion limit will take care of infinite loop
-        if (Math.abs(timestamp - new_pivot[1]) < 3600) {
-          return resolve(new_pivot[0]);
-        }
+          // If we are within an hour that is good enough
+          // If for some reason there is a > 1h gap between blocks
+          // the recursion limit will take care of infinite loop
+          if (Math.abs(timestamp - new_pivot[1]) < 3600) {
+            return resolve(new_pivot[0]);
+          }
 
-        // Continue recursion with new pivot
-        resolve(new_pivot);
-      });
+          // Continue recursion with new pivot
+          resolve(new_pivot);
+        })
+        .catch(reject);
     })
       .then(pivot_or_height => {
         return Array.isArray(pivot_or_height)
@@ -634,25 +813,15 @@ export class Daemon {
 
   quit() {
     clearInterval(this.heartbeat);
-    return new Promise(resolve => {
-      if (this.daemonProcess) {
-        this.daemonProcess.on("close", () => {
-          this.agent.destroy();
-          clearTimeout(this.forceKill);
-          resolve();
-        });
-
-        // Force kill after 20 seconds
-        this.forceKill = setTimeout(() => {
-          if (this.daemonProcess) {
-            this.daemonProcess.kill("SIGKILL");
-          }
-        }, 20000);
-
-        const signal = this.isDaemonSyncing ? "SIGKILL" : "SIGTERM";
-        this.daemonProcess.kill(signal);
-      } else {
-        resolve();
+    const proc = this.daemonProcess;
+    const signal = this.isDaemonSyncing ? "SIGKILL" : "SIGTERM";
+    return terminateProcess(
+      proc,
+      signal,
+      DAEMON_QUIT_FORCE_KILL_TIMEOUT_MS
+    ).then(() => {
+      if (proc) {
+        this.agent.destroy();
       }
     });
   }

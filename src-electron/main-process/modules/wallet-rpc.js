@@ -8,11 +8,27 @@ const path = require("upath");
 const crypto = require("crypto");
 const portscanner = require("portscanner");
 const { Swap } = require("./swap");
-const { app, Notification, BrowserWindow } = require("electron");
+const { DaemonRelay } = require("./daemon-relay");
+import {
+  SHOULD_LOG_PROCESS_OUTPUT,
+  START_POLL_INTERVAL_MS,
+  appendProcessOutput,
+  formatRPCError,
+  getProcessFailureDetails,
+  clearStartTimers,
+  terminateProcess
+} from "./process-supervisor";
 
 const PASSWORD_HASH_PBKDF2_ITERATIONS = 600000;
 const PASSWORD_HASH_KEY_LENGTH = 64;
 const PASSWORD_HASH_DIGEST = "sha512";
+const WALLET_RPC_START_TIMEOUT_MS =
+  process.platform === "win32" ? 90000 : 45000;
+const WALLET_RPC_CLOSE_TIMEOUT_MS =
+  process.platform === "win32" ? 15000 : 10000;
+const WALLET_RPC_FORCE_KILL_TIMEOUT_MS = 20000;
+const HEARTBEAT_EXTENDED_MAX_RETRIES = 3;
+const HEARTBEAT_EXTENDED_RETRY_DELAY_MS = 1000;
 
 export class WalletRPC {
   constructor(backend) {
@@ -25,6 +41,7 @@ export class WalletRPC {
     this.net_type = "mainnet";
     this.heartbeat = null;
     this.lnsHeartbeat = null;
+    this.heartbeatRetryTimeout = null;
     this.wallet_state = {
       open: false,
       name: "",
@@ -35,6 +52,10 @@ export class WalletRPC {
       view_only: false
     };
     this.isRPCSyncing = false;
+    this.daemonRelay = null;
+    // Set by finalizeNewWallet; cleared when the created page is left, so a
+    // post-scan update can't put the new wallet's secrets back in the store.
+    this.newWalletSecretsToken = null;
     this.dirs = null;
     // Incoming-payment desktop notifications: txids we've already seen/
     // notified for, and whether the set has been seeded yet for the
@@ -46,6 +67,7 @@ export class WalletRPC {
     // seen yet (cleared when the wallet window regains focus).
     this.unreadPaymentNotificationCount = 0;
     this.last_height_send_time = Date.now();
+    this.heightEpoch = 0;
 
     // save a pending tx here, so we don't have to send the
     // whole thing to the renderer
@@ -76,17 +98,40 @@ export class WalletRPC {
     this.agent = new http.Agent({ keepAlive: true, maxSockets: 10 });
     this.queue = new queue(1, Infinity);
     this.swap = new Swap(this);
+    this.stdoutTail = [];
+    this.stderrTail = [];
+    this.startupPoll = null;
+    this.startupTimeout = null;
   }
 
   // this function will take an options object for testnet, data-dir, etc
   start(options) {
-    const { net_type } = options.app;
-    const daemon = options.daemons[net_type];
+    const daemon = options.daemons[options.app.net_type];
+    this.closeDaemonRelay();
+    if (daemon.type != "remote") {
+      return this.spawnWalletRPC(
+        options,
+        `${daemon.rpc_bind_ip}:${daemon.rpc_bind_port}`
+      );
+    }
+    // See daemon-relay.js: lets quit() stop a scan so the wallet can be saved.
+    this.daemonRelay = new DaemonRelay(daemon.remote_host, daemon.remote_port);
+    return this.daemonRelay
+      .listen()
+      .then(port => this.spawnWalletRPC(options, `127.0.0.1:${port}`));
+  }
+
+  closeDaemonRelay() {
+    if (this.daemonRelay) {
+      this.daemonRelay.close();
+      this.daemonRelay = null;
+    }
+  }
+
+  spawnWalletRPC(options, daemon_address) {
     return new Promise((resolve, reject) => {
-      let daemon_address = `${daemon.rpc_bind_ip}:${daemon.rpc_bind_port}`;
-      if (daemon.type == "remote") {
-        daemon_address = `${daemon.remote_host}:${daemon.remote_port}`;
-      }
+      this.stdoutTail = [];
+      this.stderrTail = [];
 
       crypto.randomBytes(64 + 64 + 32, (err, buffer) => {
         if (err) throw err;
@@ -175,6 +220,22 @@ export class WalletRPC {
           .catch(() => "closed")
           .then(status => {
             if (status === "closed") {
+              let didSettle = false;
+              const finishStart = error => {
+                if (didSettle) {
+                  return;
+                }
+
+                didSettle = true;
+                clearStartTimers(this);
+
+                if (error) {
+                  reject(error);
+                  return;
+                }
+
+                resolve();
+              };
               const options =
                 process.platform === "win32" ? {} : { detached: true };
               this.walletRPCProcess = child_process.spawn(
@@ -184,7 +245,10 @@ export class WalletRPC {
               );
 
               this.walletRPCProcess.stdout.on("data", data => {
-                process.stdout.write(`Wallet: ${data}`);
+                appendProcessOutput(this.stdoutTail, data);
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stdout.write(`Wallet: ${data}`);
+                }
 
                 let lines = data.toString().split("\n");
                 let match,
@@ -202,38 +266,83 @@ export class WalletRPC {
                 }
 
                 // Keep track on wether a wallet is syncing or not
-                this.sendGateway("set_wallet_data", {
-                  isRPCSyncing
-                });
-                this.isRPCSyncing = isRPCSyncing;
-
+                if (this.isRPCSyncing !== isRPCSyncing) {
+                  this.sendGateway("set_wallet_data", {
+                    isRPCSyncing
+                  });
+                  this.isRPCSyncing = isRPCSyncing;
+                }
                 if (height && Date.now() - this.last_height_send_time > 1000) {
                   this.last_height_send_time = Date.now();
-                  this.sendGateway("set_wallet_data", {
-                    info: {
-                      height
-                    }
-                  });
+                  // The log gives the index of the block just added; getheight
+                  // returns the block count
+                  this.sendWalletHeight(Number(height) + 1);
                 }
               });
-              this.walletRPCProcess.on("error", err =>
-                process.stderr.write(`Wallet: ${err}`)
-              );
+              this.walletRPCProcess.stderr.on("data", data => {
+                appendProcessOutput(this.stderrTail, data);
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stderr.write(`Wallet: ${data}`);
+                }
+              });
+              this.walletRPCProcess.on("error", err => {
+                appendProcessOutput(
+                  this.stderrTail,
+                  Buffer.from(String(err && err.message ? err.message : err))
+                );
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stderr.write(`Wallet: ${err}`);
+                }
+                finishStart(
+                  new Error(
+                    getProcessFailureDetails(
+                      "Failed to start wallet RPC",
+                      this.stderrTail,
+                      this.stdoutTail
+                    )
+                  )
+                );
+              });
               this.walletRPCProcess.on("close", code => {
-                process.stderr.write(`Wallet: exited with code ${code} \n`);
+                if (SHOULD_LOG_PROCESS_OUTPUT) {
+                  process.stderr.write(`Wallet: exited with code ${code} \n`);
+                }
                 this.walletRPCProcess = null;
                 this.agent.destroy();
-                if (code === null) {
-                  reject(new Error("Failed to start wallet RPC"));
+                if (!didSettle) {
+                  finishStart(
+                    new Error(
+                      getProcessFailureDetails(
+                        `Wallet RPC exited with code ${code}`,
+                        this.stderrTail,
+                        this.stdoutTail
+                      )
+                    )
+                  );
                 }
               });
 
               // To let caller know when the wallet is ready
-              let intrvl = setInterval(() => {
-                this.sendRPC("get_languages").then(data => {
+
+              this.startupTimeout = setTimeout(() => {
+                if (this.walletRPCProcess) {
+                  this.walletRPCProcess.kill();
+                }
+                this.walletRPCProcess = null;
+                finishStart(
+                  new Error(
+                    getProcessFailureDetails(
+                      "Timed out while starting wallet RPC",
+                      this.stderrTail,
+                      this.stdoutTail
+                    )
+                  )
+                );
+              }, WALLET_RPC_START_TIMEOUT_MS);
+              this.startupPoll = setInterval(() => {
+                this.sendRPC("get_languages", {}, 5000).then(data => {
                   if (!data.hasOwnProperty("error")) {
-                    clearInterval(intrvl);
-                    resolve();
+                    finishStart();
                   } else {
                     if (
                       this.walletRPCProcess &&
@@ -242,14 +351,25 @@ export class WalletRPC {
                     ) {
                       // Ignore
                     } else {
-                      clearInterval(intrvl);
+                      clearInterval(this.startupPoll);
                       if (this.walletRPCProcess) this.walletRPCProcess.kill();
                       this.walletRPCProcess = null;
-                      reject(new Error("Could not connect to wallet RPC"));
+                      finishStart(
+                        new Error(
+                          getProcessFailureDetails(
+                            formatRPCError(
+                              data.error,
+                              "Could not connect to wallet RPC"
+                            ),
+                            this.stderrTail,
+                            this.stdoutTail
+                          )
+                        )
+                      );
                     }
                   }
                 });
-              }, 1000);
+              }, START_POLL_INTERVAL_MS);
             } else {
               reject(new Error(`Wallet RPC port ${this.port} is in use`));
             }
@@ -342,6 +462,10 @@ export class WalletRPC {
 
       case "close_wallet":
         this.closeWallet();
+        break;
+
+      case "forget_new_wallet_secrets":
+        this.newWalletSecretsToken = null;
         break;
 
       case "stake":
@@ -613,7 +737,12 @@ export class WalletRPC {
       language
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletCreation"
+          }
+        });
         return;
       }
 
@@ -673,7 +802,12 @@ export class WalletRPC {
       restore_height
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletRestore"
+          }
+        });
         return;
       }
 
@@ -684,7 +818,10 @@ export class WalletRPC {
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
-      this.finalizeNewWallet(filename);
+      this.finalizeNewWallet(filename, {
+        address: data.result.address,
+        mnemonic: data.result.seed || seed
+      });
     });
   }
 
@@ -741,7 +878,12 @@ export class WalletRPC {
       refresh_start_height
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletRestore"
+          }
+        });
         return;
       }
 
@@ -752,7 +894,11 @@ export class WalletRPC {
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
-      this.finalizeNewWallet(filename);
+      this.finalizeNewWallet(filename, {
+        address: (data.result && data.result.address) || address,
+        view_key: viewkey,
+        view_only: true
+      });
     });
   }
 
@@ -809,7 +955,12 @@ export class WalletRPC {
       restore_height
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: -1,
+            i18n: "notification.errors.failedWalletRestore"
+          }
+        });
         return;
       }
 
@@ -820,7 +971,12 @@ export class WalletRPC {
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
-      this.finalizeNewWallet(filename);
+      this.finalizeNewWallet(filename, {
+        address: (data.result && data.result.address) || address,
+        view_key: viewkey,
+        spend_key: spendkey,
+        view_only: !spendkey
+      });
     });
   }
 
@@ -841,7 +997,10 @@ export class WalletRPC {
       );
     }
 
-    if (!fs.existsSync(import_path)) {
+    // A wallet can be imported from just its .keys file; wallet-rpc
+    // rebuilds the cache on open.
+    const has_cache = fs.existsSync(import_path);
+    if (!has_cache && !fs.existsSync(import_path + ".keys")) {
       this.sendGateway("set_wallet_error", {
         status: {
           code: -1,
@@ -862,7 +1021,9 @@ export class WalletRPC {
       }
 
       try {
-        fs.copySync(import_path, destination, { errorOnExist: true });
+        if (has_cache) {
+          fs.copySync(import_path, destination, { errorOnExist: true });
+        }
         if (fs.existsSync(import_path + ".keys")) {
           fs.copySync(import_path + ".keys", destination + ".keys", {
             errorOnExist: true
@@ -881,23 +1042,42 @@ export class WalletRPC {
         filename: wallet_name,
         password
       })
-        .then(data => {
+        .then(async data => {
           if (data.hasOwnProperty("error")) {
             if (fs.existsSync(destination)) fs.unlinkSync(destination);
             if (fs.existsSync(destination + ".keys"))
               fs.unlinkSync(destination + ".keys");
             this.sendGateway("set_wallet_error", {
-              status: data.error
+              status: {
+                code: -1,
+                i18n: "notification.errors.failedWalletImport"
+              }
             });
             return;
           }
+          // An imported wallet is usually behind the chain, and wallet-rpc's
+          // background refresh can start its catch-up scan within a few
+          // hundred ms of open_wallet, after which it answers nothing until
+          // the scan is done. Ask for the address and seed first, before the
+          // blocking password hash below, so the wallet can be shown right
+          // away; on timeout finalizeNewWallet fetches them after the scan.
+          const [address, mnemonic] = await Promise.all([
+            this.sendRPC("get_address", { account_index: 0 }, 3000),
+            this.sendRPC("query_key", { key_type: "mnemonic" }, 3000)
+          ]);
+          const known = {
+            address: address.result ? address.result.address : "",
+            mnemonic: mnemonic.result ? mnemonic.result.key : "",
+            // wallet-rpc refuses the seed of a watch-only wallet with -29
+            view_only: mnemonic.error?.code == -29
+          };
           // store hash of the password so we can check against it later when requesting private keys, or for sending txs
           this.wallet_state.password_hash = this.derivePasswordHashSync(
             password
           ).toString("hex");
           this.wallet_state.name = wallet_name;
           this.wallet_state.open = true;
-          this.finalizeNewWallet(wallet_name);
+          this.finalizeNewWallet(wallet_name, known.address ? known : null);
         })
         .catch(() => {
           this.sendGateway("set_wallet_error", {
@@ -910,22 +1090,62 @@ export class WalletRPC {
     }
   }
 
-  finalizeNewWallet(filename) {
+  finalizeNewWallet(filename, known = null) {
+    const heightEpoch = this.heightEpoch;
+    const secretsToken = {};
+    this.newWalletSecretsToken = secretsToken;
+    const address_txt_path = path.join(
+      this.wallet_dir,
+      filename + ".address.txt"
+    );
+    // Right after a restore, beldex-wallet-rpc scans from the restore height
+    // on its single RPC thread (auto_refresh can't prevent it) and answers
+    // nothing until that finishes, which can take hours for an old restore
+    // height. When the restore response already gave us the address, show
+    // the wallet now; the RPCs below still fill in the remaining keys and
+    // the balance once the scan is done, and isReady keeps sending disabled
+    // until then.
+    if (known && known.address) {
+      if (!fs.existsSync(address_txt_path)) {
+        fs.writeFile(address_txt_path, known.address, "utf8", () => {
+          this.listWallets();
+        });
+      }
+      this.sendGateway("set_wallet_data", {
+        status: {
+          code: 0,
+          message: "OK"
+        },
+        info: {
+          name: filename,
+          address: known.address,
+          view_only: !!known.view_only
+        },
+        secret: {
+          mnemonic: known.mnemonic || "",
+          spend_key: known.spend_key || "",
+          view_key: known.view_key || ""
+        }
+      });
+    }
     Promise.all([
       this.sendRPC("get_address"),
-      this.sendRPC("getheight"),
+      this.sendHeightWhenReceived(this.sendRPC("getheight"), heightEpoch),
       this.sendRPC("getbalance", { account_index: 0 }),
       this.sendRPC("query_key", { key_type: "mnemonic" }),
       this.sendRPC("query_key", { key_type: "spend_key" }),
       this.sendRPC("query_key", { key_type: "view_key" })
     ]).then(data => {
       let wallet = {
+        status: {
+          code: 0,
+          message: "OK"
+        },
         info: {
           name: filename,
           address: "",
           balance: 0,
           unlocked_balance: 0,
-          height: 0,
           view_only: false,
           load_balance: false
         },
@@ -947,8 +1167,6 @@ export class WalletRPC {
         }
         if (n.method == "get_address") {
           wallet.info.address = n.result.address;
-        } else if (n.method == "getheight") {
-          wallet.info.height = n.result.height;
         } else if (n.method == "getbalance") {
           wallet.info.balance = n.result.balance;
           wallet.info.unlocked_balance = n.result.unlocked_balance;
@@ -963,11 +1181,21 @@ export class WalletRPC {
         }
       }
 
+      // Don't let a failed RPC blank out what was already shown above.
+      if (known && known.address) {
+        wallet.info.address = wallet.info.address || known.address;
+        for (const key of ["mnemonic", "spend_key", "view_key"]) {
+          wallet.secret[key] = wallet.secret[key] || known[key] || "";
+        }
+      }
+
+      // After a long restore scan the user has usually left the created
+      // page already; only the created page should receive the secrets.
+      if (this.newWalletSecretsToken !== secretsToken) {
+        delete wallet.secret;
+      }
+
       this.saveWallet().then(() => {
-        let address_txt_path = path.join(
-          this.wallet_dir,
-          filename + ".address.txt"
-        );
         if (!fs.existsSync(address_txt_path)) {
           fs.writeFile(address_txt_path, wallet.info.address, "utf8", () => {
             this.listWallets();
@@ -984,13 +1212,22 @@ export class WalletRPC {
   }
 
   openWallet(filename, password) {
+    this.newWalletSecretsToken = null;
     this.sendGateway("reset_wallet_error");
     this.sendRPC("open_wallet", {
       filename,
       password
     }).then(data => {
       if (data.hasOwnProperty("error")) {
-        this.sendGateway("set_wallet_error", { status: data.error });
+        const invalidPassword = data.error.code === -22;
+        this.sendGateway("set_wallet_error", {
+          status: {
+            code: invalidPassword ? -22 : -1,
+            i18n: invalidPassword
+              ? "notification.errors.invalidPassword"
+              : "notification.errors.failedWalletOpen"
+          }
+        });
         return;
       }
 
@@ -998,7 +1235,8 @@ export class WalletRPC {
         this.wallet_dir,
         filename + ".address.txt"
       );
-      if (!fs.existsSync(address_txt_path)) {
+      const cachedAddress = this.readCachedAddress(address_txt_path);
+      if (!cachedAddress) {
         this.sendRPC("get_address", { account_index: 0 }).then(data => {
           if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
             return;
@@ -1016,11 +1254,24 @@ export class WalletRPC {
       this.wallet_state.name = filename;
       this.wallet_state.open = true;
 
-      // Reset incoming-payment notification tracking for this wallet -
-      // each wallet gets its own seed/notify cycle.
-      this.seenIncomingTxids = new Set();
-      this.seenIncomingTxidsInitialized = false;
-      this.clearPaymentNotificationBadge();
+      // Right after open_wallet, beldex-wallet-rpc catches up on the blocks
+      // missed since the wallet was last saved, on its single RPC thread,
+      // and answers nothing (get_address included) until that finishes. When
+      // the address is already known locally, show the wallet now; the
+      // heartbeat fills in balance/height/history once the scan is done, and
+      // isReady keeps sending disabled until then.
+      if (cachedAddress) {
+        this.sendGateway("set_wallet_data", {
+          status: {
+            code: 0,
+            message: "OK"
+          },
+          info: {
+            name: filename,
+            address: cachedAddress
+          }
+        });
+      }
 
       this.startHeartbeat();
 
@@ -1053,8 +1304,27 @@ export class WalletRPC {
     });
   }
 
+  readCachedAddress(address_txt_path) {
+    try {
+      const address = fs.readFileSync(address_txt_path, "utf8").trim();
+      return /^[1-9A-HJ-NP-Za-km-z]{90,110}$/.test(address) ? address : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   startHeartbeat() {
     clearInterval(this.heartbeat);
+    // Invalidate any extended-heartbeat retry still pending from a
+    // previous wallet session. closeWallet() and rescanBlockchain() also
+    // clear this, but this is the one place a *new* heartbeat session
+    // begins, so without this a stale retry scheduled against the wallet
+    // that was open before could otherwise still fire after a new wallet
+    // has been opened.
+    clearTimeout(this.heartbeatRetryTimeout);
+    this.heightEpoch++;
+    this.lastHeartbeatHeight = null;
+    this.heightCatchingUp = true;
     this.heartbeat = setInterval(() => {
       this.heartbeatAction();
     }, 8000);
@@ -1069,10 +1339,34 @@ export class WalletRPC {
 
     this.updateLocalBNSRecords();
   }
-  heartbeatAction(extended = false) {
+  sendHeightWhenReceived(request, heightEpoch) {
+    return request.then(data => {
+      if (data.hasOwnProperty("result")) {
+        this.sendWalletHeight(data.result.height, heightEpoch);
+      }
+      return data;
+    });
+  }
+
+  sendWalletHeight(height, heightEpoch = this.heightEpoch) {
+    if (heightEpoch !== this.heightEpoch) {
+      return;
+    }
+    this.sendGateway("set_wallet_data", {
+      info: {
+        height
+      }
+    });
+  }
+
+  heartbeatAction(extended = false, attempt = 0) {
+    const heightEpoch = this.heightEpoch;
     Promise.all([
       this.sendRPC("get_address", { account_index: 0 }, 5000),
-      this.sendRPC("getheight", {}, 5000),
+      this.sendHeightWhenReceived(
+        this.sendRPC("getheight", {}, 5000),
+        heightEpoch
+      ),
       this.sendRPC("getbalance", { account_index: 0 }, 5000)
     ]).then(data => {
       let didError = false;
@@ -1083,18 +1377,14 @@ export class WalletRPC {
         },
         info: {
           name: this.wallet_state.name
-        },
-        transactions: {
-          tx_list: []
-        },
-        address_list: {
-          primary: [],
-          used: [],
-          unused: [],
-          address_book: [],
-          address_book_starred: []
         }
       };
+      // Transactions and address lists are only ever sent once they have
+      // actually been fetched (see refreshWalletLists). The store replaces
+      // arrays on merge, so sending empty placeholders here would wipe the
+      // lists a previous fetch already delivered.
+      let refreshLists = false;
+      let currentHeight = null;
 
       for (let n of data) {
         if (n.hasOwnProperty("error") || !n.hasOwnProperty("result")) {
@@ -1106,14 +1396,7 @@ export class WalletRPC {
           continue;
         }
 
-        if (n.method == "getheight") {
-          wallet.info.height = n.result.height;
-          this.sendGateway("set_wallet_data", {
-            info: {
-              height: n.result.height
-            }
-          });
-        } else if (n.method == "get_address") {
+        if (n.method == "get_address") {
           wallet.info.address = n.result.address;
           this.sendGateway("set_wallet_data", {
             info: {
@@ -1136,33 +1419,52 @@ export class WalletRPC {
           });
 
           // if balance has recently changed, get updated list of transactions and used addresses
-          let actions = [this.getTransactions(), this.getAddressList()];
-          actions.push(this.getAddressBook());
-          Promise.all(actions).then(data => {
-            for (let n of data) {
-              Object.keys(n).map(key => {
-                wallet[key] = Object.assign(wallet[key], n[key]);
-              });
-            }
-            // getTransactions() resolves {} (no "transactions" key) when its
-            // RPC call errors, vs. { transactions: { tx_list: [...] } } on
-            // success - that distinction matters for seeding below.
-            const transactionsFetchSucceeded = Boolean(
-              data[0] && data[0].hasOwnProperty("transactions")
-            );
-            this.notifyNewIncomingTransactions(
-              wallet.transactions.tx_list,
-              transactionsFetchSucceeded
-            );
-            this.sendGateway("set_wallet_data", wallet);
-          });
+          refreshLists = true;
+        } else if (n.method == "getheight") {
+          currentHeight = n.result.height;
         }
+      }
+
+      // Balance alone can miss new history (e.g. an incoming and outgoing tx
+      // that cancel out while scanning), so also refresh once after the
+      // wallet finishes catching up: the height jumped by more than one
+      // block since the last heartbeat, then held steady. Normal one-block
+      // growth once synced doesn't trigger this, to keep get_transfers off
+      // the single wallet-rpc thread.
+      if (currentHeight !== null) {
+        if (currentHeight - this.lastHeartbeatHeight > 1) {
+          this.heightCatchingUp = true;
+        } else if (
+          currentHeight === this.lastHeartbeatHeight &&
+          this.heightCatchingUp
+        ) {
+          this.heightCatchingUp = false;
+          refreshLists = true;
+        }
+        this.lastHeartbeatHeight = currentHeight;
+      }
+
+      if (refreshLists) {
+        this.refreshWalletLists(wallet.info, heightEpoch);
       }
 
       // Set the wallet state on initial heartbeat
       if (extended) {
         if (!didError) {
-          this.sendGateway("set_wallet_data", wallet);
+          if (
+            !wallet.info.address &&
+            this.wallet_state.open &&
+            attempt < HEARTBEAT_EXTENDED_MAX_RETRIES
+          ) {
+            // get_address didn't resolve in time this round — retry the
+            // extended heartbeat instead of telling the UI the wallet is
+            // ready with a blank address.
+            this.heartbeatRetryTimeout = setTimeout(() => {
+              this.heartbeatAction(true, attempt + 1);
+            }, HEARTBEAT_EXTENDED_RETRY_DELAY_MS);
+          } else {
+            this.sendGateway("set_wallet_data", wallet);
+          }
         } else {
           this.closeWallet().then(() => {
             this.sendGateway("set_wallet_error", {
@@ -1174,6 +1476,33 @@ export class WalletRPC {
           });
         }
       }
+    });
+  }
+
+  refreshWalletLists(info, heightEpoch) {
+    Promise.all([
+      this.getTransactions(),
+      this.getAddressList(),
+      this.getAddressBook()
+    ]).then(data => {
+      // A rescan or newly opened wallet started a new heartbeat session
+      // while this was in flight; its lists would be stale.
+      if (heightEpoch !== this.heightEpoch) {
+        return;
+      }
+      let wallet = { info: { ...info } };
+      for (let n of data) {
+        Object.keys(n).map(key => {
+          wallet[key] = Object.assign(wallet[key] || {}, n[key]);
+        });
+      }
+      if (!wallet.transactions) {
+        // get_transfers failed; forget the cached balance so the next
+        // heartbeat sees a "change" and fetches the list again.
+        this.wallet_state.balance = null;
+        this.wallet_state.unlocked_balance = null;
+      }
+      this.sendGateway("set_wallet_data", wallet);
     });
   }
 
@@ -2237,9 +2566,11 @@ export class WalletRPC {
   rescanBlockchain() {
     clearInterval(this.heartbeat);
     clearInterval(this.lnsHeartbeat);
+    clearTimeout(this.heartbeatRetryTimeout);
     this.wallet_state.balance = null;
     this.wallet_state.unlocked_balance = null;
     this.sendRPC("rescan_blockchain");
+    this.sendWalletHeight(0);
     this.startHeartbeat();
   }
 
@@ -2695,7 +3026,6 @@ export class WalletRPC {
             onError();
             return;
           }
-
           if (data.result.signed_key_images) {
             fs.outputJSONSync(filename, data.result.signed_key_images);
             this.sendGateway("show_notification", {
@@ -2747,27 +3077,39 @@ export class WalletRPC {
         this.sendGateway("show_notification", {
           type: "negative",
           i18n,
-          timeout: 2000
+          timeout: 4000
         });
 
       fs.readJSON(filename)
         .then(signed_key_images => {
           this.sendRPC("import_key_images", {
             signed_key_images
-          }).then(data => {
-            if (
-              data.hasOwnProperty("error") ||
-              !data.hasOwnProperty("result")
-            ) {
-              onError("notification.errors.keyImages.importing");
-              return;
-            }
+          })
+            .then(data => {
+              if (
+                data.hasOwnProperty("error") ||
+                !data.hasOwnProperty("result")
+              ) {
+                const rpcMessage =
+                  data.error && data.error.message ? data.error.message : "";
+                const isCountMismatch = rpcMessage.includes(
+                  "signed_key_images.size()"
+                );
 
-            this.sendGateway("show_notification", {
-              i18n: "notification.positive.keyImages.imported",
-              timeout: 2000
-            });
-          });
+                onError(
+                  isCountMismatch
+                    ? "notification.errors.keyImages.notSyncedFarEnough"
+                    : "notification.errors.keyImages.importing"
+                );
+                return;
+              }
+
+              this.sendGateway("show_notification", {
+                i18n: "notification.positive.keyImages.imported",
+                timeout: 2000
+              });
+            })
+            .catch(() => onError("notification.errors.keyImages.importing"));
         })
         .catch(() => onError("notification.errors.keyImages.reading"));
     });
@@ -3083,8 +3425,10 @@ export class WalletRPC {
   }
 
   async closeWallet() {
+    this.newWalletSecretsToken = null;
     clearInterval(this.heartbeat);
     clearInterval(this.lnsHeartbeat);
+    clearTimeout(this.heartbeatRetryTimeout);
     this.wallet_state = {
       open: false,
       name: "",
@@ -3174,38 +3518,53 @@ export class WalletRPC {
   }
 
   async quit() {
-    return new Promise(resolve => {
-      if (!this.walletRPCProcess) {
-        resolve();
-        return;
+    clearStartTimers(this);
+    // In remote mode this ends any running scan, so the store in
+    // closeWallet() below is answered instead of timing out (see
+    // daemon-relay.js). Local modes get the same effect from beldexd being
+    // stopped in parallel by backend.quit().
+    this.closeDaemonRelay();
+    if (!this.walletRPCProcess) {
+      return;
+    }
+
+    let terminated = false;
+    const beginTermination = () => {
+      if (terminated) {
+        return Promise.resolve();
       }
+      terminated = true;
 
-      this.closeWallet().then(() => {
-        // however if the wallet is not responsive to RPC
-        // requests then we must forcefully close it below
+      const signal = this.isRPCSyncing ? "SIGKILL" : "SIGTERM";
+      return terminateProcess(
+        this.walletRPCProcess,
+        signal,
+        WALLET_RPC_FORCE_KILL_TIMEOUT_MS
+      ).then(() => {
+        this.agent.destroy();
       });
-      setTimeout(() => {
-        if (this.walletRPCProcess) {
-          this.walletRPCProcess.on("close", () => {
-            this.agent.destroy();
-            clearTimeout(this.forceKill);
-            resolve();
-          });
+    };
 
-          // Force kill after 20 seconds
-          this.forceKill = setTimeout(() => {
-            if (this.walletRPCProcess) {
-              this.walletRPCProcess.kill("SIGKILL");
-            }
-          }, 20000);
+    // Try a graceful close first; force-terminate either once that
+    // settles or after WALLET_RPC_CLOSE_TIMEOUT_MS, whichever comes
+    // first - beginTermination() is single-fire so only one of the two
+    // actually sends a signal.
+    const closeTimeout = setTimeout(
+      beginTermination,
+      WALLET_RPC_CLOSE_TIMEOUT_MS
+    );
 
-          // Force kill if the rpc is syncing
-          const signal = this.isRPCSyncing ? "SIGKILL" : "SIGTERM";
-          this.walletRPCProcess.kill(signal);
-        } else {
-          resolve();
-        }
-      }, 2500);
-    });
+    const closeRequest = this.wallet_state.open
+      ? this.closeWallet()
+      : Promise.resolve();
+
+    return closeRequest
+      .catch(() => {
+        // If wallet-rpc is unresponsive we still terminate the process below.
+      })
+      .then(() => {
+        clearTimeout(closeTimeout);
+        return beginTermination();
+      });
   }
 }

@@ -82,23 +82,50 @@
     <!-- PRIVATE KEY MODAL -->
     <q-dialog v-model="modals.private_keys.visible" @hide="closePrivateKeys()">
       <div class="modal private-key-modal">
-        <div class="modal-header ft-bold">{{ $t("titles.privateKeys") }}</div>
-        <div class="q-ma-md">
-          <template v-if="secret.mnemonic">
-            <h6 class="q-mb-xs ft-semibold q-pl-md">
-              {{ $t("strings.seedWords") }} -
-              <span class="rSeed_hint">{{
-                $t("strings.saveSeedWarning")
-              }}</span>
-            </h6>
-            <div class="row seed_box q-pa-md">
-              <div class="col ft-medium">{{ secret.mnemonic }}</div>
+        <div class="modal-header">{{ $t("titles.privateKeys") }}</div>
+        <div class="pk-body">
+          <div v-if="info.address" class="pk-section ">
+            <div class="pk-label  q-mb-sm">
+              {{ $t("footer.wallet") }} :
+              <span class="ft-semibold">{{ info.name }}</span>
+            </div>
+            <div class="pk-box row items-center q-px-md q-py-md">
+              <div class="col pk-text ">{{ info.address }}</div>
               <div class="col-auto">
                 <q-btn
-                  class="copy-btn"
-                  color="secondary"
-                  padding="10px 35px"
-                  size="md"
+                  class="pk-copy-btn"
+                  unelevated
+                  icon-right="content_copy"
+                  :label="this.$t('buttons.copy')"
+                  @click="copyAddress(info.address)"
+                >
+                  <q-tooltip
+                    anchor="center left"
+                    self="center right"
+                    :offset="[5, 10]"
+                    >{{ $t("menuItems.copyAddress") }}</q-tooltip
+                  >
+                </q-btn>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="secret.mnemonic" class="pk-section">
+            <div class="row items-start no-wrap pk-plain-row q-pr-md q-mb-sm">
+              <div class="pk-label ft-medium">
+                {{ $t("strings.seedWords") }} -
+              </div>
+              <div class="pk-hint ft-regular">
+                {{ $t("strings.saveSeedWarning") }}
+              </div>
+            </div>
+
+            <div class="pk-box pk-box-tall row items-center q-px-md">
+              <div class="col pk-text ">{{ secret.mnemonic }}</div>
+              <div class="col-auto">
+                <q-btn
+                  class="pk-copy-btn"
+                  unelevated
                   icon-right="content_copy"
                   :label="this.$t('buttons.copy')"
                   @click="copyPrivateKey('mnemonic', $event)"
@@ -112,22 +139,25 @@
                 </q-btn>
               </div>
             </div>
-          </template>
+          </div>
 
-          <template v-if="secret.view_key != secret.spend_key">
-            <h6 class="q-mb-xs ft-semibold q-pl-md">
-              {{ $t("strings.viewKey") }}
-            </h6>
-            <div class="row viewKey_box q-pa-md">
-              <div class="col ft-medium" style="word-break: break-all">
-                {{ secret.view_key }}
+          <div
+            v-if="secret.view_key != secret.spend_key"
+            class="pk-section pk-section-plain"
+          >
+            <div class="row items-start no-wrap pk-plain-row q-pr-md">
+              <div class="col">
+                <div class="pk-label ft-medium">
+                  {{ $t("strings.viewKey") }}
+                </div>
+                <div class=" pk-text " style="word-break: break-all">
+                  {{ secret.view_key }}
+                </div>
               </div>
               <div class="col-auto">
                 <q-btn
-                  class="copy-btn"
-                  color="secondary"
-                  padding="10px 35px"
-                  size="md"
+                  class="pk-copy-btn"
+                  unelevated
                   icon-right="content_copy"
                   :label="this.$t('buttons.copy')"
                   @click="copyPrivateKey('view_key', $event)"
@@ -141,22 +171,24 @@
                 </q-btn>
               </div>
             </div>
-          </template>
+          </div>
 
-          <template v-if="!/^0*$/.test(secret.spend_key)">
-            <h6 class="q-mb-xs ft-semibold q-pl-md">
-              {{ $t("strings.spendKey") }}
-            </h6>
-            <div class="row q-pa-md">
-              <div class="col ft-medium" style="word-break: break-all">
-                {{ secret.spend_key }}
+          <div v-if="hasSpendKey" class="pk-divider"></div>
+
+          <div v-if="hasSpendKey" class="pk-section pk-section-plain">
+            <div class="row items-start no-wrap pk-plain-row q-pr-md">
+              <div class="col">
+                <div class="pk-label ft-medium">
+                  {{ $t("strings.spendKey") }}
+                </div>
+                <div class="pk-text " style="word-break: break-all">
+                  {{ secret.spend_key }}
+                </div>
               </div>
               <div class="col-auto">
                 <q-btn
-                  class="copy-btn"
-                  color="secondary"
-                  padding="10px 35px"
-                  size="md"
+                  class="pk-copy-btn"
+                  unelevated
                   icon-right="content_copy"
                   :label="this.$t('buttons.copy')"
                   @click="copyPrivateKey('spend_key', $event)"
@@ -170,11 +202,12 @@
                 </q-btn>
               </div>
             </div>
-          </template>
+          </div>
 
-          <div class="q-mt-lg flex justify-center">
+          <div class="pk-actions flex justify-center">
             <q-btn
-              color="primary"
+              class="pk-close-btn ft-semibold"
+              unelevated
               :label="$t('buttons.close')"
               @click="hideModal('private_keys')"
             />
@@ -271,7 +304,7 @@
         <div class="q-ma-md">
           <div class="q-mb-md">
             <!-- <div class="q-mr-xl"> -->
-            <div class="r-btn-wrapper">
+            <div v-if="!view_only" class="r-btn-wrapper">
               <div
                 :class="[
                   modals.key_image.type === 'Export'
@@ -326,16 +359,6 @@
                 disable
                 borderless
               />
-              <input
-                id="keyImageExportPath"
-                ref="keyImageExportSelect"
-                class="image-path"
-                type="file"
-                webkitdirectory
-                directory
-                hidden
-                @change="setKeyImageExportPath"
-              />
               <q-btn color="secondary" @click="selectKeyImageExportPath">
                 {{ $t("buttons.browse") }}
               </q-btn>
@@ -351,14 +374,6 @@
                 v-model="modals.key_image.import_path"
                 disable
                 borderless
-              />
-              <input
-                id="keyImageImportPath"
-                ref="keyImageImportSelect"
-                type="file"
-                class="image-path"
-                hidden
-                @change="setKeyImageImportPath"
               />
               <q-btn color="secondary" @click="selectKeyImageImportPath">
                 {{ $t("buttons.browse") }}
@@ -444,9 +459,10 @@
 </template>
 
 <script>
-import { clipboard } from "src/shims/electron-renderer";
+import { clipboard, dialog } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import WalletPassword from "src/mixins/wallet_password";
+import ClipboardCopyMixin from "src/mixins/clipboard_copy_mixin";
 import OxenField from "components/oxen_field";
 
 export default {
@@ -454,9 +470,12 @@ export default {
   components: {
     OxenField
   },
-  mixins: [WalletPassword],
+  mixins: [WalletPassword, ClipboardCopyMixin],
   data() {
     return {
+      // Only show keys that this menu asked for, not secrets that reach the
+      // store some other way (e.g. a late update after creating a wallet).
+      awaitingPrivateKeys: false,
       modals: {
         private_keys: {
           visible: false
@@ -484,21 +503,25 @@ export default {
     theme: state => state.gateway.app.config.appearance.theme,
     info: state => state.gateway.wallet.info,
     secret: state => state.gateway.wallet.secret,
+    view_only: state => state.gateway.wallet.info.view_only,
     wallet_data_dir: state => state.gateway.app.config.app.wallet_data_dir,
     is_ready() {
       return this.$store.getters["gateway/isReady"];
     },
     locale() {
       return this.$q.lang.getLocale();
+    },
+    hasSpendKey() {
+      return !!this.secret.spend_key && !/^0*$/.test(this.secret.spend_key);
     }
   }),
   watch: {
     secret: {
       handler(val, old) {
         if (val.view_key == old.view_key) return;
+        if (this.secret.view_key === "" || !this.awaitingPrivateKeys) return;
+        this.awaitingPrivateKeys = false;
         switch (this.secret.view_key) {
-          case "":
-            break;
           case -1:
             this.$q.notify({
               type: "negative",
@@ -521,23 +544,46 @@ export default {
       deep: true
     }
   },
-  created() {
-    const joinPath = (...parts) => parts.filter(Boolean).join("/");
-    this.modals.key_image.export_path = joinPath(
-      this.wallet_data_dir,
-      "images",
-      this.info.name
-    );
-    this.modals.key_image.import_path = joinPath(
-      this.wallet_data_dir,
-      "images",
-      this.info.name,
-      "key_image_export"
-    );
-  },
   methods: {
+    setDefaultKeyImagePaths() {
+      // Only seed a default for whichever path hasn't been set yet; don't
+      // clobber a path the user already browsed to. Checked independently
+      // so browsing for one path (which happens as soon as the user picks
+      // it) doesn't block the other one from ever getting its default.
+      const joinPath = (...parts) => parts.filter(Boolean).join("/");
+      if (!this.modals.key_image.export_path) {
+        this.modals.key_image.export_path = joinPath(
+          this.wallet_data_dir,
+          "images",
+          this.info.name
+        );
+      }
+      if (!this.modals.key_image.import_path) {
+        this.modals.key_image.import_path = joinPath(
+          this.wallet_data_dir,
+          "images",
+          this.info.name,
+          "key_image_export"
+        );
+      }
+    },
     async showModal(which) {
       if (!this.is_ready) return;
+      if (which === "key_image") {
+        this.setDefaultKeyImagePaths();
+        // View-only wallets can only import key images. Guard on the
+        // current type rather than force-resetting it unconditionally on
+        // every open, so this doesn't silently clobber a mode the user
+        // picked if a future mode besides Export is ever added that's also
+        // valid for view-only wallets.
+        const viewOnlyAllowedTypes = ["Import"];
+        if (
+          this.view_only &&
+          !viewOnlyAllowedTypes.includes(this.modals.key_image.type)
+        ) {
+          this.modals.key_image.type = "Import";
+        }
+      }
       this.modals[which].visible = true;
       // const hasPassword =  await this.hasPassword();
       // console.log('hasPasswordhasPassword ::',hasPassword)
@@ -607,7 +653,14 @@ export default {
         });
     },
     async getPrivateKeys() {
-      if (!this.is_ready) return;
+      if (!this.is_ready) {
+        this.$q.notify({
+          type: "warning",
+          timeout: 3000,
+          message: this.$t("notification.warnings.privateKeysAfterSync")
+        });
+        return;
+      }
       let passwordDialog = await this.showPasswordConfirmation({
         title: this.$t("dialog.showPrivateKeys.title"),
         noPasswordMessage: this.$t("dialog.showPrivateKeys.message"),
@@ -624,12 +677,20 @@ export default {
         .onOk(password => {
           // if no password set
           password = password || "";
+          this.awaitingPrivateKeys = true;
           this.$gateway.send("wallet", "get_private_keys", {
             password
           });
         })
         .onDismiss(() => {})
         .onCancel(() => {});
+    },
+    copyAddress(address) {
+      this.copyToClipboardAndNotify(
+        address,
+        this.$t("notification.positive.addressCopied"),
+        1000
+      );
     },
     closePrivateKeys() {
       this.hideModal("private_keys");
@@ -668,17 +729,21 @@ export default {
     //     this.$gateway.send("wallet", "rescan_spent");
     //   }
     // },
-    selectKeyImageExportPath() {
-      this.$refs.keyImageExportSelect.click();
+    async selectKeyImageExportPath() {
+      const path = await dialog.selectDirectory({
+        title: this.$t("fieldLabels.keyImages.exportDirectory")
+      });
+      if (path) {
+        this.modals.key_image.export_path = path;
+      }
     },
-    setKeyImageExportPath(file) {
-      this.modals.key_image.export_path = file.target.files[0].path;
-    },
-    selectKeyImageImportPath() {
-      this.$refs.keyImageImportSelect.click();
-    },
-    setKeyImageImportPath(file) {
-      this.modals.key_image.import_path = file.target.files[0].path;
+    async selectKeyImageImportPath() {
+      const path = await dialog.selectFile({
+        title: this.$t("fieldLabels.keyImages.importFile")
+      });
+      if (path) {
+        this.modals.key_image.import_path = path;
+      }
     },
     async doKeyImages() {
       this.hideModal("key_image");
@@ -850,17 +915,21 @@ export default {
   .q-item-type + .q-item-type {
     border: unset !important;
   }
+
   .q-item {
     padding: 0;
   }
+
   .q-hoverable:hover > .q-focus-helper {
     background-color: #40405e !important;
     border-radius: 10px;
   }
 }
+
 .q-placeholder {
   color: #fff;
 }
+
 .password-modal {
   background: #242433;
   color: #fff;
@@ -871,6 +940,7 @@ export default {
     color: #fff;
   }
 }
+
 .q-field__label {
   color: #fff !important;
 }
@@ -878,11 +948,6 @@ export default {
 .rescan-modal {
   color: #fff;
   border-radius: 10px !important;
-}
-
-.image-path {
-  opacity: 0;
-  overflow: hidden;
 }
 
 .key-image-modal {
@@ -896,23 +961,112 @@ export default {
     overflow: hidden;
     width: 275px !important;
   }
+
   input {
     overflow: ellipsis;
   }
 }
+
 .q-radio__inner:before {
   background: transparent !important;
 }
 
-.private-key-modal {
-  // background: #2f2f40;
+.modal.private-key-modal {
+  background-color: #242433;
   color: #fff;
-  border-radius: 10px !important;
+  border-radius: 20px !important;
+  max-width: 70%;
 
-  .copy-btn {
-    margin-left: 8px;
+  .modal-header {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .pk-body {
+    padding: 8px 32px 28px;
+  }
+
+  .pk-section {
+    margin-top: 22px;
+
+    &:first-child {
+      margin-top: 4px;
+    }
+  }
+
+  .pk-label {
+    font-size: 18px;
+    color: #fff;
+    font-weight: 700;
+    // margin-bottom: 10px;
+  }
+
+  .pk-hint {
+    color: #00e509;
+    font-size: 16px;
+    font-weight: 400;
+    margin-left: 5px;
+  }
+
+  .pk-box {
+    border: 1px solid #484856;
+    border-radius: 10px;
+    min-height: 58px;
+  }
+
+  .pk-box-tall {
+    min-height: 110px;
+    align-items: center;
+  }
+
+  .pk-text {
+    font-size: 15px;
+    color: #fff;
+    word-break: break-all;
+  }
+
+  .pk-divider {
+    height: 1px;
+    background-color: #484856;
+    margin: 22px 0;
+  }
+
+  .pk-copy-btn {
+    margin-left: 12px;
+    background-color: #2879fb;
+    color: #fff;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 14px;
+    margin-top: 3px;
+
+    &:hover {
+      background-color: #478eff;
+    }
+
+    .q-icon {
+      font-size: 15px;
+      margin-left: 6px;
+    }
+  }
+
+  .pk-actions {
+    margin-top: 30px;
+  }
+
+  .pk-close-btn {
+    background-color: #00ad07;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 17px;
+    padding: 4px 40px;
+
+    &:hover {
+      background-color: #00d409;
+    }
   }
 }
+
 .sub_menu_txt {
   color: white;
   font-size: 18px;

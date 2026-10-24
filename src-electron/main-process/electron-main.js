@@ -16,6 +16,8 @@ import isDev from "electron-is-dev";
 const portscanner = require("portscanner");
 const windowStateKeeper = require("electron-window-state");
 const path = require("upath");
+const fs = require("fs");
+const child_process = require("child_process");
 
 /**
  * Set `__statics` path to static files in production;
@@ -26,6 +28,81 @@ if (process.env.PROD) {
   global.__ryo_bin = path.join(__dirname, "..", "bin").replace(/\\/g, "\\\\");
 } else {
   global.__ryo_bin = path.join(process.cwd(), "bin").replace(/\\/g, "\\\\");
+}
+// Some Electron 42.x builds have been unstable for macOS users during very
+// early startup; disabling V8's Maglev compiler tier avoids that. Scoped to
+// macOS only - Windows and Linux don't need to lose this optimizing tier,
+// which matters here since the renderer parses large transaction lists.
+// Revisit once a newer Electron release confirms the instability is gone.
+//
+// appendSwitch("js-flags", ...) replaces any previously set js-flags value
+// rather than merging with it, so a second unrelated appendSwitch("js-flags",
+// ...) call elsewhere would silently clobber this one. Collect any future
+// V8 flags into V8_FLAGS below instead of adding another appendSwitch call.
+const V8_FLAGS = ["--no-maglev"];
+if (process.platform === "darwin") {
+  app.commandLine.appendSwitch("js-flags", V8_FLAGS.join(" "));
+}
+// Chromium's Linux sandbox works one of two ways: a setuid-root
+// `chrome-sandbox` helper (which electron-builder packages at mode 4755
+// for the deb/rpm targets), or the kernel's unprivileged user namespaces
+// (which the AppImage target relies on, since a FUSE-mounted AppImage is
+// commonly `nosuid`, defeating the setuid helper regardless of its file
+// permissions). Only fall back to running unsandboxed if neither path is
+// actually usable on this system, instead of disabling it unconditionally
+// for every Linux user.
+// Node's fs.constants doesn't expose the setuid bit (only file-type and
+// permission bits), so use the standard POSIX octal value directly.
+const S_ISUID = 0o4000;
+
+function hasWorkingSetuidSandboxHelper() {
+  try {
+    const helperPath = path.join(
+      path.dirname(process.execPath),
+      "chrome-sandbox"
+    );
+    const stats = fs.statSync(helperPath);
+    const isSetuid = (stats.mode & S_ISUID) !== 0;
+    return stats.uid === 0 && isSetuid;
+  } catch (err) {
+    return false;
+  }
+}
+
+function canUseUnprivilegedUserNamespaces() {
+  try {
+    const result = child_process.spawnSync(
+      "unshare",
+      ["--user", "--pid", "--", "true"],
+      { stdio: "ignore", timeout: 2000 }
+    );
+    return result.status === 0;
+  } catch (err) {
+    return false;
+  }
+}
+
+if (process.platform === "linux") {
+  // Chromium hard-refuses to start sandboxed while running as root (there
+  // is nothing for the setuid helper to drop privileges to), so treat that
+  // the same as a failed probe rather than let the app fail to launch -
+  // this matters for CI/Docker dev environments that commonly run as root.
+  const runningAsRoot =
+    typeof process.getuid === "function" && process.getuid() === 0;
+
+  const sandboxUsable =
+    !runningAsRoot &&
+    (hasWorkingSetuidSandboxHelper() || canUseUnprivilegedUserNamespaces());
+
+  if (!sandboxUsable) {
+    console.warn(
+      "[sandbox] Neither the packaged chrome-sandbox helper nor " +
+        "unprivileged user namespaces are usable on this system - " +
+        "falling back to --no-sandbox. Renderer processes will not be " +
+        "sandboxed."
+    );
+    app.commandLine.appendSwitch("no-sandbox");
+  }
 }
 
 let mainWindow, backend;
@@ -113,15 +190,15 @@ function createWindow() {
     defaultWidth: 900,
     defaultHeight: 700
   });
-  mainWindow = new BrowserWindow({
+  const windowOptions = {
     x: mainWindowState.x,
     y: mainWindowState.y,
     width: mainWindowState.width,
     height: mainWindowState.height,
     minWidth: 1200,
     minHeight: 650,
-    icon: require("path").join(__statics, "icon.png"),
     title,
+    backgroundColor: "#1c1c26",
     webPreferences: {
       nodeIntegration: false,
       nodeIntegrationInWorker: false,
@@ -130,7 +207,17 @@ function createWindow() {
       // anything we want preloaded, e.g. global vars
       preload: path.resolve(__dirname, "electron-preload.js")
     }
-  });
+  };
+  // macOS reads the app bundle icon from the .app resources; avoid forcing a
+  // separate window icon decode path during startup. (windowOptions used to
+  // set `icon` unconditionally above and then only re-set it here for the
+  // non-darwin case, which never actually skipped it for darwin - the icon
+  // is now only added to windowOptions in this branch.)
+  if (process.platform !== "darwin") {
+    windowOptions.icon = path.join(__statics, "icon.png");
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
 
   // Clear the unread-payment-notification badge once the user actually
   // looks at the wallet again.
@@ -234,6 +321,34 @@ function createWindow() {
   mainWindow.loadURL(process.env.APP_URL);
   mainWindowState.manage(mainWindow);
 }
+async function selectPath(title, property) {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return "";
+  }
+
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    title,
+    properties: [property]
+  });
+
+  if (canceled || !filePaths || filePaths.length === 0) {
+    return "";
+  }
+
+  return filePaths[0];
+}
+
+ipcMain.handle("dialog:selectWalletFile", async () => {
+  return selectPath("Select wallet file", "openFile");
+});
+
+ipcMain.handle("dialog:selectFile", async (event, options = {}) => {
+  return selectPath(options.title || "Select file", "openFile");
+});
+
+ipcMain.handle("dialog:selectDirectory", async (event, options = {}) => {
+  return selectPath(options.title || "Select folder", "openDirectory");
+});
 
 powerMonitor.on("suspend", () => {
   mainWindow.webContents.send("appSuspend");

@@ -179,11 +179,15 @@
             ><br />
             <span class="ft-semibold uppercase" style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
-              {{
-                sendChainDetails.blockchain
-                  ? sendChainDetails.blockchain.replaceAll("_", " ")
-                  : sendChainDetails.protocol || sendChainDetails.name || ""
-              }}</span
+              {{ sendChainDetails.protocol || "" }}</span
+            >
+            <br />
+            <span
+              v-if="sendChainDetails.blockchain"
+              class="ft-semibold uppercase"
+              style="color: #00ad07"
+              >{{ this.$t("titles.swap.blockchain") }} :
+              {{ sendChainDetails.blockchain.replaceAll("_", " ") || "" }}</span
             >
           </div>
           <div class="q-mt-sm">
@@ -295,7 +299,11 @@
           <tr v-if="createdTxnDetails.type == 'float'">
             <td>{{ this.$t("titles.swap.serviceFee") }}</td>
             <td class="uppercase">
-              {{ Number(floatingRate.fee || 0).toFixed(8) }}
+              {{
+                Number(
+                  createdTxnDetails.platformFee || floatingRate.fee || 0
+                ).toFixed(8)
+              }}
               {{ floatingRate.to || createdTxnDetails.currencyTo || "" }}
             </td>
           </tr>

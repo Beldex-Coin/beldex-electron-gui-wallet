@@ -34,13 +34,6 @@
               borderless
               dense
             />
-            <input
-              id="walletPath"
-              ref="fileInput"
-              type="file"
-              hidden
-              @change="setWalletPath"
-            />
             <q-btn
               color="secondary"
               :label="$t('buttons.selectWalletFile')"
@@ -101,6 +94,7 @@
 import { required } from "vuelidate/lib/validators";
 import { mapState } from "vuex";
 import OxenField from "components/oxen_field";
+import { dialog } from "src/shims/electron-renderer";
 export default {
   components: {
     OxenField
@@ -156,11 +150,12 @@ export default {
     }
   },
   methods: {
-    selectFile() {
-      this.$refs.fileInput.click();
-    },
-    setWalletPath(file) {
-      this.wallet.path = file.target.files[0].path;
+    async selectFile() {
+      const path = await dialog.selectWalletFile();
+      if (path) {
+        this.wallet.path = path;
+        this.$v.wallet.path.$touch();
+      }
     },
     import_wallet() {
       this.$v.wallet.$touch();

@@ -168,15 +168,6 @@
           borderless
           dense
         />
-        <input
-          id="dataPath"
-          ref="fileInputData"
-          type="file"
-          webkitdirectory
-          directory
-          hidden
-          @change="setDataPath"
-        />
         <q-btn
           style="color: red"
           color="primary1"
@@ -197,15 +188,6 @@
           :dark="theme == 'dark'"
           borderless
           dense
-        />
-        <input
-          id="walletPath"
-          ref="fileInputWallet"
-          type="file"
-          webkitdirectory
-          directory
-          hidden
-          @change="setWalletDataPath"
         />
         <q-btn
           color="primary1"
@@ -504,6 +486,7 @@
 <script>
 import { mapState } from "vuex";
 import OxenField from "components/oxen_field";
+import { dialog } from "src/shims/electron-renderer";
 export default {
   name: "SettingsGeneral",
   components: {
@@ -568,18 +551,18 @@ export default {
       this.$gateway.send("core", "save_config", this.pending_config);
       this.isVisible = false;
     },
-    selectPath(type) {
-      const fileInput = type === "data" ? "fileInputData" : "fileInputWallet";
-      this.$refs[fileInput].click();
-    },
-    setDataPath(file) {
-      if (file.target.files && file.target.files.length > 0) {
-        this.config.app.data_dir = file.target.files[0].path;
-      }
-    },
-    setWalletDataPath(file) {
-      if (file.target.files && file.target.files.length > 0) {
-        this.config.app.wallet_data_dir = file.target.files[0].path;
+    async selectPath(type) {
+      const path = await dialog.selectDirectory({
+        title:
+          type === "data"
+            ? this.$t("fieldLabels.dataStoragePath")
+            : this.$t("fieldLabels.walletStoragePath")
+      });
+      if (!path) return;
+      if (type === "data") {
+        this.config.app.data_dir = path;
+      } else {
+        this.config.app.wallet_data_dir = path;
       }
     },
     setPreset(option) {

@@ -212,8 +212,10 @@ export class SwapDatabaseManager {
         swap_type TEXT NOT NULL,
         currency_from TEXT NOT NULL,
         network_from TEXT,
+        blockchain_from TEXT,
         currency_to TEXT NOT NULL,
         network_to TEXT,
+        blockchain_to TEXT,
         payin_address TEXT,
         payin_address_memo TEXT,
         payout_address TEXT,
@@ -249,20 +251,35 @@ export class SwapDatabaseManager {
     this.db.exec(createTxnTable);
     this.db.exec(createIndexes);
     this.db.exec(createMetaTable);
+    this._runMigrations();
+  }
+
+  _runMigrations() {
+    const addCol = col => {
+      try {
+        this.db.exec(
+          `ALTER TABLE swap_transactions_history ADD COLUMN ${col} TEXT;`
+        );
+      } catch (e) {
+        // Column already exists — safe to ignore
+      }
+    };
+    addCol("blockchain_from");
+    addCol("blockchain_to");
   }
 
   _prepareStatements() {
     this.statements.upsertTxn = this.db.prepare(`
       INSERT INTO swap_transactions_history (
         uuid, wallet_address, exchange, txn_id, txn_status, txn_type, swap_type,
-        currency_from, network_from, currency_to, network_to,
+        currency_from, network_from, blockchain_from, currency_to, network_to, blockchain_to,
         payin_address, payin_address_memo, payout_address, payout_address_memo,
         refund_address, refund_status, refund_address_memo,
         amount_from, amount_to, network_fee, platform_fee,
         raw_response, created_at, updated_at
       ) VALUES (
         @uuid, @wallet_address, @exchange, @txn_id, @txn_status, @txn_type, @swap_type,
-        @currency_from, @network_from, @currency_to, @network_to,
+        @currency_from, @network_from, @blockchain_from, @currency_to, @network_to, @blockchain_to,
         @payin_address, @payin_address_memo, @payout_address, @payout_address_memo,
         @refund_address, @refund_status, @refund_address_memo,
         @amount_from, @amount_to, @network_fee, @platform_fee,
@@ -275,8 +292,10 @@ export class SwapDatabaseManager {
         swap_type = COALESCE(NULLIF(excluded.swap_type, ''), swap_transactions_history.swap_type),
         currency_from = COALESCE(NULLIF(excluded.currency_from, ''), swap_transactions_history.currency_from),
         network_from = COALESCE(excluded.network_from, swap_transactions_history.network_from),
+        blockchain_from = COALESCE(excluded.blockchain_from, swap_transactions_history.blockchain_from),
         currency_to = COALESCE(NULLIF(excluded.currency_to, ''), swap_transactions_history.currency_to),
         network_to = COALESCE(excluded.network_to, swap_transactions_history.network_to),
+        blockchain_to = COALESCE(excluded.blockchain_to, swap_transactions_history.blockchain_to),
         payin_address = COALESCE(excluded.payin_address, swap_transactions_history.payin_address),
         payin_address_memo = COALESCE(excluded.payin_address_memo, swap_transactions_history.payin_address_memo),
         payout_address = COALESCE(excluded.payout_address, swap_transactions_history.payout_address),
@@ -287,10 +306,21 @@ export class SwapDatabaseManager {
         amount_from = COALESCE(excluded.amount_from, swap_transactions_history.amount_from),
         amount_to = COALESCE(excluded.amount_to, swap_transactions_history.amount_to),
         network_fee = COALESCE(excluded.network_fee, swap_transactions_history.network_fee),
-        platform_fee = COALESCE(excluded.platform_fee, swap_transactions_history.platform_fee),
+        platform_fee = COALESCE(
+          NULLIF(excluded.platform_fee, 0),
+          swap_transactions_history.platform_fee
+        ),
         raw_response = COALESCE(excluded.raw_response, swap_transactions_history.raw_response),
         created_at = swap_transactions_history.created_at,
         updated_at = excluded.updated_at;
+    `);
+
+    this.statements.updateTxnStatus = this.db.prepare(`
+      UPDATE swap_transactions_history
+         SET txn_status = @txn_status, updated_at = @updated_at
+       WHERE exchange = @exchange
+         AND txn_id = @txn_id
+         AND txn_status NOT IN ('finished', 'refunded', 'failed');
     `);
 
     this.statements.getOrderHistory = this.db.prepare(`
@@ -352,13 +382,15 @@ export class SwapDatabaseManager {
       swap_type: tx.swap_type || "normal",
       currency_from: tx.currency_from || "",
       network_from: tx.network_from || null,
+      blockchain_from: tx.blockchain_from || null,
       currency_to: tx.currency_to || "",
       network_to: tx.network_to || null,
-      payin_address: this._encryptField(tx.payin_address || null),
-      payin_address_memo: this._encryptField(tx.payin_address_memo || null),
-      payout_address: this._encryptField(tx.payout_address || null),
-      payout_address_memo: this._encryptField(tx.payout_address_memo || null),
-      refund_address: this._encryptField(tx.refund_address || null),
+      blockchain_to: tx.blockchain_to || null,
+      payin_address: tx.payin_address || null,
+      payin_address_memo: tx.payin_address_memo || null,
+      payout_address: tx.payout_address || null,
+      payout_address_memo: tx.payout_address_memo || null,
+      refund_address: tx.refund_address || null,
       refund_status: tx.refund_status || "not_returned",
       refund_address_memo: this._encryptField(tx.refund_address_memo || null),
       amount_from: tx.amount_from != null ? Number(tx.amount_from) : null,
@@ -374,7 +406,29 @@ export class SwapDatabaseManager {
       updated_at: tx.updated_at ? Number(tx.updated_at) : now
     };
 
+    // Do not log txn_id/network/timestamp fields here: for wallet software,
+    // the exchange order ID plus timing is enough to correlate a user with
+    // an on-chain transaction, and this ran on every write to stdout
+    // (terminal scrollback, journald, crash-reporting pipelines). backend.js
+    // removed an equivalent full-payload console.log from receive() for the
+    // same reason; this had no matching redaction rule anyway (txn_id and
+    // timestamps aren't secrets REDACT_LOG_KEY_PATTERN would catch), so the
+    // fix is to just not print it.
     return this.statements.upsertTxn.run(payload);
+  }
+
+  updateTransactionStatus({ txnId, exchange, status } = {}) {
+    this.init();
+    if (!exchange || !txnId || !status) return null;
+    // Same privacy concern as upsertTransaction() above: txn_id + exchange
+    // is enough to correlate a user with an on-chain transaction, so this
+    // isn't printed to stdout.
+    return this.statements.updateTxnStatus.run({
+      exchange,
+      txn_id: String(txnId),
+      txn_status: status,
+      updated_at: Date.now()
+    });
   }
 
   batchUpsertTransactions(txArray) {

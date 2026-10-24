@@ -22,6 +22,7 @@ export default {
     decrypt: "ENTSCHLÜSSELN",
     addRecord: "BNS hinzufügen",
     delete: "Löschen",
+    done: "Fertig",
     edit: "Bearbeiten",
     editNotes: "Notizen bearbeiten",
     enter: "eingeben",
@@ -257,6 +258,8 @@ export default {
     encryptedBchatValue: "Verschlüsselter Bchat-Wert",
     data: "Daten",
     filter: "Filter",
+    startDate: "Startdatum",
+    endDate: "Enddatum",
     filterTransactionType: "FILTERN NACH TRANSAKTIONSTYP",
     internalWalletPort: "Interner Wallet-Port",
     keyImages: {
@@ -417,6 +420,9 @@ export default {
       failedWalletOpen:
         "Fehler beim Öffnen der Wallet. Bitte versuche es erneut",
       failedWalletRead: "Fehler beim Lesen der Wallets",
+      failedWalletRestore: "Fehler beim Wiederherstellen der Wallet",
+      failedWalletCreation:
+        "Fehler beim Erstellen der Wallet. Bitte versuche es erneut.",
       internalError: "Interner Fehler",
       invalidAddress: "Adresse nicht gültig",
       invalidAmount: "Betrag nicht gültig",
@@ -443,7 +449,9 @@ export default {
       keyImages: {
         exporting: "Fehler beim Export der Key images",
         reading: "Fehler beim lesen der Key images",
-        importing: "Fehler beim Import der Key Images"
+        importing: "Fehler beim Import der Key Images",
+        notSyncedFarEnough:
+          "Diese Wallet ist noch nicht weit genug synchronisiert, um mit den exportierten Key Images übereinzustimmen. Warten Sie, bis die Synchronisierung abgeschlossen ist, und versuchen Sie den Import erneut."
       },
       negativeAmount: "Betrag kann nicht negativ sein ",
       newPasswordNoMatch: "Neue Passwörter stimmen nicht überein",
@@ -463,9 +471,13 @@ export default {
         "Der eingegebene Wert ist größer als die aktuelle Blockhöhe"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Private Keys können angezeigt werden, sobald die Wallet synchronisiert ist.",
       noKeyImageExport: "Keine Key Images zum Exportieren gefunden",
       usingLocalNode:
         "Zugang zur Remote Node nicht möglich, wechsle zur lokalen Node",
+      localNodeFailedUsingRemote:
+        "Lokale Node konnte nicht gestartet werden, benutze eine Remote Node",
       usingRemoteNode: "lbeldexd nicht gefunden, benutze eine Remote Node"
     }
   },
@@ -630,6 +642,8 @@ export default {
     saveSeedWarning:
       'Bitte kopiere und verwahre deinen "Seed" an einem sicheren Ort',
     saveToAddressBook: "In Adressbuch speichern",
+    keysAvailableAfterSync:
+      "Verfügbar, sobald die Wallet die Synchronisierung abgeschlossen hat.",
     seedWords: "Seed Wörter",
     walletCreated: "Wallet erstellt",
     selectLanguage: "Sprache auswählen",
@@ -679,6 +693,8 @@ export default {
       sentTo: "{type} Transaktion gesendet nach",
       timestamp: "Zeitstempel",
       date: "Datum",
+      filterByDate: "Nach Datum filtern",
+      clearDateRange: "Datumsfilter löschen",
       types: {
         all: "Alles",
         incoming: "Erhalten",
@@ -783,7 +799,7 @@ export default {
       exchangeRate: "Tauschrate",
       fixedRate: "Fester Zinssatz",
       fixedRateUpdateSec: "Die feste Rate wird alle 30 Sekunden aktualisiert",
-      serviceFee: "Servicegebühr 0,25 %",
+      serviceFee: "Servicegebühr",
       fees: "Gebühren",
       allTheFees: "Alle Gebühren im Preis inbegriffen",
       networkFee: "Netzwerkgebühr",

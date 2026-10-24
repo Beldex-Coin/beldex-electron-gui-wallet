@@ -151,12 +151,22 @@
               txnDetails.payinAddress
             }}</span
             ><br />
-            <span class="ft-semibold uppercase" style="color: #00ad07"
+
+            <span
+              v-if="this.txnDetails.networkFrom"
+              class="ft-semibold uppercase"
+              style="color: #00ad07"
               >{{ this.$t("titles.swap.network") }} :
+              {{ this.txnDetails.networkFrom }}</span
+            >
+            <br />
+            <span
+              v-if="this.txnDetails.blockchainFrom"
+              class="ft-semibold uppercase"
+              style="color: #00ad07"
+              >{{ this.$t("titles.swap.blockchain") }} :
               {{
-                this.chainDetails.send
-                  ? this.chainDetails.send.replaceAll("_", " ")
-                  : getSentNetwork()
+                this.txnDetails.blockchainFrom.replaceAll("_", " ") || ""
               }}</span
             >
           </div>
@@ -263,7 +273,7 @@
           <tr v-if="txnDetails.type == 'float'">
             <td>{{ this.$t("titles.swap.serviceFee") }}</td>
             <td class="uppercase">
-              {{ txnDetails.fee ? Number(txnDetails.fee).toFixed(8) : "0" }}
+              {{ Number(txnDetails.platformFee || 0).toFixed(8) }}
               {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
             </td>
           </tr>
@@ -330,7 +340,6 @@
 <script>
 import { clipboard } from "src/shims/electron-renderer";
 import QrcodeVue from "qrcode.vue";
-import { mapState } from "vuex";
 
 export default {
   name: "SwapWaitingTxnHistory",
@@ -352,45 +361,22 @@ export default {
       require: true
     }
   },
-  computed: mapState({
-    currencyList: state => state.gateway.currencyList.result,
-    info: state => state.gateway.wallet.info
-  }),
   data() {
     return {
       QR: {
         visible: false
       },
       timer: "",
-      chainDetails: {
-        send: "",
-        receive: ""
-      },
       timeIsExpire: false,
       clock: ""
     };
   },
 
-  watch: {
-    currencyList: {
-      immediate: true,
-      handler() {
-        this.set_chainDetails();
-      }
-    },
-    txnDetails: {
-      immediate: true,
-      handler() {
-        this.set_chainDetails();
-      }
-    }
-  },
   beforeDestroy() {
     clearInterval(this.timer);
   },
   mounted() {
     this.startAndStopTimer();
-    this.set_chainDetails();
   },
 
   methods: {
@@ -443,27 +429,6 @@ export default {
     },
     clearintervals() {
       clearInterval(this.timer);
-    },
-
-    set_chainDetails() {
-      if (
-        !this.currencyList ||
-        !Array.isArray(this.currencyList) ||
-        !this.txnDetails
-      )
-        return;
-      let sendChain = this.currencyList.find(
-        item => item.ticker === this.txnDetails.currencyFrom
-      );
-      let receiveChain = this.currencyList.find(
-        item => item.ticker === this.txnDetails.currencyTo
-      );
-      this.chainDetails.send = (sendChain && sendChain.blockchain) || "";
-      this.chainDetails.receive =
-        (receiveChain && receiveChain.blockchain) || "";
-    },
-    getSentNetwork() {
-      return this.txnDetails?.raw_response?.instrumentFromNetworkTitle || null;
     },
     showQR(address) {
       this.QR.visible = true;

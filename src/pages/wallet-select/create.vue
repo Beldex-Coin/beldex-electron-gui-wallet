@@ -144,6 +144,9 @@ export default {
       deep: true
     }
   },
+  mounted() {
+    this.$q.loading.hide();
+  },
   validations: {
     wallet: {
       name: { required }

@@ -39,13 +39,98 @@
             <div class="col-1 filter-txt ft-semibold q-mr-xs">
               {{ $t("fieldLabels.filter") }}
             </div>
-            <OxenField class="col-11 q-px-sm q-pl-md color=#77778B;">
+            <OxenField
+              class="col-11 q-px-sm q-pl-md color=#77778B; date-filter-field"
+            >
               <q-input
                 v-model="tx_filter"
                 :placeholder="$t('placeholders.filterTx')"
                 borderless
                 dense
-              />
+              >
+                <template v-slot:append>
+                  <q-icon
+                    name="event"
+                    class="cursor-pointer"
+                    :color="hasDateRange ? 'primary' : undefined"
+                  >
+                    <q-tooltip>{{
+                      $t("strings.transactions.filterByDate")
+                    }}</q-tooltip>
+                    <q-popup-proxy
+                      ref="dateRangeProxy"
+                      transition-show="scale"
+                      transition-hide="scale"
+                      @before-show="onDateRangePopupShow"
+                    >
+                      <div class="date-range-popup">
+                        <div class="row date-range-summary">
+                          <div class="col date-range-summary-item">
+                            <div class="date-range-summary-label">
+                              {{ $t("fieldLabels.startDate") }}
+                            </div>
+                            <div class="date-range-summary-value">
+                              {{ startDateLabel }}
+                            </div>
+                          </div>
+                          <div class="col date-range-summary-item">
+                            <div class="date-range-summary-label">
+                              {{ $t("fieldLabels.endDate") }}
+                            </div>
+                            <div class="date-range-summary-value">
+                              {{ endDateLabel }}
+                            </div>
+                          </div>
+                        </div>
+                        <q-date
+                          :value="qDateValue"
+                          range
+                          minimal
+                          no-unset
+                          :options="dateRangeOptions"
+                          :default-year-month="viewedYearMonth"
+                          @input="onDraftDateRangeInput"
+                          @range-start="onRangeStart"
+                          @range-end="onRangeEnd"
+                          @navigation="onCalendarNavigation"
+                        />
+                        <div
+                          class="row items-center justify-end q-gutter-sm q-pa-sm"
+                        >
+                          <q-btn
+                            v-if="hasDraftDateRange || hasDateRange"
+                            v-close-popup
+                            flat
+                            :label="$t('buttons.clear')"
+                            color="negative"
+                            @click="clearDateRange"
+                          />
+                          <q-btn
+                            v-close-popup
+                            flat
+                            :label="dateRangeActionLabel"
+                            color="primary"
+                            @click="applyDateRange"
+                          />
+                        </div>
+                      </div>
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+              <div v-if="hasDateRange" class="date-range-indicator">
+                <q-icon
+                  name="close"
+                  size="12px"
+                  class="date-range-indicator-clear cursor-pointer"
+                  @click.stop="clearDateRange"
+                >
+                  <q-tooltip>{{
+                    $t("strings.transactions.clearDateRange")
+                  }}</q-tooltip>
+                </q-icon>
+                <span>{{ formattedDateRange }}</span>
+              </div>
             </OxenField>
           </article>
 
@@ -98,6 +183,7 @@
       <TxList
         :type="tx_type"
         :filter="tx_filter"
+        :date-range="date_range"
         @submitTxDetails="submitTxDetails($event)"
       />
     </section>
@@ -114,6 +200,9 @@ import TxList from "components/tx_list";
 import OxenField from "components/oxen_field";
 import TxDetails from "components/tx_details";
 import moment from "moment";
+import DateRangeFilterMixin from "src/mixins/date_range_filter_mixin";
+
+const firstBlockDate = moment(1525305600000).format("YYYY/MM/DD");
 
 export default {
   components: {
@@ -121,11 +210,20 @@ export default {
     OxenField,
     TxDetails
   },
+  mixins: [DateRangeFilterMixin],
   data() {
     return {
       tx_type: "all",
       tx_filter: "",
-      txnDetails: ""
+      txnDetails: "",
+      date_range: { from: null, to: null },
+      draft_date_range: { from: null, to: null },
+      pendingStartDate: null,
+      // Anchor month q-date should fall back to when its :value goes
+      // empty mid-selection, so it stays put instead of jumping to today.
+      // Must never be null: q-date treats an explicit null (vs. undefined)
+      // as a real value and crashes calling .split('/') on it.
+      viewedYearMonth: moment().format("YYYY/MM")
     };
   },
   methods: {
@@ -133,11 +231,73 @@ export default {
       // this.$ref.txDetails.tx = details;
       this.txnDetails = details;
     },
+    cloneDateRange(range) {
+      if (!range) return { from: null, to: null };
+      return { from: range.from || null, to: range.to || null };
+    },
+    onDateRangePopupShow() {
+      this.draft_date_range = this.cloneDateRange(this.date_range);
+      this.pendingStartDate = null;
+      const anchor = this.draft_date_range.from || this.draft_date_range.to;
+      this.viewedYearMonth = moment(
+        anchor || undefined,
+        anchor ? "YYYY/MM/DD" : undefined
+      ).format("YYYY/MM");
+    },
+    onCalendarNavigation({ year, month }) {
+      this.viewedYearMonth = `${year}/${String(month).padStart(2, "0")}`;
+    },
+    applyDateRange() {
+      if (!this.hasDraftDateRange) return;
+      this.date_range = this.cloneDateRange(this.draft_date_range);
+    },
+    clearDateRange() {
+      this.date_range = { from: null, to: null };
+      this.draft_date_range = { from: null, to: null };
+      this.pendingStartDate = null;
+    },
+    dateRangeOptions(dateStr) {
+      if (dateStr < firstBlockDate || dateStr > moment().format("YYYY/MM/DD")) {
+        return false;
+      }
+      if (this.pendingStartDate) {
+        const startDateStr = moment(
+          `${this.pendingStartDate.year}-${this.pendingStartDate.month}-${this.pendingStartDate.day}`,
+          "YYYY-M-D"
+        ).format("YYYY/MM/DD");
+        return dateStr >= startDateStr;
+      }
+      return true;
+    },
+    onDraftDateRangeInput(value) {
+      this.draft_date_range =
+        typeof value === "string" ? { from: value, to: value } : value;
+    },
+    onRangeStart(day) {
+      this.pendingStartDate = day;
+    },
+    onRangeEnd() {
+      this.pendingStartDate = null;
+    },
+    formatShortDate(day) {
+      return moment(`${day.year}-${day.month}-${day.day}`, "YYYY-M-D").format(
+        "DD MMM YYYY"
+      );
+    },
+    formatDateBoundary(dateStr) {
+      return dateStr
+        ? moment(dateStr, "YYYY/MM/DD").format("DD MMM YYYY")
+        : "--";
+    },
     filterTxList(type) {
       const all_in = ["in", "pool", "miner", "mnode", "gov", "bns"];
       const all_out = ["out", "pending", "stake"];
       const all_pending = ["pending", "pool"];
-      this.tx_list_filtered = this.tx_list.filter(tx => {
+      return this.tx_list.filter(tx => {
+        if (!this.isTxInDateRange(tx, this.date_range)) {
+          return false;
+        }
+
         let valid = true;
         if (type === "all_in" && !all_in.includes(tx.type)) {
           return false;
@@ -157,7 +317,6 @@ export default {
         }
         return valid;
       });
-      return this.tx_list_filtered;
     },
     goback(data) {
       this.txnDetails = data;
@@ -181,28 +340,24 @@ export default {
             item.payment_id != "0000000000000000" ? item.payment_id : "N/A";
           customizeCsv.push(csvObj);
         });
-      let header = true;
-      for (let row = 0; row < customizeCsv.length; row++) {
-        let keysAmount = Object.keys(customizeCsv[row]).length;
-        let keysCounter = 0;
-        // If this is the first row, generate the headings
-        if (header) {
-          // Loop each property of the object
-          for (let key in customizeCsv[row]) {
-            // This is to not add a comma at the last cell
-            // The '\r\n' adds a new line
-            csv += key + (keysCounter + 1 < keysAmount ? "," : "\r\n");
-            header = false;
-          }
-          csv += "\r\n";
-        }
-        for (let key in customizeCsv[row]) {
-          csv +=
-            customizeCsv[row][key] +
-            (keysCounter + 1 < keysAmount ? "," : "\r\n");
-          keysCounter++;
-        }
-        keysCounter = 0;
+      if (customizeCsv.length > 0) {
+        const headers = Object.keys(customizeCsv[0]);
+        csv = [
+          headers.join(","),
+          ...customizeCsv.map(row =>
+            headers
+              .map(key => {
+                const val = row[key] ?? "";
+                const str = String(val).replace(/"/g, '""');
+                return str.includes(",") ||
+                  str.includes('"') ||
+                  str.includes("\n")
+                  ? `"${str}"`
+                  : str;
+              })
+              .join(",")
+          )
+        ].join("\r\n");
       }
       if (!csv || !csv.trim()) {
         this.$q.notify({
@@ -249,6 +404,64 @@ export default {
         { label: this.$t("strings.transactions.types.stake"), value: "stake" },
         { label: this.$t("strings.transactions.types.failed"), value: "failed" }
       ];
+    },
+    hasDateRange() {
+      const range = this.date_range;
+      return !!(range && (range.from || range.to));
+    },
+    hasDraftDateRange() {
+      // While a fresh pick is in progress (first click made, second not
+      // yet), draft_date_range still holds whatever was applied *before*
+      // this popup session, since q-date only updates it on the second
+      // click. Treat that stale value as "nothing selected yet" so Done
+      // can't apply it in place of the pick the user is still making.
+      if (this.pendingStartDate) return false;
+      const range = this.draft_date_range;
+      return !!(range && (range.from || range.to));
+    },
+    qDateValue() {
+      // q-date only highlights a {from, to} object as a range when
+      // from < to; a same-day selection must be given back as a bare
+      // date string for it to render as selected. Also, once the user
+      // has clicked a new start date (end date not picked yet), drop
+      // the stale mark from a previously completed selection so it
+      // doesn't linger alongside the fresh in-progress pick.
+      if (this.pendingStartDate) return null;
+      const range = this.draft_date_range;
+      if (!range || (!range.from && !range.to)) return null;
+      if (range.from && range.to && range.from === range.to) {
+        return range.from;
+      }
+      return range;
+    },
+    dateRangeActionLabel() {
+      return this.hasDraftDateRange
+        ? this.$t("buttons.done")
+        : this.$t("buttons.close");
+    },
+    startDateLabel() {
+      if (this.pendingStartDate) {
+        return this.formatShortDate(this.pendingStartDate);
+      }
+      return this.formatDateBoundary(
+        this.draft_date_range && this.draft_date_range.from
+      );
+    },
+    endDateLabel() {
+      if (this.pendingStartDate) {
+        return "--";
+      }
+      return this.formatDateBoundary(
+        this.draft_date_range && this.draft_date_range.to
+      );
+    },
+    formattedDateRange() {
+      if (!this.hasDateRange) return "";
+      const { from, to } = this.date_range;
+      const toValue = to || from;
+      const fromLabel = this.formatDateBoundary(from);
+      const toLabel = this.formatDateBoundary(toValue);
+      return from === toValue ? fromLabel : `${fromLabel} - ${toLabel}`;
     }
   }
 };
@@ -295,6 +508,9 @@ export default {
   margin-bottom: unset !important;
   margin-left: 10px;
 }
+.searchBox .date-filter-field .content {
+  position: relative;
+}
 .infoTxt {
   color: white;
 }
@@ -304,5 +520,51 @@ export default {
 .txn-option {
   width: 155px;
   font-family: "Poppins-Regular";
+}
+.date-range-indicator {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  padding: 4px 20px 4px 8px;
+  color: #d1d1d3;
+  background: #32324a;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 5;
+}
+.date-range-indicator-clear {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  color: #d1d1d3;
+}
+.date-range-popup {
+  .q-date__view {
+    padding: 14px;
+  }
+  .date-range-summary {
+    border-bottom: 1px solid #2c2c43;
+  }
+  .date-range-summary-item {
+    padding: 10px;
+    padding-left: 24px;
+  }
+  .date-range-summary-label {
+    font-size: 11px;
+    color: #82828d;
+    text-transform: uppercase;
+  }
+  .date-range-summary-value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .q-date__calendar-item button.bg-primary {
+    background: #35af3b !important;
+    color: #fff !important;
+    border-radius: 7px !important;
+  }
 }
 </style>

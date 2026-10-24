@@ -23,6 +23,7 @@ export default {
     decrypt: "DESCIFRAR",
     addRecord: "Agregar BNS",
     delete: "ELIMINAR",
+    done: "HECHO",
     edit: "EDITAR",
     editNotes: "Editar notas",
     enter: "ingresar",
@@ -255,6 +256,8 @@ export default {
     data: "Datos",
 
     filter: "Filtro",
+    startDate: "Fecha de inicio",
+    endDate: "Fecha de fin",
     filterTransactionType: "FILTRAR POR TIPO DE TRANSACCIÓN",
     internalWalletPort: "PUERTO INTERNO MONEDERO",
     keyImages: {
@@ -418,6 +421,9 @@ export default {
       failedWalletImport: "Fallo al importar el monedero",
       failedWalletOpen: "Fallo al abrir el monedero. Inténtelo de nuevo.",
       failedWalletRead: "No se pudieron leer las billeteras",
+      failedWalletRestore:
+        "Fallo al restaurar el monedero. Inténtelo de nuevo.",
+      failedWalletCreation: "Fallo al crear el monedero. Inténtelo de nuevo.",
       internalError: "Error interno",
       invalidAddress: "Dirección no válida",
       invalidAmount: "Cantidad no válida",
@@ -446,7 +452,9 @@ export default {
       keyImages: {
         exporting: "Error exportando imágenes de clave",
         reading: "Error leyendo imágenes de clave",
-        importing: "Error importando imágenes de clave"
+        importing: "Error importando imágenes de clave",
+        notSyncedFarEnough:
+          "Esta billetera aún no se ha sincronizado lo suficiente para coincidir con las imágenes de clave exportadas. Espere a que termine de sincronizar y luego intente importar nuevamente."
       },
       negativeAmount: "La cantidad no puede ser negativa",
       newPasswordNoMatch: "Las contraseñas nuevas no coinciden",
@@ -467,9 +475,13 @@ export default {
         "El valor ingresado es mayor que la altura del bloque actual"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Las claves privadas se podrán mostrar cuando la billetera termine de sincronizarse.",
       noKeyImageExport: "No se han encontrado claves para exportar",
       usingLocalNode:
         "No se ha podido acceder al nodo remoto, volviendo al modo local",
+      localNodeFailedUsingRemote:
+        "No se pudo iniciar el nodo local, utilizando nodo remoto",
       usingRemoteNode: "beldexd no encontrado, utilizando nodo remoto"
     }
   },
@@ -630,6 +642,8 @@ export default {
       "Escoja entre un examen completo o examinar solo las salidas gastadas.",
     saveSeedWarning: "¡Por favor, cópielas y guárdelas en un sitio seguro!",
     saveToAddressBook: "Guardar en la libreta de direcciones",
+    keysAvailableAfterSync:
+      "Disponible cuando la billetera termine de sincronizarse.",
     seedWords: "Palabras semilla",
     walletCreated: "Cartera creada",
     selectLanguage: "Escoja un idioma",
@@ -678,6 +692,8 @@ export default {
       sentTo: "Transacción {type} enviada a",
       timestamp: "Fecha y hora",
       date: "Fecha",
+      filterByDate: "Filtrar por fecha",
+      clearDateRange: "Borrar filtro de fecha",
       types: {
         all: "Todas",
         incoming: "Recibir",
@@ -782,7 +798,7 @@ export default {
       exchangeRate: "Tipo de cambio",
       fixedRate: "Tipo de interés fijo",
       fixedRateUpdateSec: "La tarifa fija se actualiza cada 30 segundos.",
-      serviceFee: "Tarifa de servicio 0,25%",
+      serviceFee: "Tarifa de servicio",
       fees: "Honorarios",
       allTheFees: "Todos los honorarios incluidos en la tarifa.",
       networkFee: "Tarifa de red",

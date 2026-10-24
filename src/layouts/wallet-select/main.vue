@@ -86,6 +86,15 @@ export default {
       }
     }
   },
+  watch: {
+    $route() {
+      this.$q.loading.hide();
+    }
+  },
+  mounted() {
+    this.$q.loading.hide();
+  },
+
   methods: {
     cancel() {
       this.$router.replace({ path: "/wallet-select" });

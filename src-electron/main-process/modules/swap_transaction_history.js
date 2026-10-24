@@ -114,8 +114,10 @@ export class SwapTxnHistory {
       swap_type: swapType,
       currency_from: details.currencyFrom || "",
       network_from: details.networkFrom || null,
+      blockchain_from: details.blockchainFrom || null,
       currency_to: details.currencyTo || "",
       network_to: details.networkTo || null,
+      blockchain_to: details.blockchainTo || null,
       payin_address: extractAddr(
         details.payinAddress || details.depositAddress
       ),
@@ -181,6 +183,30 @@ export class SwapTxnHistory {
         err.message
       );
       return null;
+    }
+  }
+
+  updateTransactionStatus({ txnId, exchange, status } = {}) {
+    if (!txnId || !exchange || !status) {
+      console.error(
+        "[SwapTxnHistory] Skipped status update: missing txnId, exchange or status",
+        { txnId, exchange, status }
+      );
+      return false;
+    }
+    try {
+      const result = this._getDbManager().updateTransactionStatus({
+        txnId,
+        exchange,
+        status
+      });
+      return Boolean(result && result.changes > 0);
+    } catch (err) {
+      console.error(
+        `updateTransactionStatus failed for txn_id ${txnId}:`,
+        err.message
+      );
+      return false;
     }
   }
 

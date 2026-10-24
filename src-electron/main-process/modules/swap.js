@@ -227,6 +227,10 @@ export class Swap {
       if (data.result) {
         data.result.created_at = now;
         data.result.createdAt = now;
+        data.result.blockchainFrom = params.blockchainFrom;
+        data.result.blockchainTo = params.blockchainTo;
+        data.result.networkFrom = params.networkFrom || null;
+        data.result.networkTo = params.networkTo || null;
       }
       this.swapTxnHistory.updateTransactionDetails(
         transactionId,
@@ -378,6 +382,7 @@ export class Swap {
         amountExpectedFrom: amountFrom,
         amountExpectedTo: amountTo,
         networkFee: row.network_fee != null ? Number(row.network_fee) : 0,
+        platformFee: row.platform_fee != null ? Number(row.platform_fee) : 0,
         rate,
         createdAt: row.created_at,
         created_at: row.created_at,
@@ -388,6 +393,10 @@ export class Swap {
         payoutHashLink: payoutHash,
         privacySwap: row.swap_type === "privacy",
         exchange_type: row.exchange || "changelly",
+        blockchainFrom: row.blockchain_from || null,
+        blockchainTo: row.blockchain_to || null,
+        networkFrom: row.network_from || null,
+        networkTo: row.network_to || null,
         raw_response: rawResp
       };
     });
@@ -425,7 +434,13 @@ export class Swap {
     if (data?.status && Array.isArray(data.result) && data.result.length > 0) {
       const details = data.result[0];
       const txnId = params.id || details.id;
-      if (txnId && walletAddress) {
+      if (txnId && data.statusOnly) {
+        this.swapTxnHistory.updateTransactionStatus({
+          txnId,
+          exchange,
+          status: details.status
+        });
+      } else if (txnId && walletAddress) {
         this.swapTxnHistory.updateTransactionDetails(
           txnId,
           walletAddress,

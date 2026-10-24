@@ -23,6 +23,7 @@ export default {
     decrypt: "DÉCRYPTER",
     addRecord: "Ajouter un BNS",
     delete: "SUPPRIMER",
+    done: "FAIT",
     edit: "MODIFIER",
     editNotes: "Modifier les notes",
     enter: "Entrer",
@@ -256,6 +257,8 @@ export default {
     expirationHeight: "Hauteur d'expiration",
     data: "Donnés",
     filter: "Filtre",
+    startDate: "Date de début",
+    endDate: "Date de fin",
     filterTransactionType: "FILTRER PAR TYPE DE TRANSACTION",
     internalWalletPort: "PORT DE PORTEFEUILLE INTERNE",
     keyImages: {
@@ -421,6 +424,10 @@ export default {
       failedWalletOpen:
         "Echec de l'ouverture du portefeuille : veuillez essayer de nouveau.",
       failedWalletRead: "Impossible de lire les portefeuilles",
+      failedWalletRestore:
+        "Echec de la restauration du portefeuille. Veuillez réessayer.",
+      failedWalletCreation:
+        "Echec de la création du portefeuille. Veuillez réessayer.",
       internalError: "Erreur interne",
       invalidAddress: "Adresse non valide",
       invalidAmount: "Montant non valide",
@@ -448,7 +455,9 @@ export default {
       keyImages: {
         exporting: "Erreur de l'exportation des clés images",
         reading: "Erreur de lecture des clés images",
-        importing: "Erreur d'importation des clés images"
+        importing: "Erreur d'importation des clés images",
+        notSyncedFarEnough:
+          "Ce portefeuille n'est pas encore assez synchronisé pour correspondre aux clés images exportées. Attendez la fin de la synchronisation, puis réessayez d'importer."
       },
       negativeAmount: "Le montant ne peut être négatif",
       newPasswordNoMatch: "Les nouveaux mots de passe ne correspondent pas",
@@ -470,9 +479,13 @@ export default {
         "La valeur saisie est supérieure à la hauteur actuelle du bloc"
     },
     warnings: {
+      privateKeysAfterSync:
+        "Les clés privées pourront être affichées lorsque le portefeuille aura terminé sa synchronisation.",
       noKeyImageExport: "Aucune clé image n'a été trouvé pour l'export",
       usingLocalNode:
         "Impossible d'accéder au nœud distant, basculement en local uniquement",
+      localNodeFailedUsingRemote:
+        "Le nœud local n'a pas pu démarrer, utilisation du nœud distant",
       usingRemoteNode: "beldexd introuvable, utilisation du nœud distant"
     }
   },
@@ -639,6 +652,8 @@ export default {
     saveSeedWarning:
       "Veuillez copier et enregistrer cela dans un lieu sécurisé !",
     saveToAddressBook: "Enregistrez dans le carnet d'adresses",
+    keysAvailableAfterSync:
+      "Disponible lorsque le portefeuille aura terminé sa synchronisation.",
     seedWords: "Mots clés",
     walletCreated: "Portefeuille créé",
     selectLanguage: "Sélectionnez une langue",
@@ -687,6 +702,8 @@ export default {
       sentTo: "Transaction {type} envoyée à",
       timestamp: "Horodatage",
       date: "Date",
+      filterByDate: "Filtrer par date",
+      clearDateRange: "Effacer le filtre de date",
       types: {
         all: "Toutes",
         incoming: "Recevoir",
@@ -790,7 +807,7 @@ export default {
       exchangeRate: "Taux de change",
       fixedRate: "Taux fixe",
       fixedRateUpdateSec: "Le taux fixe est mis à jour toutes les 30 secondes",
-      serviceFee: "Frais de service 0,25%",
+      serviceFee: "Frais de service",
       fees: "Frais",
       allTheFees: "Tous frais inclus dans le tarif",
       networkFee: "Frais de réseau",
