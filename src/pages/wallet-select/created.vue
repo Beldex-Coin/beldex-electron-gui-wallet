@@ -1,202 +1,112 @@
 <template>
-  <q-page
-    padding
-    class="created flex column justify-center items-center"
-    style="
-      min-height: 730px;
-     
-      margin-top: 20px;
-      border-radius: 15px;
-      font-family: Poppins-Bold;
-    "
-  >
-    <section class="created-inner-wrapper">
-      <div class="col wallet q-mb-lg">
-        <h4
-          style="
-            color: white;
-            display: flex;
-            justify-content: center;
-            font-size: 28px;
-            margin-top: 0px;
-          "
-        >
-          <!-- {{ $t("strings.walletCreated") }} -->
-          {{ this.$route.query.title }}
-        </h4>
-        <h6 style="color: white; font-size: 16px; margin-left: 20px">
-          <span style="font-family: Poppins-Regular"
-            >{{ this.$t("footer.wallet") }}:</span
-          >
-          {{ walletName }}
-        </h6>
-        <div
-          class="row items-center"
-          style="
-            border: 1px #484856 solid;
-            border-radius: 12px;
-            font-family: Poppins-Regular;
-            padding: 10px 20px;
-            margin-left: 20px;
-          "
-        >
-          <div
-            class="col"
-            style="color: white; padding: 0px 10px 0px 0px;word-break: break-all;"
-          >
-            {{ info.address }}
-          </div>
-          <div class="q-item-side">
-            <q-btn
-              color="secondary"
-              size="md"
-              :label="this.$t('buttons.copy')"
-              font-size="20px;"
-              icon-right="content_copy"
+  <q-page class="beldex-form-page created">
+    <section class="beldex-panel beldex-form-page__card created__card">
+      <div class="beldex-heading">
+        <h1 class="beldex-heading__title">{{ $route.query.title }}</h1>
+      </div>
+
+      <div class="created__rows">
+        <div>
+          <span class="beldex-label created__label">
+            {{ $t("footer.wallet") }}: {{ walletName }}
+          </span>
+          <div class="beldex-copy-row">
+            <span class="beldex-copy-row__value">{{ info.address }}</span>
+            <button
+              type="button"
+              class="beldex-copy-row__btn"
               @click="copyAddress"
             >
-              <q-tooltip
-                anchor="center left"
-                self="center right"
-                :offset="[5, 10]"
-                >{{ $t("menuItems.copyAddress") }}</q-tooltip
-              >
-            </q-btn>
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
+              <q-tooltip anchor="center left" self="center right">
+                {{ $t("menuItems.copyAddress") }}
+              </q-tooltip>
+            </button>
           </div>
         </div>
-      </div>
 
-      <template v-if="secret.mnemonic.length > 0">
-        <div class="col wallet ">
-          <h6 style="font-family: Poppins-Regular">
-            <span
-              class="ft-bold"
-              style="color: white; font-size: 16px; margin-left: 20px"
-              >{{ $t("strings.seedWords") }}</span
-            >
-            <span style="color: #00e509;font-size: 12px;">
-              - {{ $t("strings.saveSeedWarning") }}</span
-            >
-          </h6>
-        </div>
-
-        <div
-          class="row items-center"
-          style="
-          border: 1px #484856 solid;
-          border-radius: 12px;
-          font-family: Poppins-Regular;
-          padding: 10px 20px;
-          margin-left: 20px;
-
-        "
-        >
-          <div class="col" style="color: white; padding: 0px 10px 0px 0px">
-            {{ secret.mnemonic }}
-          </div>
-          <div class="q-item-side">
-            <q-btn
-              color="secondary"
-              size="md"
-              :label="this.$t('buttons.copy')"
-              icon-right="content_copy"
+        <div v-if="secret.mnemonic.length > 0">
+          <span class="beldex-label created__label">
+            {{ $t("strings.seedWords") }} -
+            <span class="created__warning">{{
+              $t("strings.saveSeedWarning")
+            }}</span>
+          </span>
+          <div class="beldex-copy-row beldex-copy-row--multiline">
+            <span class="beldex-copy-row__value">{{ secret.mnemonic }}</span>
+            <button
+              type="button"
+              class="beldex-copy-row__btn"
               @click="copyPrivateKey('mnemonic', $event)"
             >
-              <q-tooltip
-                anchor="center left"
-                self="center right"
-                :offset="[5, 10]"
-                >{{ $t("menuItems.copySeed") }}</q-tooltip
-              >
-            </q-btn>
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
+              <q-tooltip anchor="center left" self="center right">
+                {{ $t("menuItems.copySeed") }}
+              </q-tooltip>
+            </button>
           </div>
         </div>
-      </template>
 
-      <div style="margin-top: 18px; padding: 10px 20px">
-        <template v-if="pendingSecretsTitle">
-          <div class="row" style="color: #fff">
-            <div class="col">
-              <h6 class="q-mb-xs title">{{ pendingSecretsTitle }}</h6>
-              <p style="font-family: Poppins-Regular; color: #afafbe">
-                {{ $t("strings.keysAvailableAfterSync") }}
-              </p>
-            </div>
-          </div>
-        </template>
-        <template v-if="showViewKey">
-          <div class="row justify-between">
-            <div class="col-7" style="word-break: break-all; color: #fff">
-              <h6 class="q-mb-xs title">{{ $t("strings.viewKey") }}</h6>
-              <p style="font-family: Poppins-Regular">{{ secret.view_key }}</p>
-            </div>
-            <div
-              class="q-item-side"
-              style="
-                align-items: center;
-                display: flex;
-                justify-content: center;
-              "
-            >
-              <q-btn
-                color="secondary"
-                size="md"
-                :label="this.$t('buttons.copy')"
-                icon-right="content_copy"
-                @click="copyPrivateKey('view_key', $event)"
-              >
-                <q-tooltip
-                  anchor="center left"
-                  self="center right"
-                  :offset="[5, 10]"
-                  >{{ $t("menuItems.copyViewKey") }}</q-tooltip
-                >
-              </q-btn>
-            </div>
-          </div>
-        </template>
-        <hr color="#3E3E5B" width="98%" />
+        <div v-if="pendingSecretsTitle">
+          <span class="beldex-label created__label">
+            {{ pendingSecretsTitle }}
+          </span>
+          <p class="beldex-hint">{{ $t("strings.keysAvailableAfterSync") }}</p>
+        </div>
 
-        <template v-if="showSpendKey">
-          <div class="row justify-between">
-            <div class="col-7" style="word-break: break-all; color: #fff">
-              <h6 class="q-mb-xs title">{{ $t("strings.spendKey") }}</h6>
-              <p style="font-family: Poppins-Regular">{{ secret.spend_key }}</p>
-            </div>
-            <div
-              class="q-item-side"
-              style="
-                align-items: center;
-                display: flex;
-                justify-content: center;
-              "
+        <div v-if="showViewKey">
+          <span class="beldex-label created__label">
+            {{ $t("strings.viewKey") }}
+          </span>
+          <div class="beldex-copy-row">
+            <span class="beldex-copy-row__value">{{ secret.view_key }}</span>
+            <button
+              type="button"
+              class="beldex-copy-row__btn"
+              @click="copyPrivateKey('view_key', $event)"
             >
-              <q-btn
-                color="secondary"
-                size="md"
-                :label="this.$t('buttons.copy')"
-                icon-right="content_copy"
-                @click="copyPrivateKey('spend_key', $event)"
-              >
-                <q-tooltip
-                  anchor="center left"
-                  self="center right"
-                  :offset="[5, 10]"
-                  >{{ $t("menuItems.copySpendKey") }}</q-tooltip
-                >
-              </q-btn>
-            </div>
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
+              <q-tooltip anchor="center left" self="center right">
+                {{ $t("menuItems.copyViewKey") }}
+              </q-tooltip>
+            </button>
           </div>
-        </template>
+        </div>
+
+        <div v-if="showSpendKey">
+          <span class="beldex-label created__label">
+            {{ $t("strings.spendKey") }}
+          </span>
+          <div class="beldex-copy-row">
+            <span class="beldex-copy-row__value">{{ secret.spend_key }}</span>
+            <button
+              type="button"
+              class="beldex-copy-row__btn"
+              @click="copyPrivateKey('spend_key', $event)"
+            >
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
+              <q-tooltip anchor="center left" self="center right">
+                {{ $t("menuItems.copySpendKey") }}
+              </q-tooltip>
+            </button>
+          </div>
+        </div>
       </div>
-      <!-- </q-expansion-item>  -->
-      <div style="display: flex; justify-content: center">
+
+      <div class="created__actions">
         <q-btn
-          class="q-mt-lg"
-          color="primary"
-          :label="$t('buttons.openWallet')"
+          class="beldex-btn beldex-form-page__submit"
+          unelevated
+          no-caps
           @click="open"
-        />
+        >
+          {{ $t("buttons.openWallet") }}
+          <img src="~assets/icons/arrow-right.svg" alt="" />
+        </q-btn>
       </div>
     </section>
   </q-page>
@@ -335,4 +245,32 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.created {
+  .created__card.beldex-form-page__card {
+    max-width: 838px;
+    gap: 31px;
+    padding: var(--beldex-space-7) 33px 32px;
+  }
+
+  &__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 21px;
+  }
+
+  &__label {
+    margin-bottom: var(--beldex-space-2);
+  }
+
+  &__warning {
+    color: var(--beldex-accent);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+}
+</style>

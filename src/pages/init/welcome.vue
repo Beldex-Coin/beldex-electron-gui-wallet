@@ -1,70 +1,79 @@
 <template>
-  <q-page class="welcome" style="min-height:unset;">
-    <q-stepper
-      ref="stepper"
-      v-model="step"
-      class="welcome-stepper"
-      active-color="#00AD07"
-      done-color="#000"
-      flat
-      dark
-    >
+  <q-page class="welcome">
+    <!-- Visual stepper; q-stepper below keeps driving the steps
+         ($refs.stepper.next / previous) with its own header hidden. -->
+    <div class="beldex-stepper welcome__stepper">
+      <div
+        class="beldex-stepper__step"
+        :class="{
+          'beldex-stepper__step--active': step === 1,
+          'beldex-stepper__step--done': step > 1
+        }"
+      >
+        <span class="beldex-stepper__marker" />
+        01 // {{ $t("titles.chooseLanguage") }}
+      </div>
+      <div class="beldex-stepper__divider" />
+      <div
+        class="beldex-stepper__step"
+        :class="{ 'beldex-stepper__step--active': step === 2 }"
+      >
+        <span class="beldex-stepper__marker" />
+        02 // {{ $t("titles.configure") }}
+      </div>
+    </div>
+
+    <q-stepper ref="stepper" v-model="step" class="welcome-stepper" flat dark>
       <q-step
         :name="1"
         :title="$t('titles.chooseLanguage')"
         :done="step > 1"
-        class="first-step"
         icon="settings"
       >
-        <div class="welcome-container">
-          <div>
-            <img src="../../assets/images/Logo.png" class="logo" />
-          </div>
-          <h3 class="ft-bold q-my-md appName">
-            <span>Beldex</span> Electron Wallet
-          </h3>
-          <div class="ft-medium wallet-txt">
-            Wallet {{ this.$t("strings.version") }} : <span>{{ version }}</span>
-          </div>
-          <div class="ft-medium wallet-txt">
-            Daemon {{ this.$t("strings.version") }} :
-            <span>{{ daemonVersion }}</span>
-          </div>
-          <LanguageSelect class="q-mt-md" @select="onLanguageSelected" />
+        <div class="beldex-panel welcome__language">
+          <LanguageSelect @select="onLanguageSelected">
+            <template #info>
+              <div class="welcome__versions">
+                <span>
+                  Wallet {{ $t("strings.version") }}: <b>{{ version }}</b>
+                </span>
+                <span>
+                  Daemon {{ $t("strings.version") }}:
+                  <b>{{ daemonVersion }}</b>
+                </span>
+              </div>
+            </template>
+          </LanguageSelect>
         </div>
       </q-step>
 
-      <q-step
-        :name="2"
-        :title="$t('titles.configure')"
-        icon="settings"
-        class="second-step"
-      >
-        <SettingsGeneral
-          ref="settingsGeneral"
-          :randomise-remote="true"
-          :welcome="true"
-          @clickPrev="clickPrev"
-          @clickNext="clickNext"
-        />
+      <q-step :name="2" :title="$t('titles.configure')" icon="settings">
+        <div class="welcome__configure">
+          <div class="beldex-heading">
+            <button
+              type="button"
+              class="beldex-icon-btn"
+              :aria-label="$t('buttons.back')"
+              @click="clickPrev()"
+            >
+              ←
+            </button>
+            <h1 class="beldex-heading__title">
+              {{ $t("titles.settings.title") }}
+            </h1>
+          </div>
+          <div class="beldex-panel welcome__configure-panel">
+            <SettingsGeneral
+              ref="settingsGeneral"
+              :randomise-remote="true"
+              :welcome="true"
+              @clickPrev="clickPrev"
+              @clickNext="clickNext"
+            />
+          </div>
+        </div>
       </q-step>
     </q-stepper>
-
-    <!-- <q-footer v-if="!(step === 1)" class="no-shadow q-pa-sm">
-      <div class="row justify-end">
-        <div>
-          <q-btn flat :label="$t('buttons.back')" @click="clickPrev()" />
-        </div>
-        <div>
-          <q-btn
-            class="q-ml-sm"
-            color="primary"
-            :label="$t('buttons.next')"
-            @click="clickNext()"
-          />
-        </div>
-      </div>
-    </q-footer> -->
   </q-page>
 </template>
 
@@ -130,122 +139,66 @@ export default {
 </script>
 
 <style lang="scss">
+// Choose language and Configuration steps.
 .welcome {
-  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 44px var(--beldex-space-6) var(--beldex-space-9);
+
+  &__stepper {
+    flex: none;
+  }
+
   .welcome-stepper {
-    .q-stepper__header {
-      width: 50%;
-      margin: 0 auto;
-    }
-    .q-stepper__title {
-      font-family: "poppins-SemiBold";
-      font-size: 16px;
-    }
-  }
-  .logo {
-    height: 100px;
-    width: 100px;
-  }
-  .q-dark {
-    // background-color: #292929;
-    background: #1c1c26;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-  }
-  .first-step {
-    // .welcome-stepper {
-
-    // width: 1001px;
-    height: 100%;
-
+    width: 100%;
     background: transparent;
-    margin: auto;
-    font-size: 5px;
+    box-shadow: none;
+
+    // The step header is replaced by .welcome__stepper above.
+    .q-stepper__header {
+      display: none;
+    }
+
+    .q-stepper__step-inner {
+      padding: 0;
+    }
   }
 
-  .welcome-container,
-  .second-step {
-    // padding-top: 14vh;
-    width: 1001px;
-    padding-bottom: 25px;
+  &__language {
+    width: 100%;
+    max-width: 554px;
+    margin: 56px auto 0;
+    padding: 30px;
+    box-shadow: none;
+  }
 
-    padding-top: 3vh;
+  &__versions {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #242433;
+    gap: 2px;
+    font-size: var(--beldex-text-xs);
+    line-height: 15px;
+    color: var(--beldex-text-muted);
 
-    border: 1px solid #242433;
-    box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.2);
-    border-radius: 25px;
-
-    .appName {
-      font-size: 2.75rem;
-      span {
-        color: #00ad07;
-      }
-    }
-    .wallet-txt {
-      font-size: 1.125rem;
-      span {
-        color: #00ad07;
-      }
+    b {
+      font-weight: 400;
+      color: var(--beldex-text);
     }
   }
 
-  .first-step .q-stepper-step-inner {
-    min-height: 250px;
-    height: calc(100vh - 102px);
+  &__configure {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 1082px;
+    margin: var(--beldex-space-6) auto 0;
   }
-  .second-step {
-    display: block;
-    margin-bottom: 49px;
-    max-height: 81vh;
-    overflow: auto;
-  }
-}
 
-.language-item {
-  padding: 10px 30px 10px 20px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-
-  .language-item-circle {
-    background: #cc90e2;
-    width: 50px;
-    height: 50px;
-    border-radius: 25px;
-    display: inline-block;
-    line-height: 50px;
-    text-align: center;
-    color: white;
-    margin-right: 10px;
-  }
-}
-
-.q-stepper-header {
-  min-height: 10vh;
-}
-
-@media only screen and (max-height: 780px) {
-  .welcome {
-    .first-step {
-      max-height: 92vh;
-    }
-    .welcome-container {
-      padding: 35px 0;
-    }
-    .logo {
-      height: 50px;
-      width: 50px;
-    }
-    .second-step {
-      padding-bottom: 0;
-    }
+  &__configure-panel {
+    padding: var(--beldex-space-7);
+    box-shadow: none;
   }
 }
 </style>

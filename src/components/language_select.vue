@@ -1,25 +1,44 @@
 <template>
-  <section>
-    <div class="language-select column items-center justify-center q-mb-md">
-      <!-- <h6 class="q-my-md" style="font-weight: 300">
-      {{ $t("strings.selectLanguage") }}:
-     </h6> -->
-      <div class="inner-box row justify-between q-mb-md">
-        <q-btn
-          v-for="option in options"
-          :key="option.value"
-          class="row justify-center items-center"
-          :color="lang === option.value ? 'active' : ''"
-          outline
-          @click="setLanguage(option.value)"
-        >
-          <span :class="`flag-icon flag-icon-${option.flag}`" />
-          <span>{{ option.label }}</span>
-        </q-btn>
-      </div>
+  <section class="language-select">
+    <div class="language-select__grid">
+      <button
+        v-for="(option, index) in options"
+        :key="option.value"
+        type="button"
+        class="beldex-option language-select__card"
+        :class="{ 'beldex-option--active': lang === option.value }"
+        :aria-pressed="lang === option.value ? 'true' : 'false'"
+        @click="setLanguage(option.value)"
+      >
+        <span
+          :class="`flag-icon flag-icon-${option.flag}`"
+          class="language-select__flag"
+        />
+        <span class="language-select__text">
+          <span class="language-select__index">
+            {{ String(index + 1).padStart(2, "0") }} /
+            {{
+              index === 0
+                ? $t("strings.languageDefault")
+                : $t("strings.languageRegional")
+            }}
+          </span>
+          <span class="language-select__name">{{ option.label }}</span>
+        </span>
+        <span class="language-select__code">
+          <span class="language-select__marker" />
+          {{ option.value.replace("-", "_").toUpperCase() }}
+        </span>
+      </button>
     </div>
-    <div class="flex justify-center ">
-      <q-btn color="primary" label="Next" @click="submit()" />
+    <div class="language-select__actions">
+      <div class="language-select__info">
+        <slot name="info" />
+      </div>
+      <q-btn class="beldex-btn" unelevated no-caps @click="submit()">
+        {{ $t("buttons.next") }}
+        <img src="~assets/icons/arrow-right.svg" alt="" />
+      </q-btn>
     </div>
   </section>
 </template>
@@ -58,20 +77,3 @@ export default {
   }
 };
 </script>
-
-<style lang="scss">
-.language-select {
-  .inner-box {
-    color: #fff;
-    width: 83%;
-    background-color: #32324a;
-    /* height: 212px; */
-    padding: 36px 36px 5px 36px;
-    border-radius: 10px;
-
-    .flag-icon {
-      margin-right: 10px;
-    }
-  }
-}
-</style>

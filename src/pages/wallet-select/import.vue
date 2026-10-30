@@ -1,90 +1,95 @@
 <template>
-  <q-page style="min-height: unset; height: calc( 100vh - 70px);">
-    <section class="flex justify-center align-center">
-      <div class="fields">
-        <div class="createTitle">{{ this.$t("titles.importFromFile") }}</div>
+  <q-page class="beldex-form-page import-wallet">
+    <!-- File field label uses "Wallet File". -->
+    <section class="beldex-panel beldex-form-page__card">
+      <div class="beldex-heading">
+        <button
+          type="button"
+          class="beldex-icon-btn"
+          :aria-label="$t('buttons.back')"
+          @click="cancel()"
+        >
+          ←
+        </button>
+        <h1 class="beldex-heading__title">
+          {{ $t("titles.importFromFile") }}
+        </h1>
+      </div>
 
-        <div class="q-mx-md import-wallet">
-          <OxenField
-            :label="$t('fieldLabels.newWalletName')"
-            :error="$v.wallet.name.$error"
-          >
-            <q-input
-              v-model="wallet.name"
-              :placeholder="$t('placeholders.walletName')"
-              :dark="theme == 'dark'"
-              borderless
-              dense
-              maxlength="26"
-              @keyup.enter="import_wallet"
-              @blur="$v.wallet.name.$touch"
-            />
-          </OxenField>
+      <div class="beldex-form-page__fields">
+        <BeldexField :error="$v.wallet.name.$error">
+          <q-input
+            v-model="wallet.name"
+            :placeholder="$t('placeholders.walletName')"
+            :aria-label="$t('fieldLabels.newWalletName')"
+            dark
+            borderless
+            dense
+            maxlength="26"
+            @keyup.enter="import_wallet"
+            @blur="$v.wallet.name.$touch"
+          />
+        </BeldexField>
 
-          <OxenField
-            :label="$t('fieldLabels.walletFile')"
-            disable-hover
-            :error="$v.wallet.path.$error"
-          >
-            <q-input
-              v-model="wallet.path"
-              :placeholder="$t('placeholders.selectAFile')"
-              disable
-              :dark="theme == 'dark'"
-              borderless
-              dense
-            />
-            <q-btn
-              color="secondary"
-              :label="$t('buttons.selectWalletFile')"
-              :text-color="theme == 'dark' ? 'white' : 'dark'"
-              @click="selectFile"
-            >
-              <span
-                ><img src="../../assets/images/fileUpload.png" class="fileIcon"
-              /></span>
-            </q-btn>
-          </OxenField>
+        <BeldexField
+          class="beldex-field--with-action"
+          :label="$t('fieldLabels.walletFile')"
+          disable-hover
+          :error="$v.wallet.path.$error"
+        >
+          <q-input
+            v-model="wallet.path"
+            :placeholder="$t('placeholders.selectAFile')"
+            disable
+            dark
+            borderless
+            dense
+          />
+          <q-btn
+            flat
+            no-caps
+            :label="$t('buttons.selectWalletFile')"
+            @click="selectFile"
+          />
+        </BeldexField>
 
-          <OxenField :label="$t('fieldLabels.password')">
-            <q-input
-              v-model="wallet.password"
-              :placeholder="$t('placeholders.walletPassword')"
-              type="password"
-              :dark="theme == 'dark'"
-              borderless
-              dense
-              @keyup.enter="import_wallet"
-            />
-          </OxenField>
+        <BeldexField>
+          <q-input
+            v-model="wallet.password"
+            :placeholder="$t('placeholders.walletPassword')"
+            :aria-label="$t('fieldLabels.password')"
+            type="password"
+            dark
+            borderless
+            dense
+            @keyup.enter="import_wallet"
+          />
+        </BeldexField>
 
-          <OxenField :label="$t('fieldLabels.confirmPassword')">
-            <q-input
-              v-model="wallet.password_confirm"
-              :placeholder="$t('placeholders.reEnterWalletPassword')"
-              type="password"
-              :dark="theme == 'dark'"
-              borderless
-              dense
-              @keyup.enter="import_wallet"
-            />
-          </OxenField>
-          <div class="flex justify-center align-center submit">
-            <q-btn
-              class="submit-button "
-              color="cancel"
-              :label="$t('buttons.cancel')"
-              @click="cancel()"
-            />
-            <span class="divider"></span>
-            <q-btn
-              class="submit-button "
-              color="primary"
-              :label="$tc('buttons.importWallet', 1)"
-              @click="import_wallet"
-            />
-          </div>
-        </div>
+        <BeldexField>
+          <q-input
+            v-model="wallet.password_confirm"
+            :placeholder="$t('placeholders.reEnterWalletPassword')"
+            :aria-label="$t('fieldLabels.confirmPassword')"
+            type="password"
+            dark
+            borderless
+            dense
+            @keyup.enter="import_wallet"
+          />
+        </BeldexField>
+      </div>
+
+      <div class="import-wallet__actions">
+        <q-btn
+          class="beldex-btn beldex-form-page__submit"
+          unelevated
+          no-caps
+          @click="import_wallet"
+        >
+          {{ $tc("buttons.importWallet", 1) }}
+          <img src="~assets/icons/arrow-right.svg" alt="" />
+        </q-btn>
       </div>
     </section>
   </q-page>
@@ -93,11 +98,11 @@
 <script>
 import { required } from "vuelidate/lib/validators";
 import { mapState } from "vuex";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import { dialog } from "src/shims/electron-renderer";
 export default {
   components: {
-    OxenField
+    BeldexField
   },
   data() {
     return {
@@ -203,26 +208,9 @@ export default {
 
 <style lang="scss">
 .import-wallet {
-  .q-if-disabled {
-    cursor: default !important;
-    .q-input-target {
-      cursor: default !important;
-    }
-  }
-
-  .oxen-field {
-    margin-top: 16px;
-  }
-  .fileIcon {
-    width: 14px;
-    height: 14px;
-    margin-top: 5px;
-    margin-left: 3px;
-  }
-  .submit {
-    .q-btn {
-      min-width: 251px;
-    }
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
   }
 }
 </style>

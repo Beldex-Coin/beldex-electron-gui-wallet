@@ -1,60 +1,31 @@
 <template>
-  <q-layout view="hHh Lpr lFf">
-    <q-header>
-      <q-toolbar>
-        <!-- <div>
-          <img src="../../assets/images/Logo.png" />
-        </div> -->
-        <div class="main-title flex items-center">
-          <img src="../../assets/images/Logo.png" />
-          <span class="green q-mr-xs q-ml-sm">Beldex </span>
-          <span>Electron Wallet</span>
-        </div>
-        <!-- <template v-if="show_menu">
+  <q-layout view="hHh Lpr lFf" class="wallet-select-layout">
+    <q-header class="wallet-select-layout__header">
+      <BeldexTopBar
+        :net-type="($store.state.gateway.app.config.app || {}).net_type"
+      >
+        <template #actions>
           <MainMenu :disable-switch-wallet="true" />
         </template>
-        <template v-else>
-          <q-btn
-            class="cancel"
-            icon="reply"
-            flat
-            round
-            dense
-            @click="cancel()"
-          />
-        </template>
-        <q-toolbar-title
-          v-if="page_title == 'beldex'"
-          class="flex items-center justify-center"
-        >
-          <img src="beldex.png" height="32" />
-        </q-toolbar-title>
-        <q-toolbar-title v-else class="flex items-center justify-center">{{
-          page_title + "done"
-        }}</q-toolbar-title> -->
-
-        <template>
-          <MainMenu :disable-switch-wallet="true" />
-        </template>
-      </q-toolbar>
+      </BeldexTopBar>
     </q-header>
 
     <q-page-container>
       <router-view ref="page" />
     </q-page-container>
-
-    <!-- <StatusFooter /> -->
   </q-layout>
 </template>
 
 <script>
 // import StatusFooter from "components/footer";
 import MainMenu from "components/menus/mainmenu";
+import BeldexTopBar from "components/beldex_top_bar";
 
 export default {
   components: {
     // StatusFooter,
-    MainMenu
+    MainMenu,
+    BeldexTopBar
   },
   data() {
     return {};
@@ -109,4 +80,13 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss">
+.wallet-select-layout {
+  min-height: 100vh;
+
+  .wallet-select-layout__header {
+    background: transparent;
+    color: inherit;
+  }
+}
+</style>

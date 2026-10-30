@@ -1,28 +1,46 @@
 <template>
-  <q-page
-    class="create-wallet beldex-wallet flex justify-center items-center"
-    style="min-height: unset; height: calc(100vh - 70px)"
-  >
-    <section class="flex justify-center items-center">
-      <div class="fields">
-        <div class="createTitle">{{ this.$t("titles.wallet.createNew") }}</div>
-        <OxenField
-          :label="$t('fieldLabels.walletName')"
-          :error="$v.wallet.name.$error"
-        >
+  <q-page class="beldex-form-page">
+    <!-- Step 1: name. Step 2: password. -->
+    <section class="beldex-panel beldex-form-page__card">
+      <div>
+        <div class="beldex-heading">
+          <button
+            type="button"
+            class="beldex-icon-btn"
+            :aria-label="$t('buttons.back')"
+            @click="back()"
+          >
+            ←
+          </button>
+          <h1 class="beldex-heading__title">
+            {{
+              step === 1
+                ? $t("titles.wallet.createNew")
+                : $t("fieldLabels.password")
+            }}
+          </h1>
+        </div>
+        <p v-if="step === 1" class="beldex-heading__subtitle">
+          {{ $t("strings.createWalletSubtitle") }}
+        </p>
+      </div>
+
+      <div v-show="step === 1" class="beldex-form-page__fields">
+        <BeldexField class="beldex-field--hero" :error="$v.wallet.name.$error">
           <q-input
             v-model="wallet.name"
-            :dark="theme == 'dark'"
+            dark
             :placeholder="$t('placeholders.walletName')"
+            :aria-label="$t('fieldLabels.walletName')"
             borderless
             dense
             maxlength="26"
-            @keyup.enter="create"
+            @keyup.enter="next"
             @blur="$v.wallet.name.$touch"
           />
-        </OxenField>
+        </BeldexField>
 
-        <OxenField :label="$t('fieldLabels.seedLanguage')" class="dropdown">
+        <BeldexField :label="$t('fieldLabels.seedLanguage')">
           <q-select
             v-model="wallet.language"
             :options="languageOptions"
@@ -31,47 +49,57 @@
             emit-value
             map-options
             dropdown-icon="expand_more"
+            popup-content-class="beldex-menu beldex-menu--compact"
           />
-        </OxenField>
+        </BeldexField>
+      </div>
 
-        <OxenField :label="$t('fieldLabels.password')">
+      <div v-show="step === 2" class="beldex-form-page__fields">
+        <BeldexField class="beldex-field--hero">
           <q-input
             v-model="wallet.password"
             type="password"
-            :dark="theme == 'dark'"
+            dark
             :placeholder="$t('placeholders.walletPassword')"
+            :aria-label="$t('fieldLabels.password')"
             borderless
             dense
             @keyup.enter="create"
           />
-        </OxenField>
-        <!-- :placeholder="$t('placeholders.reEnterWalletPassword')" -->
-        <OxenField :label="$t('fieldLabels.confirmPassword')">
+        </BeldexField>
+        <BeldexField class="beldex-field--hero">
           <q-input
             v-model="wallet.password_confirm"
             type="password"
-            :dark="theme == 'dark'"
+            dark
             :placeholder="$t('placeholders.reEnterWalletPassword')"
+            :aria-label="$t('fieldLabels.confirmPassword')"
             borderless
             dense
             @keyup.enter="create"
           />
-        </OxenField>
-        <div class="flex justify-center align-center submit">
-          <q-btn
-            class="submit-button"
-            color="cancel"
-            :label="$t('buttons.cancel')"
-            @click="cancel()"
-          />
-          <span class="divider"></span>
-          <q-btn
-            class="submit-button"
-            color="primary"
-            :label="$t('buttons.createWallet')"
-            @click="create"
-          />
-        </div>
+        </BeldexField>
+      </div>
+
+      <div class="beldex-form-page__actions">
+        <q-btn
+          v-if="step === 1"
+          class="beldex-btn beldex-form-page__submit"
+          unelevated
+          no-caps
+          @click="next"
+        >
+          {{ $t("buttons.next") }}
+          <img src="~assets/icons/arrow-right.svg" alt="" />
+        </q-btn>
+        <q-btn
+          v-else
+          class="beldex-btn beldex-form-page__submit"
+          unelevated
+          no-caps
+          :label="$t('buttons.createWallet')"
+          @click="create"
+        />
       </div>
     </section>
   </q-page>
@@ -80,10 +108,10 @@
 <script>
 import { required } from "vuelidate/lib/validators";
 import { mapState } from "vuex";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 export default {
   components: {
-    OxenField
+    BeldexField
   },
   data() {
     const languageOptions = [
@@ -107,7 +135,9 @@ export default {
         password: "",
         password_confirm: ""
       },
-      languageOptions
+      languageOptions,
+      // UI-only: 1 = name (+ seed language), 2 = password
+      step: 1
     };
   },
   computed: mapState({
@@ -153,6 +183,25 @@ export default {
     }
   },
   methods: {
+    next() {
+      this.$v.wallet.name.$touch();
+      if (this.$v.wallet.name.$error) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 1000,
+          message: this.$t("notification.errors.enterWalletName")
+        });
+        return;
+      }
+      this.step = 2;
+    },
+    back() {
+      if (this.step === 2) {
+        this.step = 1;
+        return;
+      }
+      this.cancel();
+    },
     createWallet() {
       this.$q.loading.show({
         delay: 0,
@@ -214,20 +263,3 @@ export default {
   }
 };
 </script>
-
-<style lang="scss">
-.create-wallet {
-  .dropdown {
-    .content:hover {
-      background-color: #41415b !important;
-      border-color: #41415b !important;
-      // transition: none;
-    }
-  }
-}
-.submit {
-  .q-btn {
-    min-width: 251px;
-  }
-}
-</style>

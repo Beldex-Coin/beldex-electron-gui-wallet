@@ -50,6 +50,7 @@
                     >
                       <q-date
                         v-model="wallet.refresh_start_date"
+                        class="beldex-date"
                         :options="dateRangeOptions"
                       >
                         <div class="row items-center justify-end">
