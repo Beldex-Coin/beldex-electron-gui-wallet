@@ -198,6 +198,7 @@ function toPageString(value) {
 const electronAPI = {
   clipboard: {
     writeText: text => clipboard.writeText(text),
+    readText: () => clipboard.readText(),
     writeImageFromDataUrl: dataUrl => {
       const image = nativeImage.createFromDataURL(dataUrl);
       clipboard.writeImage(image);

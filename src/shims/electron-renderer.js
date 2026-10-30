@@ -2,6 +2,7 @@ const electronAPI = window.electronAPI;
 
 export const clipboard = {
   writeText: text => electronAPI.clipboard.writeText(text),
+  readText: () => electronAPI.clipboard.readText(),
   writeImage: image => {
     const dataUrl = image && image.dataUrl ? image.dataUrl : image;
     electronAPI.clipboard.writeImageFromDataUrl(dataUrl);
