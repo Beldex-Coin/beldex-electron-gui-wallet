@@ -420,35 +420,35 @@ export class Daemon {
       seconds = 3600;
     }
 
-    let params = {
-      bans: [
-        {
-          host,
-          seconds,
-          ban: true
-        }
-      ]
-    };
+    // Current beldexd takes a flat { host, seconds, ban } and rejects the
+    // Monero-style { bans: [...] } wrapper with "Invalid params"; older
+    // builds only accept the wrapper, so fall back to it on error.
+    const flat = { host, seconds, ban: true };
+    const legacy = { bans: [flat] };
 
-    this.sendRPC("set_bans", params).then(data => {
-      if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+    this.sendRPC("set_bans", flat)
+      .then(data =>
+        data.hasOwnProperty("error") ? this.sendRPC("set_bans", legacy) : data
+      )
+      .then(data => {
+        if (data.hasOwnProperty("error") || !data.hasOwnProperty("result")) {
+          this.sendGateway("show_notification", {
+            type: "negative",
+            i18n: "notification.errors.banningPeer",
+            timeout: 2000
+          });
+          return;
+        }
+
+        let end_time = new Date(Date.now() + seconds * 1000).toLocaleString();
         this.sendGateway("show_notification", {
-          type: "negative",
-          i18n: "notification.errors.banningPeer",
+          i18n: ["notification.positive.bannedPeer", { host, time: end_time }],
           timeout: 2000
         });
-        return;
-      }
 
-      let end_time = new Date(Date.now() + seconds * 1000).toLocaleString();
-      this.sendGateway("show_notification", {
-        i18n: ["notification.positive.bannedPeer", { host, time: end_time }],
-        timeout: 2000
+        // Send updated peer and ban list
+        this.heartbeatSlowAction();
       });
-
-      // Send updated peer and ban list
-      this.heartbeatSlowAction();
-    });
   }
 
   timestampToHeight(timestamp, pivot = null, recursion_limit = null) {
