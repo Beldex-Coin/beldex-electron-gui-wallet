@@ -33,7 +33,16 @@ const whitelistedEnv = {
 module.exports = function() {
   return {
     // app boot (/src/boot)
-    boot: ["icon-map", "i18n", "axios", "vuelidate", "gateway", "timeago"],
+    boot: [
+      "icon-map",
+      "notify",
+      "loading",
+      "i18n",
+      "axios",
+      "vuelidate",
+      "gateway",
+      "timeago"
+    ],
     css: ["app.styl"],
     extras: [
       // ctx.theme.mat ? "roboto-font" : null,
@@ -95,7 +104,6 @@ module.exports = function() {
         "QStep",
         "QStepper",
         "QStepperNavigation",
-        "QSpinner",
         "QList",
         "QItemLabel",
         "QItem",
