@@ -1,92 +1,70 @@
 <template>
+  <!-- Activity ledger rows -->
   <div class="tx-list">
     <template v-if="tx_list_paged.length === 0">
-      <section
-        class="flex column justify-center items-center"
-        style="height: 39vh"
-      >
-        <div>
-          <img src="../assets/images/No_transaction.svg" height="119px" />
+      <section class="tx-list__empty">
+        <div class="tx-list__empty-icon">
+          <img src="~assets/icons/tx-stake.svg" alt="" />
         </div>
-        <p class="q-pb-md q-pt-sm q-mb-none qtab-desc ft-semibold infoTxt">
+        <p class="tx-list__empty-title">
           {{ $t("strings.noTransactionsFound") }}
         </p>
-
-        <div class="hint-txt">After your first transaction,</div>
-        <div class="hint-txt">you will be able to view it here.</div>
+        <p class="tx-list__empty-hint">
+          {{ $t("titles.swap.afterYourFirstTxn") }},
+          {{ $t("titles.swap.youWillBeViewHere") }}.
+        </p>
       </section>
     </template>
 
     <template v-else>
-      <!-- <section v-if="true"> -->
-
       <q-infinite-scroll ref="scroller" @load="loadMore">
-        <q-list
-          link
-          no-border
-          :dark="theme == 'dark'"
-          class="oxen-list tx-list"
-        >
+        <q-list no-border dark class="tx-list__rows">
           <q-item
             v-for="(tx, i) in tx_list_paged"
             :key="`${tx.txid}-${tx.type}-${i}`"
-            class="oxen-list-item transaction"
+            clickable
+            class="tx-list__row"
             :class="'tx-' + tx.type"
             @click.native="details(tx)"
           >
-            <q-item-section class="type flex items-center">
-              <div>
-                <!-- <img
-                  :src="txnTypeIndicate(tx.type)"
-                  width="20px"
-                  height="20px"
-                />-->
-                <TxTypeIcon :type="tx.type" :tooltip="false" />
+            <TxTypeIcon :type="tx.type" :tooltip="false" />
+            <div class="tx-list__main">
+              <div class="tx-list__title">{{ tx.type | typeToString }}</div>
+              <div class="tx-list__sub">
+                <span class="beldex-truncate">{{
+                  tx.txid.slice(0, 20) + "…"
+                }}</span>
+                <span>· {{ formatHeight(tx) }}</span>
               </div>
-              <!-- <div>{{ tx.type | typeToString }}</div> -->
-            </q-item-section>
-            <q-item-label class="main">
-              <q-item-label class="amount ft-semibold">
+            </div>
+            <div class="tx-list__meta">
+              <div
+                class="tx-list__amount"
+                :class="{
+                  'tx-list__amount--in': [
+                    'in',
+                    'miner',
+                    'mnode',
+                    'gov'
+                  ].includes(tx.type),
+                  'tx-list__amount--out': ['out', 'failed'].includes(tx.type),
+                  'tx-list__amount--pending': ['pending', 'pool'].includes(
+                    tx.type
+                  )
+                }"
+              >
                 {{ "out" === tx.type ? "-" : "" }}
-                <FormatOxen :amount="tx.amount || 0" />
-              </q-item-label>
-              <q-item-label class="txn_id ft-Light" caption>{{
-                tx.txid
-              }}</q-item-label>
-            </q-item-label>
-            <q-item-section class="meta">
-              <q-item-label class="ft-small">
+                <FormatBeldex :amount="tx.amount || 0" />
+              </div>
+              <div class="tx-list__date">
                 {{
                   `${
                     monthNames[new Date(tx.timestamp * 1000).getMonth()]
-                  } ${new Date(tx.timestamp * 1000).getDate()},${new Date(
+                  } ${new Date(tx.timestamp * 1000).getDate()}, ${new Date(
                     tx.timestamp * 1000
                   ).getFullYear()}`
                 }}
-                <!-- <timeago
-                  :datetime="tx.timestamp * 1000"
-                  :auto-update="60"
-                  :locale="$i18n.locale"
-                />-->
-              </q-item-label>
-              <q-item-label caption class="blk-height-txt ft-Light">{{
-                formatHeight(tx)
-              }}</q-item-label>
-            </q-item-section>
-
-            <div class="q-ml-lg q-mr-xs flex items-center">
-              <svg
-                width="9"
-                height="13"
-                viewBox="0 0 9 13"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M0.148438 1.87727V11.9944C0.148438 12.7651 0.855307 13.232 1.39581 12.8188L7.99948 7.76076C8.50103 7.37686 8.50103 6.49673 7.99948 6.11283L1.39581 1.05282C0.855307 0.638642 0.148438 1.10655 0.148438 1.87727Z"
-                  fill="#8787A8"
-                />
-              </svg>
+              </div>
             </div>
 
             <ContextMenu
@@ -95,28 +73,20 @@
               @showDetails="details(tx)"
               @openExplorer="openExplorer(tx.txid)"
             />
-            <div class="hr-separator" />
           </q-item>
 
-          <QSpinnerDots slot="message" :size="40"></QSpinnerDots>
+          <beldex-spinner slot="message" :size="40" />
         </q-list>
       </q-infinite-scroll>
-      <!-- </section> -->
-      <!-- <section v-else> -->
-      <!-- <TxDetails ref="txDetails"/> -->
-      <!-- </section> -->
     </template>
-
-    <!-- <TxDetails  ref="txDetails"/> -->
   </div>
 </template>
 
 <script>
 import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
-import { QSpinnerDots } from "quasar";
 // import TxDetails from "components/tx_details";
-import FormatOxen from "components/format_oxen";
+import FormatBeldex from "components/format_beldex";
 import { i18n } from "boot/i18n";
 import ContextMenu from "components/menus/contextmenu";
 import TxTypeIcon from "components/tx_type_icon";
@@ -151,9 +121,8 @@ export default {
     }
   },
   components: {
-    QSpinnerDots,
     // TxDetails,
-    FormatOxen,
+    FormatBeldex,
     ContextMenu,
     TxTypeIcon
   },
@@ -429,56 +398,130 @@ export default {
 </script>
 
 <style lang="scss">
-.tx-list {
-  .oxen-list-item {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-right: 0;
-  }
-  .oxen-list-item:hover {
-    background-color: #2c2c43;
+.beldex-app .tx-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+
+  &__empty {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--beldex-space-2);
+    min-height: 260px;
+    text-align: center;
   }
 
-  .infoTxt {
-    color: white;
-  }
-  // .q-item__label {
-  //   line-height: 1.2em !important;
-  //   max-width: 60%;
-  // }
-  .transaction {
-    .main {
-      margin: 0;
-      padding: 8px 10px;
-      width: 60%;
-      .amount {
-        color: #d1d1d3;
-        span {
-          color: #d1d1d3;
-        }
-      }
-      .txn_id {
-        font-size: 12 px;
-        color: #d1d1d3;
-      }
-      div {
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-    .blk-height-txt {
-      color: #afafbe;
-    }
-    .type {
-      min-width: 45px;
-      max-width: 45px;
-      div {
-        margin-right: 8px;
-      }
+  &__empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--beldex-space-3);
+    background-color: rgba(235, 235, 235, 0.05);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+
+    img {
+      width: 16px;
+      height: 16px;
     }
   }
-  .hint-txt {
-    color: #82828d;
+
+  &__empty-title {
+    margin: 0;
+    font-family: var(--beldex-font-sans-medium);
+    font-size: var(--beldex-text-base);
+    color: var(--beldex-text);
+  }
+
+  &__empty-hint {
+    max-width: 240px;
+    margin: 0;
+    font-size: var(--beldex-text-sm);
+    line-height: 16px;
+    color: var(--beldex-text-faint);
+  }
+
+  &__rows {
+    padding: 0;
+    background: transparent;
+  }
+
+  &__row {
+    gap: var(--beldex-space-4);
+    min-height: 59px;
+    padding: var(--beldex-space-3) var(--beldex-space-2);
+    border-bottom: 1px solid var(--beldex-hairline);
+
+    &:hover {
+      background-color: rgba(235, 235, 235, 0.03);
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-family: var(--beldex-font-sans-medium);
+    font-size: var(--beldex-text-md);
+    line-height: 16px;
+    color: #acacac;
+  }
+
+  &__sub {
+    display: flex;
+    gap: var(--beldex-space-1);
+    min-width: 0;
+    font-size: var(--beldex-text-sm);
+    line-height: 16px;
+    color: var(--beldex-text-faint);
+    white-space: nowrap;
+  }
+
+  &__meta {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    white-space: nowrap;
+  }
+
+  &__amount {
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    line-height: 16px;
+    color: #acacac;
+
+    .coin-extensions {
+      color: inherit;
+    }
+
+    &--in {
+      color: var(--beldex-accent);
+    }
+
+    &--out {
+      color: var(--beldex-danger);
+    }
+
+    &--pending {
+      color: var(--beldex-warning-strong);
+    }
+  }
+
+  &__date {
+    font-size: var(--beldex-text-xs);
+    line-height: 15px;
+    color: var(--beldex-text-faint);
   }
 }
 </style>

@@ -1,86 +1,43 @@
 <template>
-  <!-- <q-list class="oxen-list-item" no-border @click.native="details(address)"> -->
-  <q-list class="oxen-list-item" no-border>
-    <q-item>
-      <q-item-section side>
-        <div class="row icon-btn ">
-          <q-btn
-            flat
-            padding="sm"
-            size="sm"
-            icon="content_copy"
-            class="q-mr-sm "
-            color="green"
-            @click="copyAddress(address.address, $event)"
-          >
-            <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-              {{ $t("menuItems.copyAddress") }}
-            </q-tooltip>
-          </q-btn>
-
-          <q-btn
-            style="margin-right: 4px;"
-            flat
-            icon="qr_code_scanner"
-            padding="sm"
-            size="sm"
-            @click="showQR(address.address, $event)"
-          >
-            <!-- height of 24 makes it equal size as copy -->
-            <!-- <img :src="qrImage" height="24" /> -->
-            <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-              {{ $t("menuItems.showQRCode") }}
-            </q-tooltip>
-          </q-btn>
-        </div>
-      </q-item-section>
-
-      <q-item-section class="flex" @click.native="details(address)">
-        <q-item-label class="ellipsis ft-regular address-label">{{
+  <!-- Address row -->
+  <div class="receive-item">
+    <button type="button" class="receive-item__main" @click="details(address)">
+      <span class="receive-item__index">#{{ address.address_index }}</span>
+      <span class="receive-item__text">
+        <span class="beldex-truncate receive-item__address">{{
           address.address
-        }}</q-item-label>
-        <q-item-label
-          v-if="sublabel"
-          caption
-          class="non-selectable  address-sub-label"
-          >{{ sublabel }}</q-item-label
-        >
-      </q-item-section>
-    </q-item>
-    <!-- <template v-if="shouldShowInfo">
-      <q-separator />
-      <q-item>
-        <q-item-section>
-          <div class="row info-section">
-            <span class="col-sm-4">
-              <span>{{ $t("strings.oxenBalance") }}</span>
-              <br />
-              <span class="value">{{ address.balance | currency }}</span>
-            </span>
-            <span class="col-sm-4">
-              <span>{{ $t("strings.oxenUnlockedBalance") }}</span>
-              <br />
-              <span class="value">{{
-                address.unlocked_balance | currency
-              }}</span>
-            </span>
-            <span class="col-sm-4">
-              <span>{{ $t("strings.unspentOutputs") }}</span>
-              <br />
-              <span class="value">{{
-                address.num_unspent_outputs | toString
-              }}</span>
-            </span>
-          </div>
-        </q-item-section>
-      </q-item>
-    </template> -->
+        }}</span>
+        <span v-if="sublabel" class="receive-item__sub">{{ sublabel }}</span>
+      </span>
+    </button>
+    <button
+      type="button"
+      class="beldex-square-btn"
+      :aria-label="$t('menuItems.copyAddress')"
+      @click="copyAddress(address.address, $event)"
+    >
+      <q-icon name="content_copy" size="14px" />
+      <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
+        {{ $t("menuItems.copyAddress") }}
+      </q-tooltip>
+    </button>
+    <button
+      type="button"
+      class="beldex-square-btn"
+      :aria-label="$t('menuItems.showQRCode')"
+      @click="showQR(address.address, $event)"
+    >
+      <q-icon name="qr_code_scanner" size="14px" />
+      <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
+        {{ $t("menuItems.showQRCode") }}
+      </q-tooltip>
+    </button>
     <ContextMenu
       :menu-items="menuItems"
       @showDetails="details(address)"
       @copyAddress="copyAddress(address.address, $event)"
     />
-  </q-list>
+  </div>
 </template>
 
 <script>
@@ -155,17 +112,7 @@ export default {
 </script>
 
 <style>
-.info-section {
-  max-height: 3rem;
-}
-.icon-btn .q-btn {
-  background-color: #1f1f28;
-  height: 35px;
-}
-.icon-btn .q-btn--flat:hover {
-  border-radius: 10px !important;
-}
-
+/* Legacy globals: addressbook.vue uses these class names too. */
 .address-label {
   color: #afafbe;
   font-size: 14px;
@@ -173,5 +120,55 @@ export default {
 .address-sub-label {
   color: #afafbe;
   font-size: 10px;
+}
+</style>
+
+<style lang="scss">
+.beldex-app .receive-item {
+  display: flex;
+  align-items: center;
+  gap: var(--beldex-space-2);
+  min-height: 40px;
+  padding: var(--beldex-space-1) 0;
+  border-bottom: 1px solid var(--beldex-hairline);
+
+  &__main {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: var(--beldex-space-4);
+    min-width: 0;
+    padding: 0;
+    text-align: left;
+    color: var(--beldex-text);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
+  &__index {
+    flex: none;
+    min-width: 28px;
+    padding: 2px 6px;
+    font-size: var(--beldex-text-xs);
+    color: var(--beldex-text-muted);
+    border: 1px solid var(--beldex-border);
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__address {
+    font-size: var(--beldex-text-md);
+    line-height: 16px;
+  }
+
+  &__sub {
+    font-size: var(--beldex-text-xs);
+    color: var(--beldex-text-faint);
+  }
 }
 </style>

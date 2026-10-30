@@ -1,221 +1,192 @@
 <template>
-  <q-page class="send" style="min-height: unset">
+  <!-- Send form. Bindings, validators and
+       handlers are unchanged; only markup and styles. -->
+  <q-page class="send">
     <template v-if="view_only">
-      <div class="flex" style="height: 550px;">
-        <section
-          class="flex column justify-center no-wrap items-center empty-txn-wrapper"
-          style="width: 100%;"
-        >
-          <div class="view-only-header">
-            <div class="view-only">
-              <img src="../../assets/images/viewOnlyMode.svg" height="40px" />
-            </div>
-          </div>
-          <div class="hint-txt" style="margin-top: 10px;">
-            <!-- {{ this.$t("titles.swap.afterYourFirstTxn") }}, -->
-            Your wallet is currently in
-          </div>
-          <div class="hint-txt">
-            <span style="font-family:Poppins-Bold;">view-only mode.</span>
-            Please load the full
-          </div>
-
-          <div class="hint-txt">wallet to enable sending coins.</div>
-        </section>
-      </div>
+      <section class="send__view-only">
+        <div class="send__view-only-icon">
+          <img src="~assets/icons/view-only-eye.svg" alt="" />
+        </div>
+        <p class="send__view-only-title">{{ $t("strings.viewOnlyTitle") }}</p>
+        <p class="send__view-only-text">
+          {{ $t("strings.viewOnlyDescription") }}
+        </p>
+      </section>
     </template>
     <template v-else>
-      <div>
-        <div v-if="!contact" style="padding: 0px 2px 10px;">
-          <div class="inner-box">
-            <div class="row gutter-md q-mt-lg">
-              <!-- Amount -->
-              <div class="col-8 amount">
-                <OxenField
-                  :label="$t('fieldLabels.amount')"
-                  :error="$v.newTx.amount.$error"
-                  class="ft-medium"
-                >
-                  <q-input
-                    v-model="newTx.amount"
-                    type="number"
-                    min="0"
-                    :max="unlocked_balance / 1e9"
-                    placeholder="00.00"
-                    borderless
-                    dense
-                    @blur="$v.newTx.amount.$touch"
-                    @keydown="keyHandler"
-                  />
-                  <q-btn
-                    color="secondary"
-                    @click="newTx.amount = unlocked_balance / 1e9"
-                    >{{ $t("buttons.max") }}</q-btn
-                  >
-                </OxenField>
-              </div>
-
-              <!-- Priority -->
-              <div class="col-4 priority">
-                <OxenField
-                  :label="$t('fieldLabels.priority')"
-                  class="ft-medium"
-                >
-                  <q-select
-                    v-model="newTx.priority"
-                    emit-value
-                    map-options
-                    :options="priorityOptions"
-                    borderless
-                    dense
-                    dropdown-icon="expand_more"
-                  />
-                </OxenField>
-              </div>
-            </div>
-
-            <!-- Address -->
-            <div class="col q-mt-lg address">
-              <article class="flex justify-between align-center labelBox">
-                <div
-                  class="label-txt ft-medium"
-                  style="display: flex; align-items: center"
-                >
-                  {{ $t("fieldLabels.to") }}
-                  <q-icon
-                    style="margin-left: 4px"
-                    name="o_info"
-                    size="12px"
-                    color="#A9A9CD"
-                  />
-                </div>
-                <q-btn flat dense class="contact-btn" @click="navigator">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 21 21"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M4.98128 0.440674C3.30463 0.440674 1.92754 1.80477 1.92754 3.4656V3.7406H1.0947C0.98434 3.73905 0.874769 3.75925 0.772356 3.80001C0.669944 3.84078 0.576731 3.9013 0.498137 3.97806C0.419542 4.05482 0.357132 4.14629 0.314534 4.24715C0.271936 4.34801 0.25 4.45625 0.25 4.56558C0.25 4.67491 0.271936 4.78315 0.314534 4.88401C0.357132 4.98487 0.419542 5.07634 0.498137 5.1531C0.576731 5.22986 0.669944 5.29038 0.772356 5.33114C0.874769 5.37191 0.98434 5.39211 1.0947 5.39056H4.42606C4.53642 5.39211 4.64599 5.37191 4.7484 5.33114C4.85081 5.29038 4.94403 5.22986 5.02262 5.1531C5.10122 5.07634 5.16363 4.98487 5.20622 4.88401C5.24882 4.78315 5.27076 4.67491 5.27076 4.56558C5.27076 4.45625 5.24882 4.34801 5.20622 4.24715C5.16363 4.14629 5.10122 4.05482 5.02262 3.97806C4.94403 3.9013 4.85081 3.84078 4.7484 3.80001C4.64599 3.75925 4.53642 3.73905 4.42606 3.7406H3.59322V3.4656C3.59322 2.6966 4.20495 2.09064 4.98128 2.09064H17.1963C17.9726 2.09064 18.5843 2.6966 18.5843 3.4656V17.7653C18.5843 18.5343 17.9726 19.1402 17.1963 19.1402H4.98128C4.20495 19.1402 3.59322 18.5343 3.59322 17.7653V16.9403H4.42606C4.53642 16.9418 4.64599 16.9216 4.7484 16.8809C4.85081 16.8401 4.94403 16.7796 5.02262 16.7028C5.10122 16.6261 5.16363 16.5346 5.20622 16.4337C5.24882 16.3329 5.27076 16.2246 5.27076 16.1153C5.27076 16.006 5.24882 15.8977 5.20622 15.7969C5.16363 15.696 5.10122 15.6046 5.02262 15.5278C4.94403 15.451 4.85081 15.3905 4.7484 15.3497C4.64599 15.309 4.53642 15.2888 4.42606 15.2903H3.59322V14.1904H1.92754V15.2903H1.0947C0.98434 15.2888 0.874769 15.309 0.772356 15.3497C0.669944 15.3905 0.576731 15.451 0.498137 15.5278C0.419542 15.6046 0.357132 15.696 0.314534 15.7969C0.271936 15.8977 0.25 16.006 0.25 16.1153C0.25 16.2246 0.271936 16.3329 0.314534 16.4337C0.357132 16.5346 0.419542 16.6261 0.498137 16.7028C0.576731 16.7796 0.669944 16.8401 0.772356 16.8809C0.874769 16.9216 0.98434 16.9418 1.0947 16.9403H1.92754V17.7653C1.92754 19.4261 3.30463 20.7902 4.98128 20.7902H17.1963C18.8729 20.7902 20.25 19.4261 20.25 17.7653V3.4656C20.25 1.80477 18.8729 0.440674 17.1963 0.440674H4.98128ZM7.75741 3.7406C7.53654 3.74062 7.32472 3.82754 7.16853 3.98225C7.01235 4.13696 6.9246 4.34679 6.92457 4.56558V8.41549C6.9246 8.63428 7.01235 8.8441 7.16853 8.99881C7.32472 9.15352 7.53654 9.24045 7.75741 9.24047H14.9754C15.1962 9.24045 15.4081 9.15352 15.5642 8.99881C15.7204 8.8441 15.8082 8.63428 15.8082 8.41549V4.56558C15.8082 4.34679 15.7204 4.13696 15.5642 3.98225C15.4081 3.82754 15.1962 3.74062 14.9754 3.7406H7.75741ZM8.59025 5.39056H14.1425V7.59051H8.59025V5.39056ZM1.92754 6.49053V7.59051H1.0947C0.98434 7.58896 0.874769 7.60916 0.772356 7.64992C0.669944 7.69069 0.576731 7.75121 0.498137 7.82797C0.419542 7.90473 0.357132 7.9962 0.314534 8.09706C0.271936 8.19792 0.25 8.30616 0.25 8.41549C0.25 8.52482 0.271936 8.63306 0.314534 8.73392C0.357132 8.83478 0.419542 8.92625 0.498137 9.00301C0.576731 9.07977 0.669944 9.14029 0.772356 9.18105C0.874769 9.22182 0.98434 9.24202 1.0947 9.24047H4.42606C4.53642 9.24202 4.64599 9.22182 4.7484 9.18105C4.85081 9.14029 4.94403 9.07977 5.02262 9.00301C5.10122 8.92625 5.16363 8.83478 5.20622 8.73392C5.24882 8.63306 5.27076 8.52482 5.27076 8.41549C5.27076 8.30616 5.24882 8.19792 5.20622 8.09706C5.16363 7.9962 5.10122 7.90473 5.02262 7.82797C4.94403 7.75121 4.85081 7.69069 4.7484 7.64992C4.64599 7.60916 4.53642 7.58896 4.42606 7.59051H3.59322V6.49053H1.92754ZM1.92754 10.3404V11.4404H1.0947C0.98434 11.4389 0.874769 11.4591 0.772356 11.4998C0.669944 11.5406 0.576731 11.6011 0.498137 11.6779C0.419542 11.7546 0.357132 11.8461 0.314534 11.947C0.271936 12.0478 0.25 12.1561 0.25 12.2654C0.25 12.3747 0.271936 12.483 0.314534 12.5838C0.357132 12.6847 0.419542 12.7762 0.498137 12.8529C0.576731 12.9297 0.669944 12.9902 0.772356 13.031C0.874769 13.0717 0.98434 13.0919 1.0947 13.0904H4.42606C4.53642 13.0919 4.64599 13.0717 4.7484 13.031C4.85081 12.9902 4.94403 12.9297 5.02262 12.8529C5.10122 12.7762 5.16363 12.6847 5.20622 12.5838C5.24882 12.483 5.27076 12.3747 5.27076 12.2654C5.27076 12.1561 5.24882 12.0478 5.20622 11.947C5.16363 11.8461 5.10122 11.7546 5.02262 11.6779C4.94403 11.6011 4.85081 11.5406 4.7484 11.4998C4.64599 11.4591 4.53642 11.4389 4.42606 11.4404H3.59322V10.3404H1.92754ZM7.75741 11.4404C7.64705 11.4389 7.53748 11.4591 7.43507 11.4998C7.33266 11.5406 7.23944 11.6011 7.16085 11.6779C7.08225 11.7546 7.01985 11.8461 6.97725 11.947C6.93465 12.0478 6.91271 12.1561 6.91271 12.2654C6.91271 12.3747 6.93465 12.483 6.97725 12.5838C7.01985 12.6847 7.08225 12.7762 7.16085 12.8529C7.23944 12.9297 7.33266 12.9902 7.43507 13.031C7.53748 13.0717 7.64705 13.0919 7.75741 13.0904H14.9754C15.0857 13.0919 15.1953 13.0717 15.2977 13.031C15.4001 12.9902 15.4933 12.9297 15.5719 12.8529C15.6505 12.7762 15.7129 12.6847 15.7555 12.5838C15.7981 12.483 15.8201 12.3747 15.8201 12.2654C15.8201 12.1561 15.7981 12.0478 15.7555 11.947C15.7129 11.8461 15.6505 11.7546 15.5719 11.6779C15.4933 11.6011 15.4001 11.5406 15.2977 11.4998C15.1953 11.4591 15.0857 11.4389 14.9754 11.4404H7.75741ZM7.75741 15.2903C7.64705 15.2888 7.53748 15.309 7.43507 15.3497C7.33266 15.3905 7.23944 15.451 7.16085 15.5278C7.08225 15.6046 7.01985 15.696 6.97725 15.7969C6.93465 15.8977 6.91271 16.006 6.91271 16.1153C6.91271 16.2246 6.93465 16.3329 6.97725 16.4337C7.01985 16.5346 7.08225 16.6261 7.16085 16.7028C7.23944 16.7796 7.33266 16.8401 7.43507 16.8809C7.53748 16.9216 7.64705 16.9418 7.75741 16.9403H14.9754C15.0857 16.9418 15.1953 16.9216 15.2977 16.8809C15.4001 16.8401 15.4933 16.7796 15.5719 16.7028C15.6505 16.6261 15.7129 16.5346 15.7555 16.4337C15.7981 16.3329 15.8201 16.2246 15.8201 16.1153C15.8201 16.006 15.7981 15.8977 15.7555 15.7969C15.7129 15.696 15.6505 15.6046 15.5719 15.5278C15.4933 15.451 15.4001 15.3905 15.2977 15.3497C15.1953 15.309 15.0857 15.2888 14.9754 15.2903H7.75741Z"
-                      fill="white"
-                    />
-                  </svg>
-                </q-btn>
-              </article>
-              <OxenField :error="$v.newTx.address.$error">
-                <q-input
-                  v-model="newTx.address"
-                  class="address-textarea full-width text-area-oxen"
-                  type="textarea"
-                  :placeholder="address_placeholder"
-                  borderless
-                  dense
-                  @blur="$v.newTx.address.$touch"
-                  @input="applyAlphanumericMask"
-                />
-                <!-- <q-btn color="secondary"  to="addressbook">
+      <div v-if="!contact" class="send__form">
+        <!-- Recipient -->
+        <div class="send__field">
+          <div class="send__label-row">
+            <span class="beldex-label">{{
+              $t("fieldLabels.recipientAddressBns")
+            }}</span>
+            <button type="button" class="send__aside-btn" @click="navigator">
+              <img src="~assets/icons/send-contacts.svg" alt="" />
               {{ $t("buttons.contacts") }}
-                </q-btn>-->
-              </OxenField>
-            </div>
-
-            <!-- <q-checkbox
-          v-model="newTx.address_book.save"
-          :label="$t('strings.saveToAddressBook')"
-            />-->
-            <div class="addAddress q-pt-sm" @click="addAddress">
-              + {{ this.$t("buttons.addAddressBook") }}
-            </div>
-            <!-- Notes -->
-            <!-- placeholder="$t('placeholders.transactionNotes')" -->
-
-            <div class="col q-mt-lg">
-              <OxenField
-                :label="$t('fieldLabels.notes')"
-                optional
-                class="ft-medium"
-              >
-                <q-input
-                  v-model="newTx.note"
-                  class="full-width text-area-oxen"
-                  type="textarea"
-                  :placeholder="this.$t('placeholders.addNotesOptional')"
-                  borderless
-                  dense
-                />
-              </OxenField>
-            </div>
-
-            <div v-if="newTx.address_book.save" class="q-mt-lg">
-              <OxenField :label="$t('fieldLabels.name')" optional>
-                <q-input
-                  v-model="newTx.address_book.name"
-                  :placeholder="$t('placeholders.addressBookName')"
-                  borderless
-                  dense
-                />
-              </OxenField>
-              <OxenField
-                class="q-mt-lg"
-                :label="$t('fieldLabels.addressBookNotes')"
-                optional
-              >
-                <q-input
-                  v-model="newTx.address_book.description"
-                  type="textarea"
-                  class="full-width text-area-oxen"
-                  rows="2"
-                  :placeholder="$t('placeholders.additionalNotes')"
-                  borderless
-                  dense
-                />
-              </OxenField>
-            </div>
+            </button>
           </div>
-          <!-- div required so the button falls below the checkbox -->
-          <div class="flex row justify-evenly btn-view q-mt-lg">
-            <!-- :label="$t('buttons.clear')" -->
-
-            <q-btn
-              class="send-btn"
-              :disable="!is_able_to_send"
-              icon="replay"
-              :label="$t('buttons.clear')"
-              @click="clearStateValues()"
+          <BeldexField :error="$v.newTx.address.$error">
+            <q-input
+              v-model="newTx.address"
+              class="full-width"
+              type="textarea"
+              autogrow
+              :placeholder="address_placeholder"
+              :aria-label="$t('fieldLabels.recipientAddressBns')"
+              dark
+              borderless
+              dense
+              @blur="$v.newTx.address.$touch"
+              @input="applyAlphanumericMask"
             />
-            <!-- :label="$t('buttons.send')" -->
-
-            <q-btn
-              class="send-btn"
-              :disable="!is_able_to_send"
-              color="primary"
-              icon="north_east"
-              :label="$t('buttons.send')"
-              @click="send()"
-            />
-          </div>
+            <button type="button" class="send__paste" @click="pasteAddress">
+              {{ $t("buttons.paste") }}
+            </button>
+          </BeldexField>
+          <button type="button" class="send__link" @click="addAddress">
+            + {{ $t("buttons.addAddressBook") }}
+          </button>
         </div>
-        <section v-else>
-          <Adressbook
-            from="send"
-            @setContactAddress="setContactAddress($event)"
+
+        <div v-if="newTx.address_book.save" class="send__field">
+          <BeldexField :label="$t('fieldLabels.name')" optional>
+            <q-input
+              v-model="newTx.address_book.name"
+              :placeholder="$t('placeholders.addressBookName')"
+              dark
+              borderless
+              dense
+            />
+          </BeldexField>
+          <BeldexField :label="$t('fieldLabels.addressBookNotes')" optional>
+            <q-input
+              v-model="newTx.address_book.description"
+              type="textarea"
+              class="full-width"
+              rows="2"
+              :placeholder="$t('placeholders.additionalNotes')"
+              dark
+              borderless
+              dense
+            />
+          </BeldexField>
+        </div>
+
+        <!-- Amount -->
+        <div class="send__field">
+          <div class="send__label-row">
+            <span class="beldex-label">{{ $t("fieldLabels.amount") }}</span>
+            <span class="send__available">
+              {{ $t("strings.availableShort") }}:
+              <FormatBeldex :amount="unlocked_balance" />
+            </span>
+          </div>
+          <BeldexField class="send__amount" :error="$v.newTx.amount.$error">
+            <q-input
+              v-model="newTx.amount"
+              type="number"
+              min="0"
+              :max="unlocked_balance / 1e9"
+              placeholder="00.00"
+              :aria-label="$t('fieldLabels.amount')"
+              dark
+              borderless
+              dense
+              @blur="$v.newTx.amount.$touch"
+              @keydown="keyHandler"
+            />
+            <button
+              type="button"
+              class="send__max"
+              @click="newTx.amount = unlocked_balance / 1e9"
+            >
+              {{ $t("buttons.max") }}
+            </button>
+            <span class="send__unit">BDX</span>
+          </BeldexField>
+        </div>
+
+        <!-- Notes -->
+        <div class="send__field">
+          <BeldexField :label="$t('fieldLabels.notes')" optional>
+            <q-input
+              v-model="newTx.note"
+              class="full-width"
+              type="textarea"
+              autogrow
+              :placeholder="$t('placeholders.addNotesOptional')"
+              dark
+              borderless
+              dense
+            />
+          </BeldexField>
+        </div>
+
+        <!-- Settlement row (priority select) -->
+        <div class="send__settlement">
+          <span class="send__settlement-label">
+            <img src="~assets/icons/send-flash.svg" alt="" />
+            {{ $t("fieldLabels.priority") }}
+          </span>
+          <q-select
+            v-model="newTx.priority"
+            class="send__priority"
+            emit-value
+            map-options
+            :options="priorityOptions"
+            :aria-label="$t('fieldLabels.priority')"
+            dark
+            borderless
+            dense
+            dropdown-icon="expand_more"
+            popup-content-class="beldex-menu beldex-menu--compact"
           />
-        </section>
-        <ConfirmTransactionDialog
-          :show="confirmTransaction"
-          :amount="confirmFields.totalAmount"
-          :isflash="confirmFields.isflash"
-          :send-to="confirmFields.destination"
-          :fee="confirmFields.totalFees"
-          :on-confirm-transaction="onConfirmTransaction"
-          :on-cancel-transaction="onCancelTransaction"
-        />
-        <q-inner-loading :showing="tx_status.sending">
-          <q-spinner color="primary" size="30" />
-        </q-inner-loading>
+        </div>
+
+        <div class="send__spacer" />
+
+        <div class="send__actions">
+          <q-btn
+            class="beldex-btn beldex-btn--ghost send__clear"
+            unelevated
+            no-caps
+            :disable="!is_able_to_send"
+            @click="clearStateValues()"
+          >
+            <img src="~assets/icons/send-clear.svg" alt="" />
+            {{ $t("buttons.clearForm") }}
+          </q-btn>
+          <q-btn
+            class="beldex-btn send__submit"
+            unelevated
+            no-caps
+            :disable="!is_able_to_send"
+            @click="send()"
+          >
+            <img src="~assets/icons/send-authorize.svg" alt="" />
+            {{ $t("buttons.authorizeTransfer") }}
+          </q-btn>
+        </div>
       </div>
+      <section v-else>
+        <Adressbook
+          from="send"
+          @setContactAddress="setContactAddress($event)"
+        />
+      </section>
+      <ConfirmTransactionDialog
+        :show="confirmTransaction"
+        :amount="confirmFields.totalAmount"
+        :isflash="confirmFields.isflash"
+        :send-to="confirmFields.destination"
+        :fee="confirmFields.totalFees"
+        :on-confirm-transaction="onConfirmTransaction"
+        :on-cancel-transaction="onCancelTransaction"
+      />
+      <q-inner-loading :showing="tx_status.sending">
+        <beldex-spinner color="primary" size="30" />
+      </q-inner-loading>
     </template>
   </q-page>
 </template>
@@ -224,19 +195,22 @@
 import { mapState } from "vuex";
 import { required, decimal } from "vuelidate/lib/validators";
 import { address, greater_than_zero } from "src/validators/common";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
+import FormatBeldex from "components/format_beldex";
 import WalletPassword from "src/mixins/wallet_password";
 import ConfirmDialogMixin from "src/mixins/confirm_dialog_mixin";
 import ConfirmTransactionDialog from "components/confirm_tx_dialog";
 import Adressbook from "../../pages/wallet/addressbook.vue";
 import objectAssignDeep from "object-assign-deep";
+import { clipboard } from "src/shims/electron-renderer";
 
 // the case for doing nothing on a tx_status update
 const DO_NOTHING = 10;
 
 export default {
   components: {
-    OxenField,
+    BeldexField,
+    FormatBeldex,
     ConfirmTransactionDialog,
     Adressbook
   },
@@ -416,6 +390,12 @@ export default {
     addAddress() {
       this.newTx.address_book.save = !this.newTx.address_book.save;
     },
+    pasteAddress() {
+      const text = (clipboard.readText() || "").trim();
+      if (!text) return;
+      this.newTx.address = text;
+      this.$v.newTx.address.$touch();
+    },
     applyAlphanumericMask() {
       // Remove non-alphanumeric characters using the regular expression
       // this.newTx.address = this.newTx.address.replace(/[\W_.]/g, "");
@@ -578,94 +558,284 @@ export default {
 </script>
 
 <style lang="scss">
-.send {
-  .send-btn {
-    margin-top: 6px;
-    width: 9vw;
-    min-width: unset;
-    height: 50px;
-  }
-  .contact-btn {
-    width: 31px;
-    height: 31px;
-  }
-}
-.inner-box {
-  height: calc(100vh - 420px);
-  overflow: auto;
-  padding-right: 5px;
-}
+// Legacy global: swapWaitingTxnHistory.vue's `.amount` relied on this while
+// Send was loaded (it always is in the wallet layout).
 .amount {
   padding-right: 10px;
-  .bg-primary {
-    width: unset;
-    color: #000000;
-  }
 }
-.address-textarea {
+
+// Send form.
+.beldex-app .send {
+  min-height: 0 !important; // beats q-page's inline min-height
+  height: 100%;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-5);
+    min-height: 100%;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-2);
+  }
+
+  &__label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--beldex-space-3);
+
+    .beldex-label {
+      font-size: var(--beldex-text-sm);
+    }
+  }
+
+  &__aside-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--beldex-text);
+    }
+
+    img {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  &__available {
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+
+    .coin-extensions {
+      color: var(--beldex-text);
+    }
+
+    > span {
+      color: var(--beldex-text);
+    }
+  }
+
+  &__link {
+    align-self: flex-start;
+    padding: 0;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-accent);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // Underline inputs without the tinted background (design "inp").
+  .beldex-field .content {
+    padding-left: 0;
+    background: transparent;
+    border-bottom-color: rgba(235, 235, 235, 0.1);
+  }
+
+  .beldex-field:not(.disable):not(.disable-hover) .content:hover {
+    background: transparent;
+  }
+
+  .beldex-field .q-field__control {
+    height: auto;
+  }
+
   textarea {
-    min-height: 70px !important;
+    min-height: 24px;
+    padding-top: 8px;
+    resize: none;
   }
-}
-.label-txt {
-  color: #fff;
-  font-family: "Poppins-SemiBold";
-}
-.priority {
-  padding-left: 10px;
-}
-.d-down {
-  background-color: #000000;
-}
-.address {
-  .labelBox {
-    height: 32px;
-    align-items: baseline;
-  }
-  .q-btn__wrapper {
-    min-height: unset;
-  }
-  .oxen-field .content {
-    min-height: 90px;
-  }
-}
-.addAddress {
-  cursor: pointer;
-  color: #289afb;
-  &:hover {
-    text-decoration: underline;
-    text-decoration-color: #289afb;
-  }
-}
 
-.btn-view {
-  .q-btn .q-icon {
-    font-size: 1.1em;
-    color: #fff;
+  // Large amount (display face, 26px).
+  .send__amount .content {
+    min-height: 52px;
+    gap: var(--beldex-space-3);
   }
-  .on-left {
-    margin-right: 5px;
-  }
-}
-@media only screen and (max-height: 780px) {
-  .priority {
-    padding-left: unset;
-  }
-}
-.view-only-header {
-  background-color: #1c1c26;
-  border-radius: 10px;
-  padding: 8px;
-}
 
-.view-only {
-  width: 85px;
-  height: 85px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #242433;
-  border-radius: 10px;
-  border: 1px solid #484856;
+  .send__amount .q-field__native {
+    font-family: var(--beldex-font-display);
+    font-size: 26px;
+    letter-spacing: 1px;
+    color: var(--beldex-text);
+  }
+
+  &__max {
+    flex: none;
+    height: 28px;
+    padding: 0 10px;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    color: var(--beldex-accent);
+    background-color: var(--beldex-panel);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+    cursor: pointer;
+  }
+
+  // Text action at the end of the recipient input.
+  &__paste {
+    flex: none;
+    align-self: center;
+    padding: 0 var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--beldex-accent);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__unit {
+    flex: none;
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    color: var(--beldex-text-muted);
+  }
+
+  &__settlement {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--beldex-space-4);
+    min-height: 42px;
+    padding: 0 var(--beldex-space-4);
+    background-color: rgba(8, 8, 8, 0.8);
+    border: 1px solid var(--beldex-hairline);
+  }
+
+  &__settlement-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--beldex-space-2);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+
+    img {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  &__priority {
+    min-width: 120px;
+    margin: 0; // beats app.styl `.q-field { margin 20px 0 }`
+
+    .q-field__control,
+    .q-field__marginal {
+      height: 32px;
+      min-height: 32px;
+    }
+
+    .q-field__native {
+      justify-content: flex-end;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      font-weight: 500;
+      color: var(--beldex-text);
+    }
+
+    .q-field__append .q-icon {
+      color: var(--beldex-accent);
+    }
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--beldex-space-3);
+  }
+
+  &__clear {
+    padding: 0 var(--beldex-space-5);
+    text-transform: none;
+    color: var(--beldex-text-muted);
+    background: transparent;
+    border-color: rgba(235, 235, 235, 0.1);
+  }
+
+  &__submit {
+    flex: 1 1 auto;
+    font-family: var(--beldex-font-sans-medium);
+    text-transform: none;
+    color: #000;
+  }
+
+  &__clear img,
+  &__submit img {
+    width: 14px;
+    height: 14px;
+  }
+
+  // View-only state.
+  &__view-only {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    height: 100%;
+    min-height: 240px;
+    text-align: center;
+  }
+
+  &__view-only-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background-color: rgba(235, 235, 235, 0.05);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+
+    img {
+      width: 16px;
+      height: 12px;
+    }
+  }
+
+  &__view-only-title {
+    margin: 0;
+    font-family: var(--beldex-font-sans);
+    font-weight: 600;
+    font-size: var(--beldex-text-base);
+    line-height: 20px;
+    color: var(--beldex-text);
+  }
+
+  &__view-only-text {
+    max-width: 230px;
+    margin: 0;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    line-height: 16px;
+    color: var(--beldex-text-muted);
+  }
 }
 </style>

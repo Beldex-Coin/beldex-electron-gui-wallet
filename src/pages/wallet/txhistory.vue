@@ -1,183 +1,176 @@
 <template>
-  <q-page class="transactionBox" style="min-height: unset">
-    <template v-if="this.tx_list.length === 0">
-      <div
-        class="col-2 ft-semibold txn-title q-ml-sm q-mt-sm"
-        style="color: white"
-      >
-        {{ $t("titles.transactions") }}
+  <!-- Activity ledger -->
+  <q-page class="activity">
+    <section v-if="!txnDetails" class="activity__ledger">
+      <div class="activity__head">
+        <div class="activity__title-group">
+          <h2 class="activity__title">{{ $t("titles.activityLedger") }}</h2>
+          <span class="beldex-chip">{{
+            $t("strings.transactions.recentCount", { count: tx_list.length })
+          }}</span>
+        </div>
+        <div class="beldex-filter-tabs" role="tablist">
+          <button
+            v-for="tab in [
+              { value: 'all', label: $t('strings.transactions.types.all') },
+              { value: 'in', label: $t('strings.transactions.tabs.incoming') },
+              { value: 'out', label: $t('strings.transactions.tabs.outgoing') }
+            ]"
+            :key="tab.value"
+            type="button"
+            role="tab"
+            class="beldex-filter-tabs__item"
+            :class="{
+              'beldex-filter-tabs__item--active': tx_type === tab.value
+            }"
+            :aria-selected="tx_type === tab.value ? 'true' : 'false'"
+            @click="tx_type = tab.value"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
       </div>
-      <section
-        class="flex column justify-center no-wrap items-center empty-txn-wrapper"
-      >
-        <div>
-          <img src="../../assets/images/No_transaction.svg" height="119px" />
-        </div>
-        <p class="q-pb-md q-pt-sm q-mb-none qtab-desc ft-semibold infoTxt">
-          {{ $t("strings.noTransactionsFound") }}
-        </p>
 
-        <div class="hint-txt">
-          {{ this.$t("titles.swap.afterYourFirstTxn") }},
-        </div>
-        <div class="hint-txt">
-          {{ this.$t("titles.swap.youWillBeViewHere") }}.
-        </div>
-      </section>
-    </template>
-    <section v-else-if="this.tx_list.length !== 0 && !this.txnDetails">
-      <div
-        class="row  q-pt-sm q-ml-md q-mb-lg items-center flex color-white justify-between no-wrap"
-      >
-        <div class="ft-semibold txn-title">
-          {{ $t("titles.transactions") }}
-        </div>
-        <!-- <section class="searchBox flex row col-8">
-          <article class="flex row items-center col-10"> -->
-        <section class="searchBox flex row no-wrap">
-          <article class="flex row items-center no-wrap  q-ml-lg">
-            <div class="col-1 filter-txt ft-semibold q-mr-xs">
-              {{ $t("fieldLabels.filter") }}
-            </div>
-            <OxenField
-              class="col-11 q-px-sm q-pl-md color=#77778B; date-filter-field"
-            >
-              <q-input
-                v-model="tx_filter"
-                :placeholder="$t('placeholders.filterTx')"
-                borderless
-                dense
+      <div v-if="tx_list.length !== 0" class="activity__toolbar">
+        <BeldexField class="activity__search">
+          <q-icon name="search" size="16px" class="activity__search-icon" />
+          <q-input
+            v-model="tx_filter"
+            :placeholder="$t('placeholders.filterTx')"
+            :aria-label="$t('fieldLabels.filter')"
+            dark
+            borderless
+            dense
+          >
+            <!-- Date-range filter -->
+            <template v-slot:append>
+              <q-icon
+                name="event"
+                class="cursor-pointer"
+                :color="hasDateRange ? 'primary' : undefined"
               >
-                <template v-slot:append>
-                  <q-icon
-                    name="event"
-                    class="cursor-pointer"
-                    :color="hasDateRange ? 'primary' : undefined"
-                  >
-                    <q-tooltip>{{
-                      $t("strings.transactions.filterByDate")
-                    }}</q-tooltip>
-                    <q-popup-proxy
-                      ref="dateRangeProxy"
-                      transition-show="scale"
-                      transition-hide="scale"
-                      @before-show="onDateRangePopupShow"
-                    >
-                      <div class="date-range-popup">
-                        <div class="row date-range-summary">
-                          <div class="col date-range-summary-item">
-                            <div class="date-range-summary-label">
-                              {{ $t("fieldLabels.startDate") }}
-                            </div>
-                            <div class="date-range-summary-value">
-                              {{ startDateLabel }}
-                            </div>
-                          </div>
-                          <div class="col date-range-summary-item">
-                            <div class="date-range-summary-label">
-                              {{ $t("fieldLabels.endDate") }}
-                            </div>
-                            <div class="date-range-summary-value">
-                              {{ endDateLabel }}
-                            </div>
-                          </div>
+                <q-tooltip>{{
+                  $t("strings.transactions.filterByDate")
+                }}</q-tooltip>
+                <q-popup-proxy
+                  ref="dateRangeProxy"
+                  transition-show="scale"
+                  transition-hide="scale"
+                  @before-show="onDateRangePopupShow"
+                >
+                  <div class="date-range-popup">
+                    <div class="row date-range-summary">
+                      <div class="col date-range-summary-item">
+                        <div class="date-range-summary-label">
+                          {{ $t("fieldLabels.startDate") }}
                         </div>
-                        <q-date
-                          :value="qDateValue"
-                          range
-                          minimal
-                          no-unset
-                          :options="dateRangeOptions"
-                          :default-year-month="viewedYearMonth"
-                          @input="onDraftDateRangeInput"
-                          @range-start="onRangeStart"
-                          @range-end="onRangeEnd"
-                          @navigation="onCalendarNavigation"
-                        />
-                        <div
-                          class="row items-center justify-end q-gutter-sm q-pa-sm"
-                        >
-                          <q-btn
-                            v-if="hasDraftDateRange || hasDateRange"
-                            v-close-popup
-                            flat
-                            :label="$t('buttons.clear')"
-                            color="negative"
-                            @click="clearDateRange"
-                          />
-                          <q-btn
-                            v-close-popup
-                            flat
-                            :label="dateRangeActionLabel"
-                            color="primary"
-                            @click="applyDateRange"
-                          />
+                        <div class="date-range-summary-value">
+                          {{ startDateLabel }}
                         </div>
                       </div>
-                    </q-popup-proxy>
-                  </q-icon>
-                </template>
-              </q-input>
-              <div v-if="hasDateRange" class="date-range-indicator">
-                <q-icon
-                  name="close"
-                  size="12px"
-                  class="date-range-indicator-clear cursor-pointer"
-                  @click.stop="clearDateRange"
-                >
-                  <q-tooltip>{{
-                    $t("strings.transactions.clearDateRange")
-                  }}</q-tooltip>
-                </q-icon>
-                <span>{{ formattedDateRange }}</span>
-              </div>
-            </OxenField>
-          </article>
-
-          <!-- <OxenField class="col-2"> -->
-          <OxenField class="grp-filter">
-            <q-select
-              v-model="tx_type"
-              :options="tx_type_options"
-              borderless
-              dense
-              emit-value
-              map-options
-              class="ft-semibold q-pa-xs"
-              popup-content-class="txn-option"
-              dropdown-icon="tune"
-              :menu-offset="[100, 10]"
-            />
-          </OxenField>
-
-          <q-btn
-            v-if="this.tx_list.length > 0"
-            color="primary"
-            class="downloadCsv-btn"
-            @click="downloadCsv"
-          >
-            <svg
-              width="20"
-              height="17"
-              viewBox="0 0 20 17"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+                      <div class="col date-range-summary-item">
+                        <div class="date-range-summary-label">
+                          {{ $t("fieldLabels.endDate") }}
+                        </div>
+                        <div class="date-range-summary-value">
+                          {{ endDateLabel }}
+                        </div>
+                      </div>
+                    </div>
+                    <q-date
+                      :value="qDateValue"
+                      range
+                      minimal
+                      no-unset
+                      :options="dateRangeOptions"
+                      :default-year-month="viewedYearMonth"
+                      @input="onDraftDateRangeInput"
+                      @range-start="onRangeStart"
+                      @range-end="onRangeEnd"
+                      @navigation="onCalendarNavigation"
+                    />
+                    <div
+                      class="row items-center justify-end q-gutter-sm q-pa-sm"
+                    >
+                      <q-btn
+                        v-if="hasDraftDateRange || hasDateRange"
+                        v-close-popup
+                        flat
+                        :label="$t('buttons.clear')"
+                        color="negative"
+                        @click="clearDateRange"
+                      />
+                      <q-btn
+                        v-close-popup
+                        flat
+                        :label="dateRangeActionLabel"
+                        color="primary"
+                        @click="applyDateRange"
+                      />
+                    </div>
+                  </div>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+          <div v-if="hasDateRange" class="date-range-indicator">
+            <q-icon
+              name="close"
+              size="12px"
+              class="date-range-indicator-clear cursor-pointer"
+              @click.stop="clearDateRange"
             >
-              <g id="csv" clip-path="url(#clip0_1350_3876)">
-                <path
-                  id="Vector"
-                  d="M9.98544 0.487509C9.47996 0.495267 9.07623 0.911228 9.08309 1.41671V9.37048L6.98121 7.2686C6.80873 7.09105 6.57151 6.99109 6.32414 6.99109C5.95115 6.99109 5.61546 7.21727 5.47491 7.56281C5.33467 7.90835 5.41762 8.30462 5.68498 8.56482L9.35165 12.2315C9.70972 12.5893 10.2898 12.5893 10.6479 12.2315L14.3145 8.56482C14.5541 8.33476 14.6505 7.99339 14.5667 7.67232C14.4831 7.35095 14.2322 7.1 13.9108 7.01645C13.5897 6.9326 13.2484 7.02899 13.0183 7.2686L10.9164 9.37048V1.41671C10.9197 1.16904 10.8227 0.930325 10.6473 0.755168C10.4721 0.580309 10.2331 0.483629 9.98544 0.487509ZM1.73544 11.5708C1.22996 11.5786 0.826231 11.9946 0.833094 12.5V14.3334C0.833094 15.3354 1.66442 16.1667 2.66643 16.1667H17.3331C18.3351 16.1667 19.1664 15.3354 19.1664 14.3334V12.5C19.1712 12.1694 18.9975 11.8621 18.712 11.6953C18.4264 11.5288 18.0731 11.5288 17.7875 11.6953C17.502 11.8621 17.3283 12.1694 17.3331 12.5V14.3334H2.66643V12.5C2.66971 12.2524 2.57273 12.0137 2.39728 11.8385C2.22212 11.6636 1.9831 11.567 1.73544 11.5708Z"
-                  fill="white"
-                />
-              </g>
-              <defs>
-                <clipPath id="clip0_1350_3876">
-                  <rect width="18" height="16" fill="white" />
-                </clipPath>
-              </defs>
-            </svg>
-          </q-btn>
-        </section>
+              <q-tooltip>{{
+                $t("strings.transactions.clearDateRange")
+              }}</q-tooltip>
+            </q-icon>
+            <span>{{ formattedDateRange }}</span>
+          </div>
+        </BeldexField>
+
+        <q-select
+          v-model="tx_type"
+          :options="tx_type_options"
+          class="activity__type"
+          borderless
+          dense
+          dark
+          emit-value
+          map-options
+          :aria-label="$t('fieldLabels.filter')"
+          popup-content-class="beldex-menu beldex-menu--compact"
+          dropdown-icon="tune"
+        />
+
+        <!-- CSV export -->
+        <button
+          type="button"
+          class="activity__csv"
+          :aria-label="$t('titles.swap.downloadCsv')"
+          @click="downloadCsv"
+        >
+          <svg
+            width="20"
+            height="17"
+            viewBox="0 0 20 17"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g id="csv" clip-path="url(#clip0_1350_3876)">
+              <path
+                id="Vector"
+                d="M9.98544 0.487509C9.47996 0.495267 9.07623 0.911228 9.08309 1.41671V9.37048L6.98121 7.2686C6.80873 7.09105 6.57151 6.99109 6.32414 6.99109C5.95115 6.99109 5.61546 7.21727 5.47491 7.56281C5.33467 7.90835 5.41762 8.30462 5.68498 8.56482L9.35165 12.2315C9.70972 12.5893 10.2898 12.5893 10.6479 12.2315L14.3145 8.56482C14.5541 8.33476 14.6505 7.99339 14.5667 7.67232C14.4831 7.35095 14.2322 7.1 13.9108 7.01645C13.5897 6.9326 13.2484 7.02899 13.0183 7.2686L10.9164 9.37048V1.41671C10.9197 1.16904 10.8227 0.930325 10.6473 0.755168C10.4721 0.580309 10.2331 0.483629 9.98544 0.487509ZM1.73544 11.5708C1.22996 11.5786 0.826231 11.9946 0.833094 12.5V14.3334C0.833094 15.3354 1.66442 16.1667 2.66643 16.1667H17.3331C18.3351 16.1667 19.1664 15.3354 19.1664 14.3334V12.5C19.1712 12.1694 18.9975 11.8621 18.712 11.6953C18.4264 11.5288 18.0731 11.5288 17.7875 11.6953C17.502 11.8621 17.3283 12.1694 17.3331 12.5V14.3334H2.66643V12.5C2.66971 12.2524 2.57273 12.0137 2.39728 11.8385C2.22212 11.6636 1.9831 11.567 1.73544 11.5708Z"
+                fill="white"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_1350_3876">
+                <rect width="18" height="16" fill="white" />
+              </clipPath>
+            </defs>
+          </svg>
+          <q-tooltip>{{ $t("titles.swap.downloadCsv") }}</q-tooltip>
+        </button>
       </div>
 
       <TxList
@@ -188,16 +181,14 @@
       />
     </section>
     <section v-else>
-      <!-- <section > -->
-
-      <TxDetails :tx="this.txnDetails" @goback="goback($event)" />
+      <TxDetails :tx="txnDetails" @goback="goback($event)" />
     </section>
   </q-page>
 </template>
 <script>
 import { mapState } from "vuex";
 import TxList from "components/tx_list";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import TxDetails from "components/tx_details";
 import moment from "moment";
 import DateRangeFilterMixin from "src/mixins/date_range_filter_mixin";
@@ -207,7 +198,7 @@ const firstBlockDate = moment(1525305600000).format("YYYY/MM/DD");
 export default {
   components: {
     TxList,
-    OxenField,
+    BeldexField,
     TxDetails
   },
   mixins: [DateRangeFilterMixin],
@@ -468,59 +459,126 @@ export default {
 </script>
 
 <style lang="scss">
-.transactionBox {
-  .q-select__dropdown-icon {
-    font-size: 20px;
-  }
-  .grp-filter {
-    &:not(.disable):not(.disable-hover) {
-      .content:hover {
-        // background: #1c1c26;
-        background: #484866 !important;
-        // border: unset;
-      }
-    }
-  }
-  .empty-txn-wrapper {
-    // height: 39vh;
-    height: calc(100vh - 464px);
-  }
-  @media only screen and (max-height: 780px) {
-    .empty-txn-wrapper {
-      // height: 32vh;
-      height: calc(100vh - 468px);
-    }
-  }
-}
-.color-white {
-  color: white;
-}
-.txn-title {
-  font-size: 18px;
-}
-.filter-txt {
-  font-size: 16px;
-}
-.searchBox .oxen-field .content {
-  min-height: 58px !important;
-  height: 58px !important;
-  background-color: #32324a;
-  margin-bottom: unset !important;
-  margin-left: 10px;
-}
-.searchBox .date-filter-field .content {
-  position: relative;
-}
+// Legacy globals other pages pick up while this page is loaded.
 .infoTxt {
   color: white;
 }
 .hint-txt {
   color: #82828d;
 }
-.txn-option {
-  width: 155px;
-  font-family: "Poppins-Regular";
+
+// Activity ledger.
+.beldex-app .activity {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0 !important; // beats q-page's inline min-height
+
+  &__ledger {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--beldex-space-5);
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--beldex-space-4);
+    padding-bottom: var(--beldex-space-4);
+    border-bottom: 1px solid var(--beldex-hairline);
+  }
+
+  &__title-group {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+  }
+
+  &__title {
+    margin: 0;
+    font-family: var(--beldex-font-sans-medium);
+    font-size: var(--beldex-text-base);
+    line-height: 20px;
+    letter-spacing: -0.35px;
+    color: var(--beldex-text);
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+  }
+
+  &__search {
+    flex: 1 1 auto;
+
+    .content {
+      position: relative;
+      padding-left: 0;
+      background: transparent;
+      border-bottom-color: rgba(235, 235, 235, 0.1);
+    }
+
+    &:not(.disable):not(.disable-hover) .content:hover {
+      background: transparent;
+    }
+  }
+
+  &__search-icon {
+    color: var(--beldex-text-muted);
+  }
+
+  &__type {
+    flex: none;
+    min-width: 140px;
+    margin: 0; // beats app.styl `.q-field { margin 20px 0 }`
+    padding: 0 10px;
+    background-color: var(--beldex-panel);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+
+    .q-field__control,
+    .q-field__marginal {
+      height: 34px;
+      min-height: 34px;
+    }
+
+    .q-field__native {
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      color: var(--beldex-text);
+    }
+
+    .q-field__append .q-icon {
+      font-size: 16px;
+      color: var(--beldex-text-muted);
+    }
+  }
+
+  &__csv {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background-color: var(--beldex-panel);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+    cursor: pointer;
+
+    &:hover {
+      border-color: rgba(235, 235, 235, 0.25);
+    }
+
+    svg {
+      width: 16px;
+      height: 14px;
+    }
+  }
 }
+
 .date-range-indicator {
   position: absolute;
   top: 100%;

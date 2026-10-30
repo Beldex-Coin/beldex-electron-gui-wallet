@@ -1,258 +1,169 @@
 <template>
-  <!-- <q-dialog v-model="isVisible" maximized class="address-book-details"> -->
+  <!-- Contact view / edit / new. -->
   <section v-if="isVisible" class="address-book-details">
-    <q-layout v-if="mode == 'edit' || mode == 'new'" style="min-height: unset">
-      <q-header>
-        <q-toolbar inverted>
-          <!-- <q-btn
-            v-if="mode !== 'edit'"
-            flat
-            round
-            dense
-            
-          > -->
-          <div
-            v-if="mode !== 'edit'"
-            class="flex items-center back-arrow-btn"
-            @click="() => (mode == 'edit' ? cancelEdit() : close())"
-          >
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 26 26"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M13 -6.10352e-05C5.8201 -6.10352e-05 0 5.82008 0 13C0 20.18 5.8201 26.0001 13 26.0001C20.1799 26.0001 26 20.18 26 13C26 5.82008 20.1799 -6.10352e-05 13 -6.10352e-05ZM18.2 14.3H10.9382L13 16.3618C13.507 16.8688 13.507 17.6931 13 18.2001C12.493 18.7071 11.6688 18.7071 11.1618 18.2001L6.8809 13.9191C6.3726 13.4108 6.3726 12.5879 6.8809 12.0809L11.1618 7.79999C11.6688 7.29299 12.493 7.29299 13 7.79999C13.507 8.30699 13.507 9.1312 13 9.6382L10.9382 11.7H18.2C18.9176 11.7 19.5 12.2824 19.5 13C19.5 13.7176 18.9176 14.3 18.2 14.3Z"
-                fill="white"
-              />
-            </svg>
-          </div>
-          <!-- </q-btn> -->
-          <q-toolbar-title v-if="mode == 'new'" class="ft-semibold title">
-            {{ $t("strings.addAddressBookEntry") }}
-          </q-toolbar-title>
-          <q-toolbar-title v-else-if="mode == 'edit'" class="ft-semibold">
-            {{ $t("titles.addressBook") }}
-          </q-toolbar-title>
-
-          <button
-            v-if="mode == 'edit'"
-            class="q-ml-sm add-btn delete-btn"
-            @click="openDeletePopUp()"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 22 22"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g id="icons8-delete 2">
-                <path
-                  id="Vector"
-                  d="M8.93213 1.375C7.8042 1.375 6.875 2.3042 6.875 3.43213V4.125H2.75V5.5H4.125V17.1875C4.125 18.3262 5.04883 19.25 6.1875 19.25H14.4375C15.5762 19.25 16.5 18.3262 16.5 17.1875V5.5H17.875V4.125H13.75V3.43213C13.75 2.3042 12.8208 1.375 11.6929 1.375H8.93213ZM8.93213 2.75H11.6929C12.0796 2.75 12.375 3.04541 12.375 3.43213V4.125H8.25V3.43213C8.25 3.04541 8.54541 2.75 8.93213 2.75ZM6.875 6.875H8.25V16.5H6.875V6.875ZM9.625 6.875H11V16.5H9.625V6.875ZM12.375 6.875H13.75V16.5H12.375V6.875Z"
-                  fill="white"
-                />
-              </g>
-            </svg>
-            <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-              Delete Contact
-            </q-tooltip>
-          </button>
-        </q-toolbar>
-      </q-header>
-      <q-page style="padding-top: 59px; min-height: unset">
-        <div class="address-book-modal">
-          <OxenField
-            :label="$t('fieldLabels.name')"
-            :error="$v.newEntry.name.$error"
-          >
-            <q-input
-              v-model.trim="newEntry.name"
-              :placeholder="$t('placeholders.enterName')"
-              borderless
-              :maxlength="20"
-              dense
-            />
-          </OxenField>
-          <OxenField
-            :label="$t('fieldLabels.address')"
-            :error="$v.newEntry.address.$error"
-            :starred="newEntry.starred"
-            :update-starred="updateStarred"
-            :enable-star="true"
-          >
-            <q-input
-              v-model.trim="newEntry.address"
-              :placeholder="address_placeholder"
-              borderless
-              dense
-              @input="applyAlphanumericMask"
-              @blur="$v.newEntry.address.$touch"
-            />
-            <!-- <q-btn
-              v-model="newEntry.starred"
-              flat
-              round
-              :icon="newEntry.starred ? 'star' : 'star_border'"
-              @click="updateStarred"
-            /> -->
-          </OxenField>
-          <OxenField :label="$t('fieldLabels.notes')" optional>
-            <q-input
-              v-model="newEntry.description"
-              :placeholder="$t('placeholders.additionalNotes')"
-              type="textarea"
-              class="full-width text-area-oxen"
-              borderless
-              dense
-            />
-          </OxenField>
+    <div class="contact__head">
+      <button
+        v-if="mode !== 'edit'"
+        type="button"
+        class="beldex-icon-btn"
+        :aria-label="$t('buttons.back')"
+        @click="close()"
+      >
+        ←
+      </button>
+      <template v-if="mode == 'new'">
+        <span class="beldex-label">{{
+          $t("strings.addAddressBookEntry")
+        }}</span>
+      </template>
+      <template v-else>
+        <div class="beldex-avatar">
+          {{
+            (mode == "edit" ? newEntry.name : (entry && entry.name) || "")
+              .trim()
+              .split(/\s+/)
+              .map(word => word.charAt(0))
+              .join("")
+              .slice(0, 2)
+          }}
         </div>
-
-        <div class="flex justify-center align-center q-mt-lg">
-          <q-btn
-            v-if="mode == 'edit'"
-            color="accent"
-            no-ripple
-            :label="$t('buttons.cancel')"
-            class="res_btn"
-            @click="openCancelPopUp()"
-          />
-          <q-btn
-            class="q-ml-sm add-btn res_btn"
-            color="primary"
-            :label="$t('buttons.save')"
-            size="1.2em"
-            @click="save()"
-          />
-          <!-- <div class="divider"></div> -->
-        </div>
-      </q-page>
-    </q-layout>
-
-    <q-layout v-else style="min-height: unset">
-      <q-header>
-        <q-toolbar inverted>
-          <!-- <q-btn flat round dense @click="close()"> -->
-          <div
-            v-if="mode !== 'edit'"
-            class="flex items-center back-arrow-btn"
-            @click="close()"
+        <div class="contact__who">
+          <span class="contact__name beldex-truncate">{{
+            mode == "edit" ? newEntry.name : entry && entry.name
+          }}</span>
+          <span
+            v-if="(mode == 'edit' ? newEntry : entry || {}).starred"
+            class="contact__meta"
           >
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 26 26"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M13 -6.10352e-05C5.8201 -6.10352e-05 0 5.82008 0 13C0 20.18 5.8201 26.0001 13 26.0001C20.1799 26.0001 26 20.18 26 13C26 5.82008 20.1799 -6.10352e-05 13 -6.10352e-05ZM18.2 14.3H10.9382L13 16.3618C13.507 16.8688 13.507 17.6931 13 18.2001C12.493 18.7071 11.6688 18.7071 11.1618 18.2001L6.8809 13.9191C6.3726 13.4108 6.3726 12.5879 6.8809 12.0809L11.1618 7.79999C11.6688 7.29299 12.493 7.29299 13 7.79999C13.507 8.30699 13.507 9.1312 13 9.6382L10.9382 11.7H18.2C18.9176 11.7 19.5 12.2824 19.5 13C19.5 13.7176 18.9176 14.3 18.2 14.3Z"
-                fill="white"
-              />
-            </svg>
-          </div>
-          <!-- <q-btn flat round dense icon="reply" @click="close()" /> -->
-          <q-toolbar-title class="ft-semibold">
-            {{ $t("titles.addressBook") }}
-          </q-toolbar-title>
-          <!-- <q-btn
-            class="q-mr-sm"
-            color="accent"
-            no-ripple
-            icon=""
-            :disable="!is_ready"
-            :label="$t('buttons.edit')"
-            @click="edit()"
-            size="lg"
-          /> -->
-          <!-- :label="$t('buttons.edit')" -->
-          <q-btn
-            class="q-mr-sm edit_btn"
-            no-ripple
-            icon="create"
-            :disable="!is_ready"
-            size="md"
-            @click="edit()"
-          >
-            <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-              Edit Contact
-            </q-tooltip>
-          </q-btn>
-          <!-- :label="$t('buttons.send')" -->
-          <!-- 
-          <q-btn
-            color="primary send_btn"
-            :disabled="view_only"
-            label="Send"
-            icon="north_east"
-            size="md"
-            @click="sendToAddress"
-          /> -->
-        </q-toolbar>
-      </q-header>
-      <!-- <q-page-container> -->
-      <q-page style="min-height: unset">
-        <!-- <div class="layout-padding"> -->
-        <div class="layout">
-          <template v-if="entry != null">
-            <AddressHeader
-              class="address-details"
-              :address="entry.address"
-              :title="entry.name"
-              :extra="
-                entry.description
-                  ? $t('strings.notes') + ': ' + entry.description
-                  : ''
-              "
-            />
-
-            <!-- <div class="q-mt-lg">
-              <div class="ft-semibold">
-                <q-icon name="history" size="24px" />
-                <span class="vertical-middle q-ml-xs" style="color: white">{{
-                  $t("strings.recentTransactionsWithAddress")
-                }}</span>
-              </div>
-              <TxList
-                :key="entry.address"
-                type="all_in"
-                :limit="5"
-                :to-outgoing-address="entry.address"
-              />
-            </div> -->
-          </template>
+            <q-icon name="star" size="12px" />
+            {{ $t("menuItems.favourite") }}
+          </span>
         </div>
+      </template>
 
+      <button
+        v-if="mode == 'view'"
+        type="button"
+        class="beldex-square-btn contact__action"
+        :disabled="!is_ready"
+        :aria-label="$t('buttons.edit')"
+        @click="edit()"
+      >
+        <q-icon name="create" size="14px" />
+        <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
+          {{ $t("buttons.edit") }}
+        </q-tooltip>
+      </button>
+      <button
+        v-if="mode == 'edit'"
+        type="button"
+        class="beldex-square-btn contact__action contact__action--danger"
+        :aria-label="$t('buttons.delete')"
+        @click="openDeletePopUp()"
+      >
+        <q-icon name="delete_outline" size="14px" />
+        <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
+          {{ $t("buttons.delete") }}
+        </q-tooltip>
+      </button>
+    </div>
+
+    <div v-if="mode == 'edit' || mode == 'new'" class="contact__form">
+      <BeldexField
+        :label="$t('fieldLabels.name')"
+        :error="$v.newEntry.name.$error"
+      >
+        <q-input
+          v-model.trim="newEntry.name"
+          :placeholder="$t('placeholders.enterName')"
+          borderless
+          :maxlength="20"
+          dense
+        />
+      </BeldexField>
+      <BeldexField
+        :label="$t('fieldLabels.address')"
+        :error="$v.newEntry.address.$error"
+        :starred="newEntry.starred"
+        :update-starred="updateStarred"
+        :enable-star="true"
+      >
+        <q-input
+          v-model.trim="newEntry.address"
+          :placeholder="address_placeholder"
+          borderless
+          dense
+          @input="applyAlphanumericMask"
+          @blur="$v.newEntry.address.$touch"
+        />
+      </BeldexField>
+      <BeldexField :label="$t('fieldLabels.notes')" optional>
+        <q-input
+          v-model="newEntry.description"
+          :placeholder="$t('placeholders.additionalNotes')"
+          type="textarea"
+          class="full-width"
+          borderless
+          dense
+        />
+      </BeldexField>
+
+      <div class="contact__actions">
         <q-btn
-          color="primary send_btn q-mt-lg"
+          v-if="mode == 'edit'"
+          class="beldex-btn beldex-btn--ghost"
+          unelevated
+          no-caps
+          :label="$t('buttons.cancel')"
+          @click="openCancelPopUp()"
+        />
+        <q-btn
+          class="beldex-btn"
+          unelevated
+          no-caps
+          :label="$t('buttons.save')"
+          @click="save()"
+        />
+      </div>
+    </div>
+
+    <div v-else-if="entry != null" class="contact__view">
+      <div class="contact__section">
+        <span class="beldex-label">{{ $t("fieldLabels.address") }}</span>
+        <p class="contact__value">{{ entry.address }}</p>
+      </div>
+      <div v-if="entry.description" class="contact__section">
+        <span class="beldex-label">{{ $t("strings.notes") }}</span>
+        <p class="contact__value">{{ entry.description }}</p>
+      </div>
+
+      <div class="contact__actions">
+        <q-btn
+          class="beldex-btn"
+          unelevated
+          no-caps
           :disabled="view_only"
           :label="$t('buttons.send')"
           icon="north_east"
           @click="sendToAddress"
         />
-      </q-page>
-    </q-layout>
+      </div>
+    </div>
   </section>
-  <!-- </q-dialog> -->
 </template>
 
 <script>
 import { mapState } from "vuex";
-import AddressHeader from "components/address_header";
 // import TxList from "components/tx_list";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
+import ConfirmDialog from "components/confirm_dialog";
 import { address } from "src/validators/common";
 import { required } from "vuelidate/lib/validators";
 export default {
   name: "AddressBookDetails",
   components: {
-    AddressHeader,
     // TxList,
-    OxenField
+    BeldexField
   },
 
   data() {
@@ -422,17 +333,19 @@ export default {
     openDeletePopUp() {
       this.$q
         .dialog({
-          title: this.$t("dialog.deleteAddress.title"),
-          message: this.$t("dialog.deleteAddress.message"),
-          ok: {
-            label: this.$t("buttons.delete"),
-            color: "red"
-          },
-          cancel: {
-            // flat: true,
-            color: "accent",
-            label: this.$t("dialog.buttons.cancel")
-          }
+          component: ConfirmDialog,
+          parent: this,
+          title: this.$t("dialog.deleteAddress.heading"),
+          message: this.$t("dialog.deleteAddress.question", {
+            name:
+              (this.entry && this.entry.name) || this.$t("fieldLabels.address")
+          }),
+          okLabel: this.$t("buttons.delete"),
+          cancelLabel: this.$t("dialog.buttons.cancel"),
+          icon: "trash",
+          iconTone: "danger",
+          okTone: "danger",
+          okIcon: "trash"
         })
         .onOk(() => this.deleteEntry())
         .onDismiss(() => {})
@@ -441,17 +354,15 @@ export default {
     openCancelPopUp() {
       this.$q
         .dialog({
-          title: this.$t("dialog.discardEdit.title"),
-          message: this.$t("dialog.discardEdit.title"),
-          ok: {
-            label: this.$t("dialog.discardEdit.ok"),
-            color: "primary"
-          },
-          cancel: {
-            // flat: true,
-            color: "accent",
-            label: this.$t("dialog.discardEdit.cancel")
-          }
+          component: ConfirmDialog,
+          parent: this,
+          title: this.$t("dialog.discardEdit.heading"),
+          message: this.$t("dialog.discardEdit.question"),
+          okLabel: this.$t("dialog.discardEdit.keepEditing"),
+          cancelLabel: this.$t("dialog.discardEdit.cancel"),
+          icon: "warning",
+          iconTone: "neutral",
+          okTone: "primary"
         })
         .onOk(() => {})
         .onDismiss(() => {})
@@ -462,115 +373,94 @@ export default {
 </script>
 
 <style lang="scss">
-.address-details {
-  color: #010101;
-  padding-top: 70px;
-}
-.address-book-details {
-  .address-book-modal {
-    > .oxen-field {
-      margin-top: 16px;
-    }
+.beldex-app .address-book-details {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--beldex-space-5);
 
-    .star-entry {
-      padding: 4px;
-    }
-  }
-  .q-header {
-    background-color: #242433;
-  }
-  .edit_btn {
-    background-color: #40405e;
-    height: 36px;
-    padding-right: 8px;
-    border-radius: 9px;
-    color: #fff;
-    width: 32px;
-    .q-icon {
-      font-size: 1.2em;
-      color: #fff;
-    }
-    .on-left {
-      margin-right: 2px;
-    }
-  }
-  .send_btn {
-    min-width: unset;
-    height: 45px;
-    border-radius: 9px;
-    font-size: 19px;
-    .q-icon {
-      font-size: 1.2em;
-    }
-    .on-left {
-      margin-right: 5px;
-    }
-  }
-  .q-toolbar {
-    padding: 0;
-    background-color: #242433;
-  }
-  .q-layout,
-  .app-content {
-    background: unset;
-  }
-  // .layout {
-  //   height: 67vh;
-  //   overflow: auto;
-  // }
-  .title {
-    font-size: 18px;
-    background-color: unset !important;
-  }
-  .add-btn .q-icon {
-    font-size: 1em;
-    font-weight: bold;
-  }
-  .delete-btn {
-    min-width: unset;
-    width: 34px;
-    height: 35px;
-    border: none;
-    border-radius: 6px;
-    background-color: #32324a;
+  .contact__head {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 0;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14),
-      0 3px 1px -2px rgba(0, 0, 0, 0.12);
-    cursor: pointer;
-    .on-left {
-      margin-right: 1px;
-    }
-  }
-  .delete-btn:hover {
-    background-color: #484866 !important ;
-  }
-  .oxen-field .label {
-    font-family: "Poppins-Regular";
-    font-weight: 400;
-    font-size: 16px;
-  }
-  .res_btn {
-    min-width: unset;
-    width: 9vw;
-    border-radius: 9px;
-    .on-left {
-      margin-right: 1px;
-    }
-  }
-  .on-right {
-    margin-left: 1px;
+    gap: var(--beldex-space-3);
   }
 
-  .q-header .q-toolbar__title {
-    background: unset !important;
+  .contact__who {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .contact__name {
+    font-family: var(--beldex-font-sans);
+    font-size: var(--beldex-text-base);
+    color: var(--beldex-text);
+  }
+
+  .contact__meta {
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+  }
+
+  .contact__action {
+    margin-left: auto;
+
+    &--danger {
+      color: var(--beldex-danger);
+      border-color: var(--beldex-danger-border);
+    }
+  }
+
+  .contact__form,
+  .contact__view {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--beldex-space-4);
+  }
+
+  .contact__section {
+    padding-bottom: var(--beldex-space-4);
+    border-bottom: 1px solid var(--beldex-hairline);
+  }
+
+  .contact__value {
+    margin: var(--beldex-space-3) 0 0;
+    font-size: var(--beldex-text-md);
+    line-height: 17px;
+    color: var(--beldex-text);
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+
+  // BeldexField's favourite star is a q-btn color="accent" (Quasar blue);
+  // beats .bg-accent / .text-accent from quasar.
+  .beldex-field .label .q-btn {
+    min-height: 0;
+    padding: 0 var(--beldex-space-1);
+    color: var(--beldex-accent) !important;
+    background: transparent !important;
+    box-shadow: none;
+
+    .q-icon {
+      color: inherit !important; // beats a global blue `.q-icon` rule
+    }
+  }
+
+  .contact__actions {
+    display: flex;
+    gap: var(--beldex-space-3);
+    margin-top: auto;
+
+    .beldex-btn {
+      flex: 1 1 auto;
+    }
+
+    .beldex-btn--ghost {
+      flex: 0 0 auto;
+    }
   }
 }
-// @media only screen and (max-height: 780px) {
-//   .address-book-details .delete-btn {
-//     width: unset;
-//   }
-// }
 </style>

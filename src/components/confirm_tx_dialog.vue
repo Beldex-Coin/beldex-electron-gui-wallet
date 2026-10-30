@@ -1,59 +1,67 @@
 <template>
   <q-dialog v-model="show" persistent>
-    <q-card class="confirm-tx-card">
-      <q-card-section>
-        <div class="text-h6 text-center ft-semibold">
-          {{ $t("dialog.confirmTransaction.title") }}
+    <q-card class="beldex-dialog">
+      <div class="beldex-dialog__head">
+        <div class="beldex-dialog__icon">
+          <img src="~assets/icons/dialog-send.svg" alt="" />
         </div>
-      </q-card-section>
-      <q-card-section>
-        <div class="confirm-list ">
-          <div>
-            <span class="label ft-semibold "
-              >{{ $t("dialog.confirmTransaction.sendTo") }}:
-            </span>
-            <br />
-            <span class="address-value ft-regular">{{ sendTo }}</span>
-          </div>
+        <div>
+          <h2 class="beldex-dialog__title">
+            {{ $t("dialog.confirmTransaction.title") }}
+          </h2>
+        </div>
+      </div>
 
-          <div class="hr-separator " />
-
-          <span class="label ft-semibold"
-            >{{ $t("strings.transactions.amount") }}:
-          </span>
-          <span class="address-value ft-medium"> {{ amount }} BDX</span>
-
-          <br />
-          <div class="hr-separator" />
-
-          <span class="label ft-semibold"
-            >{{ $t("strings.transactions.fee") }}:
-          </span>
-          <span class="address-value ft-medium">{{ fee }} BDX</span>
-
-          <br />
-          <div class="hr-separator" />
-
-          <span class="label ft-semibold"
-            >{{ $t("dialog.confirmTransaction.priority") }}:
-          </span>
-          <span class="address-value ft-medium">{{
-            isflashToTranslatedLabel(isflash)
+      <div class="beldex-dialog__body">
+        <div>
+          <span class="beldex-label">{{
+            $t("dialog.confirmTransaction.sendTo")
           }}</span>
+          <div class="beldex-dialog__inset q-mt-sm">{{ sendTo }}</div>
         </div>
-      </q-card-section>
-      <q-card-actions align="right">
+
+        <div>
+          <div class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("strings.transactions.amount")
+            }}</span>
+            <span class="beldex-dialog__kv-value--strong"
+              >{{ amount }} BDX</span
+            >
+          </div>
+          <div class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("strings.transactions.fee")
+            }}</span>
+            <span>{{ fee }} BDX</span>
+          </div>
+          <div class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("dialog.confirmTransaction.priority")
+            }}</span>
+            <span>{{ isflashToTranslatedLabel(isflash) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="beldex-dialog__actions">
         <q-btn
+          class="beldex-btn beldex-btn--ghost"
+          unelevated
+          no-caps
           :label="$t('dialog.buttons.cancel')"
-          color="accent"
           @click="onCancelTransaction"
         />
         <q-btn
-          color="primary"
-          :label="$t('buttons.send')"
+          class="beldex-btn"
+          unelevated
+          no-caps
           @click="onConfirmTransaction"
-        />
-      </q-card-actions>
+        >
+          <img src="~assets/icons/send-authorize.svg" alt="" />
+          {{ $t("buttons.send") }}
+        </q-btn>
+      </div>
     </q-card>
   </q-dialog>
 </template>

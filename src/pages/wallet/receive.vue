@@ -1,100 +1,67 @@
 <template>
-  <q-page class="receive" style="min-height: unset">
-    <q-list
-      v-if="!address"
-      link
-      no-border
-      :dark="theme == 'dark'"
-      class="oxen-list"
-    >
-      <q-item-label header class="list-header text-center ft-semibold"
-        >{{ $t("strings.addresses.primaryAccount") }}
-      </q-item-label>
-      <!-- <ReceiveItem
-        v-for="address in address_list.primary"
-        :key="address.address"
-        class="primary-address"
-        :address="address"
-        :sublabel="$t('strings.addresses.primaryAddress')"
-        :show-q-r="showQR"
-        :copy-address="copyAddress"
-        :details="details"
-        white-q-r-icon
-      />-->
-      <article class="flex justify-center align-center">
-        <div
-          style="
-            border: 11px solid #1f1f28;
-            display: inline-block;
-            border-radius: 20px;
-          "
-        >
-          <div class="text-center qr-card">
-            <QrcodeVue ref="qr" :value="info.address" size="100"></QrcodeVue>
+  <!-- Receive -->
+  <q-page class="receive">
+    <div v-if="!address" class="receive__list">
+      <section class="receive__primary">
+        <!-- QR stays dark-on-light with a quiet zone (plan §8.3). -->
+        <div class="receive__qr">
+          <QrcodeVue ref="qr" :value="info.address" size="92"></QrcodeVue>
+        </div>
+        <div class="receive__primary-meta">
+          <span class="beldex-label">{{
+            $t("strings.addresses.primaryAccount")
+          }}</span>
+          <p class="receive__address">{{ info.address }}</p>
+          <div class="receive__primary-actions">
+            <q-btn
+              class="beldex-btn beldex-btn--ghost receive__copy"
+              unelevated
+              no-caps
+              @click="copyAddress(info.address)"
+            >
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("dialog.copyAddress.title") }}
+            </q-btn>
           </div>
         </div>
-      </article>
-      <article
-        class="copy-btn flex justify-center align-center q-mt-sm q-mb-lg"
-      >
-        <q-btn
-          style="border-radius: 6px"
-          color="primary"
-          :label="$t('dialog.copyAddress.title')"
-          icon="content_copy"
-          padding="md"
-          class="q-px-md"
-          @click="copyAddress(info.address)"
-        />
-      </article>
-      <div class="hr-separator" />
+      </section>
 
-      <template v-if="address_list.used.length">
-        <q-item-label header class="list-header">
-          {{ $t("strings.addresses.myUsedAddresses") }}
-        </q-item-label>
-
+      <section v-if="address_list.unused.length" class="receive__group">
+        <div class="receive__group-head">
+          <span class="beldex-label">{{
+            $t("strings.addresses.myUnusedAddresses")
+          }}</span>
+          <span class="receive__count">{{ address_list.unused.length }}</span>
+        </div>
         <ReceiveItem
-          v-for="address in address_list.used"
-          :key="address.address"
-          :address="address"
-          :sublabel="
-            `${$t('strings.addresses.subAddress')} (${$t(
-              'strings.addresses.subAddressIndex',
-              {
-                index: address.address_index
-              }
-            )})`
-          "
-          :show-q-r="showQR"
-          :copy-address="copyAddress"
-          :details="details"
-        />
-      </template>
-
-      <template v-if="address_list.unused.length">
-        <q-item-label header class="list-header">{{
-          $t("strings.addresses.myUnusedAddresses")
-        }}</q-item-label>
-        <ReceiveItem
-          v-for="address in address_list.unused"
-          :key="address.address"
-          :address="address"
-          :sublabel="
-            `${$t('strings.addresses.subAddress')} (${$t(
-              'strings.addresses.subAddressIndex',
-              {
-                index: address.address_index
-              }
-            )})`
-          "
+          v-for="item in address_list.unused"
+          :key="item.address"
+          :address="item"
           :show-q-r="showQR"
           :copy-address="copyAddress"
           :details="details"
           :should-show-info="false"
         />
-      </template>
-    </q-list>
+      </section>
+
+      <!-- Used addresses list -->
+      <section v-if="address_list.used.length" class="receive__group">
+        <div class="receive__group-head">
+          <span class="beldex-label">{{
+            $t("strings.addresses.myUsedAddresses")
+          }}</span>
+          <span class="receive__count">{{ address_list.used.length }}</span>
+        </div>
+        <ReceiveItem
+          v-for="item in address_list.used"
+          :key="item.address"
+          :address="item"
+          :show-q-r="showQR"
+          :copy-address="copyAddress"
+          :details="details"
+        />
+      </section>
+    </div>
     <AddressDetails
       v-else-if="address"
       :address="address"
@@ -103,28 +70,57 @@
 
     <!-- QR Code -->
     <template v-if="QR.address != null">
-      <q-dialog v-model="QR.visible" :content-class="'qr-code-modal'">
-        <q-card class="qr-code-card">
-          <div
-            class="text-center  q-pa-md q-ma-lg "
-            style="background-color: white; border-radius: 10px;"
-          >
-            <QrcodeVue ref="qr" :value="QR.address" size="240"></QrcodeVue>
-            <ContextMenu
-              :menu-items="menuItems"
-              @copyQR="copyQR()"
-              @saveQR="saveQR()"
-            />
+      <q-dialog v-model="QR.visible">
+        <div class="beldex-dialog">
+          <div class="beldex-dialog__head">
+            <div class="beldex-dialog__icon">
+              <q-icon name="qr_code_2" size="20px" />
+            </div>
+            <div>
+              <h2 class="beldex-dialog__title">
+                {{
+                  QR.address === info.address
+                    ? $t("strings.addresses.primaryAccount")
+                    : $t("strings.addresses.subAddress")
+                }}
+              </h2>
+            </div>
           </div>
 
-          <q-card-actions class="q-mb-md " style="margin-right: 0;">
+          <div class="beldex-dialog__body">
+            <!-- Dark modules on a light tile with a quiet zone (plan §8.3) -->
+            <div class="beldex-dialog__qr">
+              <QrcodeVue ref="qr" :value="QR.address" size="176"></QrcodeVue>
+              <ContextMenu
+                :menu-items="menuItems"
+                @copyQR="copyQR()"
+                @saveQR="saveQR()"
+              />
+            </div>
+
+            <div class="beldex-dialog__inset beldex-dialog__inset--copy">
+              <div class="beldex-dialog__inset-text">{{ QR.address }}</div>
+              <q-btn
+                class="beldex-dialog__copy"
+                flat
+                :aria-label="$t('menuItems.copyAddress')"
+                @click="copyAddress(QR.address)"
+              >
+                <img src="~assets/icons/copy.svg" alt="" />
+              </q-btn>
+            </div>
+          </div>
+
+          <div class="beldex-dialog__actions">
             <q-btn
-              color="primary"
+              class="beldex-btn beldex-btn--ghost"
+              unelevated
+              no-caps
               :label="$t('buttons.close')"
               @click="QR.visible = false"
             />
-          </q-card-actions>
-        </q-card>
+          </div>
+        </div>
       </q-dialog>
     </template>
   </q-page>
@@ -222,53 +218,79 @@ export default {
   color: white;
 }
 
-.receive {
-  // height: 599px;
-  // overflow: auto;
-  min-height: unset;
-  .q-item-label {
-    font-weight: 400;
+.beldex-app .receive {
+  min-height: 0 !important; // beats q-page's inline min-height
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-6);
   }
 
-  .oxen-list-item {
-    cursor: pointer;
-    border: none;
-    .q-item-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+  &__primary {
+    display: flex;
+    gap: var(--beldex-space-6);
+  }
+
+  &__qr {
+    flex: none;
+    line-height: 0;
+    padding: 8px; // quiet zone ≥ 4 modules at this size
+    background-color: #fff;
+  }
+
+  &__primary-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-3);
+    min-width: 0;
+  }
+
+  &__address {
+    margin: 0;
+    font-size: var(--beldex-text-md);
+    line-height: 20px;
+    color: var(--beldex-text);
+    word-break: break-all;
+  }
+
+  &__primary-actions {
+    display: flex;
+    gap: var(--beldex-space-2);
+  }
+
+  &__copy {
+    min-height: 32px;
+    padding: 0 var(--beldex-space-3);
+    font-size: var(--beldex-text-md);
+    text-transform: none;
+
+    img {
+      width: 14px;
+      height: 14px;
     }
+  }
 
-    .info {
-      span {
-        font-size: 14px;
-      }
+  &__group {
+    display: flex;
+    flex-direction: column;
+  }
 
-      .value {
-        font-size: 16px;
-        font-weight: bold;
-      }
+  &__group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--beldex-space-2);
+    border-bottom: 1px solid var(--beldex-hairline);
+
+    .beldex-label {
+      font-size: var(--beldex-text-sm);
     }
   }
-  .qr-card {
-    background: white;
-    display: inline-block;
-    border-radius: 10px;
-    line-height: unset;
-    padding: 8px 8px 4px 8px;
-  }
-}
-.copy-btn {
-  .q-btn .q-icon {
-    font-size: 1.2em;
-  }
-  .on-left {
-    margin-right: 5px;
-  }
-  .bg-primary {
-    min-width: unset;
-    // height: 35px;
-    font-size: 14px;
+
+  &__count {
+    font-size: var(--beldex-text-xs);
+    color: var(--beldex-text-faint);
   }
 }
 </style>
