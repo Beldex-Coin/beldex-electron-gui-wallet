@@ -268,9 +268,23 @@ function createWindow() {
     });
   });
 
-  mainWindow.webContents.on("did-finish-load", () => {
+  mainWindow.webContents.on("did-finish-load", async () => {
     // Set the title
     mainWindow.setTitle(title);
+
+    // The page loaded again (manual reload, or a dev hot-reload full refresh)
+    // while the previous backend still owns the port. Stop it so the fresh
+    // renderer gets a clean backend and token instead of the "port in use"
+    // error below, which left the app unusable.
+    if (backend) {
+      const previousBackend = backend;
+      backend = null;
+      try {
+        await previousBackend.quit();
+      } catch (err) {
+        console.error("Failed to stop previous backend on reload:", err);
+      }
+    }
 
     require("crypto").randomBytes(64, (err, buffer) => {
       // if err, then we may have to use insecure token generation perhaps

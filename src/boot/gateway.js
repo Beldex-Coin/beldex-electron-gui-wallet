@@ -10,5 +10,12 @@ import { Gateway } from "src/gateway/gateway";
 */
 
 export default ({ app, router, Vue }) => {
+  // A manual reload (or a dev full-refresh) keeps the old hash, e.g. #/wallet,
+  // but the backend restarts from scratch with no wallet open. Start from the
+  // root route so the normal startup flow picks the screen, instead of
+  // rendering a wallet layout with no wallet behind it (blank page).
+  if (window.location.hash && window.location.hash !== "#/") {
+    window.location.hash = "#/";
+  }
   Vue.prototype.$gateway = new Gateway(app, router);
 };
