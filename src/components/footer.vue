@@ -1,34 +1,43 @@
 <template>
-  <footer class="status-footer q-mt-md">
+  <!-- Telemetry bar. Heights and status come from the
+       existing computeds; only the markup changed. -->
+  <footer class="status-footer">
+    <div class="status-footer__status">
+      <span class="status-footer__dot" :class="[status]" />
+      <span class="status-footer__label">{{ $t("footer.status") }} :</span>
+      <span class="status-text" :class="[status]">{{
+        $t(`footer.${status}`)
+      }}</span>
+    </div>
+    <div class="status-footer__heights">
+      <template v-if="config_daemon.type !== 'remote'">
+        <span>
+          <span class="status-footer__key">Daemon:</span>
+          {{ daemon_height }} / {{ target_height }}
+          <span class="status-text" :class="[status]"
+            >({{ formatPercent(daemon_local_pct) }}%)</span
+          >
+        </span>
+        <span class="status-footer__sep">|</span>
+      </template>
+      <template v-if="config_daemon.type !== 'local'">
+        <span>
+          <span class="status-footer__key">{{ $t("footer.remote") }}:</span>
+          {{ daemon.info.height }}
+        </span>
+        <span class="status-footer__sep">|</span>
+      </template>
+      <span>
+        <span class="status-footer__key">{{ $t("footer.wallet") }}:</span>
+        {{ wallet_display_height }} / {{ target_height }}
+      </span>
+      <span class="status-text" :class="[status]"
+        >({{ formatPercent(wallet_pct) }}%)</span
+      >
+    </div>
     <div class="status-bars" :class="[status]">
       <div :style="{ width: daemon_pct + '%' }"></div>
       <div :style="{ width: wallet_pct + '%' }"></div>
-    </div>
-    <div class="status-line row items-center">
-      <div class="status row items-center">
-        <span class="ft-medium">{{ $t("footer.status") }}:</span>
-        <span class="status-text ft-semibold" :class="[status]">{{
-          $t(`footer.${status}`)
-        }}</span>
-      </div>
-      <div class="row ft-medium">
-        <template v-if="config_daemon.type !== 'remote'">
-          <div>
-            Daemon: {{ daemon_height }} / {{ target_height }} ({{
-              daemon_local_pct
-            }}%)
-          </div>
-        </template>
-
-        <template v-if="config_daemon.type !== 'local'">
-          <div>{{ $t("footer.remote") }}: {{ daemon.info.height }}</div>
-        </template>
-
-        <div>
-          {{ $t("footer.wallet") }}: {{ wallet_display_height }} /
-          {{ target_height }} ({{ wallet_pct }}%)
-        </div>
-      </div>
     </div>
   </footer>
 </template>
@@ -142,6 +151,10 @@ export default {
       const parsed = Number(value);
       return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
     },
+    // One decimal, e.g. "(100.0%)".
+    formatPercent(value) {
+      return Number(value).toFixed(1);
+    },
     calculatePercent(currentHeight, targetHeight) {
       const current = this.toSafeHeight(currentHeight);
       const target = this.toSafeHeight(targetHeight);
@@ -161,4 +174,117 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+// Telemetry strip (status, heights, version).
+.beldex-app .status-footer {
+  // Static so the progress line below spans the whole telemetry bar
+  // (.wallet-shell__telemetry is the positioned ancestor).
+  position: static;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--beldex-space-4);
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  font-size: var(--beldex-text-sm);
+  line-height: 16px;
+  color: var(--beldex-text);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+
+  .status-footer__status,
+  .status-footer__heights {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-2);
+    white-space: nowrap;
+  }
+
+  .status-footer__heights {
+    gap: var(--beldex-space-3);
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .status-footer__label {
+    color: var(--beldex-text-faint);
+    text-transform: uppercase;
+  }
+
+  .status-footer__key {
+    color: var(--beldex-text-muted);
+  }
+
+  .status-footer__sep {
+    color: #2c2c2c;
+  }
+
+  .status-footer__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--beldex-accent);
+    box-shadow: 0 0 6px var(--beldex-accent-glow);
+
+    &.syncing,
+    &.scanning {
+      background-color: var(--beldex-warning);
+      box-shadow: none;
+    }
+
+    &.updateRequired {
+      background-color: var(--beldex-danger);
+      box-shadow: none;
+    }
+  }
+
+  .status-text {
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--beldex-accent);
+
+    &.syncing,
+    &.scanning {
+      color: var(--beldex-warning);
+    }
+
+    &.updateRequired {
+      color: var(--beldex-danger);
+    }
+  }
+
+  // Sync progress: thin line along the bottom edge of the bar.
+  .status-bars {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+
+    div {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 1px;
+    }
+
+    div:first-child,
+    div:last-child {
+      background-color: var(--beldex-accent);
+    }
+
+    &.syncing div,
+    &.scanning div {
+      background-color: var(--beldex-warning);
+    }
+
+    &.updateRequired div {
+      background-color: var(--beldex-danger);
+    }
+  }
+}
+</style>

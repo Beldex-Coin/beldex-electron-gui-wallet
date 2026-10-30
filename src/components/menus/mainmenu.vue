@@ -2,12 +2,25 @@
   <div>
     <q-btn
       class="menu setting-btn"
-      icon="settings"
+      :icon="accountIcon ? undefined : 'settings'"
       size="14px"
       text-color="#A9A9CD"
+      :aria-label="$t('menuItems.settings')"
       flat
     >
-      <q-menu class="settings-sub-menu-wrapper">
+      <!-- In-wallet top bar: account icon -->
+      <img
+        v-if="accountIcon"
+        src="~assets/icons/header-account.svg"
+        alt=""
+        class="setting-btn__account"
+      />
+      <!-- Same flat style as the wallet menu dropdown everywhere
+           (wallet-select, settings shell, in-wallet). -->
+      <q-menu
+        class="settings-sub-menu-wrapper"
+        content-class="beldex-menu beldex-menu--wallet"
+      >
         <q-list separator class="menu-list settings-sub-menu">
           <q-item
             v-if="!disableSwitchWallet"
@@ -18,8 +31,8 @@
           >
             <q-item-label header class="flex items-center  flex-nowrap no-wrap">
               <img
-                src="../../assets/images/switch_wallet.svg"
-                alt="exitWallet"
+                src="~assets/icons/menu-switch-wallet.svg"
+                alt=""
                 class="icon"
               />
               {{ $t("menuItems.switchWallet") }}</q-item-label
@@ -33,11 +46,7 @@
             @click.native="openSettings"
           >
             <q-item-label header class="flex items-center">
-              <img
-                src="../../assets/images/settings-sub-icon.svg"
-                class="icon"
-                alt="exitWallet"
-              />
+              <img src="~assets/icons/menu-settings.svg" class="icon" alt="" />
               {{ $t("menuItems.settings") }}</q-item-label
             >
           </q-item>
@@ -46,10 +55,10 @@
             v-close-popup
             class="q-mx-md q-my-sm"
             clickable
-            @click.native="showAbout(true)"
+            @click.native="showAbout"
           >
             <q-item-label header class="flex items-center">
-              <q-icon name="o_info" size="xs" class="icon" />
+              <img src="~assets/icons/menu-about.svg" class="icon" alt="" />
               {{ $t("menuItems.about") }}</q-item-label
             >
           </q-item>
@@ -60,11 +69,7 @@
             @click.native="exit"
           >
             <q-item-label header class="flex items-center flex-nowrap no-wrap">
-              <img
-                src="../../assets/images/exitWallet.svg"
-                alt="exitWallet"
-                class="icon"
-              />
+              <img src="~assets/icons/menu-exit.svg" class="icon" alt="" />
               {{ $t("menuItems.exit") }}
             </q-item-label>
           </q-item>
@@ -72,100 +77,10 @@
       </q-menu>
     </q-btn>
     <SettingsModal ref="settingsModal" />
-    <!-- TODO: Move this to it's own component -->
-    <q-dialog ref="aboutModal" minimized>
-      <div class="about-modal">
-        <div style="">
-          <div class="logo">
-            <img src="beldex.svg" height="50" />
-          </div>
-          <p class="text">
-            Beldex <span style="color: #ffffff">Electron Wallet</span>
-          </p>
-          <hr style="width: 70%; border: 1px solid #4d4d6d" />
-          <p class="q-my-sm">
-            Wallet {{ this.$t("strings.version") }}:
-            <span style="color: #00ad07">{{ version }}</span>
-          </p>
-          <p class="q-my-sm">
-            Daemon {{ this.$t("strings.version") }}:
-            <span style="color: #00ad07">{{ daemonVersion }}</span>
-          </p>
-          <p class="q-my-sm">
-            Copyright
-            <!-- <span style="font-weight: bold"> ⓒ </span> -->
-            <span style="font-weight: bold"> (c)</span>
-
-            -
-            <span style="color: #00ad07">2018-2021, Beldex</span>
-          </p>
-          <!-- <p
-            class="q-my-sm"
-            style="font-family: Poppins-Regular; font-size: 13px"
-          >
-            All rights reserved.
-          </p> -->
-
-          <div class="q-mt-md external-links">
-            <p style="margin: 0 0 20px">
-              <img src="telegram.svg" height="12" />
-              <a href="#" @click="openExternal('https://t.me/official_beldex')"
-                >Telegram</a
-              >
-
-              <img src="discord.svg" height="12" />
-              <a
-                href="#"
-                @click="openExternal('https://discord.com/invite/Hj4MAmA5gs')"
-                >Discord</a
-              >
-
-              <!-- readded once oxen subreddit is known -->
-              <!-- <a
-              href="#"
-              @click="openExternal('https://www.reddit.com/r/LokiProject/')"
-              >Reddit</a
-            >
-            - -->
-              <img src="github.svg" height="12" />
-              <a
-                href="#"
-                @click="
-                  openExternal(
-                    'https://github.com/Beldex-Coin/beldex-electron-gui-wallet'
-                  )
-                "
-                >Github</a
-              >
-            </p>
-          </div>
-          <div
-            class="flex row justify-center items-center q-mb-md external-links"
-          >
-            <img src="www.svg" height="15" />
-            <a
-              style="color: #ffffff"
-              href="#"
-              @click="openExternal('https://beldex.io')"
-              >beldex.io</a
-            >
-          </div>
-          <div style="display: flex; justify-content: center">
-            <q-btn
-              style="min-width: 100px; height: 45px"
-              color="primary"
-              label="OK"
-              @click="showAbout(false)"
-            />
-          </div>
-        </div>
-      </div>
-    </q-dialog>
   </div>
 </template>
 
 <script>
-import { version } from "../../../package.json";
 import { mapState } from "vuex";
 import SettingsModal from "components/settings";
 export default {
@@ -183,31 +98,27 @@ export default {
       type: Boolean,
       required: false,
       default: false
+    },
+    accountIcon: {
+      type: Boolean,
+      required: false,
+      default: false
     }
-  },
-  data() {
-    return {
-      version: ""
-    };
   },
   computed: mapState({
     theme: state => state.gateway.app.config.appearance.theme,
     isRPCSyncing: state => state.gateway.wallet.isRPCSyncing,
-    daemon: state => state.gateway.daemon,
-    daemonVersion() {
-      return this.daemon.info.version || "N/A";
-    }
+    daemon: state => state.gateway.daemon
   }),
-  mounted() {
-    this.version = version;
-  },
   methods: {
-    openExternal(url) {
-      this.$gateway.send("core", "open_url", { url });
-    },
-    showAbout(toggle) {
-      if (toggle) this.$refs.aboutModal.show();
-      else this.$refs.aboutModal.hide();
+    showAbout() {
+      // About is a Settings tab; inside Settings just switch to it.
+      if (this.disableSettings) {
+        this.$emit("about");
+        return;
+      }
+      this.$refs.settingsModal.page = "about";
+      this.$refs.settingsModal.isVisible = true;
     },
     openSettings() {
       this.$refs.settingsModal.isVisible = true;
@@ -258,7 +169,7 @@ export default {
        */
     },
     exit() {
-      this.$gateway.confirmClose(this.$t("dialog.exit.message"));
+      this.$gateway.confirmClose(this.$t("dialog.exit.question"));
     }
   }
 };
@@ -301,6 +212,90 @@ body.desktop .q-hoverable:hover > .q-focus-helper {
     height: 16px;
   }
 }
+// Wallet-select only: gear in the top bar and its dropdown.
+.beldex-app .setting-btn {
+  min-height: 0;
+  padding: 4px;
+
+  .q-btn__wrapper {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .q-icon {
+    font-size: 16px;
+    color: var(--beldex-text-subtle) !important; // beats .setting-btn .q-icon
+  }
+
+  &:hover .q-icon {
+    color: var(--beldex-text) !important;
+  }
+}
+
+.beldex-app .beldex-menu {
+  .settings-sub-menu {
+    width: 240px;
+    border-radius: 0;
+    padding: var(--beldex-space-2) 0;
+  }
+
+  .q-item {
+    margin: 0 !important; // beats .q-mx-md / .q-my-sm on the items
+    min-height: 48px;
+    border-radius: 0;
+  }
+
+  .q-hoverable:hover > .q-focus-helper {
+    background-color: transparent !important;
+  }
+
+  .q-item__label--header {
+    padding: 0;
+    gap: 17px;
+    font-family: var(--beldex-font-sans);
+    font-size: 16px;
+    color: var(--beldex-text);
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 0;
+  }
+}
+
+// Gear menu: same flat look as the wallet (hamburger) menu.
+.beldex-app .beldex-menu.beldex-menu--wallet {
+  .settings-sub-menu {
+    width: 100%;
+    padding: 6px 0;
+  }
+
+  .q-item {
+    min-height: 36px;
+    padding: 0 20px;
+  }
+
+  .q-item__label--header {
+    gap: 10px;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    letter-spacing: 0.3px;
+    // beats app.styl `.menu-list .q-item * { color white !important }`
+    color: var(--beldex-text-muted) !important;
+  }
+
+  .q-item:hover .q-item__label--header {
+    font-weight: 500;
+    color: var(--beldex-text-strong) !important;
+  }
+
+  .icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 .about-modal {
   font-family: Poppins-Medium;
 

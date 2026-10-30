@@ -1,496 +1,401 @@
 <template>
   <div class="settings-general">
-    <div class="daemonType">
-      <div class="row justify-between q-mb-sm q-pb-sm daemonType">
-        <div
-          :class="
-            `daemonTitle-wrapper  ${
-              config_daemon.type === 'remote' ? 'active' : ''
-            }`
-          "
-        >
-          <q-radio
-            v-model="config_daemon.type"
-            dense
-            size="sm"
-            val="remote"
-            :label="$t('strings.daemon.remote.title')"
-          />
-        </div>
-        <div
-          :class="
-            `daemonTitle-wrapper  ${
-              config_daemon.type === 'local_remote' ? 'active' : ''
-            }`
-          "
-        >
-          <q-radio
-            v-model="config_daemon.type"
-            dense
-            size="sm"
-            val="local_remote"
-            :label="$t('strings.daemon.localRemote.title')"
-          />
-        </div>
-        <div
-          :class="
-            `daemonTitle-wrapper  ${
-              config_daemon.type === 'local' ? 'active' : ''
-            }`
-          "
-        >
-          <q-radio
-            v-model="config_daemon.type"
-            dense
-            size="sm"
-            val="local"
-            :label="$t('strings.daemon.local.title')"
-          />
-        </div>
+    <section class="settings-general__topology">
+      <div class="settings-general__topology-head">
+        <span class="beldex-label">{{ $t("strings.connectionTopology") }}</span>
+        <span class="settings-general__ringct">
+          {{ $t("strings.ringCtEnforced") }}
+        </span>
       </div>
-
-      <p v-if="config_daemon.type == 'local_remote'" class="daemonDiscription">
-        {{ $t("strings.daemon.localRemote.description") }}
-      </p>
-      <p v-if="config_daemon.type == 'local'" class="daemonDiscription">
-        {{ $t("strings.daemon.local.description") }}
-      </p>
-      <p v-if="is_remote" class="daemonDiscription">
-        {{ $t("strings.daemon.remote.description") }}
-      </p>
-    </div>
-
-    <template v-if="config_daemon.type != 'remote'">
-      <div class="row pl-sm q-mt-md">
-        <OxenField
-          class="col-6 box-header"
-          :label="$t('fieldLabels.localDaemonIP')"
+      <div class="settings-general__options" role="radiogroup">
+        <button
+          v-for="option in [
+            { value: 'remote', key: 'remote' },
+            { value: 'local_remote', key: 'localRemote' },
+            { value: 'local', key: 'local' }
+          ]"
+          :key="option.value"
+          type="button"
+          role="radio"
+          class="beldex-option"
+          :class="{
+            'beldex-option--active': config_daemon.type === option.value
+          }"
+          :aria-checked="config_daemon.type === option.value ? 'true' : 'false'"
+          @click="config_daemon.type = option.value"
         >
-          <q-input
-            v-model="config_daemon.rpc_bind_ip"
-            class="box-input"
-            :placeholder="daemon_defaults.rpc_bind_ip"
-            disable
-            borderless
-            dense
+          <span
+            class="beldex-check"
+            :class="{ 'beldex-check--on': config_daemon.type === option.value }"
           />
-        </OxenField>
-        <OxenField
-          class="col-6 box-header"
-          :label="$t('fieldLabels.localDaemonPort') + '(RPC)'"
-        >
-          <!-- v-model="config_daemon.rpc_bind_port" -->
-          <q-input
-            v-model="config_daemon.rpc_bind_port"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.rpc_bind_port)"
-            :decimals="0"
-            :step="1"
-            min="1024"
-            max="65535"
-            borderless
-            dense
-            mask="######"
-            unmasked-value
-          />
-        </OxenField>
+          {{ $t(`strings.daemon.${option.key}.title`) }}
+        </button>
       </div>
-    </template>
+      <p class="beldex-hint settings-general__description">
+        <span class="settings-general__bolt" aria-hidden="true">⚡</span>
+        <template v-if="config_daemon.type == 'local_remote'">
+          {{ $t("strings.daemon.localRemote.description") }}
+        </template>
+        <template v-if="config_daemon.type == 'local'">
+          {{ $t("strings.daemon.local.description") }}
+        </template>
+        <template v-if="is_remote">
+          {{ $t("strings.daemon.remote.description") }}
+        </template>
+      </p>
+    </section>
 
-    <template v-if="config_daemon.type != 'local'">
-      <div class="row q-mt-md pl-sm">
-        <OxenField
-          class="col-6 box-header"
-          :label="$t('fieldLabels.remoteNodeHost')"
-        >
-          <q-input
-            v-model="config_daemon.remote_host"
-            class="box-input"
-            :placeholder="daemon_defaults.remote_host"
-            borderless
-            dense
-          />
-          <!-- Remote node presets -->
-          <q-btn-dropdown
-            v-if="config.app.net_type === 'mainnet'"
-            class="remote-dropdown"
-            dropdown-icon="expand_more"
-          >
-            <q-list link no-border>
-              <q-item
-                v-for="option in remotes"
-                :key="option.host"
-                v-close-popup
-                @click.native="setPreset(option)"
-              >
-                <q-item-label class="dropDown">
-                  <q-item-label header
-                    >{{ option.host }}:{{ option.port }}</q-item-label
-                  >
-                </q-item-label>
-              </q-item>
-            </q-list>
-          </q-btn-dropdown>
-        </OxenField>
-        <OxenField
-          class="col-6 box-header"
-          :label="$t('fieldLabels.remoteNodePort')"
-        >
-          <q-input
-            v-model="config_daemon.remote_port"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.remote_port)"
-            :decimals="0"
-            :step="1"
-            min="1024"
-            max="65535"
-            :dark="theme == 'dark'"
-            borderless
-            dense
-            mask="######"
-            unmasked-value
-          />
-        </OxenField>
-      </div>
-    </template>
-
-    <div class="row q-mt-md pl-sm">
-      <OxenField
-        class="col-6 box-header"
-        :label="$t('fieldLabels.dataStoragePath')"
-        disable-hover
-      >
+    <div
+      v-if="config_daemon.type != 'remote'"
+      class="settings-general__grid settings-general__grid--2"
+    >
+      <BeldexField :label="$t('fieldLabels.localDaemonIP')">
         <q-input
-          v-model="config.app.data_dir"
-          class="box-input"
+          v-model="config_daemon.rpc_bind_ip"
+          :placeholder="daemon_defaults.rpc_bind_ip"
           disable
-          :dark="theme == 'dark'"
           borderless
           dense
         />
-        <q-btn
-          style="color: red"
-          color="primary1"
-          :text-color="theme == 'dark' ? 'white' : 'dark'"
-          @click="selectPath('data')"
-          >{{ $t("buttons.selectLocation") }}</q-btn
+      </BeldexField>
+      <BeldexField :label="$t('fieldLabels.localDaemonPort') + '(RPC)'">
+        <q-input
+          v-model="config_daemon.rpc_bind_port"
+          :placeholder="toString(daemon_defaults.rpc_bind_port)"
+          :decimals="0"
+          :step="1"
+          min="1024"
+          max="65535"
+          borderless
+          dense
+          mask="######"
+          unmasked-value
+        />
+      </BeldexField>
+    </div>
+
+    <div
+      v-if="config_daemon.type != 'local'"
+      class="settings-general__grid settings-general__grid--2"
+    >
+      <BeldexField
+        class="beldex-field--boxed"
+        :label="$t('fieldLabels.remoteNodeHost')"
+      >
+        <q-input
+          v-model="config_daemon.remote_host"
+          :placeholder="daemon_defaults.remote_host"
+          borderless
+          dense
+        />
+        <!-- Remote node presets -->
+        <q-btn-dropdown
+          v-if="config.app.net_type === 'mainnet'"
+          class="settings-general__presets"
+          content-class="beldex-menu"
+          dropdown-icon="expand_more"
+          flat
+          dense
         >
-      </OxenField>
-      <OxenField
-        class="col-6 box-header"
+          <q-list link no-border>
+            <q-item
+              v-for="option in remotes"
+              :key="option.host"
+              v-close-popup
+              clickable
+              @click.native="setPreset(option)"
+            >
+              <q-item-label>{{ option.host }}:{{ option.port }}</q-item-label>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+      </BeldexField>
+      <BeldexField :label="$t('fieldLabels.remoteNodePort')">
+        <q-input
+          v-model="config_daemon.remote_port"
+          :placeholder="toString(daemon_defaults.remote_port)"
+          :decimals="0"
+          :step="1"
+          min="1024"
+          max="65535"
+          dark
+          borderless
+          dense
+          mask="######"
+          unmasked-value
+        />
+      </BeldexField>
+    </div>
+
+    <div class="settings-general__grid settings-general__grid--2">
+      <BeldexField
+        class="beldex-field--with-action"
+        :label="$t('fieldLabels.dataStoragePath')"
+        disable-hover
+      >
+        <q-input v-model="config.app.data_dir" disable dark borderless dense />
+        <q-btn flat no-caps @click="selectPath('data')">
+          {{ $t("buttons.selectLocation") }}
+        </q-btn>
+      </BeldexField>
+      <BeldexField
+        class="beldex-field--with-action"
         :label="$t('fieldLabels.walletStoragePath')"
         disable-hover
       >
         <q-input
           v-model="config.app.wallet_data_dir"
-          class="box-input"
           disable
-          :dark="theme == 'dark'"
+          dark
           borderless
           dense
         />
-        <q-btn
-          color="primary1"
-          :text-color="theme == 'dark' ? 'white' : 'dark'"
-          @click="selectPath('wallet')"
-          >{{ $t("buttons.selectLocation") }}</q-btn
-        >
-      </OxenField>
+        <q-btn flat no-caps @click="selectPath('wallet')">
+          {{ $t("buttons.selectLocation") }}
+        </q-btn>
+      </BeldexField>
     </div>
 
     <q-expansion-item
-      expand-separator
-      header-class="q-mt-md q-px-md non-selectable row advanced-options-label"
+      class="beldex-collapse"
+      header-class="non-selectable"
       :label="$t('strings.advancedOptions')"
     >
-      <div class="row pl-sm q-mt-sm">
-        <OxenField
-          class="col-6 box-header"
-          :label="$t('fieldLabels.daemonLogLevel')"
-          :disable="is_remote"
-        >
-          <q-input
-            v-model="config_daemon.log_level"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.log_level)"
+      <div class="settings-general__advanced">
+        <div class="settings-general__grid settings-general__grid--2">
+          <BeldexField
+            :label="$t('fieldLabels.daemonLogLevel')"
             :disable="is_remote"
-            :dark="theme == 'dark'"
-            :decimals="0"
-            :step="1"
-            min="0"
-            max="4"
-            borderless
-            dense
-            mask="######"
-            unmasked-value
-          />
-        </OxenField>
-        <OxenField
-          class="col-6 box-header"
-          :label="$t('fieldLabels.walletLogLevel')"
-        >
-          <q-input
-            v-model="config.wallet.log_level"
-            class="box-input"
-            :placeholder="toString(defaults.wallet.log_level)"
-            :dark="theme == 'dark'"
-            :decimals="0"
-            :step="1"
-            min="0"
-            max="4"
-            borderless
-            dense
-            mask="######"
-            unmasked-value
-          />
-        </OxenField>
+          >
+            <q-input
+              v-model="config_daemon.log_level"
+              :placeholder="toString(daemon_defaults.log_level)"
+              :disable="is_remote"
+              dark
+              :decimals="0"
+              :step="1"
+              min="0"
+              max="4"
+              borderless
+              dense
+              mask="######"
+              unmasked-value
+            />
+          </BeldexField>
+          <BeldexField :label="$t('fieldLabels.walletLogLevel')">
+            <q-input
+              v-model="config.wallet.log_level"
+              :placeholder="toString(defaults.wallet.log_level)"
+              dark
+              :decimals="0"
+              :step="1"
+              min="0"
+              max="4"
+              borderless
+              dense
+              mask="######"
+              unmasked-value
+            />
+          </BeldexField>
+        </div>
+
+        <div class="settings-general__grid settings-general__grid--4">
+          <!-- TODO: Can be generalised to a "port" (or similar) field -->
+          <BeldexField
+            :label="$t('fieldLabels.maxIncomingPeers')"
+            :disable="is_remote"
+          >
+            <q-input
+              v-model="config_daemon.in_peers"
+              :placeholder="toString(daemon_defaults.in_peers)"
+              :disable="is_remote"
+              dark
+              type="number"
+              :decimals="0"
+              :step="1"
+              min="-1"
+              max="65535"
+              borderless
+              dense
+              @keydown="keyHandler"
+            />
+          </BeldexField>
+          <BeldexField
+            :label="$t('fieldLabels.maxOutgoingPeers')"
+            :disable="is_remote"
+          >
+            <q-input
+              v-model="config_daemon.out_peers"
+              :placeholder="toString(daemon_defaults.out_peers)"
+              :disable="is_remote"
+              dark
+              type="number"
+              :decimals="0"
+              :step="1"
+              min="-1"
+              max="65535"
+              borderless
+              dense
+              @keydown="keyHandler"
+            />
+          </BeldexField>
+          <BeldexField
+            :label="$t('fieldLabels.limitUploadRate')"
+            :disable="is_remote"
+          >
+            <q-input
+              v-model="config_daemon.limit_rate_up"
+              :placeholder="toString(daemon_defaults.limit_rate_up)"
+              :disable="is_remote"
+              dark
+              type="number"
+              suffix="Kb/s"
+              :decimals="0"
+              :step="1"
+              min="-1"
+              max="65535"
+              borderless
+              dense
+              @keydown="keyHandler"
+            />
+          </BeldexField>
+          <BeldexField
+            :label="$t('fieldLabels.limitDownloadRate')"
+            :disable="is_remote"
+          >
+            <q-input
+              v-model="config_daemon.limit_rate_down"
+              :placeholder="toString(daemon_defaults.limit_rate_down)"
+              :disable="is_remote"
+              dark
+              type="number"
+              suffix="Kb/s"
+              :decimals="0"
+              :step="1"
+              min="-1"
+              max="65535"
+              borderless
+              dense
+              @keydown="keyHandler"
+            />
+          </BeldexField>
+        </div>
+
+        <div class="settings-general__grid settings-general__grid--3">
+          <BeldexField
+            :label="$t('fieldLabels.daemonP2pPort')"
+            :disable="is_remote"
+          >
+            <q-input
+              v-model="config_daemon.p2p_bind_port"
+              :placeholder="toString(daemon_defaults.p2p_bind_port)"
+              :disable="is_remote"
+              dark
+              :decimals="0"
+              :step="1"
+              min="1024"
+              max="65535"
+              borderless
+              dense
+              mask="######"
+              unmasked-value
+            />
+          </BeldexField>
+          <BeldexField :label="$t('fieldLabels.internalWalletPort')">
+            <q-input
+              v-model="config.app.ws_bind_port"
+              :placeholder="toString(defaults.app.ws_bind_port)"
+              dark
+              :decimals="0"
+              :step="1"
+              min="1024"
+              max="65535"
+              borderless
+              dense
+              mask="######"
+              unmasked-value
+            />
+          </BeldexField>
+          <BeldexField
+            :label="$t('fieldLabels.walletRPCPort')"
+            :disable="is_remote"
+          >
+            <q-input
+              v-model="config.wallet.rpc_bind_port"
+              :placeholder="toString(defaults.wallet.rpc_bind_port)"
+              :disable="is_remote"
+              dark
+              :decimals="0"
+              :step="1"
+              min="1024"
+              max="65535"
+              borderless
+              dense
+              mask="######"
+              unmasked-value
+            />
+          </BeldexField>
+        </div>
       </div>
 
-      <div class="row pl-sm q-mt-md">
-        <!-- TODO: Can be generalised to a "port" (or similar) field -->
-        <OxenField
-          class="col-3 box-header"
-          :label="$t('fieldLabels.maxIncomingPeers')"
-          :disable="is_remote"
+      <div class="settings-general__network" role="radiogroup">
+        <span class="settings-general__network-label">
+          {{ $t("fieldLabels.network") }}
+        </span>
+        <button
+          v-for="net in ['mainnet', 'stagenet', 'testnet']"
+          :key="net"
+          type="button"
+          role="radio"
+          class="settings-general__network-option"
+          :class="{
+            'settings-general__network-option--active':
+              config.app.net_type === net
+          }"
+          :aria-checked="config.app.net_type === net ? 'true' : 'false'"
+          @click="config.app.net_type = net"
         >
-          <q-input
-            v-model="config_daemon.in_peers"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.in_peers)"
-            :disable="is_remote"
-            :dark="theme == 'dark'"
-            type="number"
-            :decimals="0"
-            :step="1"
-            min="-1"
-            max="65535"
-            borderless
-            dense
-            @keydown="keyHandler"
+          <span
+            class="beldex-check"
+            :class="{ 'beldex-check--on': config.app.net_type === net }"
           />
-        </OxenField>
-        <OxenField
-          class="col-3 box-header"
-          :label="$t('fieldLabels.maxOutgoingPeers')"
-          :disable="is_remote"
-        >
-          <q-input
-            v-model="config_daemon.out_peers"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.out_peers)"
-            :disable="is_remote"
-            :dark="theme == 'dark'"
-            type="number"
-            :decimals="0"
-            :step="1"
-            min="-1"
-            max="65535"
-            borderless
-            dense
-            @keydown="keyHandler"
-          />
-        </OxenField>
-        <OxenField
-          class="col-3 box-header"
-          :label="$t('fieldLabels.limitUploadRate')"
-          :disable="is_remote"
-        >
-          <q-input
-            v-model="config_daemon.limit_rate_up"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.limit_rate_up)"
-            :disable="is_remote"
-            :dark="theme == 'dark'"
-            type="number"
-            suffix="Kb/s"
-            :decimals="0"
-            :step="1"
-            min="-1"
-            max="65535"
-            borderless
-            dense
-            @keydown="keyHandler"
-          />
-        </OxenField>
-        <OxenField
-          class="col-3 box-header"
-          :label="$t('fieldLabels.limitDownloadRate')"
-          :disable="is_remote"
-        >
-          <q-input
-            v-model="config_daemon.limit_rate_down"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.limit_rate_down)"
-            :disable="is_remote"
-            :dark="theme == 'dark'"
-            type="number"
-            suffix="Kb/s"
-            :decimals="0"
-            :step="1"
-            min="-1"
-            max="65535"
-            borderless
-            dense
-            @keydown="keyHandler"
-          />
-        </OxenField>
-      </div>
-      <div class="row pl-sm q-mt-md">
-        <OxenField
-          class="col-4 box-header"
-          :label="$t('fieldLabels.daemonP2pPort')"
-          :disable="is_remote"
-        >
-          <q-input
-            v-model="config_daemon.p2p_bind_port"
-            class="box-input"
-            :placeholder="toString(daemon_defaults.p2p_bind_port)"
-            :disable="is_remote"
-            :dark="theme == 'dark'"
-            float-
-            :decimals="0"
-            :step="1"
-            min="1024"
-            max="65535"
-            borderless
-            dense
-            mask="######"
-            unmasked-value
-          />
-        </OxenField>
-        <OxenField
-          class="col-4 box-header"
-          :label="$t('fieldLabels.internalWalletPort')"
-        >
-          <q-input
-            v-model="config.app.ws_bind_port"
-            class="box-input"
-            :placeholder="toString(defaults.app.ws_bind_port)"
-            :dark="theme == 'dark'"
-            float-
-            :decimals="0"
-            :step="1"
-            min="1024"
-            max="65535"
-            borderless
-            dense
-            mask="######"
-            unmasked-value
-          />
-        </OxenField>
-        <OxenField
-          class="col-4 box-header"
-          :label="$t('fieldLabels.walletRPCPort')"
-          :disable="is_remote"
-        >
-          <q-input
-            v-model="config.wallet.rpc_bind_port"
-            class="box-input"
-            :placeholder="toString(defaults.wallet.rpc_bind_port)"
-            :disable="is_remote"
-            :dark="theme == 'dark'"
-            float-
-            :decimals="0"
-            :step="1"
-            min="1024"
-            max="65535"
-            borderless
-            dense
-            mask="######"
-            unmasked-value
-          />
-        </OxenField>
-      </div>
-      <!-- <OxenField
-          :helper="$t('fieldLabels.chooseNetwork')"
-          :label="$t('fieldLabels.network')"
-          class="network-group-field"
-        >
-          <q-option-group
-            v-model="config.app.net_type"
-            type="radio"
-            dense
-            inline
-            :options="[
-            { label: 'Main Net', value: 'mainnet' },
-            { label: 'Stage Net', value: 'stagenet' },
-            { label: 'Test Net', value: 'testnet' }
-          ]"
-          />
-      </OxenField>-->
-
-      <div
-        class="row q-mb-sm q-pb-sm q-mt-md daemonType"
-        style="background-color: #32324a"
-      >
-        <p class="netType">{{ $t("fieldLabels.network") }}</p>
-        <div class="q-ml-lg q-pa-sm">
-          <q-radio
-            v-model="config.app.net_type"
-            dense
-            size="sm"
-            val="mainnet"
-            label="Main Net"
-          />
-        </div>
-        <div class="q-ml-lg q-pa-sm">
-          <q-radio
-            v-model="config.app.net_type"
-            dense
-            size="sm"
-            val="stagenet"
-            label="Stage Net"
-          />
-        </div>
-        <div class="q-ml-lg q-pa-sm">
-          <q-radio
-            v-model="config.app.net_type"
-            dense
-            size="sm"
-            val="testnet"
-            label="Test Net"
-          />
-        </div>
+          {{ $t(`strings.netTypes.${net}`) }}
+        </button>
       </div>
     </q-expansion-item>
-    <div
-      v-if="!welcome"
-      class="flex row align-center justify-center a-center q-mt-lg"
-    >
+
+    <div class="settings-general__actions">
       <q-btn
-        :disable="this.saveBtnValidation(this.config_daemon)"
-        color="primary"
+        v-if="!welcome"
+        class="beldex-btn"
+        unelevated
+        no-caps
+        :disable="saveBtnValidation(config_daemon)"
         :label="$t('buttons.save')"
         @click="save"
       />
-    </div>
-    <div v-if="welcome" class="flex row align-center justify-center q-mt-lg">
-      <div class="a-center q-mr-lg">
-        <q-btn
-          color="accent"
-          :label="$t('buttons.back')"
-          @click="() => this.$emit('clickPrev')"
-        />
-      </div>
-      <div class="a-center">
-        <q-btn
-          color="primary"
-          :label="$t('buttons.next')"
-          @click="() => this.$emit('clickNext')"
-        />
-      </div>
+      <q-btn
+        v-else
+        class="beldex-btn"
+        unelevated
+        no-caps
+        @click="$emit('clickNext')"
+      >
+        {{ $t("buttons.next") }}
+        <img src="~assets/icons/arrow-right.svg" alt="" />
+      </q-btn>
     </div>
   </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import { dialog } from "src/shims/electron-renderer";
 export default {
   name: "SettingsGeneral",
   components: {
-    OxenField
+    BeldexField
   },
   props: {
     randomiseRemote: {
@@ -615,80 +520,127 @@ export default {
 </script>
 
 <style lang="scss">
+// Configuration step and General settings tab.
 .settings-general {
-  // width: 69vw;
-  // max-height: 695px;
-  // overflow-y: auto;
-  .q-field {
-    margin: 20px 0;
-  }
-  .daemonType {
-    border: 2px #484856 solid;
-    font-family: "Poppins-SemiBold";
-    border-radius: 12px;
-    padding-top: 10px;
-    padding-left: 16px;
-    padding-right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 
-    .netType {
-      padding: 10px;
-      padding-right: 30px;
-      margin: 0px;
-      border-right: 2px solid #3e3e5b;
-    }
-    .daemonTitle-wrapper {
-      padding: 10px 0;
-      width: 33%;
-      text-align: center;
-      border-radius: 7px;
-    }
-    .daemonTitle-wrapper:hover {
-      background-color: #32324b;
-    }
-    .active {
-      background-color: #40405e;
-    }
+  &__topology {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 14px 30px 19px 21px;
+    border: 1px solid var(--beldex-border-strong);
   }
-  .daemonDiscription {
-    font-family: "Poppins-Regular";
-    color: #8787a8;
+
+  &__topology-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--beldex-space-4);
   }
-  .q-if-disabled {
-    cursor: default !important;
-    .q-input-target {
-      cursor: default !important;
+
+  &__ringct {
+    font-size: var(--beldex-text-xs);
+    line-height: 16px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--beldex-accent);
+  }
+
+  &__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 26px;
+
+    .beldex-option {
+      gap: 10px;
+      font-size: var(--beldex-text-base);
+      font-weight: 600;
     }
   }
 
-  .network-group-field {
-    color: white;
-    display: inline-block;
+  &__description {
+    margin: 0;
+    font-size: var(--beldex-text-md);
   }
 
-  .row.pl-sm {
-    > * + * {
-      padding-left: 16px;
+  &__bolt {
+    color: var(--beldex-accent);
+  }
+
+  &__grid {
+    display: grid;
+    gap: var(--beldex-space-3);
+
+    &--2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    &--4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 
-  .col.pt-sm {
-    > * + * {
-      padding-top: 16px;
+  &__presets {
+    color: var(--beldex-accent);
+    padding: 0;
+  }
+
+  &__advanced {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-4);
+  }
+
+  &__network {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--beldex-space-6);
+    margin-top: var(--beldex-space-5);
+    padding: 14px 18px;
+    border: 1px solid var(--beldex-border-strong);
+  }
+
+  &__network-label {
+    font-size: var(--beldex-text-base);
+    color: var(--beldex-text-strong);
+    text-transform: uppercase;
+  }
+
+  &__network-option {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--beldex-space-2);
+    padding: 0;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-base);
+    color: var(--beldex-text-muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &--active {
+      font-weight: 600;
+      color: var(--beldex-text);
     }
   }
 
-  .remote-dropdown {
-    padding: 0 !important;
-  }
-  .q-item {
-    background-color: #32324a;
-    border-radius: 10px;
-  }
-  .box-header {
-    font-family: "Poppins-Bold";
-  }
-  .box-input {
-    font-family: "Poppins-Regular";
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: calc(var(--beldex-space-3) - 30px);
+
+    .beldex-btn img {
+      width: 11px;
+      height: 11px;
+    }
   }
 }
 </style>

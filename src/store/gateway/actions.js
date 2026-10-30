@@ -22,6 +22,7 @@ export const resetWalletData = state => {
       tx_list: []
     },
     address_list: {
+      primary: [],
       used: [],
       unused: [],
       address_book: []

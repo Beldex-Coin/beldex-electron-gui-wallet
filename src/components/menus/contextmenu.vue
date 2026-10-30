@@ -1,5 +1,5 @@
 <template>
-  <q-menu context-menu>
+  <q-menu context-menu content-class="beldex-menu beldex-menu--compact">
     <q-list separator class="context-menu-list">
       <div v-for="(item, index) in menuItems" :key="index">
         <ContextMenuItem

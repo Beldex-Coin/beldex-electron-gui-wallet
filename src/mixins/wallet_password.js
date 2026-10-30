@@ -1,4 +1,5 @@
 import { mapState } from "vuex";
+import PasswordConfirmDialog from "components/password_confirm_dialog";
 
 // gateway.send() silently drops a message when the socket isn't OPEN yet
 // or the session token isn't set - both true for a moment on every
@@ -80,32 +81,26 @@ export default {
     },
 
     async showPasswordConfirmation(options) {
-      const { noPasswordMessage, ...other } = options;
+      const {
+        noPasswordMessage,
+        title,
+        subtitle,
+        ok,
+        noRouteDismiss
+      } = options;
       return this.hasPassword()
-        .then(hasPassword => {
-          const sharedOpts = {
-            cancel: {
-              flat: true,
-              label: this.$t("dialog.buttons.cancel"),
-              color: this.theme === "dark" ? "white" : "dark"
-            },
-            ...other
-          };
-          const hasPasswordOpts = {
-            ...sharedOpts,
-            message: this.$t("dialog.password.message"),
-            prompt: {
-              model: "",
-              type: "password"
-            }
-          };
-          const noPasswordOpts = {
-            ...sharedOpts,
-            message: noPasswordMessage
-          };
-          let usedOpts = hasPassword ? hasPasswordOpts : noPasswordOpts;
-          return this.$q.dialog(usedOpts);
-        })
+        .then(hasPassword =>
+          this.$q.dialog({
+            component: PasswordConfirmDialog,
+            parent: this,
+            title,
+            subtitle: subtitle || this.$t("dialog.password.subtitle"),
+            okLabel: (ok && ok.label) || this.$t("dialog.password.unlock"),
+            hasPassword,
+            noPasswordMessage,
+            noRouteDismiss: !!noRouteDismiss
+          })
+        )
         .catch(() => null);
     }
   }

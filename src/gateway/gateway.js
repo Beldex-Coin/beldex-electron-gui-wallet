@@ -2,6 +2,7 @@ import { Notify, Dialog, Loading, LocalStorage } from "quasar";
 import { EventEmitter } from "events";
 import { i18n, changeLanguage } from "src/boot/i18n";
 import { appIpc } from "src/shims/electron-renderer";
+import ConfirmDialog from "components/confirm_dialog";
 
 const WS_RETRY_BASE_DELAY_MS = 1000;
 const WS_RETRY_MAX_DELAY_MS = 15000;
@@ -114,7 +115,7 @@ export class Gateway extends EventEmitter {
     });
 
     appIpc.on("confirmClose", () => {
-      this.confirmClose(i18n.t("dialog.exit.message"));
+      this.confirmClose(i18n.t("dialog.exit.question"));
     });
 
     appIpc.on("showQuitScreen", () => {
@@ -280,17 +281,15 @@ export class Gateway extends EventEmitter {
 
     setTimeout(() => {
       Dialog.create({
-        title: i18n.t(`dialog.${key}.title`),
+        component: ConfirmDialog,
+        title: i18n.t(`dialog.${key}.heading`),
         message: msg,
-        class: "exit-confirm-dialog",
-        ok: {
-          label: i18n.t(`dialog.${key}.ok`),
-          color: key !== "exit" ? "primary" : "red"
-        },
-        cancel: {
-          label: i18n.t("dialog.buttons.cancel"),
-          color: "accent"
-        }
+        okLabel: i18n.t(`dialog.${key}.confirm`),
+        cancelLabel: i18n.t("dialog.buttons.cancel"),
+        icon: restart ? "restart" : "exit",
+        iconTone: restart ? "accent" : "danger",
+        okTone: restart ? "primary" : "danger",
+        okIcon: restart ? "restart" : "exit"
       })
         .onOk(() => {
           this.closeDialog = false;

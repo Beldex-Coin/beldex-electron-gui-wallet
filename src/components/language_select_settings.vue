@@ -1,47 +1,46 @@
 <template>
-  <div>
-    <div
-      style="
-        background: #32324a;
-        width: 360px;
-        border-radius: 16px;
-        /* height: 540px; */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto;
-        /* height: 63vh; */
-      "
-      class="language-select column items-center justify-center"
-    >
-      <div class="selectLanguage" style="color: #b9b9b9">
-        <p
-          class="q-mt-lg"
-          style="font-family: Poppins-Medium; font-size: 1.25rem"
-        >
-          {{ $t("strings.selectLanguage") }}
-        </p>
-      </div>
-      <div style="height: 67%; overflow-y: auto">
-        <div class="column justify-center">
-          <div
-            v-for="option in options"
-            :key="option.value"
-            :class="
-              `row justify-start items-center lang-btn ft-medium ${
-                langSelect === option.value ? 'selected-btn' : 'unselected-btn'
-              }`
-            "
-            @click="setLanguage(option.value)"
-          >
-            <span :class="`flag-icon flag-icon-${option.flag}`" />
-            <span class="q-ml-xs">{{ option.label }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="q-my-lg">
-        <q-btn color="primary" :label="$t('buttons.save')" @click="save" />
-      </div>
+  <div class="language-select language-select--settings">
+    <div class="language-select__grid" role="radiogroup">
+      <button
+        v-for="(option, index) in options"
+        :key="option.value"
+        type="button"
+        role="radio"
+        class="beldex-option language-select__card"
+        :class="{ 'beldex-option--active': langSelect === option.value }"
+        :aria-checked="langSelect === option.value ? 'true' : 'false'"
+        @click="setLanguage(option.value)"
+      >
+        <span
+          :class="`flag-icon flag-icon-${option.flag}`"
+          class="language-select__flag"
+        />
+        <span class="language-select__text">
+          <span class="language-select__index">
+            {{ String(index + 1).padStart(2, "0") }} /
+            {{
+              index === 0
+                ? $t("strings.languageDefault")
+                : $t("strings.languageRegional")
+            }}
+          </span>
+          <span class="language-select__name">{{ option.label }}</span>
+        </span>
+        <span
+          class="beldex-check"
+          :class="{ 'beldex-check--on': langSelect === option.value }"
+        />
+      </button>
+    </div>
+    <div class="language-select__actions">
+      <div class="language-select__info" />
+      <q-btn
+        class="beldex-btn"
+        unelevated
+        no-caps
+        :label="$t('buttons.save')"
+        @click="save"
+      />
     </div>
   </div>
 </template>
@@ -96,41 +95,11 @@ export default {
 </script>
 
 <style lang="scss">
-.language-select {
-  color: #fff;
-
-  .q-btn {
-    margin: 2px;
-  }
-  .q-btn__wrapper:before {
-    box-shadow: unset;
-  }
-  .selectLanguage {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Poppins-SemiBold";
-  }
-  .lang-btn,
-  .selected-btn,
-  .unselected-btn {
-    // width: 259px;
-    // height: 60px;
-    width: 245px;
-    height: 50px;
-    box-shadow: none;
-    margin-top: 5px;
-    border-radius: 10px;
-    padding-left: 4.688rem;
-    font-size: 1.125rem;
-  }
-  .unselected-btn:hover {
-    cursor: pointer;
-    background-color: #484866;
-  }
-
-  .flag-icon {
-    margin-right: 4px;
+// Card styles are shared with language_select.vue (its
+// unscoped `.language-select` block); only the settings variant differs here.
+.language-select--settings {
+  .beldex-check {
+    margin-left: auto;
   }
 }
 </style>
