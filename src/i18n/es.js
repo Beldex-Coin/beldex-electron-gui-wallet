@@ -20,7 +20,7 @@ export default {
     copy: "Copiar",
     copySignature: "COPIAR FIRMA",
     createWallet: "CREAR MONEDERO",
-    decrypt: "DESCIFRAR",
+    decrypt: "Descifrar",
     addRecord: "Agregar BNS",
     delete: "ELIMINAR",
     done: "HECHO",
@@ -63,7 +63,12 @@ export default {
     viewOnExplorer: "VER EN EL EXPLORADOR",
     add: "Agregar",
     bnsUpdate: "Actualización BNS",
-    bnsRenew: "Renovar BNS"
+    bnsRenew: "Renovar BNS",
+    goToStake: "Ir a staking",
+    clearForm: "Borrar todo",
+    authorizeTransfer: "Autorizar transferencia",
+    startOver: "Empezar de nuevo",
+    generateProof: "Generar prueba"
   },
   dialog: {
     // Generic buttons
@@ -79,7 +84,14 @@ export default {
       peerDetailsTitle: "Detalles del par",
       message:
         "Introduzca el periodo de veto del par en segundos.\nPor defecto 3600 = 1 hora.",
-      ok: "Vetar par"
+      ok: "Vetar par",
+      description:
+        "Ingrese la duración para banear al par en segundos.\nPor defecto 3600 = 1 hora (86400 = 24 horas)",
+      targetIp: "IP objetivo:",
+      lengthPlaceholder: "Ingresar duración",
+      minimum: "Mínimo: 60s",
+      invalid: "Ingrese al menos 60 segundos.",
+      banAction: "Banear par"
     },
     copyAddress: {
       title: "Copiar dirección",
@@ -101,13 +113,18 @@ export default {
     },
     deleteAddress: {
       title: "Eliminar dirección",
-      message: "¿Estás seguro que deseas eliminar esta dirección?"
+      message: "¿Estás seguro que deseas eliminar esta dirección?",
+      heading: "Eliminar contacto",
+      question: "¿Está seguro de que desea eliminar a {name} de sus contactos?"
     },
     discardEdit: {
       title: "Estas segura",
       message: "¿Estás segura de que quieres descartar la edición?",
       ok: "Continuar",
-      cancel: "Descartar"
+      cancel: "Descartar",
+      heading: "¿Descartar cambios?",
+      question: "Tiene ediciones sin guardar en este contacto.",
+      keepEditing: "Seguir editando"
     },
     showMasterNode: {
       title: "Mostrar nodo maestro",
@@ -117,12 +134,19 @@ export default {
     deleteWallet: {
       title: "Eliminar monedero",
       message: "¿Está seguro de que desea eliminar la billetera actual?",
-      ok: "ELIMINAR"
+      ok: "ELIMINAR",
+      heading: "Eliminar billetera",
+      warning:
+        "Esto elimina los archivos de la billetera de esta computadora. Solo puede restaurarla con su semilla de recuperación.",
+      confirm: "Eliminar billetera"
     },
     exit: {
       title: "Salir",
       message: "¿Está seguro de que desea salir?",
-      ok: "SALIR"
+      ok: "SALIR",
+      heading: "Salir de la billetera",
+      question: "¿Está seguro de que desea salir de la billetera?",
+      confirm: "Salir"
     },
     keyImages: {
       title: "{type} imágenes de la clave",
@@ -142,7 +166,16 @@ export default {
     },
     password: {
       title: "Ingrese su contraseña de billetera",
-      message: "Introduzca la contraseña del monedero para continuar."
+      message: "Introduzca la contraseña del monedero para continuar.",
+      heading: "Ingrese la contraseña de la billetera",
+      subtitle: "Ingrese la contraseña de su billetera para continuar.",
+      unlocking: "Desbloqueando · {name}",
+      placeholder: "Ingresar contraseña",
+      hint:
+        'Simplemente haga clic en "Desbloquear" si no ha establecido una contraseña para esta billetera.',
+      unlock: "Desbloquear",
+      showPassword: "Mostrar contraseña",
+      hidePassword: "Ocultar contraseña"
     },
     purchase: {
       title: "Nombre de compra",
@@ -169,12 +202,15 @@ export default {
       title: "Reiniciar",
       message:
         "Los cambios requieren reiniciar la aplicación ¿Desea reiniciar ahora?",
-      ok: "REINICIAR"
+      ok: "REINICIAR",
+      heading: "Reiniciar billetera",
+      confirm: "Reiniciar"
     },
     showPrivateKeys: {
       title: "Mostrar claves privadas",
       message: "¿Desea ver sus claves privadas?",
-      ok: "MOSTRAR"
+      ok: "MOSTRAR",
+      subtitle: "Ingrese la contraseña de su billetera para revelar las claves."
     },
     stake: {
       title: "RETENER PARTICIPACIÓN",
@@ -237,6 +273,11 @@ export default {
       message:
         "Liberar una participación parcial a un nodo hará que el resto de participaciones de otras personas también se liberen. Si se trata de una participación a un nodo compartido, estaría bien que comunicara sus intenciones al operador y al resto de participantes.",
       ok: "CONTINUAR"
+    },
+    signature: {
+      title: "Firma",
+      message:
+        "Copie los datos firmados por la clave privada de su dirección principal a continuación"
     }
   },
   fieldLabels: {
@@ -312,7 +353,7 @@ export default {
     chooseNetwork: "Seleccione una Red",
     network: "Red",
 
-    // new design revamp
+    // wallet UI
 
     OwnerWalletaddress: "Dirección de billetera del propietario",
     backupOwnerWalletAddress:
@@ -321,7 +362,9 @@ export default {
     updateValues: "Actualizar valores",
     updateHeight: "Altura de actualización",
     walletAddress: "Dirección de la billetera",
-    year: "Año"
+    year: "Año",
+    values: "Valores",
+    recipientAddressBns: "Dirección del destinatario / nombre BNS"
   },
   footer: {
     ready: "LISTO",
@@ -365,7 +408,9 @@ export default {
     showQRCode: "Mostrar código QR",
     switchWallet: "Cambiar de monedero",
     viewOnExplorer: "Ver en el explorador",
-    favourite: "Favorito"
+    favourite: "Favorito",
+    walletMenuTitle: "Billetera",
+    copyBchatId: "Copiar ID de bchat"
   },
   notification: {
     positive: {
@@ -472,7 +517,9 @@ export default {
         "No se pudo crear la ruta de almacenamiento del monedero",
       zeroAmount: "La cantidad debe ser mayor que cero",
       greaterHeight:
-        "El valor ingresado es mayor que la altura del bloque actual"
+        "El valor ingresado es mayor que la altura del bloque actual",
+      decryptBNSRecord:
+        "El registro BNS indicado no existe o no pertenece a esta billetera"
     },
     warnings: {
       privateKeysAfterSync:
@@ -482,7 +529,9 @@ export default {
         "No se ha podido acceder al nodo remoto, volviendo al modo local",
       localNodeFailedUsingRemote:
         "No se pudo iniciar el nodo local, utilizando nodo remoto",
-      usingRemoteNode: "beldexd no encontrado, utilizando nodo remoto"
+      usingRemoteNode: "beldexd no encontrado, utilizando nodo remoto",
+      retryingRemoteNode:
+        "Todavía intentando contactar al nodo remoto (intento {attempt} de {total})..."
     }
   },
   placeholders: {
@@ -525,7 +574,17 @@ export default {
     enterEthAddress: "Ingrese su dirección ETH",
     enterBelnetId: "Ingrese su ID de Belnet",
     enterBchatId: "Ingrese su ID de BChat",
-    enterWalletAddress: "Ingrese su dirección de billetera"
+    enterWalletAddress: "Ingrese su dirección de billetera",
+    pasteSignature: "Pegar firma",
+    signerAddress: "Dirección del firmante",
+    dataThatWasSigned: "Datos que fueron firmados",
+    searchContacts: "Buscar contactos",
+    bnsOwnerShort: "Dirección de billetera del propietario",
+    bnsBackupOwnerShort: "Dirección de respaldo del propietario",
+    bnsValueBchat: "Ingrese el valor del ID de BChat",
+    bnsValueBelnet: "Ingrese el valor del ID de Belnet",
+    bnsValueAddress: "Ingrese el valor de la dirección",
+    bnsValueEth: "Ingrese el valor ETH"
   },
   strings: {
     addAddressBookEntry: "Agregar registro a la libreta de direcciones",
@@ -603,7 +662,8 @@ export default {
       ethNotes: "Nuestra dirección eth es compatible con todas las cadenas EVM",
       records: "Registros BNS",
       addRecord: "Agregar registro",
-      fetchNewRecord: "Obteniendo registro BNS de la red..."
+      fetchNewRecord: "Obteniendo registro BNS de la red...",
+      duration: "Duración"
     },
     bnsPurchaseDescription:
       "Compre o actualice un registro BNS. Si compra un nombre, puede tardar uno o dos minutos en aparecer en la lista",
@@ -707,7 +767,12 @@ export default {
         bns: "Bns",
         stake: "Participación retenida",
         failed: "Fallida"
-      }
+      },
+      tabs: {
+        incoming: "Entrante",
+        outgoing: "Saliente"
+      },
+      recentCount: "{count} recientes"
     },
     unlockingAtHeight: "Desbloqueo en altura {number}",
     unspentOutputs: "Salidas no gastadas",
@@ -721,7 +786,80 @@ export default {
     WalletAddress: "Dirección de la billetera",
     website: "sitio web",
     privacy: "Privacidad",
-    normal: "Normal"
+    normal: "Normal",
+    aboutPanel: {
+      walletVersion: "Versión de la billetera",
+      daemonVersion: "Versión del demonio",
+      copyright: "Derechos de autor (c) - 2018-2021, Beldex",
+      rights: "Todos los derechos reservados."
+    },
+    availableBalance: "Saldo disponible",
+    confirmed: "Confirmado",
+    showBalance: "Mostrar",
+    hideBalance: "Ocultar",
+    electronWallet: "Electron Wallet",
+    languageDefault: "Por defecto",
+    walletCount: "{count} billetera | {count} billeteras",
+    selectWalletToUnlock: "Seleccione una billetera para desbloquear",
+    walletsStoredIn:
+      "Los archivos de la billetera se almacenan localmente en {path}",
+    walletModeSubtitle: "Elija cómo agregar una billetera",
+    createWalletHint: "Generar una nueva semilla",
+    createWalletSubtitle: "Nombre su nueva billetera",
+    restoreWalletHint: "Restaurar desde su semilla de 25 palabras",
+    importWalletHint: "Importar un archivo .keys de billetera",
+    languageRegional: "Regional",
+    networkActive: "{network} activa",
+    connectionTopology: "Seleccione la topología de conexión",
+    ringCtEnforced: "Cifrado: RingCT forzado",
+    netTypes: {
+      mainnet: "Mainnet",
+      stagenet: "Stagenet",
+      testnet: "Testnet"
+    },
+    availableShort: "Disponible",
+    rescanFullHint:
+      "Reconstruye el saldo y el historial desde la altura de restauración. El más lento.",
+    rescanSpentHint: "Vuelve a comprobar qué salidas se han gastado. Rápido.",
+    privateKeysWarning:
+      "Nunca comparta su semilla de recuperación o claves. Cualquiera con ellas puede gastar sus BDX. Guárdelas fuera de línea en un lugar seguro.",
+    primaryAddressLabel: "Dirección principal",
+    stakingSummary: "Resumen de staking",
+    totalStaked: "Total en staking",
+    activeStakes: "Stakes activos",
+    deregisteredStakes: "Dado de baja",
+    unlockPeriod: "Período de desbloqueo",
+    unlockPeriodValue: "15 / 30 d",
+    stakingUnlockNote:
+      "Desbloquear un stake toma 15 o 30 días, dependiendo de si fue desbloqueado por un contribuyente o si el nodo fue dado de baja.",
+    masterNodesHint: "Masternodes",
+    noActiveStakes: "No hay stakes activos",
+    stakingSummaryNote:
+      "El staking contribuye a la seguridad de la red Beldex. Una vez en staking, los BDX se desbloquean después de 15 o 30 días, dependiendo de si el stake fue desbloqueado por un contribuyente o si el nodo fue dado de baja.",
+    readStakingDocs: "Lea la documentación sobre staking",
+    noActiveStakesHint:
+      "Para comenzar a hacer staking, abra la pestaña Stake y contribuya con BDX a un masternode.",
+    bnsServiceHint: "Servicio de Nombres Beldex",
+    encryptedRecord: "Registro encriptado",
+    purchaseSummary: "Resumen de compra",
+    estimate: "Estimación",
+    price: "Precio",
+    total: "Total",
+    bnsPurchaseNote:
+      "Puede tomar un minuto o dos para que un nuevo nombre aparezca en Mis BNS.",
+    yourNames: "Sus nombres",
+    activeNames: "Activo",
+    nextExpiry: "Próximo vencimiento",
+    bnsRenewNote:
+      "Renueve un nombre antes de su altura de vencimiento para conservarlo.",
+    masterNodeRegistered: "Registrado",
+    masterNodeDeregistered: "Dado de baja",
+    keyImage: "Imagen de clave",
+    signature: "Firma",
+    operatorFee: "Tarifa del operador",
+    masterNodeKeyShort: "Clave MN",
+    masterNodesNoneAvailable:
+      "Actualmente no hay masternodes disponibles para contribución."
   },
   titles: {
     addressBook: "Libreta de direcciones",
@@ -733,7 +871,15 @@ export default {
       signAndVerify: "Firmar/Verificar",
 
       sign: "firmar",
-      verify: "Verificar"
+      verify: "Verificar",
+      proofsHowTitle: "Cómo funcionan las pruebas",
+      proofsHint: "Avanzado",
+      proofProveHint: "Genere una prueba de que envió o recibió un pago.",
+      proofCheckHint: "Verifique una prueba que alguien compartió con usted.",
+      proofSignHint:
+        "Firme un mensaje con su dirección, o verifique una firma.",
+      proofsNote:
+        "Las pruebas nunca revelan sus claves privadas. Solo compártalas con la persona que las solicitó."
     },
     availableForContribution: "Nodos maestros disponibles para contribución",
     changePassword: "Modificar contraseña",
@@ -762,7 +908,8 @@ export default {
       tabs: {
         general: "General",
         language: "Idioma",
-        peers: "Pares"
+        peers: "Pares",
+        about: "Acerca de"
       }
     },
     transactionDetails: "Detalles de la transacción",
@@ -867,9 +1014,9 @@ export default {
       sendFundsAboveAddress:
         "Tenga en cuenta que solo puede enviar fondos a la dirección anterior",
       once: "una vez",
-      swapMaintenance: "El intercambio está temporalmente en mantenimiento",
+      swapMaintenance: "BDX Swap está temporalmente en mantenimiento",
       tryAgainSomeTimes:
-        "Por favor, inténtalo de nuevo después de algunas veces.",
+        "Por favor, inténtalo de nuevo más tarde. Tus fondos y los intercambios abiertos no se ven afectados.",
       afterYourFirstTxn: "Después de su primera transacción",
       youWillBeViewHere: "Lo podrás ver aquí",
       openHistory: "Historia Abierta",
@@ -885,11 +1032,40 @@ export default {
       minimumAmtChanged:
         "Se cambia el valor del importe mínimo, el nuevo valor es ",
       maximumAmtChanged:
-        "Se cambia el valor del importe máximo, el nuevo valor es "
+        "Se cambia el valor del importe máximo, el nuevo valor es ",
+      youSent: "Usted envió",
+      ratesRefresh: "Las tasas se actualizan cada 30 s",
+      confirmingDeposit: "Confirmando depósito",
+      inProgress: "En curso",
+      waitHereDesc:
+        "Puede iniciar una nueva transacción y verificar el estado de esta en cualquier momento en",
+      depositAddress: "Dirección de depósito",
+      swapHistory: "Historial de swaps",
+      swaps: "swaps",
+      statusPending: "Pendiente",
+      statusCompleted: "Completado",
+      statusWaiting: "Esperando",
+      statusRefund: "Reembolso",
+      statusFailed: "Fallido",
+      statusExpired: "Expirado",
+      swapStatus: "Estado del swap",
+      depositWindowExpired: "La ventana de depósito expiró después de 3 horas",
+      reviewBeforePaying: "Revisar antes de pagar",
+      estimate: "Estimación",
+      waitingDeposit: "Esperando su depósito",
+      network: "RED",
+      giveCorrectAddress:
+        "Por favor, asegúrese de ingresar la dirección correcta para la red seleccionada. De lo contrario, perderá sus fondos.",
+      swapType: "Tipo de swap"
     },
     network: "Spanisch",
     giveCorrectAddress:
       "Asegúrate de introducir la dirección correcta de la cadena seleccionada ({type}). De lo contrario, perderás tus fondos.",
-    swapType: "Tipo de Intercambio"
+    swapType: "Tipo de Intercambio",
+    bnsNames: "Nombres BNS",
+    masternode: "Masternode",
+    activityLedger: "Registro de actividad",
+    myWallet: "Mi billetera",
+    selectWalletMode: "Seleccionar el modo de billetera"
   }
 };

@@ -11,15 +11,20 @@ export default {
     change: "Change",
     check: "Check",
     clear: "Clear",
+    goToStake: "Go to stake",
+    clearForm: "Clear all",
+    authorizeTransfer: "Authorize transfer",
     clearAll: "Clear All",
     close: "Close",
     contacts: "Contacts",
     copyAddress: "Copy Address",
+    startOver: "Start Over",
     copyData: "Copy Data",
     copy: "Copy",
+    copyJson: "Copy JSON",
     copySignature: "Copy Signature",
     createWallet: "Create Wallet",
-    decrypt: "DECRYPT",
+    decrypt: "Decrypt",
     addRecord: "Add BNS",
     delete: "Delete",
     done: "Done",
@@ -29,6 +34,7 @@ export default {
     export: "Export",
     fromBlockheight: "From Blockheight",
     generate: "Generate",
+    generateProof: "Generate proof",
     import: "Import",
     importWallet: "Import Wallet | Import Wallets",
     bns: "BELDEX Name Service",
@@ -61,6 +67,7 @@ export default {
     viewOnExplorer: "View in explorer",
     add: "Add",
     max: "Max",
+    paste: "Paste",
     bnsUpdate: "BNS Update",
     bnsRenew: "BNS Renew"
   },
@@ -77,7 +84,14 @@ export default {
       title: "Ban Peer",
       peerDetailsTitle: "Peer Details",
       message: "Enter length to ban peer in seconds.\nDefault 3600 = 1 hour.",
-      ok: "Ban Peer"
+      ok: "Ban Peer",
+      description:
+        "Enter length to ban peer in seconds.\nDefault 3600 = 1 Hour (86400 = 24 Hours)",
+      targetIp: "Target IP:",
+      lengthPlaceholder: "Enter length",
+      minimum: "Minimum: 60s",
+      invalid: "Enter at least 60 seconds.",
+      banAction: "Ban peer"
     },
     copyAddress: {
       title: "Copy address",
@@ -99,13 +113,18 @@ export default {
     },
     deleteAddress: {
       title: "Delete Address",
-      message: "Are you sure you want to delete this address?"
+      message: "Are you sure you want to delete this address?",
+      heading: "Delete contact",
+      question: "Are you sure you want to delete {name} from your contacts?"
     },
     discardEdit: {
       title: "Are you Sure?",
       message: "Are you sure you want to Discard the editing?",
       ok: "Continue",
-      cancel: "Discard"
+      cancel: "Discard",
+      heading: "Discard changes?",
+      question: "You have unsaved edits to this contact.",
+      keepEditing: "Keep editing"
     },
     showMasterNode: {
       title: "Show master node",
@@ -115,12 +134,19 @@ export default {
     deleteWallet: {
       title: "Delete Wallet",
       message: "Are you sure you want to delete the current wallet?",
-      ok: "Delete"
+      ok: "Delete",
+      heading: "Delete wallet",
+      warning:
+        "This removes the wallet files from this computer. You can restore it only with your recovery seed.",
+      confirm: "Delete wallet"
     },
     exit: {
       title: "Exit",
       message: "Are you sure you want to Exit the wallet?",
-      ok: "Exit Wallet"
+      ok: "Exit Wallet",
+      heading: "Exit wallet",
+      question: "Are you sure you want to exit the wallet?",
+      confirm: "Exit"
     },
     keyImages: {
       title: "{type} Key Images",
@@ -140,7 +166,16 @@ export default {
     },
     password: {
       title: "Enter your Wallet Password",
-      message: "Just click “Enter” if you haven’t set any password :)"
+      message: "Just click “Enter” if you haven’t set any password :)",
+      heading: "Enter wallet password",
+      subtitle: "Enter your wallet password to continue.",
+      unlocking: "Unlocking · {name}",
+      placeholder: "Enter password",
+      hint:
+        "Just click “Unlock” if you haven’t set a password for this wallet.",
+      unlock: "Unlock",
+      showPassword: "Show password",
+      hidePassword: "Hide password"
     },
     purchase: {
       title: "Purchase name",
@@ -166,12 +201,15 @@ export default {
     restart: {
       title: "Restart",
       message: "Changes require restart. Would you like to restart now?",
-      ok: "Restart Wallet"
+      ok: "Restart Wallet",
+      heading: "Restart wallet",
+      confirm: "Restart"
     },
     showPrivateKeys: {
       title: "Show Private Keys",
       message: "Do you want to view your private keys?",
-      ok: "Show"
+      subtitle: "Enter your wallet password to reveal keys.",
+      ok: "Reveal keys"
     },
     signature: {
       title: "Signature",
@@ -200,10 +238,11 @@ export default {
       restartMessage:
         "The wallet RPC is currently syncing. \nIf you wish to switch wallets then you must restart the application. \nYou will lose your syncing progress and have to rescan the blockchain again.",
       restartWalletMessage:
-        "Are you sure you want to close and Restart the wallet?"
+        "Are you sure you want to close and restart the wallet?"
     },
     transactionDetails: {
       title: "Transaction Details",
+      subtitle: "Raw data returned by the wallet",
       ok: "Close"
     },
     transfer: {
@@ -292,6 +331,7 @@ export default {
     seedLanguage: "Seed Language",
     masterNodeCommand: "Master Node Command",
     masterNodeKey: "Master Node Key",
+    values: "Values",
     bchatId: "BCHAT ID",
     signature: "Signature",
     transactionId: "Transaction ID",
@@ -314,12 +354,15 @@ export default {
 
     // new design vamp
     to: "To",
+    recipientAddressBns: "Recipient address / BNS name",
     OwnerWalletaddress: "Owner Wallet address",
     backupOwnerWalletAddress: "Backup Owner Wallet Address",
-    updateOwner: "Update Owner",
-    updateValues: "Update Values",
+    updateOwner: "Update owner",
+    updateValues: "Update values",
     updateHeight: "Update Height",
     walletAddress: "Wallet address",
+    privateViewkey: "Private viewkey",
+    privateSpendkey: "Private spendkey",
     year: "Year"
   },
   footer: {
@@ -332,8 +375,9 @@ export default {
     updateRequired: "UPDATE REQUIRED"
   },
   menuItems: {
+    walletMenuTitle: "Wallet",
     about: "About",
-    changePassword: "Change Password",
+    changePassword: "Change password",
     copyAddress: "Copy address",
     copySeed: "Copy Seed",
     copyBackupOwner: "Copy backup owner",
@@ -349,19 +393,19 @@ export default {
     copyTransactionId: "Copy transaction ID",
     copyViewKey: "Copy view key",
     createNewWallet: "Create New Wallet",
-    deleteWallet: "Delete Wallet",
+    deleteWallet: "Delete wallet",
     exit: "Exit Wallet",
     importOldGUIWallet: "Import wallets from old GUI",
-    manageKeyImages: "Manage Key Images",
+    manageKeyImages: "Key images",
     openWallet: "Open wallet",
-    rescanWallet: "Rescan Wallet",
+    rescanWallet: "Rescan wallet",
     restoreWalletFile: "Restore wallet from file",
     restoreWalletSeed: "Restore wallet from seed",
     saveQR: "Save QR code to file",
     sendToThisAddress: "Send to this address",
     settings: "Settings",
     showDetails: "Show details",
-    showPrivateKeys: "Show Private Keys",
+    showPrivateKeys: "Show private keys",
     showQRCode: "Show QR Code",
     switchWallet: "Switch Wallet",
     viewOnExplorer: "View on explorer",
@@ -482,11 +526,15 @@ export default {
     }
   },
   placeholders: {
+    pasteSignature: "Paste signature",
+    signerAddress: "Signer address",
+    dataThatWasSigned: "Data that was signed",
+    searchContacts: "Search contacts",
     additionalNotes: "Additional notes",
     addNotesOptional: "Add notes (optional)",
     addressBookName: "Name that belongs to this address",
     addressOfSigner: "Public wallet address of signer",
-    beldexAddress: "Enter Address or BNS Name",
+    beldexAddress: "Enter bx… address or name.bdx",
     dataToSign: "Data you want to sign with your primary address's private key",
     filterTx: "Enter an ID, name, address or amount",
     hexCharacters: "{count} hexadecimal characters",
@@ -498,10 +546,11 @@ export default {
     enterName: "Enter Name",
     enterRecipientAddress: "Enter your {coin} recipient address",
     enterAddress: "Enter Address",
-    enteroldPassword: "Enter old Password",
-    enterNewPassword: "Enter New Password",
-    reEnterPassword: "Re-Enter Password",
+    enteroldPassword: "Enter old password",
+    enterNewPassword: "Enter new password",
+    reEnterPassword: "Re-enter new password",
     mnemonicSeed: "Enter your Recovery seed",
+    restoreSeed: "Enter your 25-word recovery seed",
     pasteTransactionId: "Paste transaction ID",
     pasteTransactionProof: "Paste transaction proof",
     proveOptionalMessage:
@@ -513,14 +562,27 @@ export default {
     transactionNotes: "Additional notes to locally attach to the transaction",
     unsignedData: "The data as it should look before it was signed",
     walletName: "Enter your Wallet Name",
+    hexKey: "64-character hex key",
     walletPassword: "Enter Password",
     reEnterWalletPassword: "Re-Enter Password",
     enterEthAddress: "Enter your ETH Address",
     enterBelnetId: "Enter your Belnet ID",
     enterBchatId: "Enter your BChat ID",
-    enterWalletAddress: "Enter your Wallet Address"
+    enterWalletAddress: "Enter your Wallet Address",
+    bnsOwnerShort: "Owner wallet address",
+    bnsBackupOwnerShort: "Backup owner address",
+    bnsValueBchat: "Enter BChat ID value",
+    bnsValueBelnet: "Enter Belnet ID value",
+    bnsValueAddress: "Enter Address value",
+    bnsValueEth: "Enter ETH value"
   },
   strings: {
+    aboutPanel: {
+      walletVersion: "Wallet version",
+      daemonVersion: "Daemon version",
+      copyright: "Copyright (c) - 2018-2021, Beldex",
+      rights: "All rights reserved."
+    },
     addAddressBookEntry: "Add Address ",
     addressBookDetails: "Address book details",
     addressBookIsEmpty: "Address book is empty",
@@ -535,6 +597,40 @@ export default {
       primaryAccount: "Primary Account"
     },
     advancedOptions: "Advanced Settings",
+    availableBalance: "Available balance",
+    confirmed: "Confirmed",
+    showBalance: "Show",
+    hideBalance: "Hide",
+    electronWallet: "Electron Wallet",
+    languageDefault: "Default",
+    walletCount: "{count} wallet | {count} wallets",
+    selectWalletToUnlock: "Select a wallet to unlock",
+    walletsStoredIn: "Wallet files are stored locally in {path}",
+    walletModeSubtitle: "Choose how to add a wallet",
+    createWalletHint: "Generate a new seed",
+    createWalletSubtitle: "Name your new wallet",
+    restoreWalletHint: "Restore from your 25-word seed",
+    restoreWalletSubtitle: "Restore an encrypted vault from seed or keys",
+    viewOnlyBadge: "View-only",
+    viewOnlyTitle: "This wallet is view-only",
+    viewOnlyDescription: "Please load the full wallet to enable sending coins.",
+    spendKeyNotLoaded: "Spend key not loaded",
+    viewOnlyTag: "View only",
+    noSpendKeyViewOnly:
+      "No spend key — this wallet will be restored as VIEW-ONLY. You can watch the balance and incoming transfers, but you can’t send BDX from it.",
+    restorePointSubtitle: "Step 2 / 2 · choose where to start scanning",
+    restoreFirstBlockHint:
+      "Restoring from the very first block ({date}) so no transactions are missed. If you know roughly when this wallet was created, a later date makes restoring much faster.",
+    currentHeight: "Current height {height}",
+    passwordsMatch: "Passwords match",
+    restoreKeysSubtitle: "Step 1 / 2 · enter your wallet keys",
+    restoreFromSeedTab: "Restore from seed",
+    restoreFromKeysTab: "Restore from keys",
+    seedWordsHint: "Separate words with spaces",
+    seedWordCount: "{count} / 25 words",
+    importWalletHint: "Import a wallet .keys file",
+    languageRegional: "Regional",
+    networkActive: "{network} active",
     awaitingConfirmation: "Awaiting confirmation",
     bannedPeers: {
       title: "Banned peers (bans will cleared if wallet is restarted)",
@@ -562,6 +658,13 @@ export default {
     connectingToBackend: "Connecting to backend",
     contribution: "Contribution",
     contributor: "Contributor",
+    connectionTopology: "Select connection topology",
+    ringCtEnforced: "Encryption: RingCT enforced",
+    netTypes: {
+      mainnet: "Mainnet",
+      stagenet: "Stagenet",
+      testnet: "Testnet"
+    },
     daemon: {
       local: {
         title: "Local Daemon Only",
@@ -587,31 +690,38 @@ export default {
     encryptedWalletValue: "Encrypted Wallet Value",
     encryptedEthAddrValue: "Encrypted ETH Address",
     bns: {
+      noNamesYet: "No BNS names yet",
+      noNamesHint: "Names you buy with this wallet will appear here.",
+      buyAName: "Buy a name",
       bchatID: "Bchat ID",
       belnetName1Year: "Belnet Name 1 year",
       belnetNameXYears: "Belnet Name {years} years",
       prices: "Prices :",
+      duration: "Duration",
       note: "Note",
       bnsRegistration: "BNS Name for registration",
       ownerNotes:
         "Use current address (leave blank if same wallet) or specify the address if it is a different wallet",
-      ethNotes: "Our eth address is compatible across all EVM chains",
+      ethNotes: "Our ETH address is compatible across all EVM chains.",
       records: "BNS Records",
       addRecord: "Add Record",
-      fetchNewRecord: "Fetching BNS record from the network..."
+      fetchNewRecord: "Fetching BNS record from the network...",
+      updateOwnerHint: "Transfer the name to a new owner or backup owner",
+      updateValuesHint: "Change the BChat, Belnet, address or ETH value"
     },
     bnsPurchaseDescription:
       "Purchase or update an BNS record. If you purchase a name, it may take a minute or two for it to show up in the list.",
     bnsDescription:
-      "Here you can find all the BNS names owned by this wallet. Decrypting a record you own will return the name and value of that BNS record",
+      "Here you can find all the BNS names owned by this wallet. Decrypting a record you own returns the name and value of that BNS record.",
     bnsUpdateDescription:
-      " You can only update owner address or values at a time. If you want to update both, you can either update the value before ownership or after transferring ownership.",
+      "You can update the owner or the values, not both at once. To change both, update the values before transferring ownership.",
     loadingSettings: "Loading settings",
     oxenBalance: "Balance",
     belnetNameDescription:
       "Purchase or update a name on Belnet. If you purchase a name it may take a minute or two for it to show up in the list. To learn more about belnet visit: ",
     oxenUnlockedBalance: "Unlocked Balance",
     oxenUnlockedShort: "Unlocked",
+    availableShort: "Available",
     me: "Me",
     noTransactionsFound: "No transactions yet!",
     notes: "Notes",
@@ -628,14 +738,20 @@ export default {
       flash: "Flash"
     },
     proveTransactionDescription:
-      "Generate a proof of your incoming/outgoing payment by supplying the transaction ID, the recipient address and an optional message.\nFor the case of outgoing payments, you can get a 'Spend Proof' that proves the authorship of a transaction. In this case, you don't need to specify the recipient address.",
+      "Generate a proof of your incoming or outgoing payment by supplying the transaction ID, the recipient address and an optional message. For outgoing payments you get a ‘Spend proof’ that proves authorship of a transaction; you don’t need to specify the recipient address.",
     readingWalletList: "Reading wallet list",
     recentIncomingTransactionsToAddress:
       "Recent incoming transactions to this address",
     recentTransactionsWithAddress: "Recent transactions",
+    rescanFullHint:
+      "Rebuilds balance and history from the restore height. Slowest.",
+    rescanSpentHint: "Re-checks which outputs are spent. Fast.",
     rescanModalDescription:
-      "Select full rescan or rescan of spent outputs only.",
+      "Select a full rescan or a rescan of spent outputs only.",
     saveSeedWarning: "Please copy and save these in a secure location!",
+    privateKeysWarning:
+      "Never share your recovery seed or keys. Anyone with them can spend your BDX. Store them offline in a secure location.",
+    primaryAddressLabel: "Primary address",
     saveToAddressBook: "Save to address book",
     keysAvailableAfterSync: "Available once the wallet has finished syncing.",
     seedWords: "Recovery Seed",
@@ -647,6 +763,41 @@ export default {
       'Enter the {registerCommand} command produced by the daemon that is registering to become a Master Node using the "{prepareCommand}" command',
     masterNodeStartStakingDescription: "To start Staing, Please visit",
     masterNodeStartStakingDescription1: "Tab -->",
+    stakingSummary: "Staking summary",
+    totalStaked: "Total staked",
+    activeStakes: "Active stakes",
+    deregisteredStakes: "Deregistered",
+    unlockPeriod: "Unlock period",
+    unlockPeriodValue: "15 / 30 d",
+    stakingUnlockNote:
+      "Unlocking a stake takes 15 or 30 days, depending on whether it was unlocked by a contributor or the node was deregistered.",
+    masterNodesHint: "Masternodes",
+    noActiveStakes: "No active stakes",
+    stakingSummaryNote:
+      "Staking contributes to the safety of the Beldex network. Once staked, BDX unlocks after 15 or 30 days, depending on whether the stake was unlocked by a contributor or the node was deregistered.",
+    readStakingDocs: "Read the staking documentation",
+    noActiveStakesHint:
+      "To start staking, open the Stake tab and contribute BDX to a masternode.",
+    bnsServiceHint: "Beldex Name Service",
+    encryptedRecord: "Encrypted record",
+    purchaseSummary: "Purchase summary",
+    estimate: "Estimate",
+    price: "Price",
+    total: "Total",
+    bnsPurchaseNote:
+      "It may take a minute or two for a new name to show up in My BNS.",
+    yourNames: "Your names",
+    activeNames: "Active",
+    nextExpiry: "Next expiry",
+    bnsRenewNote: "Renew a name before its expiration height to keep it.",
+    masterNodeRegistered: "Registered",
+    masterNodeDeregistered: "Deregistered",
+    keyImage: "Key image",
+    signature: "Signature",
+    operatorFee: "Operator fee",
+    masterNodeKeyShort: "MN key",
+    masterNodesNoneAvailable:
+      "There are no masternodes currently available for contribution.",
     noMasterNodesCurrentlyAvailable:
       "There are currently no master nodes available for contribution",
     masterNodeDetails: {
@@ -688,6 +839,11 @@ export default {
       date: "Date",
       filterByDate: "Filter by date",
       clearDateRange: "Clear date filter",
+      tabs: {
+        incoming: "Incoming",
+        outgoing: "Outgoing"
+      },
+      recentCount: "{count} recent",
       types: {
         all: "All",
         incoming: "Receive",
@@ -720,9 +876,16 @@ export default {
     addressDetails: "Address Details",
     contactBook: "Contact Book",
     advanced: {
-      checkTransaction: "Check Transaction",
+      checkTransaction: "Check transaction",
       prove: "Prove",
-      signAndVerify: "Sign/Verify",
+      signAndVerify: "Sign / Verify",
+      proofsHowTitle: "How proofs work",
+      proofsHint: "Advanced",
+      proofProveHint: "Generate a proof that you sent or received a payment.",
+      proofCheckHint: "Verify a proof someone shared with you.",
+      proofSignHint: "Sign a message with your address, or verify a signature.",
+      proofsNote:
+        "Proofs never reveal your private keys. Only share them with the person who asked.",
       sign: "Sign",
       verify: "Verify"
     },
@@ -738,14 +901,16 @@ export default {
     rescanWallet: "Rescan Wallet",
     restoreFromSeed: "Restore from Seed",
     bnsServices: "BNS Service",
+    bnsNames: "BNS Names",
+    masternode: "Masternode",
     bns: {
       purchase: "Buy BNS",
       myBns: "My BNS"
     },
     masterNode: {
-      registration: "Registration",
-      staking: "Stakings",
-      myStakes: "My Stakes"
+      registration: "Register",
+      staking: "Stake",
+      myStakes: "My stakes"
     },
 
     masterNodeDetails: "Masternode Details",
@@ -754,12 +919,14 @@ export default {
       tabs: {
         general: "General",
         language: "Language",
-        peers: "Peers"
+        peers: "Peers",
+        about: "About"
       }
     },
     transactionDetails: "Transaction Details",
     details: "Details",
     transactions: "Transactions",
+    activityLedger: "Activity Ledger",
     wallet: {
       createNew: "Create New Wallet",
       createdOrRestored: "Wallet created/restored",
@@ -774,7 +941,9 @@ export default {
       restoreViewOnly: "Restore view-only wallet"
     },
     chooseLanguage: "Choose Language",
+    myWallet: "My wallet",
     yourWallets: "Your Wallets",
+    selectWalletMode: "Select wallet mode",
     swap: {
       swap: "Swap",
       exchange: "Exchange",
@@ -787,8 +956,10 @@ export default {
       maximumAmt: "Maximum amount is",
       transactionDetails: "Transaction details",
       youSend: "You send",
+      youSent: "You sent",
       exchangeRate: "Exchange rate",
       fixedRate: "Fixed rate",
+      ratesRefresh: "Rates refresh every 30 s",
       fixedRateUpdateSec: "The fixed rate is updated every 30 Seconds",
       serviceFee: "Service fee",
       fees: "Fees",
@@ -823,6 +994,8 @@ export default {
       refundAddress: "Refund address",
       exchanging: "Exchanging",
       confirmingProcess: "Confirming in progress",
+      confirmingDeposit: "Confirming deposit",
+      inProgress: "In progress",
       Once: "Once",
       confirmedInBlockchain:
         " is confirmed in the blockchain, we’ll start exchanging it to",
@@ -831,10 +1004,11 @@ export default {
       pleaseWait: "The process will take a few minutes. please wait.",
       sendFundsToWallet: "Sending funds to your wallet",
       waitHere: "You don’t have to wait here",
+      waitHereDesc:
+        "You can start a new transaction and check the status of this one any time in",
       newTransaction: "You can initiate a new transaction.",
       checkStatus:
         "You can always check the status of this transaction in transaction",
-      transactionPreview: "Transaction Preview",
       transactionID: "Transaction ID",
       changellyAddress: "Exchange address",
       completed: "Completed",
@@ -853,13 +1027,33 @@ export default {
       receiver: "Receiver",
       confirmations: "Confirmations",
       sendFundDisc: "Send funds to the address below",
+      depositAddress: "Deposit address",
+      swapHistory: "Swap history",
+      swaps: "swaps",
+      noSwapsYet: "No swaps yet",
+      noSwapsYetDisc:
+        "Exchange BDX with 100+ coins. Every swap you make will be listed here with its live status.",
+      newExchange: "New exchange",
+      statusPending: "Pending",
+      statusCompleted: "Completed",
+      statusWaiting: "Waiting",
+      statusRefund: "Refund",
+      statusFailed: "Failed",
+      statusExpired: "Expired",
+      swapStatus: "Swap status",
+      depositWindowExpired: "Deposit window expired after 3 hours",
+      reviewBeforePaying: "Review before paying",
+      estimate: "Estimate",
+      transactionPreview: "Transaction preview",
+      waitingDeposit: "Waiting for your deposit",
       timeLeft: "Time left to send",
       guaranteedRateDisc: "The guaranteed rate has been terminated",
       sendFundsAboveAddress:
         "Please note that you can send funds to the address above only",
       once: "once",
-      swapMaintenance: "Swap is temporarily under maintenance",
-      tryAgainSomeTimes: "Please try again after some times",
+      swapMaintenance: "BDX Swap is temporarily under maintenance",
+      tryAgainSomeTimes:
+        "Please try again after some time. Your funds and open swaps are not affected.",
       afterYourFirstTxn: "After your first transaction",
       youWillBeViewHere: "you will be able to view it here",
       openHistory: "Open History",

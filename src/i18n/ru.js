@@ -19,7 +19,7 @@ export default {
     copyData: "Копировать данные",
     copySignature: "Копировать подпись",
     createWallet: "Создать кошелек",
-    decrypt: "РАСШИФРОВАТЬ",
+    decrypt: "Расшифровать",
     addRecord: "Добавить БНС",
     delete: "УДАЛИТЬ",
     done: "Готово",
@@ -62,7 +62,12 @@ export default {
     viewOnExplorer: "Посмотреть в проводнике",
     add: "Добавлять",
     bnsUpdate: "Обновление БНС",
-    bnsRenew: "БНС Продлить"
+    bnsRenew: "БНС Продлить",
+    goToStake: "Перейти к стейкингу",
+    clearForm: "Очистить всё",
+    authorizeTransfer: "Авторизовать перевод",
+    startOver: "Начать сначала",
+    generateProof: "Создать доказательство"
   },
   dialog: {
     // Generic buttons
@@ -78,7 +83,14 @@ export default {
       peerDetailsTitle: "Данные пира",
       message:
         "Введите время, на которое нужно забанить пира (сек).\nПо-умолчанию 3600 = 1 час.",
-      ok: "Забанить"
+      ok: "Забанить",
+      description:
+        "Введите время блокировки пира в секундах.\nПо умолчанию 3600 = 1 час (86400 = 24 часа)",
+      targetIp: "Целевой IP:",
+      lengthPlaceholder: "Введите продолжительность",
+      minimum: "Минимум: 60с",
+      invalid: "Введите не менее 60 секунд.",
+      banAction: "Заблокировать пира"
     },
     copyAddress: {
       title: "Копировать адрес",
@@ -100,13 +112,18 @@ export default {
     },
     deleteAddress: {
       title: "Удалить адрес",
-      message: "Вы уверены, что хотите удалить этот адрес?"
+      message: "Вы уверены, что хотите удалить этот адрес?",
+      heading: "Удалить контакт",
+      question: "Вы уверены, что хотите удалить {name} из контактов?"
     },
     discardEdit: {
       title: "Вы уверены?",
       message: "Вы уверены, что хотите отменить редактирование?",
       ok: "Продолжить",
-      cancel: "Отменить"
+      cancel: "Отменить",
+      heading: "Отменить изменения?",
+      question: "У вас есть несохраненные изменения для этого контакта.",
+      keepEditing: "Продолжить редактирование"
     },
     showMasterNode: {
       title: "Показать главный узел",
@@ -116,12 +133,19 @@ export default {
     deleteWallet: {
       title: "Удалить кошелек",
       message: "Вы уверены, что хотите удалить текущий кошелек?",
-      ok: "УДАЛИТЬ"
+      ok: "УДАЛИТЬ",
+      heading: "Удалить кошелек",
+      warning:
+        "Это удалит файлы кошелька с этого компьютера. Вы сможете восстановить его только с помощью вашей seed-фразы восстановления.",
+      confirm: "Удалить кошелек"
     },
     exit: {
       title: "Выйти",
       message: "Вы уверены, что хотите выйти из кошелька?",
-      ok: "ВЫЙТИ"
+      ok: "ВЫЙТИ",
+      heading: "Выйти из кошелька",
+      question: "Вы уверены, что хотите выйти из кошелька?",
+      confirm: "Выход"
     },
     keyImages: {
       title: "{тип} ключевых образов",
@@ -141,7 +165,16 @@ export default {
     },
     password: {
       title: "Введите пароль своего кошелька",
-      message: "Введите пароль кошелька"
+      message: "Введите пароль кошелька",
+      heading: "Введите пароль кошелька",
+      subtitle: "Введите пароль вашего кошелька, чтобы продолжить.",
+      unlocking: "Разблокировка · {name}",
+      placeholder: "Введите пароль",
+      hint:
+        "Просто нажмите «Разблокировать», если вы не устанавливали пароль для этого кошелька.",
+      unlock: "Разблокировать",
+      showPassword: "Показать пароль",
+      hidePassword: "Скрыть пароль"
     },
     purchase: {
       title: "Название покупки",
@@ -167,12 +200,15 @@ export default {
     restart: {
       title: "ПЕРЕЗАГРУЗИТЬ",
       message: "Изменения требуют перезагрузки. Выполнить сейчас?",
-      ok: "ПЕРЕЗАГРУЗИТЬ"
+      ok: "ПЕРЕЗАГРУЗИТЬ",
+      heading: "Перезапустить кошелек",
+      confirm: "Перезапустить"
     },
     showPrivateKeys: {
       title: "Показать приватные ключи",
       message: "Вы уверены, что хотите посмотреть приватные ключи?",
-      ok: "ПОКАЗАТЬ"
+      ok: "ПОКАЗАТЬ",
+      subtitle: "Введите пароль кошелька, чтобы показать ключи."
     },
     stake: {
       title: "Стейк",
@@ -235,6 +271,11 @@ export default {
       message:
         "Разблокировка частичной доли в узле также приведет к снятию стейкинга с других участников. Если вы размещаете средства в общем узле, лучше всего сообщить об этом оператору и другим участникам.",
       ok: "ПРОДОЛЖАТЬ"
+    },
+    signature: {
+      title: "Подпись",
+      message:
+        "Скопируйте ниже данные, подписанные приватным ключом вашего основного адреса"
     }
   },
   fieldLabels: {
@@ -312,7 +353,9 @@ export default {
     updateValues: "Обновить значения",
     updateHeight: "Обновить высоту",
     walletAddress: "Адрес кошелька",
-    year: "Год"
+    year: "Год",
+    values: "Значения",
+    recipientAddressBns: "Адрес получателя / имя BNS"
   },
   footer: {
     ready: "Синхронизировано",
@@ -356,7 +399,9 @@ export default {
     showQRCode: "Показать QR Код",
     switchWallet: "Переключить Кошелек",
     viewOnExplorer: "Посмотреть в обозревателе блокчейна",
-    favourite: "Любимый"
+    favourite: "Любимый",
+    walletMenuTitle: "Кошелек",
+    copyBchatId: "Скопировать bchat ID"
   },
   notification: {
     positive: {
@@ -462,7 +507,9 @@ export default {
       walletPathCreateFailed:
         "Не удалось создать путь к хранилищу данных кошелька",
       zeroAmount: "Сумма должна быть больше нуля",
-      greaterHeight: "Введенное значение больше текущей высоты блока"
+      greaterHeight: "Введенное значение больше текущей высоты блока",
+      decryptBNSRecord:
+        "Указанная запись BNS не существует или не принадлежит этому кошельку"
     },
     warnings: {
       privateKeysAfterSync:
@@ -472,7 +519,9 @@ export default {
         "Не удалось подключиться к удаленной ноде, переключаемся на локальную ноду",
       localNodeFailedUsingRemote:
         "Не удалось запустить локальную ноду, используется удаленная нода",
-      usingRemoteNode: "Не найден файл beldexd, используется удаленная нода"
+      usingRemoteNode: "Не найден файл beldexd, используется удаленная нода",
+      retryingRemoteNode:
+        "Все еще пытаемся подключиться к удаленному узлу (попытка {attempt} из {total})..."
     }
   },
   placeholders: {
@@ -515,7 +564,17 @@ export default {
     enterEthAddress: "Введите свой ETH-адрес",
     enterBelnetId: "Введите свой идентификационный номер Belnet.",
     enterBchatId: "Введите свой BChat ID",
-    enterWalletAddress: "Введите адрес вашего кошелька"
+    enterWalletAddress: "Введите адрес вашего кошелька",
+    pasteSignature: "Вставить подпись",
+    signerAddress: "Адрес подписанта",
+    dataThatWasSigned: "Подписанные данные",
+    searchContacts: "Поиск контактов",
+    bnsOwnerShort: "Адрес кошелька владельца",
+    bnsBackupOwnerShort: "Резервный адрес владельца",
+    bnsValueBchat: "Введите значение BChat ID",
+    bnsValueBelnet: "Введите значение Belnet ID",
+    bnsValueAddress: "Введите значение адреса",
+    bnsValueEth: "Введите значение ETH"
   },
   strings: {
     addAddressBookEntry: "Добавить запись в адресную книгу",
@@ -594,7 +653,8 @@ export default {
       ethNotes: "Наш ETH-адрес совместим со всеми цепочками EVM.",
       records: "БНС отчеты",
       addRecord: "Добавить запись",
-      fetchNewRecord: "Получение записи BNS из сети..."
+      fetchNewRecord: "Получение записи BNS из сети...",
+      duration: "Продолжительность"
     },
     bnsPurchaseDescription:
       "Приобретите или обновите запись в BNS. Если вы приобретаете имя, может потребоваться одна-две минуты, чтобы оно появилось в списке.",
@@ -700,7 +760,12 @@ export default {
         bns: "Бнс",
         stake: "Стейк",
         failed: "Не удавшиеся"
-      }
+      },
+      tabs: {
+        incoming: "Входящие",
+        outgoing: "Исходящие"
+      },
+      recentCount: "{count} последних"
     },
     unlockingAtHeight: "Разблокировка на высоте {number}",
     unspentOutputs: "Непотраченные выходы",
@@ -713,7 +778,78 @@ export default {
     WalletAddress: "Адрес кошелька",
     website: "Веб-сайт",
     privacy: "Приватность",
-    normal: "Нормальный"
+    normal: "Нормальный",
+    aboutPanel: {
+      walletVersion: "Версия кошелька",
+      daemonVersion: "Версия демона",
+      copyright: "Авторские права (c) - 2018-2021, Beldex",
+      rights: "Все права защищены."
+    },
+    availableBalance: "Доступный баланс",
+    confirmed: "Подтверждено",
+    showBalance: "Показать",
+    hideBalance: "Скрыть",
+    electronWallet: "Electron Wallet",
+    languageDefault: "По умолчанию",
+    walletCount: "{count} кошелек | {count} кошельков",
+    selectWalletToUnlock: "Выберите кошелек для разблокировки",
+    walletsStoredIn: "Файлы кошельков хранятся локально в {path}",
+    walletModeSubtitle: "Выберите способ добавления кошелька",
+    createWalletHint: "Сгенерировать новую seed-фразу",
+    createWalletSubtitle: "Назовите ваш новый кошелек",
+    restoreWalletHint: "Восстановить из 25-словной seed-фразы",
+    importWalletHint: "Импортировать файл кошелька .keys",
+    languageRegional: "Региональный",
+    networkActive: "{network} активна",
+    connectionTopology: "Выберите топологию подключения",
+    ringCtEnforced: "Шифрование: RingCT включено",
+    netTypes: {
+      mainnet: "Mainnet",
+      stagenet: "Stagenet",
+      testnet: "Testnet"
+    },
+    availableShort: "Доступно",
+    rescanFullHint:
+      "Восстанавливает баланс и историю от высоты восстановления. Самый медленный способ.",
+    rescanSpentHint: "Повторно проверяет, какие выходы потрачены. Быстро.",
+    privateKeysWarning:
+      "Никогда не делитесь своей seed-фразой или ключами. Тот, у кого они есть, может потратить ваши BDX. Храните их офлайн в безопасном месте.",
+    primaryAddressLabel: "Основной адрес",
+    stakingSummary: "Сводка по стейкингу",
+    totalStaked: "Всего в стейкинге",
+    activeStakes: "Активные стейки",
+    deregisteredStakes: "Регистрация отменена",
+    unlockPeriod: "Период разблокировки",
+    unlockPeriodValue: "15 / 30 д",
+    stakingUnlockNote:
+      "Разблокировка стейка занимает 15 или 30 дней, в зависимости от того, был ли он разблокирован участником или была ли отменена регистрация узла.",
+    masterNodesHint: "Мастерноды",
+    noActiveStakes: "Нет активных стейков",
+    stakingSummaryNote:
+      "Стейкинг способствует безопасности сети Beldex. После размещения, BDX разблокируется через 15 или 30 дней, в зависимости от того, был ли стейк разблокирован участником или отменена регистрация узла.",
+    readStakingDocs: "Прочтите документацию по стейкингу",
+    noActiveStakesHint:
+      "Чтобы начать стейкинг, откройте вкладку «Стейк» и внесите BDX в мастерноду.",
+    bnsServiceHint: "Служба имен Beldex (BNS)",
+    encryptedRecord: "Зашифрованная запись",
+    purchaseSummary: "Сводка о покупке",
+    estimate: "Оценка",
+    price: "Цена",
+    total: "Итого",
+    bnsPurchaseNote:
+      "Появление нового имени в разделе «Мои BNS» может занять пару минут.",
+    yourNames: "Ваши имена",
+    activeNames: "Активные",
+    nextExpiry: "Следующее истечение",
+    bnsRenewNote: "Продлите имя до высоты его истечения, чтобы сохранить его.",
+    masterNodeRegistered: "Зарегистрирован",
+    masterNodeDeregistered: "Регистрация отменена",
+    keyImage: "Образ ключа",
+    signature: "Подпись",
+    operatorFee: "Комиссия оператора",
+    masterNodeKeyShort: "Ключ MN",
+    masterNodesNoneAvailable:
+      "В настоящее время нет доступных мастернод для внесения средств."
   },
   titles: {
     addressBook: "Адресная книга",
@@ -724,7 +860,15 @@ export default {
       prove: "Доказывать",
       signAndVerify: "Подписать/ Подтвердить",
       sign: "знак",
-      verify: "Проверять"
+      verify: "Проверять",
+      proofsHowTitle: "Как работают доказательства",
+      proofsHint: "Продвинутые",
+      proofProveHint:
+        "Создайте доказательство того, что вы отправили или получили платеж.",
+      proofCheckHint: "Проверьте доказательство, которым с вами поделились.",
+      proofSignHint: "Подпишите сообщение своим адресом или проверьте подпись.",
+      proofsNote:
+        "Доказательства никогда не раскрывают ваши приватные ключи. Делитесь ими только с тем, кто их запросил."
     },
     availableForContribution: "Главные узлы доступны для внесения вклада",
     changePassword: "Сменить пароль",
@@ -753,7 +897,8 @@ export default {
       tabs: {
         general: "Общие",
         language: "Язык",
-        peers: "Пиры"
+        peers: "Пиры",
+        about: "О программе"
       }
     },
     transactionDetails: "Данные транзакции",
@@ -858,8 +1003,9 @@ export default {
       sendFundsAboveAddress:
         "Обратите внимание, что вы можете отправить средства только на указанный выше адрес.",
       once: "один раз",
-      swapMaintenance: "Своп временно находится на обслуживании",
-      tryAgainSomeTimes: "Пожалуйста, повторите попытку через несколько раз",
+      swapMaintenance: "BDX Swap временно находится на обслуживании",
+      tryAgainSomeTimes:
+        "Пожалуйста, повторите попытку позже. Ваши средства и открытые свопы не затронуты.",
       afterYourFirstTxn: "После вашей первой транзакции",
       youWillBeViewHere: "вы сможете просмотреть это здесь",
       openHistory: "Открыть историю",
@@ -876,8 +1022,33 @@ export default {
         "Максимальное значение суммы изменено, новое значение равно ",
       network: "СЕТЬ",
       giveCorrectAddress:
-        "Пожалуйста, убедитесь, что вы указали правильный адрес выбранной сети ({type}). В противном случае вы потеряете свои средства.",
-      swapType: "Тип обмена"
-    }
+        "Пожалуйста, убедитесь, что вы ввели правильный адрес для выбранной сети. В противном случае вы потеряете свои средства.",
+      swapType: "Тип обмена",
+      youSent: "Вы отправили",
+      ratesRefresh: "Курсы обновляются каждые 30 сек.",
+      confirmingDeposit: "Подтверждение депозита",
+      inProgress: "В процессе",
+      waitHereDesc:
+        "Вы можете начать новую транзакцию и проверить статус этой в любое время в",
+      depositAddress: "Адрес для депозита",
+      swapHistory: "История обменов",
+      swaps: "обмены",
+      statusPending: "В ожидании",
+      statusCompleted: "Завершено",
+      statusWaiting: "Ожидание",
+      statusRefund: "Возврат",
+      statusFailed: "Не удалось",
+      statusExpired: "Истекший",
+      swapStatus: "Статус обмена",
+      depositWindowExpired: "Окно депозита истекло через 3 часа",
+      reviewBeforePaying: "Проверьте перед оплатой",
+      estimate: "Оценка",
+      waitingDeposit: "Ожидание вашего депозита"
+    },
+    bnsNames: "Имена BNS",
+    masternode: "Мастернода",
+    activityLedger: "Журнал активности",
+    myWallet: "Мой кошелек",
+    selectWalletMode: "Выберите режим кошелька"
   }
 };
