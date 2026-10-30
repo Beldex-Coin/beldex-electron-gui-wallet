@@ -1,34 +1,39 @@
 <template>
+  <!-- Buy BNS. Bindings, validators and handlers
+       are unchanged. -->
   <div class="bns-input-form">
-    <div class="prices">
-      <span class="pricelabel">
-        <span class="bnsname q-mr-sm">BNS</span>
-        {{ $t("strings.bns.prices") }}
-      </span>
-      <section class="flex row no-wrap q-mt-xs q-gutter-sm">
-        <div
+    <div class="bns-form__block">
+      <span class="beldex-label">{{ $t("strings.bns.duration") }}</span>
+      <div class="bns-form__durations">
+        <button
           v-for="item in typeOptions"
           :key="item.type"
-          :class="[record.years == item.value ? 'selected' : '']"
-          class="flex row tag items-center justify-between no-wrap"
+          type="button"
+          class="bns-form__duration"
+          :class="{ 'bns-form__duration--on': record.years == item.value }"
           @click="record.years = item.value"
         >
-          <div>{{ item.label }}</div>
-          <div class="amount">{{ item.amount }}</div>
-        </div>
-      </section>
+          <span class="bns-form__duration-label">{{ item.label }}</span>
+          <span class="bns-form__duration-amount">{{ item.amount }}</span>
+          <q-icon
+            v-if="record.years == item.value"
+            class="bns-form__duration-check"
+            name="check_circle_outline"
+          />
+        </button>
+      </div>
     </div>
 
     <!-- Name -->
-    <div class="col q-mt-sm">
-      <OxenField
+    <div class="bns-form__block">
+      <BeldexField
         :label="$t('fieldLabels.name')"
         :disable="disableName"
         :error="$v.record.name.$error"
       >
         <q-input
           v-model.trim="record.name"
-          :dark="theme == 'dark'"
+          dark
           maxlength="67"
           :placeholder="$t('placeholders.bnsName')"
           :disable="disableName"
@@ -37,141 +42,163 @@
           :suffix="'.bdx'"
           @blur="$v.record.name.$touch"
         />
-      </OxenField>
-    </div>
-    <div class="notes q-mt-xs">
-      {{ $t("strings.bns.note") }} : {{ $t("strings.bns.bnsRegistration") }}
+      </BeldexField>
     </div>
 
-    <!-- Owner -->
-    <div class="col q-mt-sm">
-      <OxenField
-        class="q-mt-md"
+    <!-- Owner / Backup owner -->
+    <div class="bns-form__owners">
+      <BeldexField
         :label="$t('fieldLabels.owner')"
         :error="$v.record.owner.$error"
         optional
+        bracket-optional
       >
         <q-input
           v-model.trim="record.owner"
-          :dark="theme == 'dark'"
-          :placeholder="$t('placeholders.bnsOwner')"
+          dark
+          :placeholder="$t('placeholders.bnsOwnerShort')"
           borderless
           dense
           :disable="renewing"
           @blur="$v.record.owner.$touch"
         />
-      </OxenField>
-    </div>
-    <div class="notes q-mt-xs">
-      {{ $t("strings.bns.note") }} : {{ $t("strings.bns.ownerNotes") }}
-    </div>
-
-    <!-- Backup owner -->
-    <!-- <div class="col q-mt-sm">
-      <OxenField
-        class="q-mt-md"
+      </BeldexField>
+      <BeldexField
         :label="$t('fieldLabels.backupOwner')"
         :error="$v.record.backup_owner.$error"
         optional
+        bracket-optional
       >
         <q-input
           v-model.trim="record.backup_owner"
-          :dark="theme == 'dark'"
-          :placeholder="$t('placeholders.bnsBackupOwner')"
-          :disable="renewing"
+          dark
+          :placeholder="$t('placeholders.bnsBackupOwnerShort')"
           borderless
           dense
+          :disable="renewing"
           @blur="$v.record.backup_owner.$touch"
         />
-      </OxenField>
-    </div>-->
-    <div
-      class="idSelectorWrapper"
-      :class="[idsValidation ? 'errorborder' : '']"
-    >
-      <section>
+      </BeldexField>
+    </div>
+
+    <!-- Values -->
+    <div class="bns-form__block" :class="{ errorborder: idsValidation }">
+      <span class="beldex-label">{{ $t("fieldLabels.values") }}</span>
+      <div class="bns-form__values">
         <div
-          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
-          :class="[addressRef ? 'selected' : '']"
+          class="bns-form__value"
+          :class="{ 'bns-form__value--on': bchatIdRef }"
         >
-          <q-checkbox v-model="addressRef" size="sm" color="green" />
-          <div class="idLabel">{{ $t("fieldLabels.address") }}</div>
-          <OxenField class="full-width" optional :error="$v.address.$error">
-            <q-input
-              v-model="address"
-              :disable="!addressRef"
-              :dark="theme == 'dark'"
-              :placeholder="$t('placeholders.enterWalletAddress')"
-              borderless
-              dense
-              @blur="$v.address.$touch"
-            />
-          </OxenField>
-        </div>
-        <div
-          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
-          :class="[bchatIdRef ? 'selected' : '']"
-        >
-          <q-checkbox v-model="bchatIdRef" size="sm" color="green" />
-          <div class="idLabel">{{ $t("strings.bns.bchatID") }}</div>
-          <OxenField class="full-width" optional :error="$v.bchatId.$error">
+          <q-checkbox v-model="bchatIdRef" dense size="xs" />
+          <span class="bns-form__value-label">{{
+            $t("strings.bns.bchatID")
+          }}</span>
+          <BeldexField
+            class="bns-form__value-field"
+            optional
+            :error="$v.bchatId.$error"
+          >
             <q-input
               v-model="bchatId"
               :disable="!bchatIdRef"
-              :dark="theme == 'dark'"
-              :placeholder="$t('placeholders.enterBchatId')"
+              dark
+              :placeholder="$t('placeholders.bnsValueBchat')"
               borderless
               dense
               @blur="$v.bchatId.$touch"
             />
-          </OxenField>
+          </BeldexField>
         </div>
         <div
-          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
-          :class="[belnetIdRef ? 'selected' : '']"
+          class="bns-form__value"
+          :class="{ 'bns-form__value--on': belnetIdRef }"
         >
-          <q-checkbox v-model="belnetIdRef" size="sm" color="green" />
-          <div class="idLabel">{{ $t("fieldLabels.belnetId") }}</div>
-          <OxenField class="full-width" optional :error="$v.belnetId.$error">
+          <q-checkbox v-model="belnetIdRef" dense size="xs" />
+          <span class="bns-form__value-label">{{
+            $t("fieldLabels.belnetId")
+          }}</span>
+          <BeldexField
+            class="bns-form__value-field"
+            optional
+            :error="$v.belnetId.$error"
+          >
             <q-input
               v-model="belnetId"
               :disable="!belnetIdRef"
-              :dark="theme == 'dark'"
-              :placeholder="$t('placeholders.enterBelnetId')"
+              dark
+              :placeholder="$t('placeholders.bnsValueBelnet')"
               borderless
               dense
               @blur="$v.belnetId.$touch"
             />
-          </OxenField>
+          </BeldexField>
         </div>
-
         <div
-          class="flex row items-center no-wrap q-pa-sm selectionBox"
-          :class="[ethAddressRef ? 'selected' : '']"
+          class="bns-form__value"
+          :class="{ 'bns-form__value--on': addressRef }"
         >
-          <q-checkbox v-model="ethAddressRef" size="sm" color="green" />
-          <div class="idLabel">{{ $t("fieldLabels.eth") }}</div>
-          <OxenField class="full-width" optional :error="$v.ethAddress.$error">
+          <q-checkbox v-model="addressRef" dense size="xs" />
+          <span class="bns-form__value-label">{{
+            $t("fieldLabels.address")
+          }}</span>
+          <BeldexField
+            class="bns-form__value-field"
+            optional
+            :error="$v.address.$error"
+          >
+            <q-input
+              v-model="address"
+              :disable="!addressRef"
+              dark
+              :placeholder="$t('placeholders.bnsValueAddress')"
+              borderless
+              dense
+              @blur="$v.address.$touch"
+            />
+          </BeldexField>
+        </div>
+        <div
+          class="bns-form__value"
+          :class="{ 'bns-form__value--on': ethAddressRef }"
+        >
+          <q-checkbox v-model="ethAddressRef" dense size="xs" />
+          <span class="bns-form__value-label">{{ $t("fieldLabels.eth") }}</span>
+          <BeldexField
+            class="bns-form__value-field"
+            optional
+            :error="$v.ethAddress.$error"
+          >
             <q-input
               v-model="ethAddress"
               :disable="!ethAddressRef"
-              :dark="theme == 'dark'"
-              :placeholder="$t('placeholders.enterEthAddress')"
+              dark
+              :placeholder="$t('placeholders.bnsValueEth')"
               borderless
               dense
               @blur="$v.ethAddress.$touch"
             />
-          </OxenField>
+          </BeldexField>
         </div>
-      </section>
-      <div class="q-mt-md q-mb-xs">
-        {{ $t("strings.bns.note") }} : {{ $t("strings.bns.ethNotes") }}
+      </div>
+      <div class="bns-form__info">
+        <img src="~assets/icons/note-info.svg" alt="" />
+        <p>{{ $t("strings.bns.ethNotes") }}</p>
       </div>
     </div>
 
-    <div class="buttons flex justify-center q-mt-sm">
+    <div class="beldex-form-actions">
       <q-btn
-        color="primary"
+        v-if="showClearButton"
+        class="beldex-btn beldex-btn--ghost"
+        unelevated
+        no-caps
+        :label="$t('buttons.clear')"
+        @click="clear()"
+      />
+      <q-btn
+        class="beldex-btn"
+        unelevated
+        no-caps
         :disable="
           !(
             is_ready &&
@@ -179,15 +206,16 @@
             (address || bchatId || belnetId || ethAddress)
           )
         "
-        :label="submitLabel"
         @click="submit()"
-      />
-      <q-btn
-        v-if="showClearButton"
-        color="accent"
-        :label="$t('buttons.clear')"
-        @click="clear()"
-      />
+      >
+        <img
+          v-if="!updating && !renewing"
+          class="bns-form__purchase-icon"
+          src="~assets/icons/tag.svg"
+          alt=""
+        />
+        {{ submitLabel }}
+      </q-btn>
     </div>
   </div>
 </template>
@@ -202,19 +230,19 @@ import {
   eth_address,
   bns_name
 } from "src/validators/common";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import WalletPassword from "src/mixins/wallet_password";
 
 export default {
   name: "BNSInputForm",
   components: {
-    OxenField
+    BeldexField
   },
   setup() {
     return {
       bchatIdRef: ref(false),
       belnetIdRef: ref(false),
-      addressRef: ref(true),
+      addressRef: ref(false),
       ethAddressRef: ref(false)
     };
   },
@@ -257,24 +285,28 @@ export default {
   data() {
     let belnetOptions = [
       {
-        label: "1 yr",
+        label: "1 Year",
         value: "1y",
-        amount: "650 bdx"
+        amount: "650 BDX",
+        price: 650
       },
       {
-        label: "2 yrs",
+        label: "2 Years",
         value: "2y",
-        amount: "1000 bdx"
+        amount: "1000 BDX",
+        price: 1000
       },
       {
-        label: "5 yrs",
+        label: "5 Years",
         value: "5y",
-        amount: "2000 bdx"
+        amount: "2000 BDX",
+        price: 2000
       },
       {
-        label: "10 yrs",
+        label: "10 Years",
         value: "10y",
-        amount: "4000 bdx"
+        amount: "4000 BDX",
+        price: 4000
       }
     ];
     let typeOptions = [...belnetOptions];
@@ -285,8 +317,8 @@ export default {
       type: "",
       name: "",
       value: "",
-      owner: ""
-      // backup_owner: ""
+      owner: "",
+      backup_owner: ""
     };
 
     return {
@@ -302,6 +334,13 @@ export default {
     };
   },
   watch: {
+    // Feeds the page's "Purchase summary" panel.
+    summary: {
+      handler(val) {
+        this.$emit("onSummary", val);
+      },
+      immediate: true
+    },
     addressRef: {
       handler(val, old) {
         if (val === old) return;
@@ -341,6 +380,17 @@ export default {
     info: state => state.gateway.wallet.info,
     is_ready() {
       return this.$store.getters["gateway/isReady"];
+    },
+    summary() {
+      const option =
+        this.typeOptions.find(item => item.value === this.record.years) ||
+        this.typeOptions[0];
+      const name = (this.record.name || "").toLowerCase();
+      return {
+        name: name ? (name.includes(".bdx") ? name : name + ".bdx") : "",
+        duration: option.label,
+        price: option.price
+      };
     },
     is_able_to_send() {
       return this.$store.getters["gateway/isAbleToSend"];
@@ -392,8 +442,8 @@ export default {
         type: "bchat",
         name: "",
         value: "",
-        owner: ""
-        // backup_owner: ""
+        owner: "",
+        backup_owner: ""
       };
     }
   }),
@@ -450,14 +500,14 @@ export default {
         return;
       }
 
-      // if (this.$v.record.backup_owner.$error) {
-      //   this.$q.notify({
-      //     type: "negative",
-      //     timeout: 3000,
-      //     message: this.$t("notification.errors.invalidBackupOwner")
-      //   });
-      //   return;
-      // }
+      if (this.$v.record.backup_owner.$error) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 3000,
+          message: this.$t("notification.errors.invalidBackupOwner")
+        });
+        return;
+      }
 
       if (this.$v.record.owner.$error) {
         this.$q.notify({
@@ -557,12 +607,12 @@ export default {
         validate: function(value) {
           return this.isAddress(value);
         }
+      },
+      backup_owner: {
+        validate: function(value) {
+          return this.isAddress(value);
+        }
       }
-      // backup_owner: {
-      //   validate: function(value) {
-      //     return this.isAddress(value);
-      //   }
-      // }
     },
     address: {
       validate: function(value) {
@@ -594,35 +644,162 @@ export default {
 </script>
 
 <style lang="scss">
-.bns-input-form {
-  .buttons {
-    margin-top: 20px;
+.beldex-app .bns-input-form,
+.beldex-app .bns-renew-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--beldex-space-5);
 
-    .q-btn:not(:first-child) {
-      margin-left: 8px;
+  .bns-form__block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-2);
+  }
+
+  .notes {
+    margin: 0;
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+  }
+
+  .errorborder {
+    padding: var(--beldex-space-3);
+    border: 1px solid var(--beldex-danger);
+  }
+
+  .bns-form__durations {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--beldex-space-2);
+  }
+
+  .bns-form__duration {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    text-align: left;
+    background-color: rgba(8, 8, 8, 0.8);
+    border: 1px solid var(--beldex-hairline);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+
+    &--on {
+      background-color: var(--beldex-accent-bg);
+      border-color: var(--beldex-accent-border-soft);
+      border-bottom-color: var(--beldex-accent);
     }
   }
-  .notes {
-    color: #20d030;
-    font-size: 12px;
+
+  .bns-form__duration-check {
+    position: absolute;
+    top: 50%;
+    right: var(--beldex-space-4);
+    font-size: 16px;
+    color: var(--beldex-accent);
+    transform: translateY(-50%);
   }
-  .errorborder {
-    border: 1px solid red;
+
+  .bns-form__owners {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--beldex-space-5);
   }
-}
-.idLabel {
-  width: 130px;
-  word-break: break-all;
-  padding-right: 10px;
-}
-.idSelectorWrapper {
-  .selectionBox {
-    background-color: #474766;
-    border-radius: 10px;
-    border: 2px solid #474766;
+
+  .bns-form__duration-label {
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 500;
+    color: var(--beldex-text);
   }
-  .selected {
-    border: 2px solid #00ad07;
+
+  .bns-form__duration-amount {
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+    text-transform: uppercase;
+  }
+
+  .bns-form__values {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-3);
+  }
+
+  .bns-form__value {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+  }
+
+  .bns-form__purchase-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  // Square box; checked state is a green inner square (no tick).
+  .bns-form__value .q-checkbox {
+    .q-checkbox__bg {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 1px solid var(--beldex-text);
+      border-radius: 1px;
+      background: transparent;
+    }
+    .q-checkbox__svg {
+      display: none;
+    }
+    .q-checkbox__inner--truthy .q-checkbox__bg {
+      border-color: var(--beldex-accent);
+      background: transparent;
+      &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        bottom: 2px;
+        left: 2px;
+        background-color: var(--beldex-accent);
+      }
+    }
+  }
+
+  .bns-form__value-label {
+    flex: 0 0 110px;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    color: var(--beldex-text-muted);
+  }
+
+  .bns-form__value--on .bns-form__value-label {
+    color: var(--beldex-text);
+  }
+
+  .bns-form__value-field {
+    flex: 1 1 auto;
+    margin: 0;
+  }
+
+  .bns-form__info {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-secondary);
+    background-color: var(--beldex-accent-bg);
+
+    img {
+      flex: 0 0 auto;
+    }
+
+    p {
+      margin: 0;
+    }
   }
 }
 </style>

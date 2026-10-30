@@ -1,8 +1,10 @@
 <template>
   <div class="my-bns">
-    <div class="q-px-md q-pt-md">
-      <BNSRecords @onUpdate="onUpdate" @onRenew="onRenew" />
-    </div>
+    <BNSRecords
+      @onUpdate="onUpdate"
+      @onRenew="onRenew"
+      @onBuy="$emit('onBuy')"
+    />
   </div>
 </template>
 

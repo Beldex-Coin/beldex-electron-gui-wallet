@@ -1,44 +1,45 @@
 <template>
+  <!-- Register tab. Bindings and handlers are unchanged. -->
   <div class="master-node-registration">
-    <div class="q-pa-md">
-      <i18n
-        path="strings.masterNodeRegistrationDescription"
-        tag="div"
-        class="tab-desc q-mb-lg ft-semibold"
-      >
-        <b place="registerCommand">register_master_node</b>
-        <b place="prepareCommand">prepare_registration</b>
-      </i18n>
-      <OxenField
-        :label="$t('fieldLabels.masterNodeCommand')"
-        :error="$v.registration_string.$error"
+    <i18n
+      path="strings.masterNodeRegistrationDescription"
+      tag="p"
+      class="beldex-form-desc"
+    >
+      <b place="registerCommand">register_master_node</b>
+      <b place="prepareCommand">prepare_registration</b>
+    </i18n>
+    <BeldexField
+      :label="$t('fieldLabels.masterNodeCommand')"
+      :error="$v.registration_string.$error"
+      :disabled="registration_status.sending"
+    >
+      <q-input
+        v-model.trim="registration_string"
+        type="textarea"
+        class="full-width text-area-oxen"
+        placeholder="register_master_node ..."
         :disabled="registration_status.sending"
-      >
-        <q-input
-          v-model.trim="registration_string"
-          type="textarea"
-          class="full-width text-area-oxen"
-          placeholder="register_master_node ..."
-          :disabled="registration_status.sending"
-          borderless
-          dense
-          @blur="$v.registration_string.$touch"
-          @paste="onPaste"
-        />
-      </OxenField>
-      <div class="flex justify-center q-mt-md">
-        <q-btn
-          class="register-button"
-          color="primary"
-          :label="$t('buttons.registerMasterNode')"
-          :disabled="registration_status.sending"
-          @click="register()"
-        />
-      </div>
+        dark
+        borderless
+        dense
+        @blur="$v.registration_string.$touch"
+        @paste="onPaste"
+      />
+    </BeldexField>
+    <div class="beldex-form-actions">
+      <q-btn
+        class="beldex-btn"
+        unelevated
+        no-caps
+        :label="$t('buttons.registerMasterNode')"
+        :disabled="registration_status.sending"
+        @click="register()"
+      />
     </div>
 
-    <q-inner-loading :showing="registration_status.sending">
-      <q-spinner color="primary" size="30" />
+    <q-inner-loading :showing="registration_status.sending" dark>
+      <beldex-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
 </template>
@@ -46,13 +47,13 @@
 <script>
 import { mapState } from "vuex";
 import { required } from "vuelidate/lib/validators";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import WalletPassword from "src/mixins/wallet_password";
 
 export default {
   name: "MasterNodeRegistration",
   components: {
-    OxenField
+    BeldexField
   },
   mixins: [WalletPassword],
   data() {
@@ -150,13 +151,10 @@ export default {
 </script>
 
 <style lang="scss">
-.master-node-registration {
-  border: none;
-  .register-button {
-    margin-top: 6px;
-  }
-  .tab-desc {
-    color: #afafbe;
-  }
+.beldex-app .master-node-registration {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--beldex-space-5);
 }
 </style>

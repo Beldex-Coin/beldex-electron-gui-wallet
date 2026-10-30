@@ -1,611 +1,838 @@
 <template>
-  <q-page class="swap" style="min-height: unset">
+  <q-page
+    class="swap"
+    :class="{ 'swap--fill': routes === 'maintenance' }"
+    style="min-height: unset"
+  >
     <q-inner-loading :showing="swaploading">
-      <q-spinner color="primary" size="30" />
+      <beldex-spinner color="primary" size="30" />
     </q-inner-loading>
-    <div v-if="this.routes === 'mainPage'">
-      <div class="flex row justify-between">
-        <div class="flex row privacy-swap-container">
-          <header class="text-h6 ft-bold q-mr-md">
-            {{ this.$t("titles.swap.exchange") }}
-          </header>
-          <q-btn
-            v-if="this.currentExchange !== 'quickex'"
-            flat
-            round
-            dense
-            padding="0"
-            style="cursor:pointer;height:17px;width:17px;"
+    <div class="swap__layout">
+      <div class="swap__main">
+        <!-- Swap steps. Position comes from the existing
+             `stepperPosition` store value. -->
+        <div
+          v-if="routes !== 'txnHistory' && routes !== 'maintenance'"
+          class="swap__stepper"
+        >
+          <template
+            v-for="(step, index) in [
+              $t('titles.swap.exchangePair'),
+              $t('titles.swap.walletAddress'),
+              $t('titles.swap.payment'),
+              $t('titles.swap.exchange')
+            ]"
           >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 26 26"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              :key="`step-${index}`"
+              class="swap__step"
+              :class="{
+                'swap__step--active':
+                  $store.state.gateway.stepperPosition === index + 1,
+                'swap__step--done':
+                  $store.state.gateway.stepperPosition > index + 1
+              }"
             >
-              <path
-                d="M13 1C6.38702 1 1 6.38702 1 13C1 19.613 6.38702 25 13 25C19.613 25 25 19.613 25 13C25 6.38702 19.613 1 13 1ZM13 2.84615C18.6178 2.84615 23.1538 7.38221 23.1538 13C23.1538 18.6178 18.6178 23.1538 13 23.1538C7.38221 23.1538 2.84615 18.6178 2.84615 13C2.84615 7.38221 7.38221 2.84615 13 2.84615ZM12.0769 6.53846V8.38462H13.9231V6.53846H12.0769ZM12.0769 10.2308V19.4615H13.9231V10.2308H12.0769Z"
-                fill="#8787A8"
-                stroke="#8787A8"
-              />
-            </svg>
-            <q-menu
-              v-model="showPrivacyPopup"
-              :offset="[0, 5]"
-              class="privacy-popup-menu"
-            >
-              <div class="privacy-popup">
-                <div class="popup-content">
-                  {{ this.$t("titles.swap.privacySwapDescription") }}
-                </div>
-
-                <q-btn
-                  flat
-                  round
-                  dense
-                  padding="0"
-                  class="close-btn"
-                  @click="showPrivacyPopup = false"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <g clip-path="url(#clip0_119_4983)">
-                      <path
-                        d="M19.0711 4.92849C15.1721 1.0295 8.82792 1.0295 4.92893 4.92849C1.02995 8.82748 1.02995 15.1716 4.92893 19.0706C8.82792 22.9696 15.1721 22.9696 19.0711 19.0706C22.9701 15.1716 22.9701 8.82748 19.0711 4.92849ZM14.4749 15.5351L12 13.0602L9.52513 15.5351C9.23203 15.8282 8.75756 15.8282 8.46447 15.5351C8.17137 15.242 8.17137 14.7675 8.46447 14.4744L10.9393 11.9996L8.46447 9.52468C8.17137 9.23159 8.17137 8.75712 8.46447 8.46402C8.75756 8.17093 9.23203 8.17093 9.52513 8.46402L12 10.9389L14.4749 8.46402C14.768 8.17093 15.2424 8.17093 15.5355 8.46402C15.8286 8.75712 15.8286 9.23159 15.5355 9.52468L13.0607 11.9996L15.5355 14.4744C15.8286 14.7675 15.8286 15.242 15.5355 15.5351C15.2424 15.8282 14.768 15.8282 14.4749 15.5351Z"
-                        fill="#77778B"
-                      />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0_119_4983">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                </q-btn>
-              </div>
-            </q-menu>
-          </q-btn>
-          <q-toggle
-            v-if="this.currentExchange !== 'quickex'"
-            v-model="privacySwap"
-            :label="$t('titles.swap.privacySwap')"
-            left-label
-            class="privacySwap q-ml-xs"
-          />
+              <span class="swap__step-marker">
+                <q-icon
+                  v-if="$store.state.gateway.stepperPosition > index + 1"
+                  name="check"
+                  size="14px"
+                />
+                <template v-else>0{{ index + 1 }}</template>
+              </span>
+              {{ step }}
+            </span>
+            <span
+              v-if="index < 3"
+              :key="`line-${index}`"
+              class="swap__step-line"
+            />
+          </template>
         </div>
-        <q-btn color="accent" class="history-btn" @click="navigateToHistory">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M4.6875 1.875C3.75713 1.875 3 2.63213 3 3.5625V12.375H2.4375C2.127 12.375 1.875 12.6266 1.875 12.9375V13.6875C1.875 15.0315 2.9685 16.125 4.3125 16.125H9.55298C9.3696 15.7732 9.22925 15.3956 9.1355 15H4.3125C3.58875 15 3 14.4113 3 13.6875V13.5H9.01904C9.04867 13.1104 9.12216 12.7335 9.23804 12.375H4.125V3.5625C4.125 3.25238 4.37738 3 4.6875 3H13.3125C13.6226 3 13.875 3.25238 13.875 3.5625V9C14.2627 9 14.6381 9.05 15 9.1355V3.5625C15 2.63213 14.2429 1.875 13.3125 1.875H4.6875ZM6.1875 4.875C6.03832 4.875 5.89524 4.93426 5.78975 5.03975C5.68426 5.14524 5.625 5.28832 5.625 5.4375C5.625 5.58668 5.68426 5.72976 5.78975 5.83525C5.89524 5.94074 6.03832 6 6.1875 6C6.33668 6 6.47976 5.94074 6.58525 5.83525C6.69074 5.72976 6.75 5.58668 6.75 5.4375C6.75 5.28832 6.69074 5.14524 6.58525 5.03975C6.47976 4.93426 6.33668 4.875 6.1875 4.875ZM8.0625 4.875C7.98796 4.87395 7.91396 4.88772 7.84479 4.91551C7.77562 4.94331 7.71266 4.98457 7.65958 5.03691C7.6065 5.08925 7.56435 5.15161 7.53557 5.22038C7.5068 5.28915 7.49199 5.36295 7.49199 5.4375C7.49199 5.51205 7.5068 5.58585 7.53557 5.65462C7.56435 5.72339 7.6065 5.78575 7.65958 5.83809C7.71266 5.89043 7.77562 5.93169 7.84479 5.95949C7.91396 5.98728 7.98796 6.00105 8.0625 6H11.8125C11.887 6.00105 11.961 5.98728 12.0302 5.95949C12.0994 5.93169 12.1623 5.89043 12.2154 5.83809C12.2685 5.78575 12.3107 5.72339 12.3394 5.65462C12.3682 5.58585 12.383 5.51205 12.383 5.4375C12.383 5.36295 12.3682 5.28915 12.3394 5.22038C12.3107 5.15161 12.2685 5.08925 12.2154 5.03691C12.1623 4.98457 12.0994 4.94331 12.0302 4.91551C11.961 4.88772 11.887 4.87395 11.8125 4.875H8.0625ZM6.1875 7.125C6.03832 7.125 5.89524 7.18426 5.78975 7.28975C5.68426 7.39524 5.625 7.53832 5.625 7.6875C5.625 7.83668 5.68426 7.97976 5.78975 8.08525C5.89524 8.19074 6.03832 8.25 6.1875 8.25C6.33668 8.25 6.47976 8.19074 6.58525 8.08525C6.69074 7.97976 6.75 7.83668 6.75 7.6875C6.75 7.53832 6.69074 7.39524 6.58525 7.28975C6.47976 7.18426 6.33668 7.125 6.1875 7.125ZM8.0625 7.125C7.98796 7.12395 7.91396 7.13772 7.84479 7.16551C7.77562 7.19331 7.71266 7.23457 7.65958 7.28691C7.6065 7.33925 7.56435 7.40161 7.53557 7.47038C7.5068 7.53915 7.49199 7.61295 7.49199 7.6875C7.49199 7.76205 7.5068 7.83585 7.53557 7.90462C7.56435 7.97339 7.6065 8.03575 7.65958 8.08809C7.71266 8.14043 7.77562 8.18169 7.84479 8.20949C7.91396 8.23728 7.98796 8.25105 8.0625 8.25H11.8125C11.887 8.25105 11.961 8.23728 12.0302 8.20949C12.0994 8.18169 12.1623 8.14043 12.2154 8.08809C12.2685 8.03575 12.3107 7.97339 12.3394 7.90462C12.3682 7.83585 12.383 7.76205 12.383 7.6875C12.383 7.61295 12.3682 7.53915 12.3394 7.47038C12.3107 7.40161 12.2685 7.33925 12.2154 7.28691C12.1623 7.23457 12.0994 7.19331 12.0302 7.16551C11.961 7.13772 11.887 7.12395 11.8125 7.125H8.0625ZM6.1875 9.375C6.03832 9.375 5.89524 9.43426 5.78975 9.53975C5.68426 9.64524 5.625 9.78832 5.625 9.9375C5.625 10.0867 5.68426 10.2298 5.78975 10.3352C5.89524 10.4407 6.03832 10.5 6.1875 10.5C6.33668 10.5 6.47976 10.4407 6.58525 10.3352C6.69074 10.2298 6.75 10.0867 6.75 9.9375C6.75 9.78832 6.69074 9.64524 6.58525 9.53975C6.47976 9.43426 6.33668 9.375 6.1875 9.375ZM8.0625 9.375C7.752 9.375 7.5 9.62663 7.5 9.9375C7.5 10.2484 7.752 10.5 8.0625 10.5H10.3623C10.8108 10.0331 11.3498 9.6539 11.9531 9.39478C11.9078 9.38315 11.8612 9.375 11.8125 9.375H8.0625ZM13.875 9.75C11.5969 9.75 9.75 11.5969 9.75 13.875C9.75 16.1531 11.5969 18 13.875 18C16.1531 18 18 16.1531 18 13.875C18 11.5969 16.1531 9.75 13.875 9.75ZM12.375 11.25H15.375C15.5824 11.25 15.75 11.418 15.75 11.625C15.75 11.832 15.5824 12 15.375 12V12.75C15.375 13.2 15.1714 13.5997 14.8564 13.875C15.1714 14.1503 15.375 14.55 15.375 15V15.75C15.5824 15.75 15.75 15.918 15.75 16.125C15.75 16.332 15.5824 16.5 15.375 16.5H15H12.75H12.375C12.1676 16.5 12 16.332 12 16.125C12 15.918 12.1676 15.75 12.375 15.75V15C12.375 14.55 12.5786 14.1503 12.8936 13.875C12.5786 13.5997 12.375 13.2 12.375 12.75V12C12.1676 12 12 11.832 12 11.625C12 11.418 12.1676 11.25 12.375 11.25ZM13.125 12V12.75H14.625V12H13.125ZM13.875 14.25C13.4614 14.25 13.125 14.5864 13.125 15V15.6042L13.7563 15.394C13.8332 15.3685 13.9168 15.3685 13.9937 15.394L14.625 15.6042V15C14.625 14.5864 14.2886 14.25 13.875 14.25Z"
-              fill="white"
-            />
-          </svg>
-          <span class="q-ml-xs">{{ this.$t("titles.swap.history") }}</span>
-        </q-btn>
-      </div>
+        <div v-if="this.routes === 'mainPage'">
+          <div class="flex row justify-between">
+            <div class="flex row privacy-swap-container">
+              <header class="text-h6 ft-bold q-mr-md">
+                {{ this.$t("titles.swap.exchange") }}
+              </header>
+              <q-btn
+                v-if="this.currentExchange !== 'quickex'"
+                flat
+                round
+                dense
+                padding="0"
+                style="cursor:pointer;height:17px;width:17px;"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 26 26"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 1C6.38702 1 1 6.38702 1 13C1 19.613 6.38702 25 13 25C19.613 25 25 19.613 25 13C25 6.38702 19.613 1 13 1ZM13 2.84615C18.6178 2.84615 23.1538 7.38221 23.1538 13C23.1538 18.6178 18.6178 23.1538 13 23.1538C7.38221 23.1538 2.84615 18.6178 2.84615 13C2.84615 7.38221 7.38221 2.84615 13 2.84615ZM12.0769 6.53846V8.38462H13.9231V6.53846H12.0769ZM12.0769 10.2308V19.4615H13.9231V10.2308H12.0769Z"
+                    fill="#8787A8"
+                    stroke="#8787A8"
+                  />
+                </svg>
+                <q-menu
+                  v-model="showPrivacyPopup"
+                  :offset="[0, 5]"
+                  content-class="privacy-popup-menu"
+                >
+                  <div class="privacy-popup">
+                    <div class="popup-content">
+                      {{ this.$t("titles.swap.privacySwapDescription") }}
+                    </div>
 
-      <section class="flex row justify-between">
-        <article style="width: 49%">
-          <OxenField
-            class="q-mt-md ft-regular"
-            :label="$t('titles.swap.youSend')"
-            :error="$v.sendAmount.$error"
-          >
-            <q-input
-              v-model="sendAmount"
-              borderless
-              dense
-              type="number"
-              min="0.1"
-              max="100000"
-              :placeholder="0"
-              @keydown="keyHandler"
-              @blur="$v.sendAmount.$touch"
-            />
-            <Dropdown
-              :filter-currecy-list="
-                this.filtercurrency.filter(
-                  item => item.enabledFrom && item.enabled
-                )
-              "
-              :privacy-currency="
-                this.privacyCurrency.filter(item => item.enabledFrom)
-              "
-              :send-amoun-type-value="this.sendAmounType"
-              @sendAmounType="value => (sendAmounType = value)"
-              @sendAmountValidator="sendAmountValidator"
-              @searchCurrency="val => searchCurrency(val)"
-            />
-          </OxenField>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      padding="0"
+                      class="close-btn"
+                      @click="showPrivacyPopup = false"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <g clip-path="url(#clip0_119_4983)">
+                          <path
+                            d="M19.0711 4.92849C15.1721 1.0295 8.82792 1.0295 4.92893 4.92849C1.02995 8.82748 1.02995 15.1716 4.92893 19.0706C8.82792 22.9696 15.1721 22.9696 19.0711 19.0706C22.9701 15.1716 22.9701 8.82748 19.0711 4.92849ZM14.4749 15.5351L12 13.0602L9.52513 15.5351C9.23203 15.8282 8.75756 15.8282 8.46447 15.5351C8.17137 15.242 8.17137 14.7675 8.46447 14.4744L10.9393 11.9996L8.46447 9.52468C8.17137 9.23159 8.17137 8.75712 8.46447 8.46402C8.75756 8.17093 9.23203 8.17093 9.52513 8.46402L12 10.9389L14.4749 8.46402C14.768 8.17093 15.2424 8.17093 15.5355 8.46402C15.8286 8.75712 15.8286 9.23159 15.5355 9.52468L13.0607 11.9996L15.5355 14.4744C15.8286 14.7675 15.8286 15.242 15.5355 15.5351C15.2424 15.8282 14.768 15.8282 14.4749 15.5351Z"
+                            fill="#77778B"
+                          />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_119_4983">
+                            <rect width="24" height="24" fill="white" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                    </q-btn>
+                  </div>
+                </q-menu>
+              </q-btn>
+              <q-toggle
+                v-if="this.currentExchange !== 'quickex'"
+                v-model="privacySwap"
+                :label="$t('titles.swap.privacySwap')"
+                left-label
+                class="privacySwap q-ml-xs"
+              />
+            </div>
+            <span v-if="exechangeRateType === 'float'" class="swap__refresh">
+              <q-icon name="schedule" size="14px" />
+              {{ $t("titles.swap.ratesRefresh") }}
+            </span>
+            <div class="beldex-segmented" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                class="beldex-segmented__item beldex-segmented__item--active"
+                aria-selected="true"
+              >
+                <span class="beldex-segmented__dot" />
+                {{ $t("titles.swap.exchange") }}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                class="beldex-segmented__item"
+                aria-selected="false"
+                @click="navigateToHistory"
+              >
+                {{ $t("titles.swap.history") }}
+              </button>
+            </div>
+          </div>
 
-          <div
-            class="flex"
-            :style="
-              this.minMaxWarningContent === 'min' ||
-              this.minMaxWarningContent === 'max' ||
-              (this.pairsMinMax?.from &&
-                !this.pairsMinMax?.minAmountFloat &&
-                !this.pairsMinMax?.maxAmountFloat)
-                ? 'justify-content: space-between;'
-                : 'justify-content: flex-end;'
-            "
-          >
-            <div
-              v-if="
-                this.minMaxWarningContent === 'min' ||
+          <section class="swap__pair">
+            <article>
+              <BeldexField
+                class="q-mt-md ft-regular swap-amount"
+                :label="$t('titles.swap.youSend')"
+                :error="$v.sendAmount.$error"
+              >
+                <q-input
+                  v-model="sendAmount"
+                  borderless
+                  dense
+                  type="number"
+                  min="0.1"
+                  max="100000"
+                  :placeholder="0"
+                  @keydown="keyHandler"
+                  @blur="$v.sendAmount.$touch"
+                />
+                <Dropdown
+                  :filter-currecy-list="
+                    this.filtercurrency.filter(
+                      item => item.enabledFrom && item.enabled
+                    )
+                  "
+                  :privacy-currency="
+                    this.privacyCurrency.filter(item => item.enabledFrom)
+                  "
+                  :send-amoun-type-value="this.sendAmounType"
+                  @sendAmounType="value => (sendAmounType = value)"
+                  @sendAmountValidator="sendAmountValidator"
+                  @searchCurrency="val => searchCurrency(val)"
+                />
+              </BeldexField>
+
+              <div
+                class="flex"
+                :style="
+                  this.minMaxWarningContent === 'min' ||
                   this.minMaxWarningContent === 'max' ||
                   (this.pairsMinMax?.from &&
                     !this.pairsMinMax?.minAmountFloat &&
                     !this.pairsMinMax?.maxAmountFloat)
-              "
-              class="q-mt-sm validMinMaxAmount-wrapper"
-            >
-              <span
-                v-if="
-                  this.pairsMinMax?.from &&
-                    this.pairsMinMax?.to &&
-                    !this.pairsMinMax?.minAmountFloat &&
-                    !this.pairsMinMax?.maxAmountFloat
+                    ? 'justify-content: space-between;'
+                    : 'justify-content: flex-end;'
                 "
-                >{{ this.$t("titles.swap.unsupportedpair") }}</span
               >
-              <span v-if="this.minMaxWarningContent === 'min'">
-                {{ this.$t("titles.swap.minimumAmt") }}
-                <span
-                  class="validMinMaxAmount"
-                  @click="
-                    sendAmount =
-                      exechangeRateType === 'float'
-                        ? pairsMinMax?.minAmountFloat
-                        : pairsMinMax?.minAmountFixed
+                <div
+                  v-if="
+                    this.minMaxWarningContent === 'min' ||
+                      this.minMaxWarningContent === 'max' ||
+                      (this.pairsMinMax?.from &&
+                        !this.pairsMinMax?.minAmountFloat &&
+                        !this.pairsMinMax?.maxAmountFloat)
                   "
+                  class="q-mt-sm validMinMaxAmount-wrapper"
                 >
-                  {{
-                    this.exechangeRateType === "float"
-                      ? this.pairsMinMax?.minAmountFloat
-                      : this.pairsMinMax?.minAmountFixed
-                  }}
-                  {{ this.pairsMinMax?.from }}
-                </span>
-              </span>
-              <span
-                v-if="this.minMaxWarningContent === 'max'"
-                @click="
-                  sendAmount =
-                    exechangeRateType === 'float'
-                      ? pairsMinMax?.maxAmountFloat
-                      : pairsMinMax?.maxAmountFixed
-                "
-              >
-                {{ this.$t("titles.swap.maximumAmt") }}
-                <span class="validMinMaxAmount">
-                  {{
-                    this.exechangeRateType === "float"
-                      ? this.pairsMinMax?.maxAmountFloat
-                      : this.pairsMinMax?.maxAmountFixed
-                  }}
-                  {{ this.pairsMinMax?.from }}
-                </span>
-              </span>
-            </div>
-            <div class="flex justify-end">
-              <q-btn
-                color="accent"
-                class="swap-btn q-mt-sm"
-                :disable="
-                  !sendAmounType.enabledTo || !receiveAmountType.enabledFrom
-                "
-                @click="swapCurrencyType"
-              >
-                <svg
-                  width="18px"
-                  height="18px"
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g
-                    id="icons8-sorting_arrows_horizontal 1"
-                    clip-path="url(#clip0_81_8938)"
+                  <span
+                    v-if="
+                      this.pairsMinMax?.from &&
+                        this.pairsMinMax?.to &&
+                        !this.pairsMinMax?.minAmountFloat &&
+                        !this.pairsMinMax?.maxAmountFloat
+                    "
+                    >{{ this.$t("titles.swap.unsupportedpair") }}</span
                   >
-                    <path
-                      id="Vector"
-                      d="M2.53125 4.24068C2.53125 4.58443 2.73948 4.89183 3.05679 5.02404C3.3774 5.15294 3.74098 5.07692 3.98227 4.82903L5.92247 2.88882L5.92248 15.2308L7.61478 15.2308L7.61478 2.88882L9.55499 4.82903C9.76653 5.05048 10.0838 5.13972 10.378 5.0604C10.6755 4.98437 10.9069 4.753 10.9829 4.45553C11.0622 4.16136 10.973 3.84405 10.7515 3.63251L7.36689 0.247896C7.03636 -0.0826323 6.5009 -0.0826322 6.17037 0.247896L2.78576 3.63251C2.62049 3.79117 2.53125 4.00931 2.53125 4.24068ZM5.92248 22L7.61478 22L7.61478 20.3077L5.92248 20.3077L5.92248 22ZM5.92248 18.6154L7.61478 18.6154L7.61478 16.9231L5.92248 16.9231L5.92248 18.6154ZM10.9895 17.7858C10.9961 18.0072 11.0886 18.2154 11.2473 18.3675L14.6319 21.7521C14.9624 22.0826 15.4979 22.0826 15.8284 21.7521L19.213 18.3675C19.4345 18.1559 19.5237 17.8386 19.4444 17.5445C19.3684 17.247 19.137 17.0156 18.8395 16.9396C18.5454 16.8603 18.2281 16.9495 18.0165 17.171L16.0763 19.1112L16.0763 6.76923L14.384 6.76923L14.384 19.1112L12.4438 17.171C12.1992 16.9198 11.829 16.8471 11.5084 16.9826C11.1845 17.1181 10.9796 17.4354 10.9895 17.7858ZM14.384 5.07692L16.0763 5.07692L16.0763 3.38461L14.384 3.38461L14.384 5.07692ZM14.384 1.69231L16.0763 1.69231L16.0763 -5.92074e-07L14.384 -5.18101e-07L14.384 1.69231Z"
-                      fill="#A9A9CD"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_81_8938">
-                      <rect
-                        width="22"
-                        height="22"
-                        fill="white"
-                        transform="translate(0 22) rotate(-90)"
-                      />
-                    </clipPath>
-                  </defs>
-                </svg>
-              </q-btn>
+                  <span v-if="this.minMaxWarningContent === 'min'">
+                    {{ this.$t("titles.swap.minimumAmt") }}
+                    <span
+                      class="validMinMaxAmount"
+                      @click="
+                        sendAmount =
+                          exechangeRateType === 'float'
+                            ? pairsMinMax?.minAmountFloat
+                            : pairsMinMax?.minAmountFixed
+                      "
+                    >
+                      {{
+                        this.exechangeRateType === "float"
+                          ? this.pairsMinMax?.minAmountFloat
+                          : this.pairsMinMax?.minAmountFixed
+                      }}
+                      {{ this.pairsMinMax?.from }}
+                    </span>
+                  </span>
+                  <span
+                    v-if="this.minMaxWarningContent === 'max'"
+                    @click="
+                      sendAmount =
+                        exechangeRateType === 'float'
+                          ? pairsMinMax?.maxAmountFloat
+                          : pairsMinMax?.maxAmountFixed
+                    "
+                  >
+                    {{ this.$t("titles.swap.maximumAmt") }}
+                    <span class="validMinMaxAmount">
+                      {{
+                        this.exechangeRateType === "float"
+                          ? this.pairsMinMax?.maxAmountFloat
+                          : this.pairsMinMax?.maxAmountFixed
+                      }}
+                      {{ this.pairsMinMax?.from }}
+                    </span>
+                  </span>
+                </div>
+                <div class="flex justify-center full-width">
+                  <q-btn
+                    color="accent"
+                    class="swap-btn q-mt-sm"
+                    :disable="
+                      !sendAmounType.enabledTo || !receiveAmountType.enabledFrom
+                    "
+                    @click="swapCurrencyType"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 15.5V2.5M2 5.5l3-3 3 3" />
+                      <path d="M13 2.5v13M10 12.5l3 3 3-3" />
+                    </svg>
+                  </q-btn>
+                </div>
+              </div>
+
+              <BeldexField
+                class="ft-regular swap-amount"
+                :label="$t('titles.swap.youGet')"
+              >
+                <q-input
+                  v-if="this.exechangeRateType === 'float'"
+                  v-model="this.exchange_amount.amountTo"
+                  borderless
+                  dense
+                  :placeholder="0"
+                  :prefix="this.exchange_amount.amountTo ? '≈' : ''"
+                  disable
+                />
+                <q-input
+                  v-else
+                  v-model="this.fixedExchangeRate.amountTo"
+                  borderless
+                  dense
+                  :placeholder="0"
+                  disable
+                />
+                <Dropdown
+                  :filter-currecy-list="
+                    this.filtercurrency.filter(
+                      item => item.enabledTo && item.enabled
+                    )
+                  "
+                  :privacy-currency="
+                    this.privacyCurrency.filter(item => item.enabledTo)
+                  "
+                  :send-amoun-type-value="this.receiveAmountType"
+                  @sendAmounType="value => (receiveAmountType = value)"
+                  @sendAmountValidator="getAmountValidator"
+                  @searchCurrency="val => searchCurrency(val)"
+                />
+              </BeldexField>
+            </article>
+          </section>
+
+          <div class="flex row info-wrapper q-mt-md">
+            <div
+              style="width: 4%; padding-top: 5px"
+              class="flex justify-center"
+            >
+              <q-icon name="o_info" size="14px" />
+            </div>
+            <div v-if="this.exechangeRateType === 'float'" style="width: 95%">
+              {{ this.$t("titles.swap.floatingRateDisc") }}
+            </div>
+            <div v-else style="width: 95%">
+              {{ this.$t("titles.swap.fixedRateExactAmtDisc") }}
             </div>
           </div>
 
-          <OxenField class="ft-regular" :label="$t('titles.swap.youGet')">
+          <header class="ft-bold q-mt-md">
+            {{ this.$t("titles.swap.walletAddress") }}
+          </header>
+
+          <BeldexField
+            class="q-mt-md ft-regular address-wrapper"
+            :label="$t('fieldLabels.recipientAddress')"
+            :error="this.recipientAddress.error"
+            error-label="Invalid Address"
+          >
+            <div v-if="showProtocol(this.receiveAmountType)" class="q-pr-sm">
+              <span class="proto ft-semibold">{{
+                this.receiveAmountType.protocol
+              }}</span>
+            </div>
             <q-input
-              v-if="this.exechangeRateType === 'float'"
-              v-model="this.exchange_amount.amountTo"
+              :value="recipientAddress.val"
               borderless
               dense
-              :placeholder="0"
-              disable
-            />
-            <q-input
-              v-else
-              v-model="this.fixedExchangeRate.amountTo"
-              borderless
-              dense
-              :placeholder="0"
-              disable
-            />
-            <Dropdown
-              :filter-currecy-list="
-                this.filtercurrency.filter(
-                  item => item.enabledTo && item.enabled
-                )
+              :placeholder="
+                this.$t('placeholders.enterRecipientAddress', {
+                  coin: this.receiveAmountType.name
+                })
               "
-              :privacy-currency="
-                this.privacyCurrency.filter(item => item.enabledTo)
-              "
-              :send-amoun-type-value="this.receiveAmountType"
-              @sendAmounType="value => (receiveAmountType = value)"
-              @sendAmountValidator="getAmountValidator"
-              @searchCurrency="val => searchCurrency(val)"
+              @input="val => this.recipientAddressValidator(val)"
             />
-          </OxenField>
-        </article>
-        <article style="width: 48%">
-          <div class="ft-semibold" style="margin-top: 14px; margin-bottom: 9px">
-            {{ this.$t("titles.swap.transactionDetails") }}
+            <beldex-spinner
+              v-if="this.recipientLoader"
+              color="primary"
+              size="2em"
+            />
+          </BeldexField>
+          <div class="flex row info-wrapper q-mt-md">
+            <div
+              style="width: 4%; padding-top: 5px"
+              class="flex justify-center"
+            >
+              <q-icon name="o_info" size="14px" />
+            </div>
+            <div style="width: 95%">
+              {{ this.$t("titles.swap.giveCorrectAddress") }}
+            </div>
           </div>
-          <table style="width: 100%" class="txn-fee-details">
-            <tr>
-              <td>{{ this.$t("titles.swap.youSend") }}</td>
-              <td>
-                {{ this.sendAmount > 0 ? this.sendAmount : 0 }}
-                {{ this.sendAmounType.name }}
-              </td>
-            </tr>
-            <tr v-if="this.exechangeRateType === 'float'">
-              <td>{{ this.$t("titles.swap.exchangeRate") }}</td>
-              <td class="uppercase">
-                1
-                {{ this.sendAmounType.name }}
-                ~
-                {{
-                  exchange_amount.rate
-                    ? Number(exchange_amount.rate).toFixed(8)
-                    : "--"
-                }}
-                {{ this.receiveAmountType.name }}
-              </td>
-            </tr>
-            <tr v-else>
-              <td>{{ this.$t("titles.swap.fixedRate") }}</td>
-              <td class="uppercase">
-                <span>
-                  1
-                  {{ this.sendAmounType.name }}
-                  =
-                  {{
-                    fixedExchangeRate.result
-                      ? Number(fixedExchangeRate.result).toFixed(8)
-                      : "--"
-                  }}
-                  {{ this.receiveAmountType.name }}
-                </span>
-                <br />
-                <span class="fixed-rate-hint">
-                  {{ this.$t("titles.swap.fixedRateUpdateSec") }}
-                </span>
-              </td>
-            </tr>
-            <tr v-if="this.exechangeRateType == 'float'">
-              <td>{{ this.$t("titles.swap.serviceFee") }}</td>
-              <td class="uppercase">
-                {{ getFeeAmount() }} {{ receiveAmountType.name }}
-              </td>
-            </tr>
-
-            <tr v-else>
-              <td>{{ this.$t("titles.swap.fees") }}</td>
-              <td style="font-size: 12px">
-                {{ this.$t("titles.swap.allTheFees") }}
-              </td>
-            </tr>
-            <tr v-if="this.exechangeRateType == 'float'">
-              <td>{{ this.$t("titles.swap.networkFee") }}</td>
-              <td class="uppercase">
-                {{
-                  exchange_amount.networkFee
-                    ? Number(exchange_amount.networkFee).toFixed(8)
-                    : "--"
-                }}
-                {{ this.receiveAmountType.name }}
-              </td>
-            </tr>
-            <tr>
-              <td>{{ this.$t("titles.swap.youGet") }}</td>
-              <td v-if="this.exechangeRateType === 'float'" class="uppercase">
-                ~
-                {{
-                  exchange_amount.amountTo
-                    ? Number(exchange_amount.amountTo).toFixed(8)
-                    : "--"
-                }}
-                {{ this.receiveAmountType.name }}
-              </td>
-              <td v-else class="uppercase">
-                {{
-                  fixedExchangeRate.amountTo
-                    ? Number(fixedExchangeRate.amountTo).toFixed(8)
-                    : "--"
-                }}
-                {{ this.receiveAmountType.name }}
-              </td>
-            </tr>
-          </table>
-        </article>
-      </section>
-
-      <div class="flex row info-wrapper q-mt-md">
-        <div style="width: 4%; padding-top: 5px" class="flex justify-center">
-          <q-icon name="o_info" size="14px" />
-        </div>
-        <div v-if="this.exechangeRateType === 'float'" style="width: 95%">
-          {{ this.$t("titles.swap.floatingRateDisc") }}
-        </div>
-        <div v-else style="width: 95%">
-          {{ this.$t("titles.swap.fixedRateExactAmtDisc") }}
-        </div>
-      </div>
-
-      <header class="ft-bold q-mt-md">
-        {{ this.$t("titles.swap.walletAddress") }}
-      </header>
-
-      <OxenField
-        class="q-mt-md ft-regular address-wrapper"
-        :label="$t('fieldLabels.recipientAddress')"
-        :error="this.recipientAddress.error"
-        error-label="Invalid Address"
-      >
-        <div class="q-pr-sm">
-          <span class="proto ft-semibold">{{
-            this.receiveAmountType.protocol
-          }}</span>
-        </div>
-        <q-input
-          :value="recipientAddress.val"
-          borderless
-          dense
-          :placeholder="
-            this.$t('placeholders.enterRecipientAddress', {
-              coin: this.receiveAmountType.name
-            })
-          "
-          @input="val => this.recipientAddressValidator(val)"
-        />
-        <q-spinner v-if="this.recipientLoader" color="primary" size="2em" />
-      </OxenField>
-      <div class="flex row info-wrapper q-mt-md">
-        <div style="width: 4%; padding-top: 5px" class="flex justify-center">
-          <q-icon name="o_info" size="14px" />
-        </div>
-        <div style="width: 95%">
-          {{ this.$t("titles.swap.giveCorrectAddress") }}
-        </div>
-      </div>
-      <div
-        v-if="this.receiveAmountType?.extraIdName"
-        class="destination-tag-wrapper q-mt-md"
-      >
-        <span class="ft-Light hint">
-          Please specify the {{ this.receiveAmountType.extraIdName }} for your
-          <span class="uppercase">{{ this.receiveAmountType.value }}</span>
-          receiving address if your wallet provides it. Your transaction will
-          not go through if you omit it. If your wallet doesn’t require a
-          {{ this.receiveAmountType.extraIdName }}, remove the tick.
-        </span>
-        <br />
-        <q-checkbox
-          v-model="destinationTag"
-          color="secondary"
-          true-value="yes"
-          false-value="no"
-          size="xs"
-        ></q-checkbox>
-        <span>
-          {{ this.$t("titles.swap.myWalletRequire") }}
-          {{ this.receiveAmountType.extraIdName }}
-        </span>
-      </div>
-
-      <q-input
-        v-if="destinationTag === 'yes'"
-        v-model="destinationTagValue"
-        class="box-input"
-        :placeholder="`Enter ${this.receiveAmountType.extraIdName}`"
-        borderless
-        dense
-      />
-      <article
-        v-if="
-          this.exechangeRateType === 'fixed' ||
-            this.currentExchange === 'quickex'
-        "
-      >
-        <OxenField
-          class="q-mt-md ft-regular address-wrapper"
-          label="Refund wallet Address"
-          :error="this.refundAddress.error"
-          error-label="Please enter valid address"
-        >
-          <div class="q-pr-sm">
-            <span class="proto ft-semibold">
-              {{ this.sendAmounType.protocol }}
+          <div
+            v-if="this.receiveAmountType?.extraIdName"
+            class="destination-tag-wrapper q-mt-md"
+          >
+            <span class="ft-Light hint">
+              Please specify the {{ this.receiveAmountType.extraIdName }} for
+              your
+              <span class="uppercase">{{ this.receiveAmountType.value }}</span>
+              receiving address if your wallet provides it. Your transaction
+              will not go through if you omit it. If your wallet doesn’t require
+              a
+              {{ this.receiveAmountType.extraIdName }}, remove the tick.
+            </span>
+            <br />
+            <q-checkbox
+              v-model="destinationTag"
+              color="secondary"
+              true-value="yes"
+              false-value="no"
+              size="xs"
+            ></q-checkbox>
+            <span>
+              {{ this.$t("titles.swap.myWalletRequire") }}
+              {{ this.receiveAmountType.extraIdName }}
             </span>
           </div>
+
           <q-input
-            :value="refundAddress.val"
+            v-if="destinationTag === 'yes'"
+            v-model="destinationTagValue"
+            class="box-input"
+            :placeholder="`Enter ${this.receiveAmountType.extraIdName}`"
             borderless
             dense
-            :placeholder="
-              this.$t('placeholders.enterRecipientAddress', {
-                type: this.sendAmounType.name
-              })
-            "
-            @input="val => this.refundAddressValidator(val)"
           />
-          <q-spinner v-if="this.refundLoader" color="primary" size="2em" />
-        </OxenField>
-      </article>
+          <article
+            v-if="
+              this.exechangeRateType === 'fixed' ||
+                this.currentExchange === 'quickex'
+            "
+          >
+            <BeldexField
+              class="q-mt-md ft-regular address-wrapper"
+              label="Refund wallet Address"
+              :error="this.refundAddress.error"
+              error-label="Please enter valid address"
+            >
+              <div v-if="showProtocol(this.sendAmounType)" class="q-pr-sm">
+                <span class="proto ft-semibold">
+                  {{ this.sendAmounType.protocol }}
+                </span>
+              </div>
+              <q-input
+                :value="refundAddress.val"
+                borderless
+                dense
+                :placeholder="
+                  this.$t('placeholders.enterRecipientAddress', {
+                    type: this.sendAmounType.name
+                  })
+                "
+                @input="val => this.refundAddressValidator(val)"
+              />
+              <beldex-spinner
+                v-if="this.refundLoader"
+                color="primary"
+                size="2em"
+              />
+            </BeldexField>
+          </article>
 
-      <div
-        v-if="
-          (this.exechangeRateType === 'fixed' ||
-            (this.currentExchange === 'quickex' &&
-              refundDestinationTag === 'yes')) &&
-            this.sendAmounType.hasOwnProperty('extraIdName')
-        "
-        class="destination-tag-wrapper q-mt-md"
-      >
-        <span class="ft-Light hint">
-          Please specify the {{ this.sendAmounType.extraIdName }} for your
-          <span class="uppercase">{{ this.sendAmounType.value }}</span>
-          receiving address if your wallet provides it. Your transaction will
-          not go through if you omit it. If your wallet doesn’t require a
-          {{ this.sendAmounType.extraIdName }}, remove the tick.
-        </span>
-        <br />
-        <q-checkbox
-          v-model="destinationTag"
-          color="secondary"
-          true-value="yes"
-          false-value="no"
-          size="xs"
-        ></q-checkbox>
-        <span>
-          {{ this.$t("titles.swap.myWalletRequire") }}
-          {{ this.sendAmounType.extraIdName }}
-        </span>
-      </div>
+          <div
+            v-if="
+              (this.exechangeRateType === 'fixed' ||
+                (this.currentExchange === 'quickex' &&
+                  refundDestinationTag === 'yes')) &&
+                this.sendAmounType.hasOwnProperty('extraIdName')
+            "
+            class="destination-tag-wrapper q-mt-md"
+          >
+            <span class="ft-Light hint">
+              Please specify the {{ this.sendAmounType.extraIdName }} for your
+              <span class="uppercase">{{ this.sendAmounType.value }}</span>
+              receiving address if your wallet provides it. Your transaction
+              will not go through if you omit it. If your wallet doesn’t require
+              a
+              {{ this.sendAmounType.extraIdName }}, remove the tick.
+            </span>
+            <br />
+            <q-checkbox
+              v-model="destinationTag"
+              color="secondary"
+              true-value="yes"
+              false-value="no"
+              size="xs"
+            ></q-checkbox>
+            <span>
+              {{ this.$t("titles.swap.myWalletRequire") }}
+              {{ this.sendAmounType.extraIdName }}
+            </span>
+          </div>
 
-      <q-input
-        v-if="refundDestinationTag === 'yes'"
-        v-model="refundDestinationTagValue"
-        :placeholder="`Enter ${this.sendAmounType.extraIdName}`"
-        class="box-input"
-        borderless
-        dense
-      />
-      <div class="terms-condition q-mt-md">
-        <q-checkbox
-          v-model="agree"
-          color="secondary"
-          true-value="yes"
-          false-value="no"
-          size="sm"
-        ></q-checkbox>
-        <span>
-          {{ this.$t("titles.swap.agreeWith") }}
-          <a @click="openExternalLink(exchangeLinks.termsLink)">
-            {{ this.$t("titles.swap.termOfUse") }}
-          </a>
-          {{ this.$t("titles.swap.and") }}
-          <a @click="openExternalLink(exchangeLinks.privacyPolicyLink)">{{
-            this.$t("titles.swap.privacyPolicy")
-          }}</a>
-        </span>
-      </div>
+          <q-input
+            v-if="refundDestinationTag === 'yes'"
+            v-model="refundDestinationTagValue"
+            :placeholder="`Enter ${this.sendAmounType.extraIdName}`"
+            class="box-input"
+            borderless
+            dense
+          />
+          <div class="terms-condition q-mt-md">
+            <q-checkbox
+              v-model="agree"
+              color="secondary"
+              true-value="yes"
+              false-value="no"
+              size="sm"
+            ></q-checkbox>
+            <span>
+              {{ this.$t("titles.swap.agreeWith") }}
+              <a @click="openExternalLink(exchangeLinks.termsLink)">
+                {{ this.$t("titles.swap.termOfUse") }}
+              </a>
+              {{ this.$t("titles.swap.and") }}
+              <a @click="openExternalLink(exchangeLinks.privacyPolicyLink)">{{
+                this.$t("titles.swap.privacyPolicy")
+              }}</a>
+            </span>
+          </div>
 
-      <div class="flex justify-center q-my-lg">
-        <q-btn
-          :label="$t('buttons.next')"
-          color="primary"
-          :disable="!this.disableValidation()"
-          @click="this.next"
+          <div class="beldex-form-actions q-mt-md">
+            <q-btn
+              class="beldex-btn"
+              unelevated
+              no-caps
+              :disable="!this.disableValidation()"
+              @click="this.next"
+            >
+              {{ $t("buttons.next") }}
+              <img src="~assets/icons/arrow-right.svg" alt="" />
+            </q-btn>
+          </div>
+        </div>
+        <SwapConfirmPayment
+          v-if="this.routes === 'makePayment'"
+          :exchange-type="this.exechangeRateType"
+          :floating-rate="this.exchange_amount"
+          :fixed-rate="this.fixedExchangeRate"
+          :recipient-address="this.recipientAddress.val"
+          :refund-address="this.refundAddress.val"
+          :send-chain-details="this.sendAmounType"
+          :receive-chain-dtails="this.receiveAmountType"
+          :pairs-min-max="this.pairsMinMax"
+          :min-max-warning-content="this.minMaxWarningContent"
+          @sending="sendAmounts($event)"
+          @goback="navigation('mainPage', 1)"
+          @toHistory="navigateToHistory"
+          @submit="confirmPayment"
+        />
+        <SwapTxnHistory
+          v-if="this.routes === 'txnHistory'"
+          :privacy-swap="this.privacySwap"
+          @goback="leaveHistory"
+        />
+        <SwapTxnSettlement
+          v-if="this.routes === 'settlement' && createdTxnDetails.status"
+          :created-txn-details="createdTxnDetails.result"
+          :floating-rate="this.exchange_amount"
+          :fixed-rate="this.fixedExchangeRate"
+          :receive-chain-details="this.receiveAmountType"
+          :send-chain-details="this.sendAmounType"
+          :is-privacy-swap="this.privacySwap"
+          @clearAllintervals="clearAllintervals"
+          @toHistory="navigateToHistory"
+          @goback="
+            () => {
+              navigation('mainPage', 1);
+              clearState();
+            }
+          "
+        />
+
+        <swapStatus
+          v-if="this.routes === 'swapStatus'"
+          @toHistory="navigation('txnHistory', 1)"
+          @newTxn="
+            () => {
+              navigation('mainPage', 1);
+              clearState();
+            }
+          "
+        />
+        <SwapTxnCompeleted
+          v-if="this.routes === 'txnCompleted'"
+          :txn-status="this.txnStatus.result[0]"
+          @openHistory="navigation('txnHistory', 1)"
+          @newTxn="
+            () => {
+              navigation('mainPage', 1);
+              clearState();
+            }
+          "
+        />
+
+        <SwapUnderMaintenance
+          v-if="this.routes === 'maintenance'"
+          @openHistory="navigateToHistory"
         />
       </div>
+      <!-- Transaction preview. The privacy swap toggle and the Floating /
+           Fixed rate-type choice have no behaviour hook yet, so they stay as
+           they are. -->
+      <aside
+        v-if="
+          this.routes === 'mainPage' ||
+            this.routes === 'makePayment' ||
+            this.routes === 'settlement' ||
+            this.routes === 'swapStatus' ||
+            ((this.routes === 'txnHistory' || this.routes === 'txnCompleted') &&
+              this.historyPreview)
+        "
+        class="swap__side"
+      >
+        <div class="swap__side-head">
+          <h2 class="swap__side-title">
+            {{ this.$t("titles.swap.transactionPreview") }}
+          </h2>
+          <span v-if="this.routes !== 'swapStatus'" class="swap__side-badge">{{
+            this.$t("titles.swap.estimate")
+          }}</span>
+        </div>
+        <dl v-if="this.routes === 'swapStatus'" class="swap__order">
+          <div class="swap__order-row">
+            <dt>{{ this.$t("titles.swap.transactionID") }}</dt>
+            <dd>{{ orderStatus.id }}</dd>
+          </div>
+          <div class="swap__order-row">
+            <dt>{{ this.$t("titles.swap.youSent") }}</dt>
+            <dd class="uppercase">
+              {{ orderStatus.amountExpectedFrom }}
+              {{ orderStatus.currencyFrom }}
+            </dd>
+          </div>
+          <div v-if="orderStatus.payoutExtraId" class="swap__order-row">
+            <dt>{{ orderStatus.payoutExtraIdName || "Memo" }}</dt>
+            <dd>{{ orderStatus.payoutExtraId }}</dd>
+          </div>
+          <div class="swap__order-row">
+            <dt>{{ this.$t("titles.swap.exchangeRate") }}</dt>
+            <dd class="uppercase">
+              1 {{ orderStatus.currencyFrom }} ≈
+              {{ Number(orderStatus.rate).toFixed(8) }}
+              {{ orderStatus.currencyTo }}
+            </dd>
+          </div>
+          <div class="swap__order-row swap__order-row--stack">
+            <dt class="uppercase">
+              {{ this.$t("titles.swap.changellyAddress") }}
+              ({{ orderStatus.currencyFrom }})
+            </dt>
+            <dd class="break-all">{{ orderStatus.payinAddress }}</dd>
+          </div>
+          <div class="swap__order-row swap__order-row--stack">
+            <dt class="uppercase">
+              {{ this.$t("fieldLabels.recipientAddress") }}
+              ({{ orderStatus.currencyTo }})
+            </dt>
+            <dd class="break-all">{{ orderStatus.payoutAddress }}</dd>
+          </div>
+          <div class="swap__order-row swap__order-row--total">
+            <dt>{{ this.$t("titles.swap.youGet") }}</dt>
+            <dd class="uppercase">
+              ≈ {{ orderStatus.amountExpectedTo }} {{ orderStatus.currencyTo }}
+            </dd>
+          </div>
+        </dl>
+        <table
+          v-else-if="historyPreview && historyPreview.compact"
+          style="width: 100%"
+          class="txn-fee-details"
+        >
+          <tr>
+            <td>{{ this.$t("titles.swap.youSend") }}</td>
+            <td class="uppercase">
+              {{ historyPreview.amountFrom }} {{ historyPreview.from }}
+            </td>
+          </tr>
+          <tr>
+            <td>{{ this.$t("titles.swap.exchangeRate") }}</td>
+            <td class="uppercase">
+              1 {{ historyPreview.from }} ≈ {{ historyPreview.rate }}
+              {{ historyPreview.to }}
+            </td>
+          </tr>
+          <tr v-if="historyPreview.networkFee">
+            <td>{{ this.$t("titles.swap.networkFee") }}</td>
+            <td class="uppercase">
+              {{ historyPreview.networkFee }} {{ historyPreview.to }}
+            </td>
+          </tr>
+          <tr>
+            <td>{{ this.$t("titles.swap.status") }}</td>
+            <td>{{ historyPreview.status }}</td>
+          </tr>
+          <tr>
+            <td>{{ this.$t("titles.swap.youGet") }}</td>
+            <td class="uppercase">
+              {{ historyPreview.amountTo }} {{ historyPreview.to }}
+            </td>
+          </tr>
+        </table>
+
+        <table
+          v-else-if="this.routes === 'txnHistory'"
+          style="width: 100%"
+          class="txn-fee-details"
+        >
+          <tr>
+            <td>{{ this.$t("titles.swap.youSend") }}</td>
+            <td class="uppercase">
+              {{ historyPreview.amountFrom }} {{ historyPreview.from }}
+            </td>
+          </tr>
+          <tr v-if="historyPreview.type === 'float'">
+            <td>{{ this.$t("titles.swap.exchangeRate") }}</td>
+            <td class="uppercase">
+              1 {{ historyPreview.from }} ≈ {{ historyPreview.rate }}
+              {{ historyPreview.to }}
+            </td>
+          </tr>
+          <tr v-else>
+            <td>{{ this.$t("titles.swap.fixedRate") }}</td>
+            <td class="uppercase">
+              1 {{ historyPreview.from }} = {{ historyPreview.amountTo }}
+              {{ historyPreview.to }}
+            </td>
+          </tr>
+          <tr v-if="historyPreview.type === 'float'">
+            <td>{{ this.$t("titles.swap.exchangefee") }}</td>
+            <td class="uppercase">
+              {{ historyPreview.fee }} {{ historyPreview.to }}
+            </td>
+          </tr>
+          <tr v-else>
+            <td>{{ this.$t("titles.swap.fees") }}</td>
+            <td style="font-size: 12px">
+              {{ this.$t("titles.swap.allTheFees") }}
+            </td>
+          </tr>
+          <tr v-if="historyPreview.type === 'float'">
+            <td>{{ this.$t("titles.swap.networkFee") }}</td>
+            <td class="uppercase">
+              {{ historyPreview.networkFee }} {{ historyPreview.to }}
+            </td>
+          </tr>
+          <tr>
+            <td>{{ this.$t("titles.swap.youGet") }}</td>
+            <td class="uppercase">
+              {{ historyPreview.type === "float" ? "≈" : "" }}
+              {{ historyPreview.amountTo }} {{ historyPreview.to }}
+            </td>
+          </tr>
+        </table>
+
+        <table v-else style="width: 100%" class="txn-fee-details">
+          <tr>
+            <td>{{ this.$t("titles.swap.youSend") }}</td>
+            <td>
+              {{ this.sendAmount > 0 ? this.sendAmount : 0 }}
+              {{ this.sendAmounType.name }}
+            </td>
+          </tr>
+          <tr v-if="this.exechangeRateType === 'float'">
+            <td>{{ this.$t("titles.swap.exchangeRate") }}</td>
+            <td class="uppercase">
+              1
+              {{ this.sendAmounType.name }}
+              ≈
+              {{
+                exchange_amount.rate
+                  ? Number(exchange_amount.rate).toFixed(8)
+                  : "--"
+              }}
+              {{ this.receiveAmountType.name }}
+            </td>
+          </tr>
+          <tr v-else>
+            <td>{{ this.$t("titles.swap.fixedRate") }}</td>
+            <td class="uppercase">
+              <span>
+                1
+                {{ this.sendAmounType.name }}
+                =
+                {{
+                  fixedExchangeRate.result
+                    ? Number(fixedExchangeRate.result).toFixed(8)
+                    : "--"
+                }}
+                {{ this.receiveAmountType.name }}
+              </span>
+              <br />
+              <span class="fixed-rate-hint">
+                {{ this.$t("titles.swap.fixedRateUpdateSec") }}
+              </span>
+            </td>
+          </tr>
+          <tr v-if="this.exechangeRateType == 'float'">
+            <td>{{ this.$t("titles.swap.exchangefee") }}</td>
+            <td class="uppercase">
+              {{ getFeeAmount() }} {{ receiveAmountType.name }}
+            </td>
+          </tr>
+
+          <tr v-else>
+            <td>{{ this.$t("titles.swap.fees") }}</td>
+            <td style="font-size: 12px">
+              {{ this.$t("titles.swap.allTheFees") }}
+            </td>
+          </tr>
+          <tr v-if="this.exechangeRateType == 'float'">
+            <td>{{ this.$t("titles.swap.networkFee") }}</td>
+            <td class="uppercase">
+              {{
+                exchange_amount.networkFee
+                  ? Number(exchange_amount.networkFee).toFixed(8)
+                  : "--"
+              }}
+              {{ this.receiveAmountType.name }}
+            </td>
+          </tr>
+          <tr>
+            <td>{{ this.$t("titles.swap.youGet") }}</td>
+            <td v-if="this.exechangeRateType === 'float'" class="uppercase">
+              ≈
+              {{
+                exchange_amount.amountTo
+                  ? Number(exchange_amount.amountTo).toFixed(8)
+                  : "--"
+              }}
+              {{ this.receiveAmountType.name }}
+            </td>
+            <td v-else class="uppercase">
+              {{
+                fixedExchangeRate.amountTo
+                  ? Number(fixedExchangeRate.amountTo).toFixed(8)
+                  : "--"
+              }}
+              {{ this.receiveAmountType.name }}
+            </td>
+          </tr>
+        </table>
+      </aside>
     </div>
-    <SwapConfirmPayment
-      v-if="this.routes === 'makePayment'"
-      :exchange-type="this.exechangeRateType"
-      :floating-rate="this.exchange_amount"
-      :fixed-rate="this.fixedExchangeRate"
-      :recipient-address="this.recipientAddress.val"
-      :refund-address="this.refundAddress.val"
-      :send-chain-details="this.sendAmounType"
-      :receive-chain-dtails="this.receiveAmountType"
-      :pairs-min-max="this.pairsMinMax"
-      :min-max-warning-content="this.minMaxWarningContent"
-      @sending="sendAmounts($event)"
-      @goback="navigation('mainPage', 1)"
-      @submit="confirmPayment"
-    />
-    <SwapTxnHistory
-      v-if="this.routes === 'txnHistory'"
-      :privacy-swap="this.privacySwap"
-      @goback="
-        () => {
-          navigation('mainPage', 1), clearState();
-        }
-      "
-    />
-    <SwapTxnSettlement
-      v-if="this.routes === 'settlement' && createdTxnDetails.status"
-      :created-txn-details="createdTxnDetails.result"
-      :floating-rate="this.exchange_amount"
-      :fixed-rate="this.fixedExchangeRate"
-      :receive-chain-details="this.receiveAmountType"
-      :send-chain-details="this.sendAmounType"
-      :is-privacy-swap="this.privacySwap"
-      @clearAllintervals="clearAllintervals"
-      @goback="
-        () => {
-          navigation('mainPage', 1);
-          clearState();
-        }
-      "
-    />
-
-    <swapStatus
-      v-if="this.routes === 'swapStatus'"
-      @toHistory="navigation('txnHistory', 1)"
-    />
-    <SwapTxnCompeleted
-      v-if="this.routes === 'txnCompleted'"
-      :txn-status="this.txnStatus.result[0]"
-      @openHistory="navigation('txnHistory', 1)"
-      @newTxn="
-        () => {
-          navigation('mainPage', 1);
-          clearState();
-        }
-      "
-    />
-
-    <SwapUnderMaintenance v-if="this.routes === 'maintenance'" />
   </q-page>
 </template>
 
@@ -613,7 +840,7 @@
 import moment from "moment";
 
 import { required, decimal } from "vuelidate/lib/validators";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import SwapConfirmPayment from "./swapConfirmPayment.vue";
 import SwapTxnHistory from "./swapTxnHistory.vue";
 import SwapTxnSettlement from "./swapTxnSettlement.vue";
@@ -636,7 +863,7 @@ const EXCHANGE_LINKS = {
 
 export default {
   components: {
-    OxenField,
+    BeldexField,
     SwapConfirmPayment,
     SwapTxnHistory,
     SwapTxnSettlement,
@@ -699,6 +926,7 @@ export default {
       const rawCurrencyList = this.$store.state.gateway.currencyList;
       if (rawCurrencyList?.maintenance) {
         this.swaploading = false;
+        this.underMaintenance = true;
         this.navigation("maintenance", 1);
         return;
       }
@@ -759,6 +987,7 @@ export default {
           this.receiveAmountType = toCoin;
           this.restartAllIntervals();
         } else {
+          this.underMaintenance = true;
           this.navigation("maintenance", 1);
         }
       }
@@ -810,6 +1039,7 @@ export default {
   },
 
   computed: mapState({
+    orderStatus: state => state.gateway.txnStatus?.result?.[0] || {},
     currencyList: state => {
       let data = state.gateway.currencyList.result;
       let pushedData = [];
@@ -882,8 +1112,18 @@ export default {
       required
     }
   },
+  provide() {
+    return {
+      // Lets the history detail view (swapWaitingTxnHistory) fill the
+      // Transaction preview panel from its own order.
+      setSwapPreview: preview => {
+        this.historyPreview = preview;
+      }
+    };
+  },
   data() {
     return {
+      historyPreview: null,
       filtercurrency: [],
       sendAmount: 0.01,
       getAmount: "",
@@ -922,7 +1162,8 @@ export default {
       privacyCurrency: [],
       privacySwap: false,
       showPrivacyPopup: false,
-      currentExchange: "changelly"
+      currentExchange: "changelly",
+      underMaintenance: false
     };
   },
   created() {
@@ -948,6 +1189,16 @@ export default {
       this.clearAllintervals();
       this.navigation("txnHistory", 1);
     },
+    // Back from history: return to the maintenance notice when swap is
+    // unavailable, since the exchange form has no currency data to show.
+    leaveHistory() {
+      if (this.underMaintenance) {
+        this.navigation("maintenance", 1);
+        return;
+      }
+      this.navigation("mainPage", 1);
+      this.clearState();
+    },
     sendAmounts(newvalue) {
       this.sendAmount = newvalue;
       this.clearAllintervals();
@@ -972,8 +1223,15 @@ export default {
     searchCurrency(txt) {
       this.searchTxt = txt;
       if (this.searchTxt) {
+        const query = String(this.searchTxt)
+          .trim()
+          .toLowerCase();
         this.filtercurrency = this.currencyList.filter(item =>
-          item.value.includes(this.searchTxt)
+          [item.value, item.name, item.fullName].some(field =>
+            String(field || "")
+              .toLowerCase()
+              .includes(query)
+          )
         );
       } else {
         this.filtercurrency = this.currencyList;
@@ -1013,6 +1271,16 @@ export default {
           }
         }
       }
+    },
+    // The network chip only adds information for token networks (e.g. ERC20);
+    // a coin whose protocol is just its own symbol shows no chip.
+    showProtocol(currency) {
+      const protocol = currency && currency.protocol;
+      if (!protocol) return false;
+      const own = [currency.name, currency.value, currency.ticker]
+        .filter(Boolean)
+        .map(v => String(v).toLowerCase());
+      return !own.includes(String(protocol).toLowerCase());
     },
     sendAmountValidator() {
       this.refundAddress = { val: "", error: false };
@@ -1310,7 +1578,7 @@ export default {
       ) {
         this.routes = "makePayment";
         this.$gateway.send("wallet", "set_stepperPosition", {
-          data: 2
+          data: 3
         });
       } else {
         this.$q.notify({
@@ -1413,3 +1681,1561 @@ export default {
   }
 };
 </script>
+
+<style lang="scss">
+// Swap. Legacy rules beaten here live in
+// app.styl: `.swap`, `.txn-fee-details`, `.info-wrapper`, `.terms-condition`,
+// `.destination-tag-wrapper`, `.box-input`, `.validMinMaxAmount-wrapper`,
+// `.dropdown-send-type`, `.swap-btn`.
+.beldex-app .swap {
+  position: relative;
+  // app.styl `.swap { height calc(100vh - 405px); overflow-y auto; card }`
+  height: auto;
+  min-height: 0 !important; // beats q-page's inline min-height
+  padding: 0;
+  overflow: visible;
+  color: var(--beldex-text);
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+
+  &__layout {
+    display: flex;
+    align-items: stretch;
+    gap: var(--beldex-space-5);
+  }
+
+  // Maintenance: the panel fills the content area.
+  &--fill {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+
+    .swap__layout {
+      flex: 1 1 auto;
+    }
+
+    .swap__main {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  &__main {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: var(--beldex-space-5);
+    background-color: var(--beldex-panel-glass);
+    border: 1px solid var(--beldex-border);
+  }
+
+  &__side {
+    position: sticky;
+    top: 0;
+    flex: 0 0 clamp(320px, 28%, 400px);
+    padding: var(--beldex-space-5);
+    background-color: var(--beldex-panel-glass);
+    border: 1px solid var(--beldex-border);
+  }
+
+  &__side-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--beldex-space-4);
+    margin-bottom: var(--beldex-space-3);
+    border-bottom: 1px solid var(--beldex-hairline);
+  }
+
+  &__side-badge {
+    padding: 4px var(--beldex-space-2);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-xs);
+    letter-spacing: 0.5px;
+    color: var(--beldex-text-muted);
+    text-transform: uppercase;
+    background-color: rgba(235, 235, 235, 0.05);
+    border: 1px solid var(--beldex-border);
+  }
+
+  &__side-title {
+    margin: 0;
+    font-family: var(--beldex-font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.35px;
+    color: var(--beldex-text-strong);
+  }
+
+  &__refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--beldex-space-2);
+    margin: 0 var(--beldex-space-4) 0 auto;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+  }
+
+  &__pair {
+    display: block;
+  }
+
+  &__stepper {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-4);
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    margin-bottom: var(--beldex-space-5);
+    background-color: rgba(8, 8, 8, 0.8);
+    border: 1px solid var(--beldex-hairline);
+  }
+
+  &__step {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--beldex-space-2);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    letter-spacing: 0.5px;
+    color: var(--beldex-text-muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    &--active {
+      color: var(--beldex-text);
+    }
+  }
+
+  &__step-marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 3px;
+    font-size: 9px;
+    color: var(--beldex-text-muted);
+    border: 1px solid var(--beldex-border-strong);
+  }
+
+  // Spelled out: `&__a &__b` would repeat the `.beldex-app` prefix.
+  .swap__step--active .swap__step-marker {
+    font-weight: 700;
+    color: #000;
+    background-color: var(--beldex-accent);
+    border-color: var(--beldex-accent);
+  }
+
+  .swap__step--done .swap__step-marker {
+    color: var(--beldex-accent);
+    background-color: var(--beldex-accent-bg);
+    border-color: var(--beldex-accent-border);
+  }
+
+  &__step-line {
+    flex: 1 1 auto;
+    height: 1px;
+    background-color: var(--beldex-divider);
+  }
+
+  header,
+  .text-h6 {
+    font-family: var(--beldex-font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--beldex-text-strong);
+  }
+
+  // Preview list: label left, value right, hairline rows.
+  .txn-fee-details {
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+
+    td {
+      padding: var(--beldex-space-3) 0;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text);
+      border-bottom: 1px solid var(--beldex-hairline);
+    }
+
+    td:nth-child(1) {
+      width: auto;
+      color: var(--beldex-text-muted);
+      text-transform: uppercase;
+      border-right: 0;
+    }
+
+    // Keep amounts whole ("11064.03 BDX"); a long translated label wraps
+    // instead of pushing the value onto a second line mid-word.
+    td:nth-child(2) {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    tr:nth-child(1) td {
+      padding-top: var(--beldex-space-3);
+    }
+
+    tr:last-child td {
+      padding-top: var(--beldex-space-5);
+      color: var(--beldex-accent);
+      font-weight: 700;
+      border-top: 0;
+      border-bottom: 0;
+    }
+
+    tr:last-child td:nth-child(1) {
+      color: var(--beldex-text);
+      font-weight: 400;
+    }
+
+    tr:last-child td:nth-child(2) {
+      font-size: var(--beldex-text-lg);
+    }
+
+    .fixed-rate-hint {
+      color: var(--beldex-text-faint);
+    }
+  }
+
+  // "Minimum / Maximum amount" warning → red notice.
+  .validMinMaxAmount-wrapper {
+    width: 100%;
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    margin-top: var(--beldex-space-3);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-danger);
+    background-color: var(--beldex-danger-wash);
+    border: 1px solid var(--beldex-danger-border);
+    border-radius: 0;
+  }
+
+  .swap-btn.q-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    color: var(--beldex-text) !important;
+    background-color: var(--beldex-panel) !important; // beats .bg-accent
+    border: 1px solid var(--beldex-border-strong);
+    border-radius: 0 !important;
+  }
+
+  .currency-btn {
+    font-size: var(--beldex-text-md);
+  }
+
+  // Notes and hints.
+  .info-wrapper,
+  .destination-tag-wrapper {
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    font-size: var(--beldex-text-sm);
+    line-height: 17px;
+    color: var(--beldex-text-muted);
+    border: 1px solid var(--beldex-border);
+    border-radius: 0;
+
+    .hint {
+      color: var(--beldex-text-muted);
+    }
+  }
+
+  // Icon + text on one line with a small gap. The template still carries
+  // percentage widths for the two cells; `!important` beats those inline
+  // styles so the gap no longer grows with the box width.
+  .info-wrapper {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: var(--beldex-space-3);
+
+    > div:first-child {
+      flex: none;
+      width: auto !important;
+      padding-top: 2px !important;
+    }
+
+    > div:last-child {
+      flex: 1;
+      width: auto !important;
+    }
+  }
+
+  .terms-condition {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+    text-align: left;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    color: var(--beldex-text);
+
+    a {
+      color: var(--beldex-text);
+      text-decoration: none;
+      cursor: pointer;
+    }
+  }
+
+  // Checkboxes: dark square with a hairline border; selected = green border
+  // and a small green square (same mark as .beldex-check--on and the
+  // Rate type options), instead of Quasar's filled tick.
+  .q-checkbox {
+    .q-checkbox__bg {
+      background-color: #000;
+      border: 1px solid var(--beldex-text-muted);
+      border-radius: 0;
+    }
+
+    .q-checkbox__svg {
+      display: none;
+    }
+
+    // Quasar's round hover/focus halo has no place in the square design.
+    .q-checkbox__inner::before,
+    .q-focus-helper {
+      display: none;
+    }
+
+    .q-checkbox__inner--truthy .q-checkbox__bg,
+    .q-checkbox__inner--indeterminate .q-checkbox__bg {
+      background-color: #000 !important; // beats Quasar's filled `currentColor`
+      border-color: var(--beldex-accent);
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        bottom: 3px;
+        left: 3px;
+        background-color: var(--beldex-accent);
+      }
+    }
+  }
+
+  // Exchange amounts (You send / You get): large display figures.
+  // Uses Conthrax via --beldex-font-display.
+  .swap-amount {
+    .q-field__control {
+      height: 56px;
+      min-height: 56px;
+    }
+
+    .q-field__native,
+    .q-field__prefix {
+      font-family: var(--beldex-font-display);
+      font-size: 24px;
+      line-height: 1;
+      color: var(--beldex-text-strong);
+    }
+
+    .q-field__prefix {
+      padding-right: var(--beldex-space-2);
+    }
+
+    // The "You get" input is disabled; Quasar dims `.q-field__control > div`
+    // to 0.6 with !important, so restore full strength for the figure.
+    .q-field--disabled .q-field__control > div {
+      opacity: 1 !important;
+    }
+
+    .q-field--disabled .q-field__native,
+    .q-field--disabled .q-field__prefix {
+      opacity: 1;
+      color: var(--beldex-text-strong);
+    }
+  }
+
+  .box-input {
+    padding: 0 var(--beldex-space-3);
+    background-color: var(--beldex-input-bg);
+    border: 0;
+    border-bottom: 1px solid var(--beldex-border);
+    border-radius: 0;
+  }
+
+  .address-wrapper .proto {
+    padding: 2px var(--beldex-space-2);
+    font-family: var(--beldex-font-mono);
+    font-size: 10px;
+    color: var(--beldex-text);
+    background-color: var(--beldex-panel-raised);
+    border-radius: 0;
+  }
+
+  // Currency picker trigger and list.
+  .swap-amount .dropdown {
+    display: flex;
+    align-self: stretch;
+  }
+
+  .dropdown-send-type {
+    gap: var(--beldex-space-3);
+    height: 100%;
+    min-height: 56px;
+    padding: 0 var(--beldex-space-4);
+    background-color: transparent;
+    border-left: 1px solid var(--beldex-border);
+    border-radius: 0;
+    color: var(--beldex-text);
+
+    .current-name {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-3);
+    }
+
+    .currency-name {
+      color: var(--beldex-text-muted) !important; // beats app.styl rule
+    }
+
+    .currency-coin {
+      flex: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    // Monogram disc; background colour is set per coin by the component.
+    .currency-coin--letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--beldex-font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+  }
+
+  .optionView .innerWrapper {
+    background-color: var(--beldex-panel-raised);
+    border: 1px solid var(--beldex-border);
+    border-radius: 0;
+  }
+
+  .search-input {
+    background-color: transparent;
+  }
+
+  .q-btn.privacy-btn,
+  .privacySwap {
+    color: var(--beldex-text-muted);
+  }
+
+  // ---- Buttons in all swap pages: primary = white, secondary/accent = ghost.
+  // Beats Quasar's `.bg-primary` / `.bg-accent` / `.bg-secondary` colours.
+  .q-btn.bg-primary {
+    color: var(--beldex-btn-primary-text) !important;
+    background-color: var(--beldex-btn-primary-bg) !important;
+    border-radius: 0 !important;
+    box-shadow: none;
+  }
+
+  .q-btn.bg-accent,
+  .q-btn.bg-secondary {
+    color: var(--beldex-text) !important;
+    background-color: var(--beldex-panel) !important;
+    border: 1px solid var(--beldex-border);
+    border-radius: 0 !important;
+  }
+
+  .q-btn:before {
+    box-shadow: none !important;
+  }
+
+  // app.styl `.q-btn__content .block { color white !important }`
+  .q-btn__content .block {
+    color: inherit !important;
+  }
+
+  .q-btn__content {
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    text-transform: none;
+  }
+
+  // ---- Checkout
+  .confirmPayment {
+    padding: 0;
+
+    &__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding-bottom: var(--beldex-space-4);
+      border-bottom: 1px solid var(--beldex-hairline);
+    }
+
+    &__title-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-3);
+    }
+
+    &__title {
+      margin: 0;
+      font-family: var(--beldex-font-sans);
+      font-size: var(--beldex-text-base);
+      font-weight: 500;
+      color: var(--beldex-text-strong);
+    }
+
+    &__badge {
+      padding: 4px var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-xs);
+      letter-spacing: 0.5px;
+      color: var(--beldex-warning);
+      text-transform: uppercase;
+      background-color: var(--beldex-warning-wash);
+      border: 1px solid var(--beldex-warning-border);
+    }
+
+    &__body {
+      padding-top: var(--beldex-space-5);
+    }
+
+    &__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--beldex-space-4);
+      margin-bottom: var(--beldex-space-5);
+    }
+
+    &__card,
+    &__address,
+    &__row {
+      background-color: rgba(8, 8, 8, 0.8);
+      border: 1px solid var(--beldex-hairline);
+    }
+
+    &__card {
+      padding: var(--beldex-space-4);
+    }
+
+    &__label {
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-xs);
+      letter-spacing: 0.5px;
+      color: var(--beldex-text-muted);
+      text-transform: uppercase;
+    }
+
+    &__amount {
+      margin: var(--beldex-space-2) 0;
+      font-family: var(--beldex-font-display);
+      font-size: 28px;
+      line-height: 1.1;
+      color: var(--beldex-text-strong);
+      word-break: break-all;
+
+      &--get {
+        color: var(--beldex-accent);
+      }
+    }
+
+    &__value {
+      margin: var(--beldex-space-2) 0;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      font-weight: 700;
+      color: var(--beldex-text-strong);
+    }
+
+    &__meta {
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text-muted);
+    }
+
+    &__field {
+      margin-bottom: var(--beldex-space-4);
+    }
+
+    &__address {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-3);
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-top: var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      color: var(--beldex-text);
+      word-break: break-all;
+    }
+
+    &__copy.q-btn {
+      flex: none;
+      color: var(--beldex-accent);
+
+      .q-icon {
+        font-size: 14px;
+      }
+    }
+
+    &__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-bottom: var(--beldex-space-4);
+
+      .confirmPayment__value {
+        margin: 0;
+      }
+    }
+
+    &__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--beldex-space-3);
+      margin-top: var(--beldex-space-8);
+    }
+  }
+
+  // ---- Checkout: settlement + waiting-history (send funds to address)
+  // app.styl `.txnSettlement .txn-fee-details` paints a navy block and
+  // `.header-pair` / `.timer-wrapper` / `.warning-wrapper` use the old palette.
+  .txnSettlement {
+    padding: 0;
+    color: var(--beldex-text);
+
+    .header-txt {
+      font-size: 14px;
+      color: var(--beldex-text-strong);
+    }
+
+    .header-pair {
+      background-color: var(--beldex-warning-wash);
+      border: 1px solid var(--beldex-warning-border);
+      border-radius: 0;
+    }
+
+    .fund-details-wrapper {
+      .amount-wrapper {
+        border-left-color: var(--beldex-hairline);
+      }
+
+      .label,
+      .title {
+        color: var(--beldex-text-muted);
+      }
+
+      .timer-wrapper {
+        background-color: rgba(8, 8, 8, 0.8);
+        border: 1px solid var(--beldex-hairline);
+        border-radius: 0;
+
+        .time-icon {
+          color: var(--beldex-text-muted);
+        }
+
+        .hr-seperator {
+          display: block;
+          background-color: var(--beldex-hairline);
+        }
+      }
+    }
+
+    .recipt-address-wrapper .label {
+      color: var(--beldex-text-muted);
+    }
+
+    .warning-wrapper {
+      color: var(--beldex-warning);
+      background-color: var(--beldex-warning-wash);
+      border: 1px solid var(--beldex-warning-border);
+      border-radius: 0;
+    }
+
+    .txn-fee-details {
+      background-color: transparent;
+      border: 1px solid var(--beldex-hairline);
+
+      td {
+        padding: var(--beldex-space-3) var(--beldex-space-4);
+      }
+
+      tr:nth-child(1) td {
+        padding-top: var(--beldex-space-3);
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+    }
+  }
+
+  // ---- Payment – awaiting deposit
+  .swapPayment {
+    &__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding-bottom: var(--beldex-space-4);
+      border-bottom: 1px solid var(--beldex-hairline);
+    }
+
+    &__title-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-3);
+    }
+
+    &__title {
+      margin: 0;
+      font-family: var(--beldex-font-sans);
+      font-size: var(--beldex-text-base);
+      font-weight: 600;
+      color: var(--beldex-text-strong);
+    }
+
+    &__timer {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px var(--beldex-space-3);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      font-weight: 600;
+      color: var(--beldex-warning);
+      background-color: var(--beldex-warning-wash);
+      border: 1px solid var(--beldex-warning-border);
+
+      &.is-expired {
+        color: var(--beldex-danger);
+        background-color: var(--beldex-danger-wash);
+        border-color: var(--beldex-danger-border);
+      }
+    }
+
+    &__expired {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-top: var(--beldex-space-4);
+      font-size: var(--beldex-text-md);
+      color: var(--beldex-danger);
+      background-color: var(--beldex-danger-wash);
+      border: 1px solid var(--beldex-danger-border);
+    }
+
+    &__body {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--beldex-space-6);
+      padding: var(--beldex-space-8) 0 var(--beldex-space-6);
+    }
+
+    // QR stays dark-on-light so it scans (plan §8.3).
+    &__qr {
+      flex: none;
+      padding: var(--beldex-space-2); // quiet zone, QR needs a light margin
+      line-height: 0;
+      background-color: #fff;
+    }
+
+    &__info {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    &__facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--beldex-space-3) var(--beldex-space-8);
+      margin-bottom: var(--beldex-space-4);
+    }
+
+    &__label {
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-xs);
+      letter-spacing: 0.5px;
+      color: var(--beldex-text-muted);
+      text-transform: uppercase;
+    }
+
+    &__amount {
+      margin-top: var(--beldex-space-1);
+      font-family: var(--beldex-font-display);
+      font-size: 28px;
+      line-height: 1.1;
+      color: var(--beldex-text-strong);
+    }
+
+    &__id,
+    &__value {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-2);
+      margin-top: var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      font-weight: 500;
+      color: var(--beldex-text-strong);
+      word-break: break-all;
+    }
+
+    &__id-copy.q-btn {
+      color: var(--beldex-accent);
+
+      .q-icon {
+        font-size: 14px;
+      }
+    }
+
+    &__address {
+      margin: var(--beldex-space-2) 0 var(--beldex-space-4);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      color: var(--beldex-text);
+      word-break: break-all;
+    }
+
+    &__copy.q-btn {
+      padding: 0 var(--beldex-space-4);
+      min-height: 36px;
+
+      .q-icon {
+        font-size: 14px;
+      }
+    }
+
+    &__warning {
+      display: flex;
+      align-items: center;
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-top: var(--beldex-space-3);
+    }
+
+    &__status {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-2);
+      padding: var(--beldex-space-4);
+      margin-top: var(--beldex-space-6);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text-muted);
+      background-color: rgba(8, 8, 8, 0.8);
+      border: 1px solid var(--beldex-hairline);
+    }
+
+    &__status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 3px;
+      background-color: var(--beldex-warning);
+    }
+  }
+
+  // ---- History
+  // app.styl `.swapTxnHistory` sets th/td fonts, per-column widths and padding.
+  .swapTxnHistory {
+    .swapHistory__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding-bottom: var(--beldex-space-4);
+      border-bottom: 1px solid var(--beldex-hairline);
+    }
+
+    .swapHistory__title-wrap,
+    .swapHistory__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-3);
+    }
+
+    .swapHistory__title {
+      margin: 0;
+      font-family: var(--beldex-font-sans);
+      font-size: var(--beldex-text-base);
+      font-weight: 500;
+      color: var(--beldex-text-strong);
+    }
+
+    .swapHistory__count {
+      padding: 3px var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-xs);
+      letter-spacing: 0.5px;
+      color: var(--beldex-text-muted);
+      text-transform: uppercase;
+      border: 1px solid var(--beldex-border);
+    }
+
+    .swapHistory__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 420px;
+      text-align: center;
+    }
+
+    .swapHistory__empty-art {
+      width: 200px;
+      height: 140px;
+      margin-bottom: var(--beldex-space-5);
+    }
+
+    .swapHistory__empty-title {
+      margin: 0 0 10px;
+      font-family: var(--beldex-font-sans);
+      font-size: var(--beldex-text-base);
+      font-weight: 600;
+      line-height: 20px;
+      color: var(--beldex-text);
+    }
+
+    .swapHistory__empty-hint {
+      max-width: 380px;
+      margin: 0 0 22px;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      line-height: 18px;
+      color: var(--beldex-text-muted);
+    }
+
+    .swapHistory__empty-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--beldex-space-2);
+      height: 32px;
+      padding: 0 var(--beldex-space-3);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      font-weight: 700;
+      line-height: 16px;
+      color: var(--beldex-text);
+      background-color: var(--beldex-panel);
+      border: 1px solid var(--beldex-border);
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--beldex-border-strong);
+      }
+
+      img {
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    .swapHistory__csv.q-btn {
+      min-height: 42px;
+      padding: 0 var(--beldex-space-4);
+
+      .q-icon {
+        font-size: 16px;
+      }
+    }
+
+    .txn-details-wrapper {
+      border-collapse: collapse;
+
+      th {
+        padding: var(--beldex-space-4) var(--beldex-space-3);
+        font-family: var(--beldex-font-mono) !important; // beats app.styl
+        font-size: var(--beldex-text-xs);
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        color: var(--beldex-text-muted);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--beldex-divider);
+      }
+
+      td,
+      td:nth-child(n) {
+        width: auto;
+        padding: 0 var(--beldex-space-3);
+        height: 54px;
+        font-family: var(--beldex-font-mono);
+        font-size: var(--beldex-text-md);
+        color: var(--beldex-text);
+        border-bottom: 1px solid var(--beldex-hairline);
+      }
+
+      tr:hover td {
+        background-color: var(--beldex-accent-bg);
+      }
+    }
+
+    .swapHistory__muted {
+      color: var(--beldex-text-muted);
+    }
+
+    .swapHistory__muted--accent {
+      color: var(--beldex-accent);
+    }
+
+    td.swapHistory__strong,
+    td.swapHistory__muted {
+      font-weight: 400;
+    }
+
+    td.swapHistory__strong {
+      font-weight: 700;
+      color: var(--beldex-text-strong);
+    }
+
+    td.swapHistory__strong--done {
+      color: var(--beldex-accent);
+    }
+
+    td.swapHistory__chevron {
+      width: 32px;
+      color: var(--beldex-text-muted);
+      text-align: right;
+    }
+
+    .swapHistory__status {
+      display: inline-block;
+      padding: 3px var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-xs);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border: 1px solid;
+
+      &--done {
+        color: var(--beldex-accent);
+        background-color: var(--beldex-accent-bg);
+        border-color: var(--beldex-accent-border-soft);
+      }
+
+      &--warn {
+        color: var(--beldex-warning);
+        background-color: var(--beldex-warning-wash);
+        border-color: var(--beldex-warning-border);
+      }
+
+      &--danger {
+        color: var(--beldex-danger);
+        background-color: var(--beldex-danger-wash);
+        border-color: var(--beldex-danger-border);
+      }
+
+      &--muted {
+        color: var(--beldex-text-muted);
+        background-color: rgba(235, 235, 235, 0.05);
+        border-color: var(--beldex-border);
+      }
+    }
+
+    .swapHistory__pager {
+      justify-content: flex-end;
+      margin-top: var(--beldex-space-5);
+    }
+
+    .page-btn {
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      color: var(--beldex-text);
+      background: var(--beldex-panel);
+      border: 1px solid var(--beldex-border);
+      border-radius: 0;
+
+      &.nav-btn {
+        width: 56px;
+        min-width: 56px;
+      }
+
+      &.active {
+        color: #000 !important;
+        background: var(--beldex-accent) !important;
+        border-color: var(--beldex-accent);
+      }
+
+      &.q-btn--disabled {
+        background: var(--beldex-panel);
+      }
+    }
+  }
+
+  // ---- Status and details
+  .swapStatus,
+  .swapTxnDetails {
+    color: var(--beldex-text);
+
+    .header-txt,
+    .paid-status {
+      font-size: 14px;
+      color: var(--beldex-text-strong);
+    }
+
+    .txn-id-wrapper,
+    .warning-wrapper {
+      border-radius: 0;
+    }
+
+    .txn-id-wrapper {
+      background-color: rgba(8, 8, 8, 0.8);
+      border: 1px solid var(--beldex-hairline);
+    }
+
+    .warning-wrapper {
+      color: var(--beldex-warning);
+      background-color: var(--beldex-warning-wash);
+      border: 1px solid var(--beldex-warning-border);
+    }
+
+    .hr-seperator {
+      background-color: var(--beldex-hairline);
+    }
+  }
+
+  .swapDetails {
+    &__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding-bottom: var(--beldex-space-4);
+      margin-bottom: var(--beldex-space-5);
+      border-bottom: 1px solid var(--beldex-hairline);
+    }
+
+    &__title-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--beldex-space-3);
+      min-width: 0;
+    }
+
+    &__back.q-btn {
+      color: var(--beldex-text-strong);
+    }
+
+    &__title {
+      margin: 0;
+      font-size: var(--beldex-text-base);
+      font-weight: 600;
+      color: var(--beldex-text-strong);
+    }
+
+    &__id {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text-muted);
+    }
+
+    &__id-value {
+      color: var(--beldex-text-strong);
+      font-weight: 600;
+    }
+
+    &__id-copy.q-btn {
+      color: var(--beldex-accent);
+    }
+
+    &__status {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-3);
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-bottom: var(--beldex-space-5);
+      background-color: rgba(8, 8, 8, 0.8);
+      border: 1px solid var(--beldex-hairline);
+    }
+
+    &__status-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      color: var(--beldex-danger, #ff5a5a);
+      background-color: rgba(255, 90, 90, 0.1);
+      border: 1px solid rgba(255, 90, 90, 0.35);
+    }
+
+    &__status-title {
+      font-size: var(--beldex-text-base);
+      font-weight: 600;
+      color: var(--beldex-text-strong);
+    }
+
+    &__status-desc {
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text-muted);
+    }
+
+    &__amounts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--beldex-space-4);
+      margin-bottom: var(--beldex-space-5);
+    }
+
+    &__tile {
+      padding: var(--beldex-space-4);
+      background-color: rgba(8, 8, 8, 0.8);
+      border: 1px solid var(--beldex-hairline);
+    }
+
+    &__label {
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-xs);
+      letter-spacing: 0.5px;
+      color: var(--beldex-text-muted);
+      text-transform: uppercase;
+    }
+
+    &__amount {
+      margin-top: var(--beldex-space-1);
+      font-family: var(--beldex-font-display);
+      font-size: 24px;
+      line-height: 1.2;
+      color: var(--beldex-text-strong);
+      word-break: break-all;
+
+      &--accent {
+        color: var(--beldex-accent);
+      }
+    }
+
+    &__value {
+      margin-top: var(--beldex-space-1);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      color: var(--beldex-text);
+      word-break: break-all;
+    }
+
+    &__row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--beldex-space-4);
+    }
+
+    &__hashes {
+      display: flex;
+      gap: var(--beldex-space-3);
+    }
+
+    &__hash.q-btn {
+      color: var(--beldex-text-muted);
+      border-color: var(--beldex-hairline);
+
+      .q-icon {
+        font-size: 16px;
+      }
+    }
+
+    &__status-icon--ok {
+      color: var(--beldex-accent);
+      background-color: var(--beldex-accent-bg);
+      border-color: var(--beldex-accent-border-soft);
+    }
+
+    &__address {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-3);
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-top: var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      color: var(--beldex-text);
+      word-break: break-all;
+      background-color: rgba(8, 8, 8, 0.8);
+      border: 1px solid var(--beldex-hairline);
+    }
+
+    &__warning {
+      display: flex;
+      align-items: center;
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-top: var(--beldex-space-4);
+    }
+
+    &__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--beldex-space-3);
+      margin-top: var(--beldex-space-6);
+
+      &--split {
+        justify-content: space-between;
+      }
+    }
+  }
+
+  .swapStatus {
+    &__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding-bottom: var(--beldex-space-4);
+      margin-bottom: var(--beldex-space-5);
+      border-bottom: 1px solid var(--beldex-hairline);
+    }
+
+    &__title-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--beldex-space-3);
+    }
+
+    &__title {
+      margin: 0;
+      font-size: var(--beldex-text-base);
+      font-weight: 600;
+      color: var(--beldex-text-strong);
+    }
+
+    &__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--beldex-space-2);
+      padding: 2px var(--beldex-space-2);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-xs);
+      text-transform: uppercase;
+      color: var(--beldex-warning);
+      background-color: var(--beldex-warning-wash);
+      border: 1px solid var(--beldex-warning-border);
+    }
+
+    &__badge-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--beldex-warning);
+    }
+
+    &__steps {
+      position: relative;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    &__step {
+      position: relative;
+      display: flex;
+      gap: var(--beldex-space-4);
+      padding-bottom: var(--beldex-space-5);
+
+      // Connector to the next stage.
+      &:not(:last-child)::before {
+        content: "";
+        position: absolute;
+        top: 32px;
+        bottom: 4px;
+        left: 13px;
+        width: 1px;
+        background-color: var(--beldex-border-strong);
+      }
+
+      &--done:not(:last-child)::before {
+        background-color: var(--beldex-accent-border);
+      }
+    }
+
+    &__marker {
+      display: flex;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      color: var(--beldex-text-muted);
+      background-color: var(--beldex-bg-tile);
+      border: 1px solid var(--beldex-border);
+    }
+
+    .swapStatus__step--done .swapStatus__marker {
+      color: var(--beldex-accent);
+      background-color: var(--beldex-accent-bg-strong);
+      border-color: var(--beldex-accent-border-soft);
+    }
+
+    .swapStatus__step--active .swapStatus__marker {
+      color: var(--beldex-accent);
+      background-color: var(--beldex-accent-bg);
+      border-color: var(--beldex-accent);
+    }
+
+    &__step-title {
+      font-size: var(--beldex-text-base);
+      font-weight: 600;
+      color: var(--beldex-text-strong);
+    }
+
+    .swapStatus__step--pending .swapStatus__step-title {
+      color: var(--beldex-text-secondary);
+    }
+
+    &__step-desc {
+      margin-top: 2px;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text-muted);
+    }
+
+    &__link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--beldex-space-1);
+      margin-top: var(--beldex-space-3);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text-secondary);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--beldex-text-strong);
+      }
+    }
+
+    &__note {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--beldex-space-3);
+      padding: var(--beldex-space-3) var(--beldex-space-4);
+      margin-top: var(--beldex-space-4);
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      color: var(--beldex-text-secondary);
+      background-color: var(--beldex-accent-bg);
+      border: 1px solid var(--beldex-accent-border-soft);
+
+      strong {
+        color: var(--beldex-text-strong);
+      }
+
+      .q-icon {
+        flex: none;
+        margin-top: 1px;
+      }
+
+      .history-tag {
+        color: var(--beldex-text);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+
+    &__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--beldex-space-3);
+      margin-top: var(--beldex-space-6);
+    }
+  }
+
+  // Order summary in the side panel while a swap is in flight.
+  .swap__order {
+    margin: 0;
+
+    &-row {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--beldex-space-4);
+      padding: var(--beldex-space-3) 0;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      border-bottom: 1px solid var(--beldex-hairline);
+
+      dt {
+        flex: none;
+        font-weight: 400;
+        text-transform: uppercase;
+        color: var(--beldex-text-muted);
+      }
+
+      dd {
+        min-width: 0;
+        margin: 0;
+        text-align: right;
+        color: var(--beldex-text);
+        overflow-wrap: anywhere;
+      }
+
+      &--stack {
+        flex-direction: column;
+        gap: var(--beldex-space-1);
+
+        dd {
+          text-align: left;
+        }
+      }
+
+      &--total {
+        padding-top: var(--beldex-space-5);
+        border-bottom: 0;
+
+        dt {
+          color: var(--beldex-text);
+        }
+
+        dd {
+          font-size: var(--beldex-text-lg);
+          font-weight: 700;
+          color: var(--beldex-accent);
+        }
+      }
+    }
+  }
+
+  .SwapTxnCompeleted {
+    color: var(--beldex-text);
+
+    .header-txt {
+      font-size: var(--beldex-text-base);
+      color: var(--beldex-accent);
+    }
+
+    .header-pair {
+      background-color: var(--beldex-warning-wash);
+      border: 1px solid var(--beldex-warning-border);
+      border-radius: 0;
+    }
+
+    .txn-id-wrapper {
+      background-color: rgba(8, 8, 8, 0.8);
+      border: 1px solid var(--beldex-hairline);
+      border-radius: 0;
+    }
+
+    .receipt-wrapper .hr-seperator {
+      background-color: var(--beldex-hairline);
+    }
+
+    .hash-btn,
+    .action-btn {
+      font-family: var(--beldex-font-mono) !important; // beats app.styl
+      font-size: var(--beldex-text-md);
+      border-radius: 0;
+    }
+  }
+
+  .q-btn[disabled] {
+    opacity: 0.5;
+  }
+}
+</style>

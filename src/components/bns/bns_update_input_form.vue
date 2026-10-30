@@ -1,153 +1,166 @@
 <template>
-  <div class="bns-update-input-form q-pa-sm">
-    <div
-      class="owner-updation q-pa-md q-my-md"
-      :class="[contentUpdate === 'Owner' ? 'radio-btn' : '']"
-    >
-      <div class="q-gutter-sm q-mb-md flex row">
-        <q-radio v-model="contentUpdate" dense val="Owner" />
-        <div class="radio-btn-label">{{ $t("fieldLabels.updateOwner") }}</div>
-      </div>
-      <div :class="[contentUpdate === 'Values' ? 'opacity' : '']">
-        <!-- Owner -->
-        <div class="col q-mt-sm">
-          <OxenField
-            class="q-mt-md"
-            :label="$t('fieldLabels.OwnerWalletaddress')"
-            :error="$v.ownerAddress.$error"
-          >
-            <q-input
-              v-model.trim="ownerAddress"
-              :dark="theme == 'dark'"
-              :placeholder="record.owner"
-              borderless
-              dense
-              :disable="contentUpdate === 'Values'"
-              @blur="$v.ownerAddress.$touch"
-            />
-          </OxenField>
-        </div>
-      </div>
-    </div>
+  <!-- Update owner / values. Bindings,
+       validators and handlers are unchanged. -->
+  <div class="bns-update-input-form">
+    <div class="bns-update-form__options">
+      <button
+        type="button"
+        class="bns-update-form__opt"
+        :class="{ 'bns-update-form__opt--on': contentUpdate === 'Owner' }"
+        role="radio"
+        :aria-checked="contentUpdate === 'Owner' ? 'true' : 'false'"
+        @click="contentUpdate = 'Owner'"
+      >
+        <span class="bns-update-form__radio" />
+        <span class="bns-update-form__opt-text">
+          <span class="bns-update-form__opt-title">{{
+            $t("fieldLabels.updateOwner")
+          }}</span>
+          <span class="bns-update-form__opt-hint">{{
+            $t("strings.bns.updateOwnerHint")
+          }}</span>
+        </span>
+      </button>
 
-    <div
-      class="idSelectorWrapper owner-updation q-pa-md q-my-md"
-      :class="[
-        idsValidation ? 'errorborder' : '',
-        contentUpdate === 'Values' ? 'radio-btn' : ''
-      ]"
-    >
-      <div class="q-gutter-sm q-mb-md flex row">
-        <q-radio v-model="contentUpdate" dense val="Values" />
-        <div class="radio-btn-label">{{ $t("fieldLabels.updateValues") }}</div>
-      </div>
-      <section :class="[contentUpdate === 'Owner' ? 'opacity' : '']">
-        <div
-          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
-          :class="[addressRef ? 'selected' : '']"
+      <div v-if="contentUpdate === 'Owner'" class="bns-update-form__fields">
+        <BeldexField
+          :label="$t('fieldLabels.OwnerWalletaddress')"
+          :error="$v.ownerAddress.$error"
         >
-          <q-checkbox
-            v-model="addressRef"
-            size="sm"
-            color="green"
-            :disable="contentUpdate === 'Owner'"
+          <q-input
+            v-model.trim="ownerAddress"
+            :dark="theme == 'dark'"
+            :placeholder="record.owner"
+            borderless
+            dense
+            @blur="$v.ownerAddress.$touch"
           />
-          <div style="width: 100px; color: white">
-            {{ $t("fieldLabels.address") }}
-          </div>
-          <OxenField class="full-width" optional :error="$v.address.$error">
-            <q-input
-              v-model="address"
-              :disable="!addressRef || contentUpdate === 'Owner'"
-              :dark="theme == 'dark'"
-              :placeholder="this.record.value_wallet || 'wallet address'"
-              borderless
-              dense
-              @blur="$v.address.$touch"
-            />
-          </OxenField>
-        </div>
+        </BeldexField>
+      </div>
+
+      <button
+        type="button"
+        class="bns-update-form__opt"
+        :class="{
+          'bns-update-form__opt--on': contentUpdate === 'Values',
+          'bns-update-form__opt--error': idsValidation
+        }"
+        role="radio"
+        :aria-checked="contentUpdate === 'Values' ? 'true' : 'false'"
+        @click="contentUpdate = 'Values'"
+      >
+        <span class="bns-update-form__radio" />
+        <span class="bns-update-form__opt-text">
+          <span class="bns-update-form__opt-title">{{
+            $t("fieldLabels.updateValues")
+          }}</span>
+          <span class="bns-update-form__opt-hint">{{
+            $t("strings.bns.updateValuesHint")
+          }}</span>
+        </span>
+      </button>
+
+      <div v-if="contentUpdate === 'Values'" class="bns-update-form__fields">
         <div
-          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
-          :class="[bchatIdRef ? 'selected' : '']"
+          class="bns-update-form__value"
+          :class="{ 'bns-update-form__value--on': bchatIdRef }"
         >
           <q-checkbox
             v-model="bchatIdRef"
-            size="sm"
-            color="green"
-            :disable="contentUpdate === 'Owner'"
+            class="bns-update-form__check"
+            dense
+            label="BChat ID"
           />
-          <div style="width: 100px; color: white">BChat ID</div>
-          <OxenField class="full-width" optional :error="$v.bchatId.$error">
+          <BeldexField class="full-width" :error="$v.bchatId.$error">
             <q-input
               v-model="bchatId"
-              :disable="!bchatIdRef || contentUpdate === 'Owner'"
+              :disable="!bchatIdRef"
               :dark="theme == 'dark'"
-              :placeholder="this.record.value_bchat || 'Bchat ID'"
+              :placeholder="record.value_bchat || 'Bchat ID'"
               borderless
               dense
               @blur="$v.bchatId.$touch"
             />
-          </OxenField>
+          </BeldexField>
         </div>
         <div
-          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
-          :class="[belnetIdRef ? 'selected' : '']"
+          class="bns-update-form__value"
+          :class="{ 'bns-update-form__value--on': belnetIdRef }"
         >
           <q-checkbox
             v-model="belnetIdRef"
-            size="sm"
-            color="green"
-            :disable="contentUpdate === 'Owner'"
+            class="bns-update-form__check"
+            dense
+            label="Belnet ID"
           />
-          <div style="width: 100px; color: white">Belnet ID</div>
-          <OxenField class="full-width" optional :error="$v.belnetId.$error">
+          <BeldexField class="full-width" :error="$v.belnetId.$error">
             <q-input
               v-model="belnetId"
-              :disable="!belnetIdRef || contentUpdate === 'Owner'"
+              :disable="!belnetIdRef"
               :dark="theme == 'dark'"
-              :placeholder="this.record.value_belnet || 'Belnet ID'"
+              :placeholder="record.value_belnet || 'Belnet ID'"
               borderless
               dense
               @blur="$v.belnetId.$touch"
             />
-          </OxenField>
+          </BeldexField>
         </div>
         <div
-          class="flex row items-center no-wrap q-pa-sm q-mb-sm selectionBox"
-          :class="[ethAddressRef ? 'selected' : '']"
+          class="bns-update-form__value"
+          :class="{ 'bns-update-form__value--on': addressRef }"
+        >
+          <q-checkbox
+            v-model="addressRef"
+            class="bns-update-form__check"
+            dense
+            :label="$t('fieldLabels.address')"
+          />
+          <BeldexField class="full-width" :error="$v.address.$error">
+            <q-input
+              v-model="address"
+              :disable="!addressRef"
+              :dark="theme == 'dark'"
+              :placeholder="record.value_wallet || 'wallet address'"
+              borderless
+              dense
+              @blur="$v.address.$touch"
+            />
+          </BeldexField>
+        </div>
+        <div
+          class="bns-update-form__value"
+          :class="{ 'bns-update-form__value--on': ethAddressRef }"
         >
           <q-checkbox
             v-model="ethAddressRef"
-            size="sm"
-            color="green"
-            :disable="contentUpdate === 'Owner'"
+            class="bns-update-form__check"
+            dense
+            label="ETH"
           />
-          <div style="width: 100px; color: white">ETH</div>
-          <OxenField class="full-width" optional :error="$v.ethAddress.$error">
+          <BeldexField class="full-width" :error="$v.ethAddress.$error">
             <q-input
               v-model="ethAddress"
-              :disable="!ethAddressRef || contentUpdate === 'Owner'"
+              :disable="!ethAddressRef"
               :dark="theme == 'dark'"
-              :placeholder="this.record.value_eth_addr || 'Bchat ID'"
+              :placeholder="record.value_eth_addr || 'ETH address'"
               borderless
               dense
               @blur="$v.ethAddress.$touch"
             />
-          </OxenField>
+          </BeldexField>
         </div>
-      </section>
-    </div>
-    <div class="updatesNotes flex row q-px-md">
-      <div>
-        <span style="font-weight: 600">{{ $t("fieldLabels.notes") }} :</span>
-        {{ $t("strings.bnsUpdateDescription") }}
       </div>
     </div>
-    <div class="buttons flex justify-center q-mt-sm">
+
+    <div class="bns-update-form__note">
+      <img src="~assets/icons/warning-amber.svg" alt="" />
+      <p>{{ $t("strings.bnsUpdateDescription") }}</p>
+    </div>
+    <div class="bns-update-form__actions">
       <q-btn
-        color="primary"
-        class="q-mt-lg updation-btn"
+        class="beldex-btn bns-update-form__submit"
+        unelevated
+        no-caps
         :disable="
           !(
             is_ready &&
@@ -160,11 +173,7 @@
         "
         @click="submit()"
       >
-        <img
-          src="../../assets/images/update.svg"
-          alt="Update"
-          style="height: 24px; width: auto;margin-right: 5px;"
-        />
+        <img src="~assets/icons/renew.svg" alt="" />
         {{ $t("buttons.update") }}
       </q-btn>
     </div>
@@ -180,13 +189,13 @@ import {
   belnet_address,
   eth_address
 } from "src/validators/common";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import WalletPassword from "src/mixins/wallet_password";
 
 export default {
   name: "BNSUpdateInputForm",
   components: {
-    OxenField
+    BeldexField
   },
   setup() {
     return {
@@ -414,47 +423,226 @@ export default {
 </script>
 
 <style lang="scss">
-.bns-update-input-form {
-  .owner-updation {
-    border: 1.5px solid #484856;
-    border-radius: 20px;
-    .opacity {
-      opacity: 0.3;
-    }
-  }
-
-  .radio-btn {
-    background-color: #32324a;
-  }
-  .radio-btn-label {
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .buttons {
-    margin-top: 20px;
-
-    .q-btn:not(:first-child) {
-      margin-left: 8px;
-    }
-  }
-
-  .errorborder {
-    border: 1px solid red;
-  }
-  .idSelectorWrapper {
-    .selectionBox {
-      background-color: #474766;
-      border-radius: 10px;
-      border: 2px solid #474766;
-    }
-    .selected {
-      border: 2px solid #00ad07;
-    }
-  }
+.beldex-app .bns-update-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--beldex-space-5);
 }
-.updatesNotes {
-  font-weight: 400;
-  color: #afafbe;
+
+.beldex-app .bns-update-form {
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-3);
+  }
+
+  // Option card.
+  &__opt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px var(--beldex-space-4);
+    text-align: left;
+    background-color: var(--beldex-panel);
+    border: 1px solid var(--beldex-border-strong);
+    border-radius: 0;
+    cursor: pointer;
+
+    &--on {
+      padding: 14px var(--beldex-space-5);
+      background-color: rgba(0, 191, 10, 0.02);
+      border-color: var(--beldex-accent-border-soft);
+      box-shadow: inset 2px 0 0 #00cf0a;
+    }
+
+    &--error {
+      border-color: var(--beldex-danger);
+    }
+  }
+
+  &__radio {
+    display: flex;
+    flex: 0 0 14px;
+    align-items: center;
+    justify-content: center;
+    height: 14px;
+    background-color: #000;
+    border: 1px solid var(--beldex-text-muted);
+  }
+
+  &__opt--on .bns-update-form__radio {
+    border-color: var(--beldex-accent);
+
+    &::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background-color: var(--beldex-accent);
+    }
+  }
+
+  &__opt-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    line-height: 16px;
+  }
+
+  &__opt-title {
+    font-family: var(--beldex-font-sans);
+    font-size: var(--beldex-text-md);
+    font-weight: 600;
+    color: var(--beldex-text);
+  }
+
+  &__opt-hint {
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-muted);
+  }
+
+  // Fields under the selected option, indented 30px.
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-3);
+    padding: 0 0 var(--beldex-space-1) 30px;
+
+    .beldex-field .label {
+      margin-bottom: var(--beldex-space-2);
+      font-size: var(--beldex-text-sm);
+    }
+
+    // Beats app.styl `.bns-page .beldex-field .content` min-height 45px !important.
+    .beldex-field .content {
+      min-height: 40px !important;
+      padding: 0 var(--beldex-space-3);
+      background: var(--beldex-bg);
+    }
+
+    .beldex-field:not(.disable):not(.disable-hover) .content:hover {
+      background: var(--beldex-bg);
+    }
+  }
+
+  // Value row: checkbox + label in a 120px column, then the input.
+  &__value {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+
+    .beldex-field .content {
+      padding-left: 0;
+      background: transparent;
+      border-color: rgba(235, 235, 235, 0.1);
+      opacity: 0.5;
+    }
+
+    .beldex-field:not(.disable):not(.disable-hover) .content:hover {
+      background: transparent;
+    }
+  }
+
+  &__value--on .beldex-field .content {
+    padding-left: var(--beldex-space-3);
+    background: var(--beldex-bg);
+    border-color: var(--beldex-border);
+    opacity: 1;
+  }
+
+  &__value--on .beldex-field:not(.disable):not(.disable-hover) .content:hover {
+    background: var(--beldex-bg);
+  }
+
+  // Square 12px box; checked shows a 6px green fill (no tick).
+  &__check.q-checkbox {
+    flex: 0 0 120px;
+    gap: var(--beldex-space-2);
+
+    .q-checkbox__inner {
+      width: 12px;
+      min-width: 12px;
+      height: 12px;
+      font-size: 12px;
+    }
+
+    .q-checkbox__bg {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: 1px solid var(--beldex-text-muted);
+      border-radius: 0;
+    }
+
+    .q-checkbox__svg {
+      display: none;
+    }
+
+    .q-checkbox__inner--truthy .q-checkbox__bg {
+      background: transparent;
+      border-color: var(--beldex-accent);
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        bottom: 2px;
+        left: 2px;
+        background-color: var(--beldex-accent);
+      }
+    }
+
+    .q-checkbox__label {
+      padding-left: 0;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-md);
+      line-height: 16px;
+      color: var(--beldex-text-muted);
+    }
+
+    &[aria-checked="true"] .q-checkbox__label {
+      color: var(--beldex-text);
+    }
+  }
+
+  // Amber note.
+  &__note {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-4);
+    padding: var(--beldex-space-3) 14px;
+    background-color: var(--beldex-warning-wash);
+    border: 1px solid var(--beldex-warning-border);
+
+    img {
+      flex: 0 0 auto;
+    }
+
+    p {
+      margin: 0;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      line-height: 17px;
+      color: var(--beldex-warning-strong);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__submit {
+    padding: 0 var(--beldex-space-5);
+    font-family: var(--beldex-font-sans);
+    font-weight: 600;
+    line-height: 16px;
+  }
 }
 </style>

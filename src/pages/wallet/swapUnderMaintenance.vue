@@ -1,43 +1,142 @@
 <template>
-  <div class="swapUnderMaintenance flex column justify-center items-center">
-    <section>
-      <article class="flex justify-center">
-        <svg
-          width="96"
-          height="96"
-          viewBox="0 0 96 96"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+  <!-- Swap under maintenance. -->
+  <section class="swap-maintenance">
+    <div class="swap-maintenance__tabs">
+      <div class="beldex-segmented" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="beldex-segmented__item beldex-segmented__item--active"
+          aria-selected="true"
         >
-          <path
-            d="M66.2832 0.21875V5.4043C63.2007 5.95166 60.3342 7.11841 57.8711 8.86133L54.0684 5.28906L48.998 10.7051L52.6855 14.1621C51.0291 16.582 49.8767 19.3477 49.3438 22.3438H44.1582V29.7188H49.3438C49.8767 32.7725 51.0867 35.5669 52.8008 38.0156L48.8828 41.8184L54.1836 47.1191L57.9863 43.2012C60.4351 44.9153 63.2295 46.1252 66.2832 46.6582V51.8438H73.6582V46.6582C76.6543 46.1252 79.4199 44.9729 81.8398 43.3164L85.2969 47.0039L90.7129 41.9336L87.1406 38.1309C88.8835 35.6677 90.0503 32.8013 90.5977 29.7188H95.7832V22.3438H90.5977C90.0647 19.29 88.8547 16.4956 87.1406 14.0469L90.5977 10.5898L85.4121 5.4043L81.9551 8.86133C79.5063 7.14722 76.7119 5.93725 73.6582 5.4043V0.21875H66.2832ZM69.9707 12.4336C77.5474 12.4336 83.5684 18.4546 83.5684 26.0312C83.5684 33.6079 77.5474 39.6289 69.9707 39.6289C62.394 39.6289 56.373 33.6079 56.373 26.0312C56.373 18.4546 62.394 12.4336 69.9707 12.4336ZM22.1484 34.2129L15.3496 36.9785L18 43.6621C14.4854 45.7651 11.4893 48.7036 9.35742 52.1895L2.78906 49.5391L0.0234375 56.3379L6.5918 58.9883C6.10205 60.9329 5.78516 62.9927 5.78516 65.0957C5.78516 67.1987 6.10205 69.2441 6.5918 71.2031L0.0234375 73.8535L2.78906 80.6523L9.35742 78.002C11.4893 81.5454 14.4565 84.5127 18 86.6445L15.3496 93.2129L22.1484 95.9785L24.7988 89.4102C26.7578 89.8999 28.7888 90.2168 30.9062 90.2168C33.0093 90.2168 35.0691 89.8999 37.0137 89.4102L39.6641 95.9785L46.4629 93.2129L43.8125 86.6445C47.2983 84.5127 50.2368 81.5166 52.3398 78.002L59.0234 80.6523L61.7891 73.8535L55.1055 71.2031C55.5952 69.2441 55.9121 67.1987 55.9121 65.0957C55.9121 62.9927 55.5952 60.9329 55.1055 58.9883L61.7891 56.3379L59.0234 49.5391L52.3398 52.1895C50.2368 48.718 47.2983 45.7651 43.8125 43.6621L46.4629 36.9785L39.6641 34.2129L37.0137 40.8965C35.0547 40.4067 33.0093 40.0898 30.9062 40.0898C28.8032 40.0898 26.7578 40.4067 24.7988 40.8965L22.1484 34.2129ZM30.9062 47.4648C40.73 47.4648 48.5371 55.272 48.5371 65.0957C48.5371 74.9194 40.73 82.8418 30.9062 82.8418C21.0825 82.8418 13.1602 74.9194 13.1602 65.0957C13.1602 55.272 21.0825 47.4648 30.9062 47.4648Z"
-            fill="#65656E"
-          />
-        </svg>
-      </article>
-      <article class="q-mt-md">
-        <div class="maintatance-txt ft-regular">
-          <span class="coin-name ft-bold"></span>
-          {{ this.$t("titles.swap.swapMaintenance") }}.
+          <span class="beldex-segmented__dot" />
+          {{ $t("titles.swap.exchange") }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="beldex-segmented__item"
+          aria-selected="false"
+          @click="$emit('openHistory')"
+        >
+          {{ $t("titles.swap.history") }}
+        </button>
+      </div>
+    </div>
+    <div class="swap-maintenance__empty">
+      <div class="swap-maintenance__head">
+        <div class="swap-maintenance__icon">
+          <img src="~assets/images/swap_maintenance.svg" alt="" />
         </div>
-        <div class="info-txt">
-          {{ this.$t("titles.swap.tryAgainSomeTimes") }}.
-        </div>
-      </article>
-    </section>
-  </div>
+        <p class="swap-maintenance__title">
+          {{ $t("titles.swap.swapMaintenance") }}
+        </p>
+      </div>
+      <p class="swap-maintenance__hint">
+        {{ $t("titles.swap.tryAgainSomeTimes") }}
+      </p>
+      <q-btn
+        class="swap-maintenance__btn"
+        flat
+        no-caps
+        @click="$emit('openHistory')"
+      >
+        {{ $t("titles.swap.openHistory") }}
+      </q-btn>
+    </div>
+  </section>
 </template>
 
 <script>
 export default {
-  name: "SwapUnderMaintenance",
-  components: {},
-  data() {
-    return {
-      isVisible: true
-    };
-  },
-
-  methods: {}
+  name: "SwapUnderMaintenance"
 };
 </script>
+
+<style lang="scss">
+.swap-maintenance {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--beldex-space-3);
+
+  &__tabs {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__empty {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    min-height: 320px;
+    text-align: center;
+  }
+
+  &__head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--beldex-space-4);
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background-color: var(--beldex-warning-wash);
+    border: 1px solid var(--beldex-warning-border);
+
+    img {
+      display: block;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-family: var(--beldex-font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--beldex-text);
+  }
+
+  &__hint {
+    max-width: 320px;
+    margin: 0;
+    font-family: var(--beldex-font-mono);
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--beldex-text-muted);
+  }
+
+  &__btn.q-btn {
+    min-height: 32px;
+    height: 32px;
+    padding: 0 var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--beldex-text-muted);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+    border-radius: 0;
+
+    // q-btn's inner wrapper adds 4px 16px padding on top of ours.
+    .q-btn__wrapper {
+      min-height: 0;
+      padding: 0;
+    }
+
+    &:hover {
+      color: var(--beldex-text);
+      border-color: var(--beldex-border-focus);
+    }
+  }
+}
+</style>

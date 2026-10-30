@@ -1,40 +1,39 @@
 <template>
   <div class="bns-renew-input-form">
-    <div class="flex items-center back-btn-wrapper">
-      <q-btn
-        icon="arrow_circle_left"
-        color="white"
-        style="font-size: 24px; width: 50px; height: 50px"
-        flat
+    <div class="bns-update__head">
+      <button
+        type="button"
+        class="beldex-square-btn bns-update__back"
+        :aria-label="$t('buttons.back')"
         @click="onBackBtn()"
-      />
-      <div class="back-btn-label">{{ $t("buttons.bnsRenew") }}</div>
+      >
+        <img src="~assets/icons/arrow-left.svg" alt="" />
+      </button>
+      <h3 class="bns-update__title">{{ $t("buttons.bnsRenew") }}</h3>
     </div>
-    <div class="prices">
-      <span class="pricelabel">
-        <span class="bnsname ">BNS</span>
-        {{ $t("strings.bns.prices") }}
-      </span>
-      <section class="flex row no-wrap q-mt-xs q-gutter-sm">
-        <div
+    <div class="bns-form__block">
+      <span class="beldex-label">{{ $t("strings.bns.duration") }}</span>
+      <div class="bns-form__durations">
+        <button
           v-for="item in typeOptions"
           :key="item.type"
-          :class="[renewYear == item.value ? 'selected' : '']"
-          class="flex row tag items-center justify-between no-wrap"
+          type="button"
+          class="bns-form__duration"
+          :class="{ 'bns-form__duration--on': renewYear == item.value }"
           @click="renewYear = item.value"
         >
-          <div>{{ item.label }}</div>
-          <div class="amount">{{ item.amount }}</div>
-        </div>
-      </section>
+          <span class="bns-form__duration-label">{{ item.label }}</span>
+          <span class="bns-form__duration-amount">{{ item.amount }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Name -->
-    <div class="col q-mt-sm">
-      <OxenField :label="$t('fieldLabels.name')" :disable="true">
+    <div class="bns-form__block">
+      <BeldexField :label="$t('fieldLabels.name')" :disable="true">
         <q-input
           v-model.trim="currentRecord.name"
-          :dark="theme == 'dark'"
+          dark
           maxlength="67"
           :placeholder="$t('placeholders.bnsName')"
           :disable="true"
@@ -42,89 +41,90 @@
           dense
           :suffix="'.bdx'"
         />
-      </OxenField>
+      </BeldexField>
     </div>
 
-    <div class="buttons-wrapper flex justify-center items-end q-mt-sm">
+    <div class="beldex-form-actions">
       <q-btn
-        color="primary"
-        class="q-mt-lg q-ml-sm updation-btn"
+        class="beldex-btn"
+        unelevated
+        no-caps
         :disable="!is_ready"
+        :label="$t('buttons.renew')"
         @click="handlePopup(currentRecord)"
-      >
-        <img
-          src="../../assets/images/renew.svg"
-          alt="Update"
-          style="height: 24px; width: auto ;margin-right:5px;"
-        />
-        {{ $t("buttons.renew") }}
-      </q-btn>
+      />
     </div>
 
-    <!--  ---------------------------------------confirm popup ------------------------------------------------->
-
+    <!-- Confirm renew -->
     <q-dialog v-model="confirmModal.open">
-      <q-card class="bnsConfirmmodal">
-        <q-card-section>
-          <div class="text-h6 text-center" style="font-weight: 600">
-            {{ $t("dialog.confirmRenew.title") }}
+      <q-card class="beldex-dialog">
+        <div class="beldex-dialog__head">
+          <div class="beldex-dialog__icon">
+            <img src="~assets/icons/dialog-send.svg" alt="" />
           </div>
-        </q-card-section>
-
-        <q-card-section class="q-pt-none ownerDetails q-mx-lg q-pa-md">
-          <section>
-            <div class="tablewrapper flex row">
-              <div class="label">{{ $t("fieldLabels.name") }}</div>
-              <div class="content">{{ this.confirmModal.record.name }}.bdx</div>
-            </div>
-            <div class="tablewrapper flex row q-mt-md">
-              <div class="label">{{ $t("fieldLabels.year") }}</div>
-              <div class="address">
-                {{ renewYear }}
-              </div>
-            </div>
-            <div
-              v-if="this.confirmModal.record.owner"
-              class="tablewrapper flex row q-mt-md"
+          <div>
+            <h2 class="beldex-dialog__title">
+              {{ $t("dialog.confirmRenew.title") }}
+            </h2>
+          </div>
+        </div>
+        <div class="beldex-dialog__body">
+          <div class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("fieldLabels.name")
+            }}</span>
+            <span class="bns-confirm__value beldex-dialog__kv-value--strong"
+              >{{ confirmModal.record.name }}.bdx</span
             >
-              <div class="label">{{ $t("fieldLabels.owner") }}</div>
-              <div class="address">
-                {{ this.confirmModal.record.owner }}
-              </div>
-            </div>
-          </section>
-        </q-card-section>
-
-        <div class="buttons flex justify-center q-mt-sm q-mb-md">
+          </div>
+          <div class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("fieldLabels.year")
+            }}</span>
+            <span class="bns-confirm__value">{{ renewYear }}</span>
+          </div>
+          <div v-if="confirmModal.record.owner" class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("fieldLabels.owner")
+            }}</span>
+            <span class="bns-confirm__value">{{
+              confirmModal.record.owner
+            }}</span>
+          </div>
+        </div>
+        <div class="beldex-dialog__actions">
           <q-btn
             v-close-popup
-            class="q-mr-md"
-            color="accent"
+            class="beldex-btn beldex-btn--ghost"
+            unelevated
+            no-caps
             :label="$t('buttons.cancel')"
           />
           <q-btn
             v-close-popup
-            color="primary"
+            class="beldex-btn"
+            unelevated
+            no-caps
             :label="$t('dialog.confirmRenew.ok')"
             @click="submit()"
           />
         </div>
       </q-card>
     </q-dialog>
-    <q-inner-loading :showing="bns_status.sending" :dark="theme == 'dark'">
-      <q-spinner color="primary" size="30" />
+    <q-inner-loading :showing="bns_status.sending" dark>
+      <beldex-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
 </template>
 <script>
 import { mapState } from "vuex";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import WalletPassword from "src/mixins/wallet_password";
 
 export default {
   name: "BNSRenew",
   components: {
-    OxenField
+    BeldexField
   },
 
   mixins: [WalletPassword],
@@ -280,61 +280,12 @@ export default {
 </script>
 
 <style lang="scss">
-.bns-renew-input-form {
-  // .bns-input {
-  height: calc(100vh - 430px);
-  overflow-y: auto;
-
-  .buttons-wrapper {
-    height: calc(100vh - 752px);
-  }
-  .bnsname {
-    color: #20d030;
-  }
-  // }
-  .prices,
-  .idSelectorWrapper {
-    // oxen-navy
-    margin-top: 20px;
-    background-color: #32324a;
-    padding: 15px;
-    color: white;
-    border-radius: 10px;
-
-    .selected {
-      border: 2px solid #00ad07;
-      background: #474764;
-    }
-  }
-  .pricelabel {
-    font-weight: 600;
-    font-size: 16px;
-  }
-  .tag {
-    width: 23.7%;
-    height: 50px;
-    background-color: #40405d;
-    border-radius: 10px;
-    padding: 10px;
-    font-weight: 500;
-    border: 2px solid #32324a;
-    font-size: 12px;
-    cursor: pointer;
-    .amount {
-      background-color: #484866;
-      color: #20d030;
-      padding: 3px 5px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-  }
-
-  .idSelectorWrapper {
-    .selectionBox {
-      background-color: #474766;
-      border-radius: 10px;
-      border: 2px solid #474766;
-    }
-  }
+.beldex-app .bns-renew-input-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--beldex-space-5);
+  height: auto;
+  overflow-y: visible;
 }
 </style>

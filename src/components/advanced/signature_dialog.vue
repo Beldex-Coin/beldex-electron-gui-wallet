@@ -1,94 +1,100 @@
 <template>
+  <!-- Signature result -->
   <q-dialog v-model="show" persistent>
-    <q-card class="signature-dialog">
-      <q-card-section class="header-wrapper">
-        <div class="text-h5 ft-semibold text-center">
-          {{ $t("dialog.signature.title") }}
+    <div class="beldex-dialog beldex-dialog--wide">
+      <div class="beldex-dialog__head">
+        <div class="beldex-dialog__icon">
+          <q-icon name="edit_note" size="20px" />
         </div>
-        <div class="subtxt text-center ft-medium">
-          {{ $t("dialog.signature.message") }}
+        <div>
+          <h2 class="beldex-dialog__title">
+            {{ $t("dialog.signature.title") }}
+          </h2>
+          <p class="beldex-dialog__subtitle">
+            {{ $t("dialog.signature.message") }}
+          </p>
         </div>
-      </q-card-section>
-      <q-card-section class="info">
-        <q-item class="signature row sign-inner-wrapper ft-medium">
-          <div class="col">
-            <!-- <q-item-label class="labels">{{
-              $t("fieldLabels.signature")
-            }}</q-item-label> -->
-            {{ signature }}
-          </div>
-          <div class="col-auto">
-            <div
-              class="copyIcon-btn flex justify-center items-center"
-              color="primary"
-              icon="content_copy"
-              @click="onCopySignature"
-            >
-              <q-icon name="content_copy" color="white" size="24px" />
-              <q-tooltip
-                anchor="center left"
-                self="center right"
-                :offset="[5, 10]"
-              >
-                {{ $t("buttons.copySignature") }}
-              </q-tooltip>
-            </div>
-          </div>
-        </q-item>
-        <q-item class="row unsigned-data sign-inner-wrapper ft-medium">
-          <div class="col">
-            <!-- <q-item-label class="labels">{{
-              $t("fieldLabels.data")
-            }}</q-item-label> -->
-            {{ unsignedData }}
-          </div>
-          <div class="col-auto">
-            <div
-              class="copyIcon-btn flex justify-center items-center"
-              color="primary"
+      </div>
+
+      <div class="beldex-dialog__body">
+        <div>
+          <span class="beldex-label">{{ $t("fieldLabels.data") }}</span>
+          <div class="beldex-dialog__inset beldex-dialog__inset--copy q-mt-sm">
+            <div class="beldex-dialog__inset-text">{{ unsignedData }}</div>
+            <q-btn
+              class="beldex-dialog__copy"
+              flat
+              no-caps
+              :aria-label="$t('buttons.copyData')"
               @click="onCopyUnsignedData"
             >
-              <q-icon name="content_copy" color="white" size="24px" />
-
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
               <q-tooltip
                 anchor="center left"
                 self="center right"
                 :offset="[5, 10]"
+                >{{ $t("buttons.copyData") }}</q-tooltip
               >
-                {{ $t("buttons.copyData") }}
-              </q-tooltip>
-            </div>
+            </q-btn>
           </div>
-        </q-item>
-        <q-item class="row address sign-inner-wrapper ft-medium">
-          <div class="col">
-            <!-- <q-item-label class="labels">{{
-              $t("fieldLabels.recipientAddress")
-            }}</q-item-label> -->
-            {{ address }}
+        </div>
+        <div>
+          <span class="beldex-label">{{ $t("fieldLabels.signature") }}</span>
+          <div class="beldex-dialog__inset beldex-dialog__inset--copy q-mt-sm">
+            <div class="beldex-dialog__inset-text">{{ signature }}</div>
+            <q-btn
+              class="beldex-dialog__copy"
+              flat
+              no-caps
+              :aria-label="$t('buttons.copySignature')"
+              @click="onCopySignature"
+            >
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
+              <q-tooltip
+                anchor="center left"
+                self="center right"
+                :offset="[5, 10]"
+                >{{ $t("buttons.copySignature") }}</q-tooltip
+              >
+            </q-btn>
           </div>
-          <div class="col-auto">
-            <div
-              class="copyIcon-btn flex justify-center items-center vertical-middle"
+        </div>
+        <div>
+          <span class="beldex-label">{{ $t("fieldLabels.address") }}</span>
+          <div class="beldex-dialog__inset beldex-dialog__inset--copy q-mt-sm">
+            <div class="beldex-dialog__inset-text">{{ address }}</div>
+            <q-btn
+              class="beldex-dialog__copy"
+              flat
+              no-caps
+              :aria-label="$t('buttons.copyAddress')"
               @click="onCopyAddress"
             >
-              <q-icon name="content_copy" color="white" size="24px" />
-
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
               <q-tooltip
                 anchor="center left"
                 self="center right"
                 :offset="[5, 10]"
+                >{{ $t("buttons.copyAddress") }}</q-tooltip
               >
-                {{ $t("buttons.copyAddress") }}
-              </q-tooltip>
-            </div>
+            </q-btn>
           </div>
-        </q-item>
-      </q-card-section>
-      <q-card-actions align="right" class="q-my-lg">
-        <q-btn color="accent" :label="$t('buttons.close')" @click="onClose" />
-      </q-card-actions>
-    </q-card>
+        </div>
+      </div>
+
+      <div class="beldex-dialog__actions">
+        <q-btn
+          class="beldex-btn beldex-btn--ghost"
+          unelevated
+          no-caps
+          :label="$t('buttons.close')"
+          @click="onClose"
+        />
+      </div>
+    </div>
   </q-dialog>
 </template>
 

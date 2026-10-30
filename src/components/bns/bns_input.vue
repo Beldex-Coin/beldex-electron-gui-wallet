@@ -10,107 +10,103 @@
       :disable-submit-button="disable_submit_button"
       @onSubmit="onSubmit"
       @onClear="onClear"
+      @onSummary="$emit('onSummary', $event)"
     />
+    <!-- Confirm purchase -->
     <q-dialog v-model="confirmModal.open">
-      <q-card class="bnsConfirmmodal">
-        <q-card-section>
-          <div class="text-h6 text-center" style="font-weight: 600;">
-            {{ $t("dialog.confirmPurchase.title") }}
+      <q-card class="beldex-dialog">
+        <div class="beldex-dialog__head">
+          <div class="beldex-dialog__icon">
+            <img src="~assets/icons/dialog-send.svg" alt="" />
           </div>
-        </q-card-section>
-
-        <q-card-section class="q-pt-none ownerDetails q-mx-lg q-pa-md">
-          <section>
-            <div class="tablewrapper flex row">
-              <div class="label">{{ $t("fieldLabels.name") }}</div>
-              <div class="content">{{ this.confirmModal.record.name }}</div>
-            </div>
-
-            <div class="tablewrapper flex row q-mt-md">
-              <div class="label">{{ $t("fieldLabels.year") }}</div>
-              <div class="yearscontent">
-                {{ yearvalidate(this.confirmModal.record.years) }}
-              </div>
-            </div>
-
-            <div
-              v-if="this.confirmModal.record.owner"
-              class="tablewrapper flex row q-mt-md"
-            >
-              <div class="label">{{ $t("fieldLabels.owner") }}</div>
-              <div class="address">
-                {{ this.confirmModal.record.owner }}
-              </div>
-            </div>
-            <!-- <div
-              v-if="this.confirmModal.backup_owner"
-              class="tablewrapper flex row q-mt-md"
-            >
-              <div class="label">Backup Owner</div>
-              <div class="address">
-                {{ this.confirmModal.record.backup_owner }}
-              </div>
-            </div> -->
-          </section>
-        </q-card-section>
-        <q-card-section class="q-pt-none ownerDetails q-mx-lg q-my-md q-pa-md">
-          <section>
-            <div
-              v-if="this.confirmModal.record.value_wallet"
-              class="tablewrapper flex row"
-            >
-              <div class="label">{{ $t("fieldLabels.address") }}</div>
-              <div class="address">
-                {{ this.confirmModal.record.value_wallet }}
-              </div>
-            </div>
-            <div
-              v-if="this.confirmModal.record.value_bchat"
-              class="tablewrapper flex row q-mt-md"
-            >
-              <div class="label">BChat ID</div>
-              <div class="address">
-                {{ this.confirmModal.record.value_bchat }}
-              </div>
-            </div>
-            <div
-              v-if="this.confirmModal.record.value_belnet"
-              class="tablewrapper flex row q-mt-md"
-            >
-              <div class="label">Belnet ID</div>
-              <div class="address">
-                {{ this.confirmModal.record.value_belnet }}
-              </div>
-            </div>
-            <div
-              v-if="this.confirmModal.record.value_eth_addr"
-              class="tablewrapper flex row q-mt-md"
-            >
-              <div class="label">ETH</div>
-              <div class="address">
-                {{ this.confirmModal.record.value_eth_addr }}
-              </div>
-            </div>
-          </section>
-        </q-card-section>
-        <div class="buttons flex justify-center q-mt-sm q-mb-md">
+          <div>
+            <h2 class="beldex-dialog__title">
+              {{ $t("dialog.confirmPurchase.title") }}
+            </h2>
+          </div>
+        </div>
+        <div class="beldex-dialog__body">
+          <div class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("fieldLabels.name")
+            }}</span>
+            <span class="bns-confirm__value beldex-dialog__kv-value--strong">{{
+              confirmModal.record.name
+            }}</span>
+          </div>
+          <div class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("fieldLabels.year")
+            }}</span>
+            <span class="bns-confirm__value">{{
+              yearvalidate(confirmModal.record.years)
+            }}</span>
+          </div>
+          <div v-if="confirmModal.record.owner" class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">{{
+              $t("fieldLabels.owner")
+            }}</span>
+            <span class="bns-confirm__value">{{
+              confirmModal.record.owner
+            }}</span>
+          </div>
+          <div
+            v-if="confirmModal.record.value_wallet"
+            class="beldex-dialog__kv"
+          >
+            <span class="beldex-dialog__kv-label">{{
+              $t("fieldLabels.address")
+            }}</span>
+            <span class="bns-confirm__value">{{
+              confirmModal.record.value_wallet
+            }}</span>
+          </div>
+          <div v-if="confirmModal.record.value_bchat" class="beldex-dialog__kv">
+            <span class="beldex-dialog__kv-label">BChat ID</span>
+            <span class="bns-confirm__value">{{
+              confirmModal.record.value_bchat
+            }}</span>
+          </div>
+          <div
+            v-if="confirmModal.record.value_belnet"
+            class="beldex-dialog__kv"
+          >
+            <span class="beldex-dialog__kv-label">Belnet ID</span>
+            <span class="bns-confirm__value">{{
+              confirmModal.record.value_belnet
+            }}</span>
+          </div>
+          <div
+            v-if="confirmModal.record.value_eth_addr"
+            class="beldex-dialog__kv"
+          >
+            <span class="beldex-dialog__kv-label">ETH</span>
+            <span class="bns-confirm__value">{{
+              confirmModal.record.value_eth_addr
+            }}</span>
+          </div>
+        </div>
+        <div class="beldex-dialog__actions">
           <q-btn
             v-close-popup
-            class="q-mr-md"
-            color="accent"
+            class="beldex-btn beldex-btn--ghost"
+            unelevated
+            no-caps
             :label="$t('buttons.cancel')"
           />
           <q-btn
             v-close-popup
-            color="primary"
+            class="beldex-btn"
+            unelevated
+            no-caps
             :label="$t('dialog.confirmPurchase.ok')"
             @click="purchase()"
           />
         </div>
       </q-card>
     </q-dialog>
-    <q-inner-loading :showing="bns_status.sending" :dark="theme == 'dark'">
-      <q-spinner color="primary" size="30" />
+    <q-inner-loading :showing="bns_status.sending" dark>
+      <beldex-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
 </template>
@@ -323,45 +319,9 @@ export default {
 </script>
 
 <style lang="scss">
-.bnsConfirmmodal {
-  width: unset !important;
-  max-width: 80vw !important;
-  background-color: #242433;
-  border-radius: 15px !important;
-  color: #fff;
-  .buttons {
-    .q-btn {
-      height: 45px;
-    }
-  }
-  .ownerDetails {
-    background-color: #32324a;
-    border-radius: 10px !important;
-
-    .tablewrapper {
-      padding-bottom: 5px;
-      border-bottom: 1px solid #41415b;
-
-      .label {
-        width: 120px;
-        font-weight: 600;
-        font-size: 14px;
-      }
-      .content {
-        font-weight: 700;
-        color: #20d030;
-        font-size: 16px;
-      }
-      .yearscontent {
-        font-weight: 500;
-        color: #fff;
-        font-size: 16px;
-      }
-      .address {
-        color: #afafbe;
-        font-weight: 400;
-      }
-    }
-  }
+.beldex-app .bns-confirm__value {
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 </style>

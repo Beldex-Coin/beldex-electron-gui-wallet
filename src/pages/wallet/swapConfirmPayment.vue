@@ -1,66 +1,63 @@
 <template>
   <div class="confirmPayment">
-    <!-- <q-header>
-    <q-toolbar top>-->
-    <header class="flex row items-center q-mb-md">
-      <div
-        class="flex items-center back-arrow-btn"
-        @click="this.goToExchangepair"
-      >
-        <svg
-          width="26"
-          height="26"
-          viewBox="0 0 26 26"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+    <!-- Checkout -->
+    <header class="confirmPayment__head">
+      <div class="confirmPayment__title-wrap">
+        <button
+          type="button"
+          class="beldex-square-btn"
+          :aria-label="$t('buttons.back')"
+          @click="goToExchangepair"
         >
-          <path
-            d="M13 -6.10352e-05C5.8201 -6.10352e-05 0 5.82008 0 13C0 20.18 5.8201 26.0001 13 26.0001C20.1799 26.0001 26 20.18 26 13C26 5.82008 20.1799 -6.10352e-05 13 -6.10352e-05ZM18.2 14.3H10.9382L13 16.3618C13.507 16.8688 13.507 17.6931 13 18.2001C12.493 18.7071 11.6688 18.7071 11.1618 18.2001L6.8809 13.9191C6.3726 13.4108 6.3726 12.5879 6.8809 12.0809L11.1618 7.79999C11.6688 7.29299 12.493 7.29299 13 7.79999C13.507 8.30699 13.507 9.1312 13 9.6382L10.9382 11.7H18.2C18.9176 11.7 19.5 12.2824 19.5 13C19.5 13.7176 18.9176 14.3 18.2 14.3Z"
-            fill="white"
-          />
-        </svg>
+          <q-icon name="arrow_back" size="16px" />
+        </button>
+        <h2 class="confirmPayment__title">
+          {{ $t("titles.swap.checkout") }}
+        </h2>
+        <span class="confirmPayment__badge">{{
+          $t("titles.swap.reviewBeforePaying")
+        }}</span>
       </div>
-
-      <div class="header">
-        <div class="ft-semibold q-ml-md header-txt">
-          {{ this.$t("titles.swap.checkout") }}
-        </div>
-        <div class="header-pair">
-          <span class="from">{{ sendChainDetails.name }}</span>
-          <svg
-            width="10"
-            height="11"
-            viewBox="0 0 10 11"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M7.26028 0C7.0382 0 6.83961 0.126033 6.75419 0.318084C6.67091 0.512136 6.72003 0.732194 6.88018 0.878233L8.13366 2.05255H0.16008V3.07682H8.13366L6.88018 4.25113C6.73711 4.37916 6.67945 4.57122 6.7307 4.74926C6.77982 4.92931 6.9293 5.06935 7.12148 5.11536C7.31153 5.16337 7.51653 5.10936 7.6532 4.97532L9.83985 2.92678C10.0534 2.72672 10.0534 2.40264 9.83985 2.20259L7.6532 0.154041C7.5507 0.054014 7.40976 0 7.26028 0ZM2.72263 5.11536C2.57956 5.11936 2.44503 5.17538 2.3468 5.2714L0.160155 7.31995C-0.053385 7.52 -0.053385 7.84408 0.160155 8.04414L2.3468 10.0927C2.48347 10.2267 2.68847 10.2807 2.87852 10.2327C3.0707 10.1867 3.22018 10.0467 3.2693 9.86662C3.32055 9.68858 3.26289 9.49652 3.11982 9.36849L1.86634 8.19418H9.83992V7.16991H1.86634L3.11982 5.99559C3.28211 5.84755 3.32909 5.62349 3.24154 5.42944C3.15398 5.23339 2.94899 5.10936 2.72263 5.11536Z"
-              fill="#20D030"
-            />
-          </svg>
-          <span class="to">{{ receiveChainDtails.name }}</span>
-        </div>
+      <div class="beldex-segmented" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="beldex-segmented__item beldex-segmented__item--active"
+          aria-selected="true"
+        >
+          <span class="beldex-segmented__dot" />
+          {{ $t("titles.swap.exchange") }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="beldex-segmented__item"
+          aria-selected="false"
+          @click="$emit('toHistory')"
+        >
+          {{ $t("titles.swap.history") }}
+        </button>
       </div>
     </header>
-    <section class="q-mt-lg">
+
+    <section class="confirmPayment__body">
       <div
         v-if="
           minMaxWarningContent === 'min' ||
             minMaxWarningContent === 'max' ||
             (pairsMinMax?.from && !pairsMinMax?.minAmountFloat)
         "
-        class="q-mt-sm validMinMaxAmount-wrapper"
+        class="validMinMaxAmount-wrapper"
       >
         <span
           v-if="
             pairsMinMax?.from && pairsMinMax?.to && !pairsMinMax?.minAmountFloat
           "
-          >{{ this.$t("titles.swap.unsupportedpair") }}</span
+          >{{ $t("titles.swap.unsupportedpair") }}</span
         >
         <span v-if="minMaxWarningContent === 'min'">
-          {{ this.$t("titles.swap.minimumAmtChanged") }}
-          <span class="validMinMaxAmount" @click="this.sendAmounts">
+          {{ $t("titles.swap.minimumAmtChanged") }}
+          <span class="validMinMaxAmount" @click="sendAmounts">
             {{
               exchangeType === "float"
                 ? pairsMinMax?.minAmountFloat
@@ -69,12 +66,9 @@
             {{ pairsMinMax?.from }}
           </span>
         </span>
-        <span
-          v-if="this.minMaxWarningContent === 'max'"
-          @click="this.sendAmounts"
-        >
-          {{ this.$t("titles.swap.maximumAmtChanged") }}
-          <span class="validMinMaxAmount" @click="this.sendAmounts">
+        <span v-if="minMaxWarningContent === 'max'" @click="sendAmounts">
+          {{ $t("titles.swap.maximumAmtChanged") }}
+          <span class="validMinMaxAmount" @click="sendAmounts">
             {{
               exchangeType === "float"
                 ? pairsMinMax?.maxAmountFloat
@@ -84,189 +78,199 @@
           </span>
         </span>
       </div>
-      <article class="flex row">
-        <div class="col-6">
-          <div class="q-mb-sm">{{ this.$t("titles.swap.youSend") }}</div>
-          <div class="ft-semibold amount-txt uppercase">
+
+      <div class="confirmPayment__grid">
+        <div class="confirmPayment__card">
+          <div class="confirmPayment__label">
+            {{ $t("titles.swap.youSend") }}
+          </div>
+          <div class="confirmPayment__amount uppercase">
             {{
-              (this.floatingRate.amountFrom
-                ? Number(this.floatingRate.amountFrom).toFixed(8) + " "
+              (floatingRate.amountFrom
+                ? Number(floatingRate.amountFrom).toFixed(8) + " "
                 : "-- ") + sendChainDetails.name
             }}
           </div>
-          <div class="ft-semibold expand-txt uppercase">
-            {{ this.$t("titles.swap.network") }} :
-            <span>{{ sendChainDetails.protocol || "" }}</span>
+          <div class="confirmPayment__meta uppercase">
+            {{ $t("titles.swap.network") }}:
+            {{ sendChainDetails.protocol || "" }}
           </div>
           <div
             v-if="sendChainDetails.blockchain"
-            class="ft-semibold expand-txt uppercase"
+            class="confirmPayment__meta uppercase"
           >
-            {{ this.$t("titles.swap.blockchain") }} :
-            <span>{{ sendChainDetails.blockchain.replaceAll("_", " ") }}</span>
+            {{ $t("titles.swap.blockchain") }}:
+            {{ sendChainDetails.blockchain.replaceAll("_", " ") }}
           </div>
         </div>
-        <div class="col-6">
-          <div class="q-mb-sm">{{ this.$t("titles.swap.youGet") }}</div>
+        <div class="confirmPayment__card">
+          <div class="confirmPayment__label">
+            {{ $t("titles.swap.youGet") }}
+          </div>
           <div
             v-if="exchangeType === 'float'"
-            class="ft-semibold amount-txt uppercase"
+            class="confirmPayment__amount confirmPayment__amount--get uppercase"
           >
-            ~
+            ≈
             {{
-              (this.floatingRate.amountTo
-                ? Number(this.floatingRate.amountTo).toFixed(8) + " "
+              (floatingRate.amountTo
+                ? Number(floatingRate.amountTo).toFixed(8) + " "
                 : "-- ") + receiveChainDtails.name
             }}
           </div>
-          <div v-else class="ft-semibold amount-txt uppercase">
+          <div
+            v-else
+            class="confirmPayment__amount confirmPayment__amount--get uppercase"
+          >
             {{
-              (this.floatingRate.amountTo
-                ? Number(this.fixedRate.amountTo).toFixed(8) + " "
-                : "-- ") + this.fixedRate.to
+              (floatingRate.amountTo
+                ? Number(fixedRate.amountTo).toFixed(8) + " "
+                : "-- ") + fixedRate.to
             }}
           </div>
-          <div class="ft-semibold expand-txt uppercase">
-            {{ this.$t("titles.swap.network") }} :
-            <span>{{ receiveChainDtails.protocol || "" }}</span>
+          <div class="confirmPayment__meta uppercase">
+            {{ $t("titles.swap.network") }}:
+            {{ receiveChainDtails.protocol || "" }}
           </div>
           <div
             v-if="receiveChainDtails.blockchain"
-            class="ft-semibold expand-txt uppercase"
+            class="confirmPayment__meta uppercase"
           >
-            {{ this.$t("titles.swap.blockchain") }} :
-            <span>{{
-              receiveChainDtails.blockchain.replaceAll("_", " ")
-            }}</span>
+            {{ $t("titles.swap.blockchain") }}:
+            {{ receiveChainDtails.blockchain.replaceAll("_", " ") }}
           </div>
         </div>
-      </article>
-      <div class="hr-seperator"></div>
 
-      <article
-        v-if="this.floatingRate.fee || this.floatingRate.networkFee"
-        class="flex row"
-      >
-        <div class="col-6">
-          <div class="q-mb-sm">{{ this.$t("titles.swap.exchangefee") }}</div>
-          <div class="ft-semibold amount-txt uppercase">
-            {{
-              (this.floatingRate.fee
-                ? Number(this.floatingRate.fee).toFixed(8) + " "
-                : "0 ") + receiveChainDtails.name
-            }}
-          </div>
-          <div class="ft-regular hint-txt">
-            {{ this.$t("titles.swap.exchangeFeeIncluded") }}
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="q-mb-sm">{{ this.$t("titles.swap.networkFee") }}</div>
-          <div class="ft-semibold amount-txt uppercase">
-            {{
-              (this.floatingRate.networkFee
-                ? Number(this.floatingRate.networkFee).toFixed(8) + " "
-                : "0") + receiveChainDtails.name
-            }}
-          </div>
-          <div class="ft-regular hint-txt">
-            {{ this.$t("titles.swap.networkFeeIncluded") }}
-          </div>
-        </div>
-      </article>
-      <div
-        v-if="this.floatingRate.fee || this.floatingRate.networkFee"
-        class="hr-seperator"
-      ></div>
-
-      <article class="flex row">
-        <div :class="[this.fixedRate.result ? 'col-12' : 'col-6']">
-          <div
-            v-if="
-              this.refundAddress &&
-                this.floatingRate.exchange_type === 'changelly'
-            "
-            class="q-mb-sm"
-          >
-            <div class>{{ this.$t("titles.swap.guaranteeFee") }}</div>
-            <div class="ft-semibold amount-txt uppercase">
-              1
+        <template v-if="floatingRate.fee || floatingRate.networkFee">
+          <div class="confirmPayment__card">
+            <div class="confirmPayment__label">
+              {{ $t("titles.swap.exchangefee") }}
+            </div>
+            <div class="confirmPayment__value uppercase">
               {{
-                this.fixedRate.from +
-                  " = " +
-                  (this.fixedRate.result
-                    ? Number(this.fixedRate.result).toFixed(8)
-                    : "-- ") +
-                  " " +
-                  receiveChainDtails.name
+                (floatingRate.fee
+                  ? Number(floatingRate.fee).toFixed(8) + " "
+                  : "0 ") + receiveChainDtails.name
               }}
             </div>
+            <div class="confirmPayment__meta">
+              {{ $t("titles.swap.exchangeFeeIncluded") }}
+            </div>
           </div>
-          <div>{{ this.$t("fieldLabels.recipientAddress") }}</div>
-          <div
-            style="padding-right: 15px"
-            :class="[
-              this.refundAddress
-                ? 'ft-medium amount-txt'
-                : 'ft-medium recipt-address'
-            ]"
-          >
-            {{ this.recipientAddress }}
+          <div class="confirmPayment__card">
+            <div class="confirmPayment__label">
+              {{ $t("titles.swap.networkFee") }}
+            </div>
+            <div class="confirmPayment__value uppercase">
+              {{
+                (floatingRate.networkFee
+                  ? Number(floatingRate.networkFee).toFixed(8) + " "
+                  : "0 ") + receiveChainDtails.name
+              }}
+            </div>
+            <div class="confirmPayment__meta">
+              {{ $t("titles.swap.networkFeeIncluded") }}
+            </div>
           </div>
-          <div v-if="this.refundAddress" class="q-mt-sm">
-            {{ this.$t("titles.swap.refundAddress") }}
-          </div>
-          <div
-            v-if="
-              this.refundAddress ||
-                this.floatingRate.exchange_type !== 'changelly'
-            "
-            style="padding-right: 15px"
-            :class="[
-              this.refundAddress
-                ? 'ft-medium amount-txt'
-                : 'ft-medium recipt-address'
-            ]"
-          >
-            {{ this.refundAddress }}
-          </div>
+        </template>
+      </div>
+
+      <div class="confirmPayment__field">
+        <div class="confirmPayment__label">
+          {{ $t("fieldLabels.recipientAddress") }}
         </div>
-        <div v-if="!this.fixedRate.result" class="col-6">
-          <div class="q-mb-sm">{{ this.$t("titles.swap.exchangeRate") }}</div>
-          <div class="ft-semibold amount-txt uppercase">
-            1
-            {{
-              sendChainDetails.name +
-                " ~ " +
-                (this.floatingRate.rate
-                  ? Number(this.floatingRate.rate).toFixed(8)
-                  : "-- ") +
-                " " +
-                receiveChainDtails.name
-            }}
-          </div>
+        <div class="confirmPayment__address">
+          <span>{{ recipientAddress }}</span>
+          <q-btn
+            flat
+            dense
+            size="sm"
+            icon="content_copy"
+            class="confirmPayment__copy"
+            @click="copyValue(recipientAddress, 'Recipient address')"
+          />
         </div>
-      </article>
+      </div>
+
+      <div v-if="refundAddress" class="confirmPayment__field">
+        <div class="confirmPayment__label">
+          {{ $t("titles.swap.refundAddress") }}
+        </div>
+        <div class="confirmPayment__address">
+          <span>{{ refundAddress }}</span>
+          <q-btn
+            flat
+            dense
+            size="sm"
+            icon="content_copy"
+            class="confirmPayment__copy"
+            @click="copyValue(refundAddress, 'Refund address')"
+          />
+        </div>
+      </div>
+
+      <div
+        v-if="refundAddress && floatingRate.exchange_type === 'changelly'"
+        class="confirmPayment__row"
+      >
+        <span class="confirmPayment__label">{{
+          $t("titles.swap.guaranteeFee")
+        }}</span>
+        <span class="confirmPayment__value uppercase">
+          1
+          {{
+            fixedRate.from +
+              " = " +
+              (fixedRate.result ? Number(fixedRate.result).toFixed(8) : "--") +
+              " " +
+              receiveChainDtails.name
+          }}
+        </span>
+      </div>
+      <div v-if="!fixedRate.result" class="confirmPayment__row">
+        <span class="confirmPayment__label">{{
+          $t("titles.swap.exchangeRate")
+        }}</span>
+        <span class="confirmPayment__value uppercase">
+          1
+          {{
+            sendChainDetails.name +
+              " ≈ " +
+              (floatingRate.rate
+                ? Number(floatingRate.rate).toFixed(8)
+                : "--") +
+              " " +
+              receiveChainDtails.name
+          }}
+        </span>
+      </div>
     </section>
 
-    <div
-      class="flex justify-center"
-      :class="[this.refundAddress ? 'q-mt-lg q-pt-xl' : 'q-mt-lg']"
-    >
+    <div class="confirmPayment__actions">
       <q-btn
-        color="primary"
+        :label="$t('buttons.back')"
+        icon="arrow_back"
+        class="beldex-btn beldex-btn--ghost"
+        unelevated
+        no-caps
+        @click="goToExchangepair"
+      />
+      <q-btn
         :label="$t('titles.swap.paymentConfirm')"
-        :disable="!this.disableValidation()"
-        @click="this.makePayment"
+        icon="check"
+        class="beldex-btn"
+        unelevated
+        no-caps
+        :disable="!disableValidation()"
+        @click="makePayment"
       />
     </div>
-
-    <!-- </q-toolbar>
-    </q-header>-->
   </div>
 </template>
 
 <script>
+import { clipboard } from "src/shims/electron-renderer";
+
 export default {
   name: "SwapConfirmPayment",
   props: {
@@ -326,6 +330,14 @@ export default {
   methods: {
     goToExchangepair() {
       this.$emit("goback");
+    },
+    copyValue(val, from) {
+      clipboard.writeText(val);
+      this.$q.notify({
+        type: "positive",
+        timeout: 1000,
+        message: `${from} copied`
+      });
     },
     makePayment() {
       this.$emit("submit");

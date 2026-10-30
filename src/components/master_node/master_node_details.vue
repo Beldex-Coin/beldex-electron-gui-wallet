@@ -1,247 +1,195 @@
 <template>
-  <!-- <q-dialog v-model="isVisible" class="masterNodeDetails" > -->
-  <q-layout class="masterNodeDetails" style="min-height: unset">
-    <q-header>
-      <q-toolbar color="dark" inverted class="q-pa-none">
-        <div class="flex items-center back-arrow-btn" @click="goback()">
-          <svg
-            width="26"
-            height="26"
-            viewBox="0 0 26 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M13 -6.10352e-05C5.8201 -6.10352e-05 0 5.82008 0 13C0 20.18 5.8201 26.0001 13 26.0001C20.1799 26.0001 26 20.18 26 13C26 5.82008 20.1799 -6.10352e-05 13 -6.10352e-05ZM18.2 14.3H10.9382L13 16.3618C13.507 16.8688 13.507 17.6931 13 18.2001C12.493 18.7071 11.6688 18.7071 11.1618 18.2001L6.8809 13.9191C6.3726 13.4108 6.3726 12.5879 6.8809 12.0809L11.1618 7.79999C11.6688 7.29299 12.493 7.29299 13 7.79999C13.507 8.30699 13.507 9.1312 13 9.6382L10.9382 11.7H18.2C18.9176 11.7 19.5 12.2824 19.5 13C19.5 13.7176 18.9176 14.3 18.2 14.3Z"
-              fill="white"
-            />
-          </svg>
-        </div>
-        <q-toolbar-title class="ft-semibold">
-          {{ $t("titles.masterNodeDetails") }}
-        </q-toolbar-title>
+  <!-- Masternode details. Props, data and
+       handlers are unchanged. -->
+  <div class="masterNodeDetails">
+    <div class="mn-details__head">
+      <button
+        type="button"
+        class="beldex-square-btn mn-details__back"
+        :aria-label="$t('buttons.back')"
+        @click="goback()"
+      >
+        <img src="~assets/icons/arrow-left.svg" alt="" />
+      </button>
+      <h3 class="mn-details__title">{{ $t("titles.masterNodeDetails") }}</h3>
+      <span
+        class="mn-details__status"
+        :class="{ 'mn-details__status--bad': deregisterDetail }"
+      >
+        {{
+          deregisterDetail
+            ? $t("strings.masterNodeDeregistered")
+            : $t("strings.masterNodeRegistered")
+        }}
+      </span>
+      <span class="mn-details__spacer" />
+      <q-btn
+        v-if="!deregisterDetail && node.requested_unlock_height === 0"
+        class="beldex-btn mn-details__btn"
+        unelevated
+        no-caps
+        :disabled="!is_ready || unlock_status.sending"
+        :label="$t(actionI18n)"
+        @click="action(node, $event)"
+      />
+      <q-btn
+        v-if="can_open && !deregisterDetail"
+        class="beldex-btn beldex-btn--ghost mn-details__btn"
+        unelevated
+        no-caps
+        :label="$t('buttons.viewOnExplorer')"
+        @click="openExplorer"
+      />
+    </div>
 
-        <q-btn
-          v-if="node.requested_unlock_height === 0"
-          class="q-mr-sm unlock-btn"
-          color="primary"
-          :disabled="!is_ready || unlock_status.sending"
-          :label="$t(actionI18n)"
-          @click="action(node, $event)"
-        />
-        <q-btn
-          v-if="can_open && !deregisterDetail"
-          color="accent"
-          class="explorebtn"
-          :label="$t('buttons.viewOnExplorer')"
-          @click="openExplorer"
-        />
-        <!-- <q-btn flat round dense icon="reply" @click="isVisible = false" />
-          <q-toolbar-title>
-            {{ $t("titles.masterNodeDetails") }}
-          </q-toolbar-title>
-          <q-btn
-            v-if="node.requested_unlock_height === 0"
-            class="q-mr-sm"
-            color="primary"
-            :disabled="!is_ready || unlock_status.sending"
-            :label="$t(actionI18n)"
-            @click="action(node, $event)"
-          />
-          <q-btn
-            v-if="can_open"
-            color="primary"
-            :label="$t('buttons.viewOnExplorer')"
-            @click="openExplorer"
-          /> -->
-      </q-toolbar>
-    </q-header>
-    <q-page
-      v-if="!deregisterDetail"
-      class="detail-page"
-      style="min-height: unset"
-    >
-      <div lass="q-mt-lg ">
-        <!-- <h6 class="q-mt-xs q-mb-none text-weight-light">
-          {{ $t("strings.masterNodeDetails.masterNodeKey") }}
-        </h6>
-        <p class="break-all">{{ node.master_node_pubkey }}</p> -->
-
-        <div class="detailbox flex row justify-between">
-          <div class="mn-detail-wrapper">
-            <div class="infoBoxContent">
-              <div class="text ft-Light">
-                <span>{{
-                  $t("strings.masterNodeDetails.stakingRequirement")
-                }}</span>
-              </div>
-              <div class="value ft-semibold">
-                <span
-                  ><FormatOxen :amount="node.staking_requirement" raw-value
-                /></span>
-              </div>
-            </div>
-          </div>
-          <div class="mn-detail-wrapper">
-            <div class="infoBoxContent">
-              <div class="text ft-Light">
-                <span>{{
-                  $t("strings.masterNodeDetails.totalContributed")
-                }}</span>
-              </div>
-              <div class="value ft-semibold">
-                <span
-                  ><FormatOxen :amount="node.total_contributed" raw-value
-                /></span>
-              </div>
-            </div>
-          </div>
-          <div class="mn-detail-wrapper">
-            <div class="infoBoxContent">
-              <div class="text ft-Light">
-                <span>{{
-                  $t("strings.masterNodeDetails.registrationHeight")
-                }}</span>
-              </div>
-              <div class="value ft-semibold">
-                <span>{{ node.registration_height }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="mn-detail-wrapper">
-            <div class="infoBoxContent">
-              <div class="text ft-Light" style="padding-right: 25px">
-                <span>{{ $t("strings.masterNodeDetails.operatorFee") }}</span>
-              </div>
-              <div class="value ft-semibold">
-                <span>{{ operatorFee }}</span>
-              </div>
-            </div>
-          </div>
-          <div v-if="node.requested_unlock_height > 0" class="infoBox">
-            <div class="mn-detail-wrapper">
-              <div class="text ft-Light">
-                <span>{{ $t("strings.masterNodeDetails.unlockHeight") }}</span>
-              </div>
-              <div class="value ft-semibold">
-                <span>{{ node.requested_unlock_height }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="mn-detail-wrapper">
-            <div class="infoBoxContent">
-              <div class="text ft-Light">
-                <span>{{
-                  $t("strings.masterNodeDetails.lastUptimeProof")
-                }}</span>
-              </div>
-              <div class="value ft-semibold">
-                <span>{{ formatDate(node.last_uptime_proof * 1000) }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="mn-detail-wrapper">
-            <div class="infoBoxContent">
-              <div class="text ft-Light">
-                <span>{{
-                  $t("strings.masterNodeDetails.lastRewardBlockHeight")
-                }}</span>
-              </div>
-              <div class="value ft-semibold">
-                <span>{{ node.last_reward_block_height }}</span>
-              </div>
-            </div>
-          </div>
+    <div v-if="!deregisterDetail" class="mn-details__body">
+      <div class="mn-details__grid">
+        <div class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.stakingRequirement")
+          }}</span>
+          <span class="mn-details__value"
+            ><FormatBeldex :amount="node.staking_requirement"
+          /></span>
         </div>
-        <q-list no-border :dark="theme == 'dark'" class="oxen-list">
-          <q-item-label class="contributors-title ft-regular"
-            >{{ $t("strings.masterNodeDetails.contributors") }}:</q-item-label
-          >
-          <!-- clickable -->
-          <q-item
-            v-for="contributor in contributors"
-            :key="contributor.address"
-            class="oxen-list-item"
-            style="margin-right: 5px"
-            @click="openUserWalletInfo(contributor.address)"
-          >
-            <q-item-label>
-              <q-item-label
-                v-if="isMe(contributor)"
-                class="name non-selectable"
-                >{{ $t("strings.me") }}</q-item-label
+        <div class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.totalContributed")
+          }}</span>
+          <span class="mn-details__value"
+            ><FormatBeldex :amount="node.total_contributed"
+          /></span>
+        </div>
+        <div class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.registrationHeight")
+          }}</span>
+          <span class="mn-details__value">{{ node.registration_height }}</span>
+        </div>
+        <div class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.operatorFee")
+          }}</span>
+          <span class="mn-details__value">{{ operatorFee }}</span>
+        </div>
+        <div v-if="node.requested_unlock_height > 0" class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.unlockHeight")
+          }}</span>
+          <span class="mn-details__value">{{
+            node.requested_unlock_height
+          }}</span>
+        </div>
+        <div class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.lastUptimeProof")
+          }}</span>
+          <span class="mn-details__value">{{
+            formatDate(node.last_uptime_proof * 1000)
+          }}</span>
+        </div>
+        <div class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.lastRewardBlockHeight")
+          }}</span>
+          <span class="mn-details__value">{{
+            node.last_reward_block_height
+          }}</span>
+        </div>
+      </div>
+
+      <div class="beldex-label mn-details__group">
+        {{ $t("strings.masterNodeDetails.contributors") }}
+      </div>
+      <div class="master-node-list">
+        <div
+          v-for="contributor in contributors"
+          :key="contributor.address"
+          class="master-node-list__row"
+          @click="openUserWalletInfo(contributor.address)"
+        >
+          <div class="master-node-list__main">
+            <div class="master-node-list__head">
+              <span
+                class="master-node-list__role"
+                :class="{
+                  'master-node-list__role--op': isOperator(contributor)
+                }"
               >
-              <q-item-label v-else class="name non-selectable">{{
+                {{
+                  isOperator(contributor)
+                    ? $t("strings.operator")
+                    : $t("strings.contributor")
+                }}
+              </span>
+              <span v-if="isMe(contributor)" class="contri-wrapper">{{
+                $t("strings.me")
+              }}</span>
+              <span v-else-if="contributor.name" class="contri-wrapper">{{
                 contributor.name
-              }}</q-item-label>
-              <q-item-label class="address ellipsis non-selectable">{{
-                contributor.address
-              }}</q-item-label>
-              <q-item-label class="non-selectable" caption>
-                <span v-if="isOperator(contributor)"
-                  >{{ $t("strings.operator") }} •
-                </span>
-                {{ $t("strings.contribution") }}:
-                <FormatOxen :amount="contributor.amount" raw-value />
-              </q-item-label>
-            </q-item-label>
-            <ContextMenu
-              :menu-items="menuItems"
-              @copyAddress="copyAddress(contributor.address)"
-            />
-          </q-item>
-        </q-list>
+              }}</span>
+            </div>
+            <div class="master-node-list__key beldex-truncate">
+              {{ contributor.address }}
+            </div>
+          </div>
+          <div class="mn-details__amount">
+            <FormatBeldex :amount="contributor.amount" />
+            <span class="master-node-list__meta">{{
+              $t("strings.contribution")
+            }}</span>
+          </div>
+          <ContextMenu
+            :menu-items="menuItems"
+            @copyAddress="copyAddress(contributor.address)"
+          />
+        </div>
       </div>
-      <q-inner-loading :showing="unlock_status.sending" :dark="theme == 'dark'">
-        <q-spinner color="primary" size="30" />
+      <q-inner-loading :showing="unlock_status.sending" dark>
+        <beldex-spinner color="primary" size="30" />
       </q-inner-loading>
-    </q-page>
-    <!-- --------------------------------deregister details------------------------- -->
-    <q-page v-else class="detail-page" style="min-height: unset">
-      <div class="deregister-wrapper q-pa-md">
-        <div class="q-mt-sm">
-          <q-item-label class="ellipsis">
-            <span class="label">Amount :</span
-            ><span class="value"
-              ><FormatOxen :amount="deregisterDetail.amount"/></span
-          ></q-item-label>
+    </div>
+
+    <!-- deregister details -->
+    <div v-else class="mn-details__body">
+      <div class="mn-details__grid mn-details__grid--two">
+        <div class="mn-details__stat">
+          <span class="beldex-label">Amount</span>
+          <span class="mn-details__value mn-details__value--big"
+            ><FormatBeldex :amount="deregisterDetail.amount"
+          /></span>
         </div>
-        <div class="q-mt-sm">
-          <q-item-label class="ellipsis"
-            ><span class="label">Unlock Height </span
-            ><span class="value">: {{ deregisterDetail.unlock_height }}</span>
-          </q-item-label>
-        </div>
-        <div class="q-mt-sm">
-          <q-item-label class="ellipsis">
-            <span class="label">Key Image : </span
-            ><span class="value ">{{ deregisterDetail.key_image }}</span>
-          </q-item-label>
-        </div>
-        <div class="q-mt-sm">
-          <q-item-label class="ellipsis">
-            <span class="label">Signature :</span
-            ><span class="value ellipsis">
-              {{ deregisterDetail.signature }}</span
-            >
-          </q-item-label>
+        <div class="mn-details__stat">
+          <span class="beldex-label">{{
+            $t("strings.masterNodeDetails.unlockHeight")
+          }}</span>
+          <span class="mn-details__value mn-details__value--big">{{
+            deregisterDetail.unlock_height
+          }}</span>
         </div>
       </div>
-    </q-page>
-  </q-layout>
-  <!-- </q-dialog> -->
+      <div class="beldex-label mn-details__group">
+        {{ $t("strings.keyImage") }}
+      </div>
+      <div class="mn-details__inset">{{ deregisterDetail.key_image }}</div>
+      <div class="beldex-label mn-details__group">
+        {{ $t("strings.signature") }}
+      </div>
+      <div class="mn-details__inset">{{ deregisterDetail.signature }}</div>
+    </div>
+  </div>
 </template>
 
 <script>
 import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import { date } from "quasar";
-import FormatOxen from "components/format_oxen";
+import FormatBeldex from "components/format_beldex";
 import ContextMenu from "components/menus/contextmenu";
 export default {
   name: "MasterNodeDetails",
   components: {
-    FormatOxen,
+    FormatBeldex,
     ContextMenu
   },
   props: {
@@ -351,37 +299,130 @@ export default {
 </script>
 
 <style lang="scss">
-.contributors-title {
-  margin-top: 17px;
-  font-size: 16px;
+.beldex-app .masterNodeDetails {
+  // app.styl `.masterNodeDetails { background-color #242433 }`
+  background-color: transparent;
+  min-height: 0;
 }
 
-.masterNodeDetails {
-  .name {
-    font-size: 0.92rem;
+.beldex-app .mn-details {
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+    padding-bottom: var(--beldex-space-4);
+    margin-bottom: var(--beldex-space-5);
+    border-bottom: 1px solid var(--beldex-hairline);
   }
 
-  .infoBox {
-    margin-left: 30px;
+  &__back {
+    width: 28px;
+    height: 28px;
   }
 
-  .info {
-    margin-right: 30px;
+  &__title {
+    margin: 0;
+    font-family: var(--beldex-font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.35px;
+    color: var(--beldex-text-strong);
   }
-  .deregister-wrapper {
-    border: 2px solid #41415b;
-    border-radius: 10px;
-    .q-item__label {
-      line-height: 1.6em !important;
+
+  &__status {
+    padding: 2px var(--beldex-space-2);
+    font-family: var(--beldex-font-mono);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    line-height: 15px;
+    color: var(--beldex-accent);
+    text-transform: uppercase;
+    background-color: var(--beldex-accent-bg);
+    border: 1px solid var(--beldex-accent-border-soft);
+
+    &--bad {
+      color: var(--beldex-danger);
+      background-color: var(--beldex-danger-wash);
+      border-color: var(--beldex-danger-border);
     }
-    .label {
-      font-weight: 300;
-      font-size: 1rem;
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+
+  &__btn.q-btn {
+    height: 36px;
+    min-height: 36px;
+    padding: 0 var(--beldex-space-4);
+    font-size: var(--beldex-text-md);
+  }
+
+  &__body {
+    position: relative;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--beldex-space-4);
+
+    &--two {
+      grid-template-columns: repeat(2, 1fr);
     }
-    .value {
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-2);
+    min-width: 0;
+    padding: 14px var(--beldex-space-4);
+    background-color: rgba(8, 8, 8, 0.8);
+    border: 1px solid var(--beldex-hairline);
+  }
+
+  &__value {
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-base);
+    font-weight: 500;
+    color: var(--beldex-text-strong);
+    overflow-wrap: anywhere;
+
+    &--big {
+      font-size: 20px;
       font-weight: 700;
-      font-size: 0.9rem;
     }
+  }
+
+  &__group {
+    margin: var(--beldex-space-5) 0 var(--beldex-space-2);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--beldex-text-faint);
+  }
+
+  &__amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    color: var(--beldex-text);
+  }
+
+  &__inset {
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    line-height: 18px;
+    color: var(--beldex-text);
+    word-break: break-all;
+    background-color: rgba(8, 8, 8, 0.8);
+    border: 1px solid var(--beldex-hairline);
+    user-select: text;
   }
 }
 </style>

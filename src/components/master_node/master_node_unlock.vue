@@ -1,60 +1,64 @@
 <template>
-  <div v-if="isVisible" class="master-node-stake-tab q-pr-md">
-    <div :class="` ${master_nodes.length === 0 ? 'd-center' : ''}`">
-      <div class="q-my-md header items-center" style="font-size: 16px">
-        <span v-if="master_nodes.length">{{
-          $t("titles.currentlyStakedNodes")
-        }}</span>
-        <span v-else style="color: #77778b"
-          >{{ $t("strings.masterNodeStartStakingDescription") }}
-          <span style="font-family: Poppins-SemiBold">{{
-            $t("titles.masterNode.staking")
-          }}</span
-          >&nbsp;
-          <span>{{ $t("strings.masterNodeStartStakingDescription1") }}</span>
-        </span>
-      </div>
-      <div></div>
-      <div v-if="master_nodes">
-        <MasterNodeList
-          :master-nodes="master_nodes"
-          button-i18n="buttons.unlock"
-          :details="details"
-          :action="unlockWarning"
-        />
-      </div>
-      <div v-if="deregister_master_nodes.length > 0">
-        <div class="deregister-header q-my-md">Deregistered Nodes</div>
-
-        <q-list class="master-node-list" no-border>
-          <q-item v-for="node in deregister_master_nodes" :key="node.key_image">
-            <q-item-section @click="assignDeregisterDetails(node)">
-              <q-item-label class="ellipsis">
-                <span style="font-weight: 600"
-                  >{{ $t("strings.masterNodeDetails.snKey") }} </span
-                >: {{ node.key_image }}</q-item-label
-              >
-            </q-item-section>
-            <q-item-section side>
-              <span>
-                <span class="contri-wrapper">
-                  Amount:
-                  <span class="amount">
-                    <FormatOxen :amount="node.amount" />
-                  </span>
-                </span>
-              </span>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-      <q-inner-loading
-        :showing="unlock_status.sending || fetching"
-        :dark="theme == 'dark'"
-      >
-        <q-spinner color="primary" size="30" />
-      </q-inner-loading>
+  <!-- My stakes. -->
+  <div v-if="isVisible" class="master-node-stake-tab master-node-unlock">
+    <div class="master-node-unlock__group">
+      <span v-if="master_nodes.length">{{
+        $t("titles.currentlyStakedNodes")
+      }}</span>
     </div>
+    <section v-if="!master_nodes.length" class="master-node-unlock__empty">
+      <div class="master-node-unlock__empty-icon">
+        <img src="~assets/icons/tx-stake.svg" alt="" />
+      </div>
+      <p class="master-node-unlock__empty-title">
+        {{ $t("strings.noActiveStakes") }}
+      </p>
+      <p class="master-node-unlock__empty-hint">
+        {{ $t("strings.noActiveStakesHint") }}
+      </p>
+      <q-btn
+        class="beldex-btn master-node-unlock__empty-btn"
+        unelevated
+        no-caps
+        @click="$emit('goToStake')"
+      >
+        {{ $t("buttons.goToStake") }}
+        <img src="~assets/icons/arrow-right.svg" alt="" />
+      </q-btn>
+    </section>
+    <MasterNodeList
+      v-if="master_nodes"
+      :master-nodes="master_nodes"
+      button-i18n="buttons.unlock"
+      :details="details"
+      :action="unlockWarning"
+    />
+    <template v-if="deregister_master_nodes.length > 0">
+      <div class="master-node-unlock__group">Deregistered Nodes</div>
+      <div class="master-node-list">
+        <div
+          v-for="node in deregister_master_nodes"
+          :key="node.key_image"
+          class="master-node-list__row"
+          @click="assignDeregisterDetails(node)"
+        >
+          <span class="master-node-list__icon">
+            <img src="~assets/icons/rail-masternode.svg" alt="" />
+          </span>
+          <div class="master-node-list__main">
+            <div class="master-node-list__key beldex-truncate">
+              {{ $t("strings.masterNodeKeyShort") }}: {{ node.key_image }}
+            </div>
+          </div>
+          <span class="contri-wrapper">
+            Amount: <FormatBeldex :amount="node.amount" />
+          </span>
+        </div>
+      </div>
+    </template>
+    <q-inner-loading :showing="unlock_status.sending || fetching" dark>
+      <beldex-spinner color="primary" size="30" />
+    </q-inner-loading>
   </div>
 
   <MasterNodeDetails
@@ -76,14 +80,14 @@ import { master_node_key } from "src/validators/common";
 import WalletPassword from "src/mixins/wallet_password";
 import MasterNodeDetails from "./master_node_details";
 import MasterNodeList from "./master_node_list";
-import FormatOxen from "components/format_oxen";
+import FormatBeldex from "components/format_beldex";
 
 export default {
   name: "MasterNodeUnlock",
   components: {
     MasterNodeDetails,
     MasterNodeList,
-    FormatOxen
+    FormatBeldex
   },
   mixins: [WalletPassword],
   props: {
@@ -329,14 +333,61 @@ export default {
 </script>
 
 <style lang="scss">
-.deregister-header {
-  color: white;
-  font-size: 1rem;
-}
-.d-center {
-  display: flex;
-  justify-content: center;
-  align-content: center;
-  height: 100%;
+.beldex-app .master-node-unlock {
+  position: relative;
+  min-height: 120px;
+
+  &__group {
+    padding: var(--beldex-space-1) 0;
+    margin-top: var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 15px;
+    color: var(--beldex-text-faint);
+    text-transform: uppercase;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--beldex-space-2);
+    min-height: 380px;
+    text-align: center;
+  }
+
+  &__empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: var(--beldex-space-3);
+    background-color: rgba(235, 235, 235, 0.05);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__empty-title {
+    margin: 0;
+    font-family: var(--beldex-font-sans-medium);
+    font-size: 14px;
+    color: var(--beldex-text-strong);
+  }
+
+  &__empty-hint {
+    max-width: 300px;
+    margin: 0 0 var(--beldex-space-3);
+    font-size: var(--beldex-text-md);
+    line-height: 18px;
+    color: var(--beldex-text-muted);
+  }
 }
 </style>

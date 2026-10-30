@@ -1,91 +1,83 @@
 <template>
-  <div class="bns-record-list">
-    <div v-if="bns_record.length > 0 && is_ready">
-      <div class="tab-desc">
-        {{ $t("strings.bnsDescription") }}
-      </div>
-      <div class="decrypt row justify-between">
-        <OxenField
-          :label="$t('fieldLabels.decryptRecord')"
+  <!-- My BNS. Handlers are unchanged. -->
+  <div class="bns-records">
+    <div v-if="is_ready" class="bns-records__body">
+      <p class="beldex-form-desc">{{ $t("strings.bnsDescription") }}</p>
+      <div class="bns-records__decrypt">
+        <BeldexField
+          class="bns-records__field"
           :disable="decrypting"
           :error="$v.name.$error"
         >
           <q-input
             v-model.trim="name"
-            :dark="theme == 'dark'"
-            :suffix="'.bdx'"
+            dark
             maxlength="67"
             borderless
             dense
             :placeholder="$t('placeholders.bnsDecryptName')"
             :disable="decrypting"
+            :aria-label="$t('fieldLabels.decryptRecord')"
             @blur="$v.name.$touch"
           />
-        </OxenField>
-
-        <div class="btn-wrapper q-ml-md items-end">
-          <q-btn
-            color="primary"
-            :label="$t('buttons.addRecord')"
-            :loading="decrypting"
-            @click="decrypt()"
-          />
-        </div>
+          <span class="bns-records__suffix">.bdx</span>
+        </BeldexField>
+        <q-btn
+          class="beldex-btn beldex-btn--ghost bns-records__decrypt-btn"
+          unelevated
+          no-caps
+          :loading="decrypting"
+          @click="decrypt()"
+        >
+          <img src="~assets/icons/lock-open.svg" alt="" />
+          {{ $t("buttons.decrypt") }}
+        </q-btn>
       </div>
 
-      <div v-if="decrypting" class="q-mb-md" style="color: #20d030">
+      <p v-if="decrypting" class="bns-records__fetching">
         {{ $t("strings.bns.fetchNewRecord") }}
-      </div>
+      </p>
 
-      <div class="records-group">
-        <span class="record-type-title">{{ $t("strings.bns.records") }} </span>
+      <template v-if="bns_record.length > 0">
+        <div class="beldex-label bns-records__group">
+          {{ $t("strings.bns.records") }}
+        </div>
         <BNSRecordList
           :record-list="bns_record"
           :is-belnet="true"
           @onUpdate="onUpdate"
           @onRenew="onRenew"
         />
+      </template>
+      <!-- empty bns history -->
+      <div v-else class="bns-records__empty">
+        <span class="bns-records__empty-icon">
+          <q-icon name="alternate_email" size="24px" />
+        </span>
+        <strong class="bns-records__empty-title">{{
+          $t("strings.bns.noNamesYet")
+        }}</strong>
+        <p class="bns-records__empty-hint">
+          {{ $t("strings.bns.noNamesHint") }}
+        </p>
+        <q-btn
+          class="beldex-btn"
+          unelevated
+          no-caps
+          :label="$t('strings.bns.buyAName')"
+          @click="$emit('onBuy')"
+        />
       </div>
     </div>
-    <!-- empty bns history -->
-    <div
-      v-else-if="is_ready && bns_record.length === 0 && ourAddresses.length > 0"
-      class="flex no-wrap column justify-center items-center emptybns"
-    >
-      <svg
-        width="100"
-        height="100"
-        viewBox="0 0 29 34"
-        fill="#484860"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M14.4108 0C8.25738 0 2.88683 3.35992 0 8.33333H4.06901C5.56912 6.48004 7.52658 5.01302 9.80469 4.16992C9.28277 5.38303 8.86502 6.80013 8.54492 8.33333H11.9727C12.7707 5.03852 13.8889 3.33333 14.4108 3.33333C14.9327 3.33333 16.0509 5.03852 16.849 8.33333H20.2767C19.9566 6.80013 19.5367 5.38303 19.0169 4.16992C21.2934 5.01302 23.2525 6.48004 24.7526 8.33333H28.8216C25.9348 3.35992 20.5642 0 14.4108 0ZM0 25C2.88683 29.9734 8.25738 33.3333 14.4108 33.3333C20.5642 33.3333 25.9348 29.9734 28.8216 25H24.7526C23.2525 26.8533 21.295 28.3203 19.0169 29.1634C19.5367 27.9503 19.9533 26.5332 20.2734 25H16.8457C16.0476 28.2948 14.9295 30 14.4076 30C13.8856 30 12.7707 28.2948 11.9727 25H8.54492C8.86502 26.5332 9.28494 27.9503 9.80469 29.1634C7.52821 28.3203 5.56912 26.8533 4.06901 25H0Z"
-        />
-        <path
-          d="M6.08153 18.5914C6.08153 17.7922 5.4231 17.3127 4.38188 17.3127H2.2688V19.8169H4.42781C5.46904 19.8169 6.08153 19.3773 6.08153 18.5914ZM5.82122 14.7153C5.82122 13.9694 5.23936 13.5431 4.22875 13.5431H2.2688V15.8741H4.22875C5.23936 15.8741 5.82122 15.4745 5.82122 14.7153ZM8.25585 18.8179C8.25585 20.2964 6.95432 21.3353 4.73406 21.3353H0.125093V12.038H4.535C6.77057 12.038 8.01086 13.0503 8.01086 14.4356C8.01086 15.5678 7.22994 16.2737 6.18871 16.5668C7.39837 16.7532 8.25585 17.7256 8.25585 18.8179Z"
-        />
-        <path
-          d="M16.962 12.0246H19.1057V21.3353H16.962L12.1081 14.955V21.3353H9.96436V12.0246H12.1081L16.962 18.4182V12.0246Z"
-        />
-        <path
-          d="M28.6965 18.6447C28.6965 20.1099 27.349 21.4286 24.9144 21.4286C22.6941 21.4286 20.9792 20.4163 20.9486 18.658H23.2454C23.3066 19.4039 23.8732 19.8968 24.8685 19.8968C25.8791 19.8968 26.4763 19.4306 26.4763 18.7646C26.4763 16.7532 20.9639 17.9654 20.9792 14.5954C20.9792 12.9171 22.541 11.9048 24.746 11.9048C26.9356 11.9048 28.4362 12.8771 28.574 14.5554H26.2159C26.17 13.9427 25.6035 13.4632 24.6847 13.4499C23.8426 13.4232 23.2148 13.7829 23.2148 14.5421C23.2148 16.4069 28.6965 15.368 28.6965 18.6447Z"
-        />
-      </svg>
-      <div class="hintmsg">
-        {{ $t("strings.bnsDescription") }}
-      </div>
-    </div>
-
-    <q-inner-loading v-else :showing="true" :dark="theme == 'dark'">
-      <q-spinner color="primary" size="30" />
+    <q-inner-loading v-else :showing="true" dark>
+      <beldex-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import { bchat_name_or_belnet_name } from "src/validators/common";
 import BNSRecordList from "./bns_record_list";
 
@@ -100,7 +92,7 @@ const DECRYPT_RECORD_TIMEOUT_MS = 15000;
 export default {
   name: "BNSRecords",
   components: {
-    OxenField,
+    BeldexField,
     BNSRecordList
   },
   data() {
@@ -277,39 +269,119 @@ export default {
 </script>
 
 <style lang="scss">
-.bns-record-list {
-  .height {
-    font-size: 0.9em;
-  }
-  .q-item {
-    cursor: cursor;
-  }
+.beldex-app .bns-records {
+  position: relative;
+  min-height: 120px;
 
-  .oxen-field {
-    flex: 1;
-  }
-  .emptybns {
-    //height: 100%;
-    height: calc(100vh - 631px);
-    margin-top: 30px;
-    .hintmsg {
-      width: 72%;
-      margin-top: 15px;
-      color: #afafbe;
-      font-weight: 400;
-      font-size: 12px;
-      text-align: justify;
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-5);
+
+    .beldex-form-desc {
+      margin: 0;
+      line-height: 16px;
+      color: var(--beldex-text-muted);
     }
   }
 
-  .decrypt {
-    height: 100px;
-    // margin-bottom: 20px;
+  &__decrypt {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--beldex-space-3);
+  }
 
-    .btn-wrapper {
-      height: 50px;
-      margin-top: 60px;
+  &__field {
+    flex: 1 1 auto;
+
+    // Beats app.styl `.bns-page .beldex-field .content` min-height 45px !important.
+    .content {
+      min-height: 40px !important;
+      padding: 0;
+      background: var(--beldex-bg);
     }
+
+    &:not(.disable):not(.disable-hover) .content:hover {
+      background: var(--beldex-bg);
+    }
+
+    .q-field {
+      flex: 1 1 auto;
+      padding-left: var(--beldex-space-3);
+    }
+  }
+
+  // Trailing ".bdx" segment.
+  &__suffix {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    padding: 0 var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--beldex-text);
+    background: var(--beldex-panel);
+    border-left: 1px solid var(--beldex-border);
+  }
+
+  &__decrypt-btn {
+    padding: 0 var(--beldex-space-5);
+    font-weight: 700;
+    text-transform: none;
+  }
+
+  &__fetching {
+    margin: 0;
+    font-size: var(--beldex-text-md);
+    color: var(--beldex-accent);
+  }
+
+  &__group {
+    // 23px row, 8px above the first record (body gap is 20).
+    margin: 0 0 calc(var(--beldex-space-2) - var(--beldex-space-5));
+    padding: var(--beldex-space-1) 0;
+    font-size: 10px;
+    line-height: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--beldex-text-faint);
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--beldex-space-3);
+    padding: var(--beldex-space-9) 0;
+    text-align: center;
+  }
+
+  &__empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    color: var(--beldex-text-muted);
+    background-color: rgba(235, 235, 235, 0.05);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+  }
+
+  &__empty-title {
+    font-family: var(--beldex-font-sans-medium);
+    font-size: var(--beldex-text-base);
+    line-height: 20px;
+    color: var(--beldex-text);
+  }
+
+  &__empty-hint {
+    max-width: 320px;
+    margin: 0;
+    font-size: var(--beldex-text-md);
+    line-height: 18px;
+    color: var(--beldex-text-muted);
   }
 }
 </style>

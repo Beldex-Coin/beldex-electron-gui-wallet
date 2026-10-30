@@ -1,36 +1,34 @@
 <template>
+  <!-- Stake tab. Bindings and handlers are unchanged. -->
   <div :class="`${toggleVisible ? 'master-node-staking' : ''}`">
-    <div v-if="toggleVisible" class="q-px-md q-pt-md">
-      <p class="tab-desc ft-Light">
+    <div v-if="toggleVisible" class="master-node-staking__form">
+      <p class="beldex-form-desc">
         {{ $t("strings.masterNodeContributionDescription") }}
-        <span
-          style="cursor: pointer; text-decoration: underline"
-          @click="oxenWebsite"
-          >Beldex {{ $t("strings.website") }}.</span
+        <a class="master-node-staking__link" @click="oxenWebsite"
+          >Beldex {{ $t("strings.website") }}.</a
         >
       </p>
-      <OxenField
+      <BeldexField
         :label="$t('fieldLabels.masterNodeKey')"
         :error="$v.master_node.key.$error"
       >
         <q-input
           v-model.trim="master_node.key"
-          :dark="theme == 'dark'"
+          dark
           :placeholder="$t('placeholders.hexCharacters', { count: 64 })"
           borderless
           dense
           @input="applyAlphanumericMask"
           @blur="$v.master_node.key.$touch"
         />
-      </OxenField>
-      <OxenField
+      </BeldexField>
+      <BeldexField
         :label="$t('fieldLabels.amount')"
-        class="q-mt-md"
         :error="$v.master_node.amount.$error"
       >
         <q-input
           v-model.trim="master_node.amount"
-          :dark="theme == 'dark'"
+          dark
           type="number"
           min="0"
           :max="unlocked_balance / 1e9"
@@ -40,37 +38,44 @@
           @blur="$v.master_node.amount.$touch"
           @keydown="keyHandler"
         />
-        <q-btn
-          class="minBtn"
-          :text-color="theme == 'dark' ? 'white' : 'dark'"
-          :label="$t('buttons.min')"
-          :disable="!areButtonsEnabled()"
+        <span class="master-node-staking__unit">BDX</span>
+        <button
+          type="button"
+          class="master-node-staking__act"
+          :disabled="!areButtonsEnabled()"
           @click="master_node.amount = minStake(master_node.key)"
-        />
-        <q-btn
-          color="secondary"
-          :text-color="theme == 'dark' ? 'white' : 'dark'"
-          :label="$t('buttons.max')"
-          :disable="!areButtonsEnabled()"
+        >
+          {{ $t("buttons.min") }}
+        </button>
+        <button
+          type="button"
+          class="master-node-staking__act master-node-staking__act--accent"
+          :disabled="!areButtonsEnabled()"
           @click="master_node.amount = maxStake(master_node.key)"
-        />
-      </OxenField>
-      <div class="submit-button flex row justify-center">
+        >
+          {{ $t("buttons.max") }}
+        </button>
+      </BeldexField>
+      <div class="beldex-form-actions">
         <q-btn
+          class="beldex-btn beldex-btn--ghost"
+          unelevated
+          no-caps
           :disable="!is_able_to_send"
-          color="primary"
-          :label="$t('buttons.stake')"
-          @click="stake()"
-        />
-        <q-btn
-          :disable="!is_able_to_send"
-          color="accent"
           :label="$t('buttons.sweepAll')"
           @click="sweepAllWarning()"
         />
+        <q-btn
+          class="beldex-btn"
+          unelevated
+          no-caps
+          :disable="!is_able_to_send"
+          :label="$t('buttons.stake')"
+          @click="stake()"
+        />
       </div>
     </div>
-    <div v-if="toggleVisible" class="hr-separator" style="margin: 10px 19px" />
+    <div v-if="toggleVisible" class="beldex-hr master-node-staking__hr" />
     <MasterNodeContribute
       :awaiting-master-nodes="awaiting_master_nodes"
       :toggle-visible="toggleVisible"
@@ -89,7 +94,7 @@
     <q-inner-loading
       :showing="stake_status.sending || sweep_all_status.sending"
     >
-      <q-spinner color="primary" size="30" />
+      <beldex-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
 </template>
@@ -99,7 +104,7 @@ import objectAssignDeep from "object-assign-deep";
 import { mapState } from "vuex";
 import { required, decimal } from "vuelidate/lib/validators";
 import { master_node_key, greater_than_zero } from "src/validators/common";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import WalletPassword from "src/mixins/wallet_password";
 import ConfirmDialogMixin from "src/mixins/confirm_dialog_mixin";
 import MasterNodeContribute from "./master_node_contribute";
@@ -111,7 +116,7 @@ const DO_NOTHING = 10;
 export default {
   name: "MasterNodeStaking",
   components: {
-    OxenField,
+    BeldexField,
     MasterNodeContribute,
     ConfirmTransactionDialog
   },
@@ -518,50 +523,58 @@ export default {
 </script>
 
 <style lang="scss">
-.master-node-staking {
-  border: unset;
+.beldex-app .master-node-staking {
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-5);
+  }
 
-  .submit-button {
-    .q-btn:not(:first-child) {
-      margin-left: 8px;
+  &__link {
+    color: var(--beldex-text);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  &__hr {
+    margin: var(--beldex-space-5) 0;
+  }
+
+  // Unit + Min/Max sit inside the amount field (BeldexField `.content`).
+  &__unit {
+    padding: 0 var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    color: var(--beldex-text-muted);
+  }
+
+  &__act {
+    align-self: stretch;
+    padding: 0 var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 500;
+    color: var(--beldex-text);
+    background: var(--beldex-panel-raised);
+    border: 0;
+    border-left: 1px solid var(--beldex-border);
+    cursor: pointer;
+
+    &--accent {
+      font-weight: 700;
+      color: var(--beldex-accent);
+      text-transform: uppercase;
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
-  .tab-desc {
-    color: #afafbe;
-  }
-
-  .minBtn {
-    height: 40px;
-    background-color: #32324a;
-    border-radius: 10px;
-    margin-right: 10px;
-  }
-  .oxen-field .content {
-    min-height: 40px !important;
-  }
-}
-.contribute {
-  margin-top: 16px;
-  padding-left: 8px;
-  border: 1px solid #484856;
-  border-radius: 10px;
 }
 
 .master-node-stake-tab {
-  // margin-top: 4px;
   user-select: none;
-  min-height: 41vh;
-  .header {
-    font-weight: 450;
-  }
-  .q-item-sublabel,
-  .q-list-header {
-    font-size: 14px;
-  }
-}
-@media only screen and (max-height: 780px) {
-  .master-node-stake-tab {
-    min-height: 30vh;
-  }
 }
 </style>

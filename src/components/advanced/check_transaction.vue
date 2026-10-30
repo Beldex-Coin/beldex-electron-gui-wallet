@@ -1,11 +1,11 @@
 <template>
   <div class="check-transaction">
     <div class="q-pa-md">
-      <div class="q-mb-lg tab-desc ft-medium">
+      <div class="beldex-hint beldex-form-desc">
         {{ $t("strings.checkTransaction.description") }}
       </div>
       <div>
-        <OxenField
+        <BeldexField
           :label="$t('fieldLabels.transactionId')"
           :error="$v.txid.$error"
           class="ft-medium"
@@ -18,12 +18,13 @@
             dense
             @blur="$v.txid.$touch"
           />
-        </OxenField>
-        <OxenField
+        </BeldexField>
+        <BeldexField
           class="q-mt-md ft-medium"
           :label="$t('fieldLabels.recipientAddress')"
           :error="$v.address.$error"
           optional
+          optional-right
         >
           <q-input
             v-model.trim="address"
@@ -33,11 +34,12 @@
             dense
             @blur="$v.address.$touch"
           />
-        </OxenField>
-        <OxenField
+        </BeldexField>
+        <BeldexField
           class="q-mt-md ft-medium"
           :label="$t('fieldLabels.message')"
           optional
+          optional-right
         >
           <q-input
             v-model.trim="message"
@@ -46,8 +48,8 @@
             borderless
             dense
           />
-        </OxenField>
-        <OxenField
+        </BeldexField>
+        <BeldexField
           class="q-mt-md ft-medium"
           :label="$t('fieldLabels.signature')"
           :error="$v.signature.$error"
@@ -59,58 +61,68 @@
             borderless
             dense
           />
-        </OxenField>
-        <div class="submit-button flex row justify-center">
-          <q-btn color="primary" :label="$t('buttons.check')" @click="check" />
+        </BeldexField>
+        <div class="beldex-form-actions">
           <q-btn
             v-if="canClear"
-            color="accent"
+            class="beldex-btn beldex-btn--ghost"
+            unelevated
+            no-caps
             :label="$t('buttons.clear')"
             @click="clear"
           />
+          <q-btn
+            class="beldex-btn"
+            unelevated
+            no-caps
+            :label="$t('buttons.check')"
+            @click="check"
+          />
         </div>
       </div>
-      <div v-if="status.state.txid" style="color:white">
-        <div class="q-mb-sm flex row no-wrap ">
-          <div class="title q-mr-sm">{{ $t("strings.transactionID") }}</div>
-          <div style="word-break: break-all">{{ status.state.txid }}</div>
+      <div v-if="status.state.txid" class="beldex-result">
+        <div class="beldex-result__row">
+          <span class="beldex-label">{{ $t("strings.transactionID") }}</span>
+          <span class="beldex-result__value">{{ status.state.txid }}</span>
         </div>
-        <div class="q-mb-sm flex row no-wrap">
-          <div class="title q-mr-sm">
-            {{ $t("strings.checkTransaction.infoTitles.validTransaction") }}
-          </div>
-          <div :class="status.state.good ? 'good' : 'bad'">
-            {{ validTransaction }}
-          </div>
+        <div class="beldex-result__row">
+          <span class="beldex-label">{{
+            $t("strings.checkTransaction.infoTitles.validTransaction")
+          }}</span>
+          <span
+            class="beldex-result__value"
+            :class="
+              status.state.good
+                ? 'beldex-result__value--good'
+                : 'beldex-result__value--bad'
+            "
+            >{{ validTransaction }}</span
+          >
         </div>
-        <div
-          v-if="status.state.received != null"
-          class="q-mb-sm flex row no-wrap"
-        >
-          <div class="title q-mr-sm">
-            {{ $t("strings.checkTransaction.infoTitles.received") }}
-          </div>
-          <div>
-            <FormatOxen :amount="status.state.received" raw-value />
-          </div>
+        <div v-if="status.state.received != null" class="beldex-result__row">
+          <span class="beldex-label">{{
+            $t("strings.checkTransaction.infoTitles.received")
+          }}</span>
+          <span class="beldex-result__value"
+            ><FormatBeldex :amount="status.state.received" raw-value
+          /></span>
         </div>
-        <div
-          v-if="status.state.in_pool != null"
-          class="q-mb-sm flex row no-wrap"
-        >
-          <div class="title q-mr-sm">
-            {{ $t("strings.checkTransaction.infoTitles.inPool") }}
-          </div>
-          <div>{{ status.state.in_pool }}</div>
+        <div v-if="status.state.in_pool != null" class="beldex-result__row">
+          <span class="beldex-label">{{
+            $t("strings.checkTransaction.infoTitles.inPool")
+          }}</span>
+          <span class="beldex-result__value">{{ status.state.in_pool }}</span>
         </div>
         <div
           v-if="status.state.confirmations != null"
-          class="q-mb-sm flex row no-wrap"
+          class="beldex-result__row"
         >
-          <div class="title q-mr-sm">
-            {{ $t("strings.checkTransaction.infoTitles.confirmations") }}
-          </div>
-          <div>{{ status.state.confirmations }}</div>
+          <span class="beldex-label">{{
+            $t("strings.checkTransaction.infoTitles.confirmations")
+          }}</span>
+          <span class="beldex-result__value">{{
+            status.state.confirmations
+          }}</span>
         </div>
       </div>
     </div>
@@ -122,14 +134,14 @@ import { mapState } from "vuex";
 import { required } from "vuelidate/lib/validators";
 import { address } from "src/validators/common";
 import { i18n } from "boot/i18n";
-import OxenField from "components/oxen_field";
-import FormatOxen from "components/format_oxen";
+import BeldexField from "components/beldex_field";
+import FormatBeldex from "components/format_beldex";
 
 export default {
   name: "CheckTransaction",
   components: {
-    OxenField,
-    FormatOxen
+    BeldexField,
+    FormatBeldex
   },
   data() {
     return {
@@ -240,15 +252,9 @@ export default {
 </script>
 
 <style lang="scss">
-.check-transaction {
+.beldex-app .check-transaction {
   .description {
     white-space: pre-line;
-  }
-  .submit-button {
-    .q-btn:not(:first-child) {
-      margin-left: 8px;
-    }
-    margin-bottom: 12px;
   }
 }
 </style>

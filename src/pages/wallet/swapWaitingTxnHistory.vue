@@ -1,136 +1,89 @@
 <template>
-  <div class="txnSettlement waitingTxnHistory">
-    <header class="flex row items-center q-mb-md">
-      <div
-        class="flex items-center back-arrow-btn"
-        @click="() => this.$emit('goback')"
-      >
-        <svg
-          width="26"
-          height="26"
-          viewBox="0 0 26 26"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+  <div class="txnSettlement waitingTxnHistory swapPayment">
+    <!-- Payment – awaiting deposit -->
+    <header class="swapPayment__head">
+      <div class="swapPayment__title-wrap">
+        <h2 class="swapPayment__title">
+          {{ $t("titles.swap.sendFundDisc") }}
+        </h2>
+        <span
+          class="swapPayment__timer"
+          :class="{ 'is-expired': timeIsExpire }"
         >
-          <path
-            d="M13 -6.10352e-05C5.8201 -6.10352e-05 0 5.82008 0 13C0 20.18 5.8201 26.0001 13 26.0001C20.1799 26.0001 26 20.18 26 13C26 5.82008 20.1799 -6.10352e-05 13 -6.10352e-05ZM18.2 14.3H10.9382L13 16.3618C13.507 16.8688 13.507 17.6931 13 18.2001C12.493 18.7071 11.6688 18.7071 11.1618 18.2001L6.8809 13.9191C6.3726 13.4108 6.3726 12.5879 6.8809 12.0809L11.1618 7.79999C11.6688 7.29299 12.493 7.29299 13 7.79999C13.507 8.30699 13.507 9.1312 13 9.6382L10.9382 11.7H18.2C18.9176 11.7 19.5 12.2824 19.5 13C19.5 13.7176 18.9176 14.3 18.2 14.3Z"
-            fill="white"
-          />
-        </svg>
+          <q-icon name="timer" size="14px" />
+          <beldex-spinner v-if="!clock" size="12px" color="warning" />
+          <span v-else>{{ clock }}</span>
+        </span>
       </div>
-      <div class="ft-semibold q-ml-md header-txt">
-        {{ this.$t("buttons.back") }}
+      <div class="beldex-segmented" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="beldex-segmented__item beldex-segmented__item--active"
+          aria-selected="true"
+          @click="$emit('backToSwap')"
+        >
+          <span class="beldex-segmented__dot" />
+          {{ $t("titles.swap.exchange") }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="beldex-segmented__item"
+          aria-selected="false"
+          @click="$emit('goback')"
+        >
+          {{ $t("titles.swap.history") }}
+        </button>
       </div>
     </header>
-    <section class="q-mt-lg">
-      <article class="fund-details-wrapper flex row">
-        <div class="col-6">
-          <div class="ft-semibold title">
-            {{ this.$t("titles.swap.sendFundDisc") }}
-          </div>
-          <div class="header-pair uppercase">
-            <span class="from">{{ txnDetails.currencyFrom }}</span>
-            <svg
-              width="10"
-              height="11"
-              viewBox="0 0 10 11"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7.26028 0C7.0382 0 6.83961 0.126033 6.75419 0.318084C6.67091 0.512136 6.72003 0.732194 6.88018 0.878233L8.13366 2.05255H0.16008V3.07682H8.13366L6.88018 4.25113C6.73711 4.37916 6.67945 4.57122 6.7307 4.74926C6.77982 4.92931 6.9293 5.06935 7.12148 5.11536C7.31153 5.16337 7.51653 5.10936 7.6532 4.97532L9.83985 2.92678C10.0534 2.72672 10.0534 2.40264 9.83985 2.20259L7.6532 0.154041C7.5507 0.054014 7.40976 0 7.26028 0ZM2.72263 5.11536C2.57956 5.11936 2.44503 5.17538 2.3468 5.2714L0.160155 7.31995C-0.053385 7.52 -0.053385 7.84408 0.160155 8.04414L2.3468 10.0927C2.48347 10.2267 2.68847 10.2807 2.87852 10.2327C3.0707 10.1867 3.22018 10.0467 3.2693 9.86662C3.32055 9.68858 3.26289 9.49652 3.11982 9.36849L1.86634 8.19418H9.83992V7.16991H1.86634L3.11982 5.99559C3.28211 5.84755 3.32909 5.62349 3.24154 5.42944C3.15398 5.23339 2.94899 5.10936 2.72263 5.11536Z"
-                fill="#20D030"
-              />
-            </svg>
-            <span class="to"> {{ txnDetails.currencyTo }}</span>
-          </div>
-          <div class="amount-wrapper row q-mt-lg">
-            <div class="label amountLabel q-mr-sm">
-              {{ this.$t("fieldLabels.amount") }}
-            </div>
-            <div class="amount ft-semibold uppercase ">
-              {{
-                txnDetails.amountExpectedFrom + " " + txnDetails.currencyFrom
-              }}
-              <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
-            </div>
-          </div>
-          <div
-            v-if="txnDetails.privacySwap"
-            class="amount-wrapper row q-mt-lg q-mb-md"
-          >
-            <div class="label q-mr-sm">
-              {{ this.$t("titles.swap.swapType") }}
-            </div>
-            <div class="row">
-              <svg
-                width="30"
-                height="30"
-                viewBox="0 0 30 30"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect width="30" height="30" rx="8" fill="#303047" />
-                <path
-                  d="M15.013 6.99965C14.8783 6.99705 14.7451 7.0309 14.6279 7.09796C14.6279 7.09796 12.1488 8.49965 9 8.49965C8.58594 8.49965 8.25 8.83559 8.25 9.24965V14.8629C8.25 17.3623 9.97005 19.1533 11.5677 20.2812C13.1657 21.4095 14.7539 21.9586 14.7539 21.9586C14.9134 22.014 15.0866 22.014 15.2461 21.9586C15.2461 21.9586 16.8343 21.4095 18.4323 20.2812C20.0299 19.1533 21.75 17.3623 21.75 14.8629V9.24965C21.75 8.83559 21.4141 8.49965 21 8.49965C17.8512 8.49965 15.3721 7.09796 15.3721 7.09796C15.2627 7.03546 15.139 7.0016 15.013 6.99965ZM15 8.5628C15.4466 8.80239 17.3975 9.74282 20.25 9.92478V14.8629C20.25 16.6647 18.9701 18.0667 17.5677 19.0569C16.2884 19.9603 15.2155 20.3314 15 20.4101C14.7845 20.3314 13.7116 19.9603 12.4323 19.0569C11.0299 18.0667 9.75 16.6647 9.75 14.8629V9.92478C12.6025 9.74282 14.5534 8.80239 15 8.5628Z"
-                  fill="white"
-                />
-              </svg>
-              <span class="privacy-tag q-ml-xs">{{
-                this.$t("strings.privacy")
-              }}</span>
-              <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
-            </div>
-          </div>
 
-          <!-- <div class="amount ft-semibold uppercase"> -->
-          <!-- {{ txnDetails.amountExpectedFrom + " " + txnDetails.currencyFrom }} -->
-          <!-- <q-btn icon="edit" color="accent" class="edit-btn" /> -->
-          <!-- </div> -->
-        </div>
-        <div class="col-6 timer-wrapper">
-          <div class="pad-wrap">
-            <div v-if="!this.timeIsExpire" class="label uppercase">
-              {{ this.$t("titles.swap.timeLeft") }}
-              {{
-                txnDetails.amountExpectedFrom + " " + txnDetails.currencyFrom
-              }}
-            </div>
+    <div v-if="timeIsExpire" class="swapPayment__expired">
+      <span>{{ $t("titles.swap.guaranteedRateDisc") }}</span>
+      <q-btn
+        :label="$t('buttons.startOver')"
+        icon="refresh"
+        class="beldex-btn beldex-btn--ghost"
+        unelevated
+        no-caps
+        @click="$emit('backToSwap')"
+      />
+    </div>
 
-            <div class="flex items-center">
-              <q-icon name="timer" class="time-icon" />
-              <!-- <span id="timer" ref="timer" class="ft-semibold q-ml-xs"> </span> -->
-              <q-spinner
-                v-if="!this.clock"
-                size="20px"
-                color="primary"
-                class="q-ml-md"
-              />
-              <span class="ft-semibold q-ml-xs">{{ this.clock }}</span>
+    <section class="swapPayment__body">
+      <div class="swapPayment__qr">
+        <QrcodeVue
+          :value="txnDetails.payinAddress || ''"
+          :size="118"
+          level="M"
+          background="#ffffff"
+          foreground="#000000"
+        />
+      </div>
+
+      <div class="swapPayment__info">
+        <div class="swapPayment__facts">
+          <div class="swapPayment__fact">
+            <div class="swapPayment__label">
+              {{ $t("fieldLabels.amount") }}
             </div>
-            <div v-if="this.timeIsExpire" class="label">
-              {{ this.$t("titles.swap.guaranteedRateDisc") }}
+            <div class="swapPayment__amount uppercase">
+              {{ txnDetails.amountExpectedFrom }}
+              {{ txnDetails.currencyFrom }}
             </div>
-            <q-btn
-              v-if="this.timeIsExpire"
-              label="Start Over"
-              color="primary"
-              class="start-btn q-mt-sm"
-              icon="refresh"
-              @click="() => this.$emit('backToSwap')"
-            />
           </div>
-          <div class="hr-seperator"></div>
-          <div class="pad-wrap">
-            <div class="label">{{ this.$t("titles.swap.transactionID") }}</div>
-            <div>
-              <span class="ft-semibold q-mr-xs">{{ txnDetails.id }}</span>
+          <div class="swapPayment__fact">
+            <div class="swapPayment__label">
+              {{ $t("titles.swap.transactionID") }}
+            </div>
+            <div class="swapPayment__id">
+              <span>{{ txnDetails.id }}</span>
               <q-btn
-                class="copy-btn"
                 flat
-                icon="content_copy"
+                dense
                 size="sm"
-                color="primary"
+                icon="content_copy"
+                class="swapPayment__id-copy"
                 @click="
                   copyAddress({
                     val: txnDetails.id,
@@ -140,200 +93,59 @@
               />
             </div>
           </div>
-        </div>
-      </article>
-
-      <article class="recipt-address-wrapper">
-        <div class="label">{{ this.$t("fieldLabels.recipientAddress") }}</div>
-        <div class="flex row justify-between q-mt-sm">
-          <div>
-            <span class="ft-medium" style="word-break: break-all">{{
-              txnDetails.payinAddress
-            }}</span
-            ><br />
-
-            <span
-              v-if="this.txnDetails.networkFrom"
-              class="ft-semibold uppercase"
-              style="color: #00ad07"
-              >{{ this.$t("titles.swap.network") }} :
-              {{ this.txnDetails.networkFrom }}</span
-            >
-            <br />
-            <span
-              v-if="this.txnDetails.blockchainFrom"
-              class="ft-semibold uppercase"
-              style="color: #00ad07"
-              >{{ this.$t("titles.swap.blockchain") }} :
-              {{
-                this.txnDetails.blockchainFrom.replaceAll("_", " ") || ""
-              }}</span
-            >
+          <div v-if="txnDetails.privacySwap" class="swapPayment__fact">
+            <div class="swapPayment__label">
+              {{ $t("titles.swap.swapType") }}
+            </div>
+            <div class="swapPayment__value">
+              {{ $t("strings.privacy") }}
+            </div>
           </div>
-          <div>
-            <q-btn
-              label="Copy Address"
-              color="primary"
-              class="copy-adress-btn q-mr-xs"
-              @click="
-                copyAddress({
-                  val: txnDetails.payinAddress,
-                  from: 'Recipient address'
-                })
-              "
-            />
-            <q-btn
-              icon="qr_code_scanner"
-              color="accent"
-              class="qr-btn"
-              @click="showQR(txnDetails.payinAddress)"
-            />
+          <div v-if="getConfirmationCount() !== null" class="swapPayment__fact">
+            <div class="swapPayment__label">
+              {{ $t("titles.swap.confirmations") }}
+            </div>
+            <div class="swapPayment__value">
+              {{ getConfirmationCount() }} Blocks
+            </div>
           </div>
         </div>
-      </article>
-      <!-- <article v-if="txnDetails.type == 'fixed'" class="recipt-address-wrapper">
-        <div class="label">{{ this.$t("titles.swap.refundAddress") }}</div>
-        <div class="flex row justify-between q-mt-sm">
-          <div>
-            <span class="ft-medium">{{ txnDetails.refundAddress }}</span
-            ><br />
-            <span class="ft-semibold uppercase" style="color: #00ad07"
-              >{{ this.$t("titles.swap.blockchain") }} :
-              {{ this.chainDetails.send }}</span
-            >
-          </div>
-          <div>
-            <q-btn
-              label="Copy Address"
-              color="primary"
-              class="copy-adress-btn q-mr-xs"
-              @click="
-                copyAddress({
-                  val: txnDetails.refundAddress,
-                  from: 'Recipient address'
-                })
-              "
-            />
-            <q-btn
-              icon="qr_code_scanner"
-              color="accent"
-              class="qr-btn"
-              @click="showQR(txnDetails.refundAddress)"
-            />
-          </div>
-        </div>
-      </article> -->
-      <article class="warning-wrapper q-mt-md">
-        <q-icon name="o_info" size="14px" />
-        <span class="q-ml-sm warn-txt"
-          >{{ this.$t("titles.swap.sendFundsAboveAddress") }}
-          {{ this.$t("titles.swap.once") }}.</span
-        >
-      </article>
 
-      <article style="width: 48%">
-        <div class="ft-semibold" style="margin-top: 14px; margin-bottom: 9px">
-          {{ this.$t("titles.swap.transactionDetails") }}
+        <div class="swapPayment__label">
+          {{ $t("titles.swap.depositAddress") }}
+          <template v-if="networkLabel"> · {{ networkLabel }}</template>
         </div>
-        <table style="width: 100%" class="txn-fee-details">
-          <tr>
-            <td>{{ this.$t("titles.swap.youSend") }}</td>
-            <td>
-              {{
-                txnDetails.amountExpectedFrom > 0
-                  ? txnDetails.amountExpectedFrom
-                  : 0
-              }}
-              <span class="uppercase">{{ txnDetails.currencyFrom }}</span>
-            </td>
-          </tr>
-          <tr v-if="txnDetails.type == 'float'">
-            <td>{{ this.$t("titles.swap.exchangeRate") }}</td>
-            <td class="uppercase">
-              1
-              {{ txnDetails.currencyFrom ? txnDetails.currencyFrom : "" }}
-              ~ {{ Number(txnDetails.rate).toFixed(8) }}
-              {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
-            </td>
-          </tr>
-          <tr v-else>
-            <td>{{ this.$t("titles.swap.fixedRate") }}</td>
-            <td>
-              <span class="uppercase"
-                >1
-                {{ txnDetails.currencyFrom }}
-                = {{ Number(txnDetails.amountExpectedTo).toFixed(8) }}
-                {{ txnDetails.currencyTo }}</span
-              ><br />
-              <span class="fixed-rate-hint">{{
-                this.$t("titles.swap.fixedRateUpdateSec")
-              }}</span>
-            </td>
-          </tr>
-          <tr v-if="txnDetails.type == 'float'">
-            <td>{{ this.$t("titles.swap.serviceFee") }}</td>
-            <td class="uppercase">
-              {{ Number(txnDetails.platformFee || 0).toFixed(8) }}
-              {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
-            </td>
-          </tr>
-
-          <tr v-else>
-            <td>{{ this.$t("titles.swap.fees") }}</td>
-            <td style="font-size: 12px">
-              {{ this.$t("titles.swap.allTheFees") }}
-            </td>
-          </tr>
-          <tr v-if="txnDetails.type == 'float'">
-            <td>{{ this.$t("titles.swap.networkFee") }}</td>
-            <td class="uppercase">
-              {{
-                isNaN(Number(txnDetails.networkFee))
-                  ? "0.00000000"
-                  : Number(txnDetails.networkFee).toFixed(8)
-              }}
-              {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
-            </td>
-          </tr>
-          <tr v-if="getConfirmationCount() !== null">
-            <td>{{ $t("titles.swap.confirmations") }}</td>
-            <td class="uppercase">{{ getConfirmationCount() }} Blocks</td>
-          </tr>
-          <tr>
-            <td>{{ this.$t("titles.swap.youGet") }}</td>
-            <td v-if="txnDetails.type == 'float'" class="uppercase">
-              ~ {{ txnDetails.amountExpectedTo }}
-              {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
-            </td>
-            <td v-else class="uppercase">
-              = {{ txnDetails.amountExpectedTo }}
-              {{ txnDetails.currencyTo ? txnDetails.currencyTo : "" }}
-            </td>
-          </tr>
-        </table>
-      </article>
+        <div class="swapPayment__address">
+          {{ txnDetails.payinAddress }}
+        </div>
+        <q-btn
+          :label="$t('buttons.copyAddress')"
+          icon="content_copy"
+          class="beldex-btn beldex-btn--ghost swapPayment__copy"
+          unelevated
+          no-caps
+          @click="
+            copyAddress({
+              val: txnDetails.payinAddress,
+              from: 'Recipient address'
+            })
+          "
+        />
+      </div>
     </section>
 
-    <template>
-      <q-dialog v-model="QR.visible" :content-class="'qr-code-modal'">
-        <q-card class="qr-code-card">
-          <div
-            class="text-center q-pa-md q-ma-lg"
-            style="background-color: white; border-radius: 10px"
-          >
-            <QrcodeVue ref="qr" :value="QR.address" size="240"></QrcodeVue>
-          </div>
+    <article class="warning-wrapper swapPayment__warning">
+      <q-icon name="warning_amber" size="16px" />
+      <span class="q-ml-sm warn-txt">
+        {{ $t("titles.swap.sendFundsAboveAddress") }}
+        {{ $t("titles.swap.once") }}.
+      </span>
+    </article>
 
-          <q-card-actions class="q-mb-md" style="margin-right: 0">
-            <q-btn
-              color="primary"
-              :label="$t('buttons.close')"
-              @click="QR.visible = false"
-            />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-    </template>
+    <div class="swapPayment__status">
+      <span class="swapPayment__status-dot" />
+      {{ $t("titles.swap.waitingDeposit") }}
+    </div>
   </div>
 </template>
 
@@ -363,16 +175,34 @@ export default {
   },
   data() {
     return {
-      QR: {
-        visible: false
-      },
       timer: "",
       timeIsExpire: false,
       clock: ""
     };
   },
 
+  inject: {
+    setSwapPreview: { default: null }
+  },
+  computed: {
+    networkLabel() {
+      const t = this.txnDetails || {};
+      const label = t.blockchainFrom || t.networkFrom || "";
+      return String(label)
+        .replaceAll("_", " ")
+        .toUpperCase();
+    }
+  },
+  watch: {
+    txnDetails: {
+      immediate: true,
+      handler() {
+        this.publishPreview();
+      }
+    }
+  },
   beforeDestroy() {
+    if (this.setSwapPreview) this.setSwapPreview(null);
     clearInterval(this.timer);
   },
   mounted() {
@@ -380,6 +210,24 @@ export default {
   },
 
   methods: {
+    publishPreview() {
+      if (!this.setSwapPreview || !this.txnDetails) return;
+      const t = this.txnDetails;
+      const fmt = v =>
+        v === undefined || v === null || isNaN(Number(v))
+          ? "--"
+          : Number(v).toFixed(8);
+      this.setSwapPreview({
+        type: t.type,
+        from: t.currencyFrom || "",
+        to: t.currencyTo || "",
+        amountFrom: t.amountExpectedFrom > 0 ? t.amountExpectedFrom : 0,
+        rate: fmt(t.rate),
+        fee: fmt(t.platformFee || 0),
+        networkFee: fmt(t.networkFee),
+        amountTo: t.amountExpectedTo
+      });
+    },
     backTopayment() {
       this.$emit("goback");
       clearInterval(this.timer);
@@ -418,10 +266,11 @@ export default {
         );
         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        this.clock = hours + "h " + minutes + "m " + seconds + "s ";
+        const pad = n => String(Math.max(n, 0)).padStart(2, "0");
+        this.clock = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 
         if (distance < 0) {
-          this.clock = "Expired";
+          this.clock = "00:00:00";
           this.timeIsExpire = true;
           this.clearintervals();
         }
@@ -429,10 +278,6 @@ export default {
     },
     clearintervals() {
       clearInterval(this.timer);
-    },
-    showQR(address) {
-      this.QR.visible = true;
-      this.QR.address = address;
     },
     getConfirmationCount() {
       if (!this.txnDetails) return null;

@@ -1,89 +1,82 @@
 <template>
   <div class="sign-and-verify ">
     <div class="q-pa-md">
-      <div class="q-mb-lg tab-desc ft-regular ">
+      <div class="beldex-hint beldex-form-desc">
         {{ $t("strings.signAndVerifyDescription") }}
       </div>
-      <div v-if="is_view_only">
+      <div v-if="is_view_only" class="beldex-hint">
         {{ $t("strings.cannotSign") }}
       </div>
-      <div v-else>
-        <div class=" header ft-bold " style="font-size:1.25rem">
-          {{ $t("titles.advanced.sign") }}
-        </div>
-        <div class="row justify-between ">
-          <OxenField :label="$t('fieldLabels.data')" class="ft-regular">
+      <div v-else class="beldex-box">
+        <h3 class="beldex-box__title">{{ $t("titles.advanced.sign") }}</h3>
+        <div class="beldex-box__row">
+          <BeldexField>
             <q-input
               v-model.trim="toSign"
-              :dark="theme == 'dark'"
               borderless
               dense
+              :aria-label="$t('fieldLabels.data')"
               :placeholder="$t('placeholders.dataToSign')"
             />
-          </OxenField>
-          <div class="btn-wrapper q-ml-md flex items-end">
-            <q-btn
-              color="primary"
-              :label="$t('titles.advanced.sign')"
-              :loading="sign_status.sending"
-              :disable="!toSign"
-              class="btn-position"
-              @click="sign()"
-            />
-          </div>
+          </BeldexField>
+          <q-btn
+            class="beldex-btn"
+            unelevated
+            no-caps
+            :loading="sign_status.sending"
+            :disable="!toSign"
+            @click="sign()"
+          >
+            <img src="~assets/icons/proof-sign.svg" alt="" />
+            {{ $t("titles.advanced.sign") }}
+          </q-btn>
         </div>
       </div>
-      <div class="seperator-line q-my-sm"></div>
-      <div class="verify-heading  header ft-bold " style="font-size:1.25rem">
-        {{ $t("titles.advanced.verify") }}
-      </div>
-      <div class="justify-between items-end">
-        <OxenField
-          class="q-mt-md ft-regular"
-          :label="$t('fieldLabels.signature')"
-        >
+      <div class="beldex-box">
+        <h3 class="beldex-box__title">{{ $t("titles.advanced.verify") }}</h3>
+        <BeldexField :label="$t('fieldLabels.signature')">
           <q-input
             v-model.trim="signatureToVerify"
-            :dark="theme == 'dark'"
             borderless
             dense
-            :placeholder="$t('placeholders.signature')"
+            :placeholder="$t('placeholders.pasteSignature')"
           />
-        </OxenField>
-        <OxenField class="q-mt-md ft-regular" :label="$t('fieldLabels.data')">
-          <q-input
-            v-model.trim="unsignedData"
-            :dark="theme == 'dark'"
-            borderless
-            dense
-            :placeholder="$t('placeholders.unsignedData')"
-          />
-        </OxenField>
-        <OxenField
-          class="q-mt-md ft-regular"
-          :label="$t('fieldLabels.recipientAddress')"
-        >
+        </BeldexField>
+        <BeldexField :label="$t('fieldLabels.address')">
           <q-input
             v-model.trim="address"
-            :dark="theme == 'dark'"
             borderless
             dense
-            :placeholder="$t('placeholders.addressOfSigner')"
+            :placeholder="$t('placeholders.signerAddress')"
           />
-        </OxenField>
-        <div class="submit-button flex row justify-center">
-          <q-btn
-            color="primary "
-            :label="$t('titles.advanced.verify')"
-            :disable="!signatureToVerify || !unsignedData || !address"
-            @click="verify()"
+        </BeldexField>
+        <BeldexField :label="$t('fieldLabels.data')">
+          <q-input
+            v-model.trim="unsignedData"
+            borderless
+            dense
+            :placeholder="$t('placeholders.dataThatWasSigned')"
           />
+        </BeldexField>
+        <div class="beldex-form-actions">
           <q-btn
             v-if="canClear"
+            class="beldex-btn beldex-btn--ghost"
+            unelevated
+            no-caps
             :label="$t('buttons.clear')"
-            color="accent"
             @click="clear"
           />
+          <q-btn
+            class="beldex-btn"
+            unelevated
+            no-caps
+            :disable="!signatureToVerify || !unsignedData || !address"
+            @click="verify()"
+          >
+            <img src="~assets/icons/proof-check.svg" alt="" />
+            {{ $t("titles.advanced.verify") }}
+          </q-btn>
         </div>
         <SignatureDialog
           :on-copy-signature="copySignature"
@@ -102,13 +95,13 @@
 
 <script>
 import { clipboard } from "src/shims/electron-renderer";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import SignatureDialog from "./signature_dialog";
 import { mapState } from "vuex";
 export default {
   name: "SignAndVerify",
   components: {
-    OxenField,
+    BeldexField,
     SignatureDialog
   },
   data() {
@@ -227,41 +220,13 @@ export default {
 </script>
 
 <style lang="scss">
-.description {
-  white-space: pre-line;
-}
-.sign-and-verify {
-  .height {
-    font-size: 0.9em;
-  }
+.beldex-app .sign-and-verify {
   .q-item {
     cursor: default;
   }
-  .seperator-line {
-    height: 1.5px;
-    background-color: #484856;
-  }
-  .oxen-field {
+
+  .beldex-box__row .beldex-field {
     flex: 1;
   }
-  .bg-primary {
-    max-width: unset;
-    width: 137px;
-  }
-}
-
-.verify-heading {
-  margin-top: 24px;
-}
-
-.submit-button {
-  .q-btn:not(:first-child) {
-    margin-left: 8px;
-  }
-  margin-bottom: 12px;
-}
-.btn-position {
-  position: relative;
-  bottom: -6px;
 }
 </style>

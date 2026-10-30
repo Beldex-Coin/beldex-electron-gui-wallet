@@ -1,39 +1,33 @@
 <template>
+  <!-- Available masternodes. -->
   <div v-if="toggleVisible" class="master-node-stake-tab contribute">
-    <div class="q-pa-md">
-      <div class="row align-items sn-contribution-info">
-        <div class="col-md-9">
-          <div class="header">{{ $t("titles.availableForContribution") }}</div>
-          <div v-if="awaitingMasterNodes.length == 0" class="info-txt">
-            {{ $t("strings.noMasterNodesCurrentlyAvailable") }}
-          </div>
-        </div>
-        <div
-          class="col-md-3"
-          style="display: flex; align-items: center; justify-content: center"
-        >
-          <q-btn
-            class="float-right vertical-top bg-secondary"
-            size="md"
-            icon="refresh"
-            :label="$t('buttons.refresh')"
-            @click="updateMasterNodeList"
-          />
-        </div>
-      </div>
-      <div v-if="awaitingMasterNodes.length > 0">
-        <MasterNodeList
-          v-if="awaitingMasterNodes"
-          :master-nodes="awaitingMasterNodes"
-          button-i18n="buttons.stake"
-          :details="details"
-          :action="contributeToNode"
-        />
-      </div>
+    <div class="contribute__head">
+      <h3 class="contribute__title">
+        {{ $t("titles.availableForContribution") }}
+      </h3>
+      <q-btn
+        class="beldex-btn beldex-btn--ghost contribute__refresh"
+        unelevated
+        no-caps
+        icon="refresh"
+        :label="$t('buttons.refresh')"
+        @click="updateMasterNodeList"
+      />
     </div>
+    <div v-if="awaitingMasterNodes.length == 0" class="contribute__empty">
+      <img src="~assets/icons/info.svg" alt="" />
+      {{ $t("strings.noMasterNodesCurrentlyAvailable") }}
+    </div>
+    <MasterNodeList
+      v-if="awaitingMasterNodes.length > 0"
+      :master-nodes="awaitingMasterNodes"
+      button-i18n="buttons.stake"
+      :details="details"
+      :action="contributeToNode"
+    />
 
-    <q-inner-loading :showing="fetching" :dark="theme == 'dark'">
-      <q-spinner color="primary" size="30" />
+    <q-inner-loading :showing="fetching" dark>
+      <beldex-spinner color="primary" size="30" />
     </q-inner-loading>
   </div>
   <MasterNodeDetails
@@ -110,18 +104,57 @@ export default {
 </script>
 
 <style lang="scss">
-.sn-contribution-info {
-  > * {
-    line-height: 30px;
-    margin: 20 400;
+.beldex-app .contribute {
+  position: relative;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--beldex-space-3);
   }
-  margin-bottom: 6px;
+
+  &__title {
+    margin: 0;
+    font-family: var(--beldex-font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.35px;
+    line-height: 20px;
+    color: var(--beldex-text-strong);
+  }
+
+  &__refresh.q-btn {
+    height: 32px;
+    min-height: 32px;
+    padding: 0 var(--beldex-space-3);
+    font-size: var(--beldex-text-md);
+    color: var(--beldex-text-muted);
+
+    .q-icon {
+      font-size: 14px;
+      color: inherit;
+    }
+  }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    font-size: var(--beldex-text-md);
+    color: var(--beldex-text-muted);
+    background-color: rgba(8, 8, 8, 0.8);
+    border: 1px solid var(--beldex-hairline);
+
+    img {
+      width: 14px;
+      height: 14px;
+    }
+  }
 }
 
-.master-node-stake-tab .q-btn .q-icon {
-  color: white;
-}
-.info-txt {
-  color: #afafbe;
+.master-node-stake-tab {
+  user-select: none;
 }
 </style>

@@ -1,11 +1,11 @@
 <template>
   <div class="prove-transaction">
     <div class="q-pa-md">
-      <div class="q-mb-lg tab-desc ft-medium">
+      <div class="beldex-hint beldex-form-desc">
         {{ $t("strings.proveTransactionDescription") }}
       </div>
       <div>
-        <OxenField
+        <BeldexField
           :label="$t('fieldLabels.transactionId')"
           :error="$v.txid.$error"
           class="ft-medium"
@@ -18,12 +18,13 @@
             dense
             @blur="$v.txid.$touch"
           />
-        </OxenField>
-        <OxenField
+        </BeldexField>
+        <BeldexField
           class="q-mt-md ft-medium"
           :label="$t('fieldLabels.recipientAddress')"
           :error="$v.address.$error"
           optional
+          optional-right
         >
           <q-input
             v-model.trim="address"
@@ -33,11 +34,12 @@
             dense
             @blur="$v.address.$touch"
           />
-        </OxenField>
-        <OxenField
+        </BeldexField>
+        <BeldexField
           class="q-mt-md ft-medium"
           :label="$t('fieldLabels.message')"
           optional
+          optional-right
         >
           <q-input
             v-model.trim="message"
@@ -46,31 +48,34 @@
             borderless
             dense
           />
-        </OxenField>
-        <div class="buttons submit-button flex justify-center q-mt-lg">
-          <q-btn
-            color="primary"
-            :label="$t('buttons.generate')"
-            @click="generate"
-          />
+        </BeldexField>
+        <div class="beldex-form-actions">
           <q-btn
             v-if="canClear"
-            color="accent"
+            class="beldex-btn beldex-btn--ghost"
+            unelevated
+            no-caps
             :label="$t('buttons.clear')"
             @click="clear"
           />
           <q-btn
             v-if="status.state.signature"
-            color="secondary"
+            class="beldex-btn beldex-btn--ghost"
+            unelevated
+            no-caps
             :label="$t('buttons.copySignature')"
             @click="copy"
           />
+          <q-btn class="beldex-btn" unelevated no-caps @click="generate">
+            <img src="~assets/icons/advanced-generate.svg" alt="" />
+            {{ $t("buttons.generateProof") }}
+          </q-btn>
         </div>
       </div>
       <div v-if="status.state.signature" class="signature-wrapper">
-        <div class="txid q-mb-sm flex row no-wrap ">
-          <div class="title q-mr-sm">{{ $t("strings.transactionID") }}</div>
-          <div style="color:white">{{ status.state.txid }}</div>
+        <div class="beldex-result__row">
+          <span class="beldex-label">{{ $t("strings.transactionID") }}</span>
+          <span class="beldex-result__value">{{ status.state.txid }}</span>
         </div>
         <p class="signature">
           {{ status.state.signature }}
@@ -84,13 +89,13 @@
 import { mapState } from "vuex";
 import { required } from "vuelidate/lib/validators";
 import { address } from "src/validators/common";
-import OxenField from "components/oxen_field";
+import BeldexField from "components/beldex_field";
 import { clipboard } from "src/shims/electron-renderer";
 
 export default {
   name: "ProveTransaction",
   components: {
-    OxenField
+    BeldexField
   },
   data() {
     return {
@@ -186,26 +191,28 @@ export default {
 </script>
 
 <style lang="scss">
-.signature-wrapper {
-  margin-top: 12px;
-}
-
-.prove-transaction {
+.beldex-app .prove-transaction {
   .description {
     white-space: pre-line;
   }
-  .buttons {
-    .q-btn:not(:first-child) {
-      margin-left: 8px;
-    }
+
+  .signature-wrapper {
+    margin-top: var(--beldex-space-5);
   }
+
   .signature {
-    flex: 1;
+    margin: var(--beldex-space-3) 0 0;
+    color: var(--beldex-text); // beats app.styl `.prove-transaction .signature`
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    line-height: 18px;
+    background-color: rgba(8, 8, 8, 0.8); // beats app.styl `#1c1c26`
+    border: 1px solid var(--beldex-hairline);
+    border-radius: var(--beldex-radius-none);
+    font-size: var(--beldex-text-md);
     word-break: break-all;
     word-wrap: break-word;
     -webkit-user-select: all;
     user-select: all;
-    padding: 8px;
   }
 }
 </style>
