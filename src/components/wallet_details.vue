@@ -1,217 +1,151 @@
 <template>
-  <div class="column wallet-info">
-    <div
-      class="row justify-between items-center wallet-header"
-      style="height: 92px"
-    >
-      <!-- <div class="title">{{ info.name }}</div> -->
-      <!-- <WalletSettings /> -->
-      <div></div>
-    </div>
-    <div class="wallet-content oxen-navy">
-      <div class="flex row justify-between items-center">
-        <article class="flex row justify-center items-center">
-          <div style="margin-top: 5px; margin-right: 5px">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 30 30"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M15 0.375C6.93603 0.375 0.375 6.93603 0.375 15C0.375 23.064 6.93603 29.625 15 29.625C23.064 29.625 29.625 23.064 29.625 15C29.625 6.93603 23.064 0.375 15 0.375ZM15 2.625C21.8467 2.625 27.375 8.15332 27.375 15C27.375 21.8467 21.8467 27.375 15 27.375C8.15332 27.375 2.625 21.8467 2.625 15C2.625 8.15332 8.15332 2.625 15 2.625ZM15 6C11.9062 6 9.375 8.53125 9.375 11.625C9.375 13.3301 10.1704 14.8462 11.3789 15.8789C8.84766 17.1929 7.125 19.8384 7.125 22.875H9.375C9.375 19.7549 11.8799 17.25 15 17.25C18.1201 17.25 20.625 19.7549 20.625 22.875H22.875C22.875 19.8384 21.1523 17.1929 18.6211 15.8789C19.8296 14.8462 20.625 13.3301 20.625 11.625C20.625 8.53125 18.0938 6 15 6ZM15 8.25C16.8765 8.25 18.375 9.74854 18.375 11.625C18.375 13.5015 16.8765 15 15 15C13.1235 15 11.625 13.5015 11.625 11.625C11.625 9.74854 13.1235 8.25 15 8.25Z"
-                fill="white"
-              />
-            </svg>
-          </div>
-          <div class="title ft-semibold">{{ info.name }}</div>
-        </article>
-
-        <div class="flex row no-wrap justify-center items-center">
-          <q-btn
-            color="accent"
-            :label="$t('buttons.rescan')"
-            icon="refresh"
-            class="rescan-btn q-mr-sm"
-            :disable="!this.is_ready"
-            @click.native="showModal('rescan')"
-          />
-          <WalletSettings />
-          <!-- <q-btn
-            class="balance-button"
-            label="Fetch Balance & Transaction"
-            color="primary"
-            @click="get_balance()"
+  <div class="wallet-details wallet-details--compact">
+    <!-- Balance strip on every section: label, balance, unlocked and address
+         on one row. -->
+    <div class="wallet-details__hero">
+      <div class="wallet-details__left">
+        <div class="wallet-details__label">
+          <span class="beldex-net-chip__dot" />
+          <span>{{ $t("strings.availableBalance") }}</span>
+          <button
+            type="button"
+            class="wallet-details__toggle"
+            :aria-pressed="balanceHidden ? 'true' : 'false'"
+            @click="toggleBalance"
           >
-          </q-btn>-->
+            <img src="~assets/icons/eye.svg" alt="" />
+            {{
+              balanceHidden
+                ? $t("strings.showBalance")
+                : $t("strings.hideBalance")
+            }}
+          </button>
+          <span class="wallet-details__amount wallet-details__amount--inline">
+            <FormatBeldex v-if="!balanceHidden" :amount="info.balance" />
+            <span v-else class="wallet-details__mask" aria-hidden="true"
+              ><i class="wallet-details__mask-int" /><b>.</b
+              ><i class="wallet-details__mask-dec" /><span
+                class="coin-extensions"
+                >BDX</span
+              ></span
+            >
+          </span>
+          <span class="wallet-details__muted">·</span>
+          <span class="wallet-details__unlocked">
+            {{ $t("strings.oxenUnlockedShort") }}:
+            <FormatBeldex
+              v-if="!balanceHidden"
+              :amount="info.unlocked_balance"
+            />
+            <span v-else class="wallet-details__mask wallet-details__mask--sm"
+              ><i class="wallet-details__mask-int" /><b>.</b
+              ><i class="wallet-details__mask-dec" /><span
+                class="coin-extensions"
+                >BDX</span
+              ></span
+            >
+          </span>
+          <template v-if="info.view_only">
+            <span class="wallet-details__muted">·</span>
+            <span class="wallet-details__no-spend">{{
+              $t("strings.spendKeyNotLoaded")
+            }}</span>
+            <span class="wallet-details__badge">{{
+              $t("strings.viewOnlyTag")
+            }}</span>
+          </template>
         </div>
       </div>
-      <article class="decoration q-pb-xs q-mt-sm">
-        <div
-          class="wallet-address row justify-between items-center q-pl-md q-pr-sm"
+
+      <div class="wallet-details__chips">
+        <button
+          type="button"
+          class="wallet-details__chip"
+          @click="copyAddress(info.address)"
         >
-          <div class="col-md-11 flex row items-center">
-            <div class="ft-semibold title q-mr-xs" style="padding: 0 10px">
-              {{ this.$t("fieldLabels.address") }}
-            </div>
-            <div class="address ft-regular">
-              {{ addressTrim(info.address) }}
-            </div>
-          </div>
-          <div class="col-md-1 flex justify-end">
-            <q-btn
-              flat
-              size="sm"
-              icon="content_copy"
-              class="copy-btn"
-              color="green"
-              @click="copyAddress(info.address)"
-            >
-              <q-tooltip
-                anchor="bottom right"
-                self="top right"
-                :offset="[0, 5]"
-                >{{ $t("menuItems.copyAddress") }}</q-tooltip
-              >
-            </q-btn>
-          </div>
-
-          <!-- <CopyIcon :content="info.address" /> -->
-        </div>
-
-        <div class>
-          <div class="funds flex row justify-between q-px-md balance">
-            <article class="row items-center">
-              <div>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 21"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4.55953 0.31781C2.52315 0.31781 0.845703 1.86568 0.845703 3.74475V18.5948C0.845703 19.8571 1.95366 20.8795 3.32159 20.8795H20.6528C22.0207 20.8795 23.1287 19.8571 23.1287 18.5948V7.17169C23.1287 5.90944 22.0207 4.88707 20.6528 4.88707H7.03541H4.55953C3.86006 4.88707 3.32159 4.39019 3.32159 3.74475C3.32159 3.09931 3.86006 2.60244 4.55953 2.60244H21.8907V0.31781H4.55953ZM19.4148 11.741C20.0982 11.741 20.6528 12.2527 20.6528 12.8833C20.6528 13.5138 20.0982 14.0256 19.4148 14.0256C18.7315 14.0256 18.1769 13.5138 18.1769 12.8833C18.1769 12.2527 18.7315 11.741 19.4148 11.741Z"
-                    fill="white"
-                  />
-                </svg>
-              </div>
-              <div class="value ft-semibold">
-                <span>
-                  <FormatOxen :amount="info.balance" />
-                </span>
-              </div>
-            </article>
-            <article class="flex items-center">
-              <!-- <div class="balance">
-            <div class="text">
-              <span>{{ $t("strings.oxenBalance") }}</span>
-            </div>
-            <div class="value">
-              <span><FormatOxen :amount="info.balance"/></span>
-            </div>
-              </div>-->
-              <div class="row unlocked ft-semibold">
-                <span>
-                  {{ $t("strings.oxenUnlockedBalance") }}:
-                  {{ (info.unlocked_balance / 1e9).toFixed(3) }}
-                  <!-- <FormatOxen :amount="info.unlocked_balance" -->
-                </span>
-
-                <!--  </div>
-          <div class="row">
-            <div v-if="load_balance">
-                <q-btn
-                  class="balance-button"
-                  label="Fetching Balance & Txn..."
-                  color="primary"
-                  @click="get_balance()"
-                >
-                </q-btn>
-              </div>
-              <div v-if="!load_balance">
-                <q-btn
-                  class="balance-button"
-                  label="Fetch Balance & Txn"
-                  color="primary"
-                  @click="get_balance()"
-                >
-                </q-btn>
-                </div>-->
-              </div>
-            </article>
-          </div>
-        </div>
-      </article>
+          <img src="~assets/icons/chip-wallet.svg" alt="" />
+          <span>{{
+            info.address.slice(0, 12) + "…" + info.address.slice(-8)
+          }}</span>
+          <img src="~assets/icons/chip-copy.svg" alt="" />
+          <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
+            {{ $t("menuItems.copyAddress") }}
+          </q-tooltip>
+        </button>
+      </div>
     </div>
 
     <!-- RESCAN MODAL -->
     <q-dialog v-model="modals.rescan.visible" minimized>
-      <div class="modal rescan-modal">
-        <div class="a-ma-lg modal-header ft-bold">
-          {{ $t("titles.rescanWallet") }}
-        </div>
-        <div class="q-ma-md ft-medium">
-          <p class="rmDesc">{{ $t("strings.rescanModalDescription") }}</p>
-
-          <div class="r-btn-wrapper">
-            <div
-              :class="[
-                modals.rescan.type === 'full'
-                  ? 'radio-btn-box'
-                  : 'radio-btn-box-non-select',
-                'q-mt-lg',
-                'flex',
-                'items-center',
-                'ft-semibold',
-                'q-px-md'
-              ]"
-            >
-              <q-radio
-                v-model="modals.rescan.type"
-                val="full"
-                :label="$t('fieldLabels.rescanFullBlockchain')"
-              />
-            </div>
+      <q-card class="beldex-dialog confirm-dialog">
+        <div class="beldex-dialog__head">
+          <div class="beldex-dialog__icon confirm-dialog__icon--accent">
+            <span class="confirm-dialog__ico" :style="rescanIconStyle" />
           </div>
-          <!-- <div class="q-mt-lg radio-btn-box-non-select flex items-center ft-semibold q-pl-md "   > -->
-          <div class="r-btn-wrapper">
-            <div
-              :class="[
-                modals.rescan.type !== 'full'
-                  ? 'radio-btn-box'
-                  : 'radio-btn-box-non-select',
-                'q-mt-lg',
-                'flex',
-                'items-center',
-                'ft-semibold',
-                'q-px-md'
-              ]"
-            >
-              <q-radio
-                v-model="modals.rescan.type"
-                val="spent"
-                :label="$t('fieldLabels.rescanSpentOutputs')"
-              />
-            </div>
-          </div>
-
-          <div class="q-my-lg text-center">
-            <q-btn
-              class="q-mr-sm"
-              color="accent"
-              :label="$t('buttons.cancel')"
-              @click="hideModal('rescan')"
-            />
-            <q-btn
-              color="primary"
-              :label="$t('buttons.rescan')"
-              @click="rescanWallet()"
-            />
+          <div>
+            <h2 class="beldex-dialog__title">
+              {{ $t("titles.rescanWallet") }}
+            </h2>
+            <p class="beldex-dialog__subtitle">
+              {{ $t("strings.rescanModalDescription") }}
+            </p>
           </div>
         </div>
-      </div>
+
+        <div class="beldex-dialog__body">
+          <div class="beldex-dialog__options">
+            <button
+              v-for="option in [
+                {
+                  value: 'full',
+                  label: $t('fieldLabels.rescanFullBlockchain'),
+                  hint: $t('strings.rescanFullHint')
+                },
+                {
+                  value: 'spent',
+                  label: $t('fieldLabels.rescanSpentOutputs'),
+                  hint: $t('strings.rescanSpentHint')
+                }
+              ]"
+              :key="option.value"
+              type="button"
+              class="beldex-option"
+              :class="{
+                'beldex-option--active': modals.rescan.type === option.value
+              }"
+              @click="modals.rescan.type = option.value"
+            >
+              <span
+                class="beldex-check"
+                :class="{
+                  'beldex-check--on': modals.rescan.type === option.value
+                }"
+              />
+              <span class="beldex-option__text">
+                <span class="beldex-option__title">{{ option.label }}</span>
+                <span class="beldex-option__hint">{{ option.hint }}</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="beldex-dialog__actions">
+          <q-btn
+            class="beldex-btn beldex-btn--ghost"
+            unelevated
+            no-caps
+            :label="$t('buttons.cancel')"
+            @click="hideModal('rescan')"
+          />
+          <q-btn class="beldex-btn" unelevated no-caps @click="rescanWallet()">
+            <span
+              class="confirm-dialog__ico confirm-dialog__ico--btn"
+              :style="rescanIconStyle"
+            />
+            {{ $t("buttons.rescan") }}
+          </q-btn>
+        </div>
+      </q-card>
     </q-dialog>
   </div>
 </template>
@@ -219,18 +153,30 @@
 <script>
 import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
-import FormatOxen from "components/format_oxen";
-import WalletSettings from "components/menus/wallet_settings";
+import FormatBeldex from "components/format_beldex";
+import ConfirmDialog from "components/confirm_dialog";
+
+const RESCAN_ICON = require("assets/icons/wmenu-rescan.svg");
 // import CopyIcon from "components/icons/copy_icon";
+
+// UI-only preference (plan §5 B4): kept in localStorage, never in config.
+const BALANCE_HIDDEN_KEY = "beldex.balanceHidden";
+
 export default {
   name: "WalletDetails",
   components: {
-    FormatOxen,
-    WalletSettings
+    FormatBeldex
     // CopyIcon
   },
   data() {
+    let balanceHidden = false;
+    try {
+      balanceHidden = localStorage.getItem(BALANCE_HIDDEN_KEY) === "1";
+    } catch (e) {
+      balanceHidden = false;
+    }
     return {
+      balanceHidden,
       modals: {
         rescan: {
           visible: false,
@@ -245,12 +191,26 @@ export default {
     is_ready() {
       return this.$store.getters["gateway/isReady"];
     },
+    rescanIconStyle() {
+      return { "--ico": `url(${RESCAN_ICON})` };
+    },
 
     load_balance: state => {
       return state.gateway.wallet.info.load_balance;
     }
   }),
   methods: {
+    toggleBalance() {
+      this.balanceHidden = !this.balanceHidden;
+      try {
+        localStorage.setItem(
+          BALANCE_HIDDEN_KEY,
+          this.balanceHidden ? "1" : "0"
+        );
+      } catch (e) {
+        // Storage unavailable: the toggle still works for this session.
+      }
+    },
     get_balance() {
       this.$store.commit("gateway/set_wallet_data", {
         info: {
@@ -271,16 +231,14 @@ export default {
       if (this.modals.rescan.type == "full") {
         this.$q
           .dialog({
+            component: ConfirmDialog,
             title: this.$t("dialog.rescan.title"),
             message: this.$t("dialog.rescan.message"),
-            ok: {
-              label: this.$t("buttons.rescan"),
-              color: "primary"
-            },
-            cancel: {
-              color: "accent",
-              label: this.$t("dialog.buttons.cancel")
-            }
+            okLabel: this.$t("buttons.rescan"),
+            cancelLabel: this.$t("dialog.buttons.cancel"),
+            icon: "restart",
+            iconTone: "accent",
+            okIcon: "restart"
           })
           .onOk(() => {
             this.$store.commit("gateway/set_wallet_data", {
@@ -317,83 +275,284 @@ export default {
 </script>
 
 <style lang="scss">
-.wallet-info {
-  .wallet-header {
-    padding: 0.8rem 1.5rem;
-    .title {
-      font-weight: bold;
+// Full hero and compact strip.
+.wallet-details {
+  flex: none;
+
+  &__hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--beldex-space-6);
+    padding-bottom: var(--beldex-space-4);
+    border-bottom: 1px solid var(--beldex-hairline);
+  }
+
+  &__left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--beldex-space-3);
+    min-width: 0;
+  }
+
+  &__label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--beldex-space-2);
+    font-size: var(--beldex-text-md);
+    line-height: 16px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--beldex-text-muted);
+
+    .beldex-net-chip__dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--beldex-accent);
+      box-shadow: 0 0 6px var(--beldex-accent-glow);
+    }
+
+    .coin-extensions {
+      color: inherit;
     }
   }
 
-  .wallet-content {
-    width: 100%;
-    text-align: center;
-    padding: 0.5em 1em 1em;
-    background: #242433;
-    margin-bottom: 15px;
-    border-radius: 10px;
+  &__muted {
+    color: var(--beldex-text-faint);
+  }
 
-    .balance {
-      .text {
-        font-size: 16px;
-      }
-      .value {
-        font-size: 26px;
-        margin-left: 10px;
-      }
-    }
-    .copy-btn {
-      width: 30px;
-      height: 30px;
-    }
-    .decoration {
-      border: 2px solid #41415b;
-      border-radius: 20px;
-    }
-    .wallet-address {
-      background-color: #32324a;
-      border-radius: 10px;
-      width: 97%;
-      margin: 12px auto;
+  &__no-spend {
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    text-transform: none;
+    letter-spacing: 0;
+  }
 
-      .address {
-        width: 70%;
-        white-space: nowrap;
-        overflow: hidden;
-        margin: 4px 0;
-        padding: 15px 5px;
-        color: #afafbe;
-      }
-      .title {
-        font-size: 1.15em;
-      }
-      .q-btn {
-        margin-left: 8px;
-      }
-    }
-    .title {
-      font-size: 20px;
-    }
-    .q-btn {
-      font-size: 14px;
-    }
-    .rescan-btn {
-      height: 36px;
-      min-width: 30px;
-      border-radius: 31px;
-      .q-icon {
-        font-size: 1.2em;
-        margin-top: 2px;
-      }
-      .on-left {
-        margin-right: 3px;
-      }
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    font-family: var(--beldex-font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: var(--beldex-text-sm);
+    letter-spacing: 0.3px;
+    color: var(--beldex-warning);
+    background-color: var(--beldex-warning-wash);
+    border: 1px solid var(--beldex-warning-border);
+  }
+
+  &__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    margin-left: var(--beldex-space-2);
+    padding: 2px 6px;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    text-transform: none;
+    color: var(--beldex-text-muted);
+    background-color: var(--beldex-panel);
+    border: 1px solid var(--beldex-border);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--beldex-text);
     }
 
-    .unlocked {
-      font-size: 16px;
-      font-weight: 500;
-      color: #afafbe;
+    img {
+      width: 12px;
+      height: 9px;
+    }
+  }
+
+  &__amount {
+    font-family: var(--beldex-font-display);
+    font-size: 48px;
+    line-height: 48px;
+    letter-spacing: 2px;
+    color: var(--beldex-text);
+    white-space: nowrap;
+
+    .coin-extensions {
+      margin-left: var(--beldex-space-1);
+      font-family: var(--beldex-font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--beldex-accent);
+    }
+
+    &--inline {
+      margin-left: var(--beldex-space-3);
+      font-size: 22px;
+      line-height: 28px;
+      text-transform: none;
+
+      .coin-extensions {
+        font-size: var(--beldex-text-sm);
+      }
+    }
+  }
+
+  // Hidden balance: dot-matrix blocks around a ".".
+  &__mask {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 6px;
+
+    i {
+      display: block;
+      height: 26px;
+      background-image: radial-gradient(
+        circle,
+        var(--beldex-text-faint) 0.7px,
+        transparent 1.1px
+      );
+      background-size: 4px 4px;
+    }
+
+    &-int {
+      width: 150px;
+    }
+
+    &-dec {
+      width: 56px;
+    }
+
+    b {
+      font-weight: 400;
+      line-height: 48px;
+      color: var(--beldex-text-muted);
+    }
+
+    .coin-extensions {
+      margin-left: 0;
+      font-size: 12px;
+    }
+  }
+
+  &__amount--inline &__mask {
+    gap: 5px;
+
+    i {
+      height: 19px;
+    }
+
+    &-int {
+      width: 107px;
+    }
+
+    &-dec {
+      width: 40px;
+    }
+
+    b {
+      font-size: 24px;
+      line-height: 24px;
+      letter-spacing: 2px;
+    }
+
+    .coin-extensions {
+      font-size: 9px;
+      line-height: 12px;
+    }
+  }
+
+  &__mask--sm {
+    gap: 4px;
+    vertical-align: middle;
+
+    i {
+      height: 11px;
+    }
+
+    .wallet-details__mask-int {
+      width: 40px;
+    }
+
+    .wallet-details__mask-dec {
+      width: 16px;
+    }
+
+    b {
+      font-size: 11px;
+      line-height: 11px;
+    }
+
+    .coin-extensions {
+      font-size: 9px;
+      line-height: 11px;
+    }
+  }
+
+  &__unlocked {
+    font-size: var(--beldex-text-sm);
+    text-transform: none;
+
+    .coin-extensions {
+      color: inherit;
+    }
+  }
+
+  &__chips {
+    display: flex;
+    flex: none;
+    gap: var(--beldex-space-3);
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--beldex-space-2);
+    height: 28px;
+    padding: 0 10px;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    color: var(--beldex-text-muted);
+    background-color: var(--beldex-panel);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--beldex-text);
+      border-color: rgba(235, 235, 235, 0.2);
+    }
+
+    img {
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  // Compact strip on non-overview sections.
+  &--compact &__hero {
+    align-items: center;
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+    background-color: rgba(11, 11, 11, 0.65);
+    border: 1px solid rgba(235, 235, 235, 0.1);
+  }
+
+  &--compact &__label {
+    flex-wrap: nowrap;
+  }
+
+  // Short windows (1200×650 minimum, plan §5 B6): shrink the hero.
+  @media (max-height: 760px) {
+    &__hero {
+      padding-bottom: var(--beldex-space-3);
+    }
+
+    &__left {
+      gap: var(--beldex-space-2);
+    }
+
+    &__amount:not(&__amount--inline) {
+      font-size: 30px;
+      line-height: 32px;
     }
   }
 }
