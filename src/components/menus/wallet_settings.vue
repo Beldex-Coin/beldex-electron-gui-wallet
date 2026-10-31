@@ -898,17 +898,9 @@ export default {
 
 <style lang="scss">
 .wallet-settings-wrapper {
+  // Only drop Quasar's divider; keep the left hover bar.
   .q-item-type + .q-item-type {
-    border: unset !important;
-  }
-
-  .q-item {
-    padding: 0;
-  }
-
-  .q-hoverable:hover > .q-focus-helper {
-    background-color: #40405e !important;
-    border-radius: 10px;
+    border-top: unset !important;
   }
 }
 

@@ -42,13 +42,17 @@
               </button>
             </nav>
             <div class="settings-modal__version">
+              <img src="~assets/icons/version-info.svg" alt="" />
               {{ $t("strings.version") }} {{ version }}
             </div>
           </aside>
 
           <main
             class="settings-modal__content"
-            :class="{ 'settings-modal__content--narrow': page === 'language' }"
+            :class="{
+              'settings-modal__content--narrow': page === 'language',
+              'settings-modal__content--about': page === 'about'
+            }"
           >
             <div v-if="page !== 'ban'" class="beldex-heading">
               <button
@@ -441,6 +445,8 @@ export default {
   }
 
   &__nav-chevron {
+    font-size: 20px;
+    line-height: 16px;
     color: var(--beldex-accent);
   }
 
@@ -479,10 +485,16 @@ export default {
     display: flex;
     align-items: center;
     gap: var(--beldex-space-2);
-    padding: var(--beldex-space-4) var(--beldex-space-4);
+    padding: 17px var(--beldex-space-4) var(--beldex-space-4);
+    font-family: var(--beldex-font-micro);
     font-size: var(--beldex-text-md);
+    line-height: 16px;
     color: var(--beldex-text-muted);
     border-top: 1px solid var(--beldex-panel);
+
+    img {
+      flex: none;
+    }
   }
 
   &__content {
@@ -501,9 +513,21 @@ export default {
     box-shadow: none;
   }
 
-  // Language tab: heading and card share the 554px column.
+  // Language tab: heading and card share the 640px column.
   &__content--narrow {
-    max-width: calc(554px + 2 * var(--beldex-space-6));
+    max-width: calc(640px + 2 * var(--beldex-space-6));
+  }
+
+  // Language and About sit in the vertical middle of the page, as in Figma.
+  &__content--narrow,
+  &__content--about {
+    justify-content: center;
+    padding-top: var(--beldex-space-9);
+  }
+
+  // About tab: heading and card share the 448px column.
+  &__content--about {
+    max-width: calc(448px + 2 * var(--beldex-space-6));
   }
 
   // Peers table

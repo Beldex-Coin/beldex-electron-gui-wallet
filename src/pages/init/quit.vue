@@ -20,7 +20,8 @@ export default {
     this.player = lottie.loadAnimation({
       container: this.$refs.animation,
       renderer: "svg",
-      loop: false,
+      // Loop until the window closes: shutdown can outlast one play-through.
+      loop: true,
       autoplay: true,
       animationData: closingAnimation
     });

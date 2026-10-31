@@ -85,7 +85,9 @@
             $t("strings.masterNodeDetails.lastUptimeProof")
           }}</span>
           <span class="mn-details__value">{{
-            formatDate(node.last_uptime_proof * 1000)
+            node.last_uptime_proof > 0
+              ? formatDate(node.last_uptime_proof * 1000)
+              : $t("strings.masterNodeDetails.noUptimeProof")
           }}</span>
         </div>
         <div class="mn-details__stat">

@@ -780,8 +780,7 @@ body.beldex-app {
 
   // -------------------------------------------------------------------------
   // BeldexField (components/beldex_field.vue): label
-  // becomes .beldex-label, content becomes the underline input. Add
-  // `beldex-field--boxed` for the full-border variant (remote host). Beats the
+  // becomes .beldex-label, content becomes the underline input. Beats the
   // global `.beldex-field .content` base rules.
   // -------------------------------------------------------------------------
   .beldex-field {
@@ -859,15 +858,6 @@ body.beldex-app {
     .q-field__suffix {
       font-size: var(--beldex-text-xs);
       color: var(--beldex-text-unit);
-    }
-
-    &--boxed .content {
-      background: var(--beldex-bg);
-      border: 1px solid var(--beldex-border);
-    }
-
-    &--boxed:not(.disable):not(.disable-hover) .content:hover {
-      background: var(--beldex-bg);
     }
 
     // Trailing "Location"-style action segment.
@@ -1475,7 +1465,9 @@ body.beldex-app {
     box-sizing: border-box;
     height: 27px;
     min-height: 27px;
-    padding: 8px 12px 0;
+    // 22px = item padding (20px) + item border-left (2px), so the label
+    // lines up with the item icons.
+    padding: 8px 22px 0;
     font-family: var(--beldex-font-micro);
     font-size: 10px;
     letter-spacing: 0.5px;
@@ -1486,6 +1478,7 @@ body.beldex-app {
 
   .q-item {
     min-height: 36px;
+    align-items: center;
     gap: 10px;
     padding: 0 20px;
     font-family: var(--beldex-font-mono);
@@ -1495,8 +1488,14 @@ body.beldex-app {
     color: var(--beldex-text-muted);
 
     img {
+      flex-shrink: 0;
       width: 14px;
       height: 14px;
+    }
+
+    // Hover/focus is drawn on the item itself; hide Quasar's overlay.
+    .q-focus-helper {
+      display: none;
     }
 
     &:hover,
@@ -1513,7 +1512,6 @@ body.beldex-app {
   }
 
   .q-item.wallet-settings__danger {
-    padding: 8px 20px;
     color: #f26666;
 
     &:hover {
@@ -1526,33 +1524,77 @@ body.beldex-app {
 // popup-content-class="beldex-menu beldex-menu--compact".
 .beldex-app .beldex-menu.beldex-menu--compact {
   min-width: 160px;
+  padding: 4px;
+  background-color: var(--beldex-panel-sunken);
+  background-image: none;
 
   .q-item {
     min-height: 36px;
-    padding: var(--beldex-space-2) var(--beldex-space-3);
+    padding: 0 10px;
+    align-items: center;
     font-family: var(--beldex-font-mono);
     font-size: var(--beldex-text-md);
     color: var(--beldex-text-muted);
+    border-left: 0;
   }
 
-  .q-item--active,
+  // Centre the label inside the row (the hover/selected fill is the row).
+  .q-item__section {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .q-item__label {
+    margin: 0;
+    padding: 0;
+    line-height: 36px;
+  }
+
+  // beats app.styl `.q-menu * { color #fff }`
+  .q-item * {
+    color: inherit;
+  }
+
+  // Quasar's grey focus/hover wash.
+  .q-focus-helper {
+    display: none;
+  }
+
+  .q-item:hover,
   .q-manual-focusable--focused {
     color: var(--beldex-text);
+    background-color: rgba(235, 235, 235, 0.03);
   }
 
+  // Selected row: raised fill + green check.
   .q-item--active {
-    border-left-color: var(--beldex-accent);
+    color: var(--beldex-text);
+    background-color: rgba(235, 235, 235, 0.05);
+
+    &::after {
+      content: "";
+      flex: none;
+      align-self: center;
+      width: 12px;
+      height: 12px;
+      margin-left: auto;
+      background-color: var(--beldex-accent);
+      -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M1.5 6.2 4.6 9.2 10.5 3' fill='none' stroke='black' stroke-width='1.4'/></svg>");
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-size: contain;
+    }
   }
 }
 
 // Modal dialogs (Phase 3, frames 421:10705 / 421:13313 and siblings).
-// On the q-card: class="beldex-dialog". Quasar 1 doesn't pass
-// `class` to the portal root, so the scrim is matched with :has(). Header = .beldex-dialog__head with an
+// On the q-card: class="beldex-dialog". Header = .beldex-dialog__head with an
 // icon box, uppercase title and muted subtitle; footer = .beldex-dialog__actions.
-.q-dialog:has(.beldex-dialog) > .q-dialog__backdrop {
+// The scrim applies to every q-dialog, including ones without a beldex-dialog card.
+.q-dialog > .q-dialog__backdrop {
   // Beats Quasar's rgba(0,0,0,.4) backdrop; blur per frame "Scrim".
   background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(1px);
 }
 
 .beldex-app .beldex-dialog {

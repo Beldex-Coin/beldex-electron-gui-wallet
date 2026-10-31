@@ -10,98 +10,78 @@
       :disable-submit-button="disable_submit_button"
       @onSubmit="onSubmit"
       @onClear="onClear"
-      @onSummary="$emit('onSummary', $event)"
+      @onSummary="onSummary"
     />
-    <!-- Confirm purchase -->
+    <!-- Confirm purchase (frame 421:18657) -->
     <q-dialog v-model="confirmModal.open">
-      <q-card class="beldex-dialog">
+      <q-card class="beldex-dialog bns-confirm">
         <div class="beldex-dialog__head">
           <div class="beldex-dialog__icon">
-            <img src="~assets/icons/dialog-send.svg" alt="" />
+            <img src="~assets/icons/dialog-tag.svg" alt="" />
           </div>
           <div>
             <h2 class="beldex-dialog__title">
               {{ $t("dialog.confirmPurchase.title") }}
             </h2>
+            <p class="beldex-dialog__subtitle">
+              {{ $t("dialog.confirmPurchase.message") }}
+            </p>
           </div>
         </div>
-        <div class="beldex-dialog__body">
+        <div class="bns-confirm__details">
           <div class="beldex-dialog__kv">
             <span class="beldex-dialog__kv-label">{{
               $t("fieldLabels.name")
             }}</span>
-            <span class="bns-confirm__value beldex-dialog__kv-value--strong">{{
+            <span class="bns-confirm__value bns-confirm__value--accent">{{
               confirmModal.record.name
             }}</span>
           </div>
           <div class="beldex-dialog__kv">
             <span class="beldex-dialog__kv-label">{{
-              $t("fieldLabels.year")
+              $t("strings.bns.duration")
             }}</span>
             <span class="bns-confirm__value">{{
-              yearvalidate(confirmModal.record.years)
+              confirmModal.summary.duration
             }}</span>
           </div>
-          <div v-if="confirmModal.record.owner" class="beldex-dialog__kv">
+          <div
+            v-for="row in confirmRows"
+            :key="row.label"
+            class="beldex-dialog__kv"
+          >
+            <span class="beldex-dialog__kv-label">{{ row.label }}</span>
+            <span class="bns-confirm__value" :title="row.value">{{
+              shorten(row.value)
+            }}</span>
+          </div>
+          <div class="beldex-dialog__kv">
             <span class="beldex-dialog__kv-label">{{
-              $t("fieldLabels.owner")
+              $t("strings.total")
             }}</span>
-            <span class="bns-confirm__value">{{
-              confirmModal.record.owner
-            }}</span>
-          </div>
-          <div
-            v-if="confirmModal.record.value_wallet"
-            class="beldex-dialog__kv"
-          >
-            <span class="beldex-dialog__kv-label">{{
-              $t("fieldLabels.address")
-            }}</span>
-            <span class="bns-confirm__value">{{
-              confirmModal.record.value_wallet
-            }}</span>
-          </div>
-          <div v-if="confirmModal.record.value_bchat" class="beldex-dialog__kv">
-            <span class="beldex-dialog__kv-label">BChat ID</span>
-            <span class="bns-confirm__value">{{
-              confirmModal.record.value_bchat
-            }}</span>
-          </div>
-          <div
-            v-if="confirmModal.record.value_belnet"
-            class="beldex-dialog__kv"
-          >
-            <span class="beldex-dialog__kv-label">Belnet ID</span>
-            <span class="bns-confirm__value">{{
-              confirmModal.record.value_belnet
-            }}</span>
-          </div>
-          <div
-            v-if="confirmModal.record.value_eth_addr"
-            class="beldex-dialog__kv"
-          >
-            <span class="beldex-dialog__kv-label">ETH</span>
-            <span class="bns-confirm__value">{{
-              confirmModal.record.value_eth_addr
-            }}</span>
+            <span class="bns-confirm__value beldex-dialog__kv-value--strong"
+              >{{ confirmModal.summary.price }} BDX</span
+            >
           </div>
         </div>
         <div class="beldex-dialog__actions">
           <q-btn
             v-close-popup
-            class="beldex-btn beldex-btn--ghost"
+            class="beldex-btn beldex-btn--ghost bns-confirm__cancel"
             unelevated
             no-caps
             :label="$t('buttons.cancel')"
           />
           <q-btn
             v-close-popup
-            class="beldex-btn"
+            class="beldex-btn bns-confirm__pay"
             unelevated
             no-caps
-            :label="$t('dialog.confirmPurchase.ok')"
             @click="purchase()"
-          />
+          >
+            <img src="~assets/icons/btn-check.svg" alt="" />
+            {{ $t("dialog.confirmPurchase.ok") }}
+          </q-btn>
         </div>
       </q-card>
     </q-dialog>
@@ -127,9 +107,11 @@ export default {
     return {
       updating: false,
       renewing: false,
+      summary: {},
       confirmModal: {
         open: false,
-        record: ""
+        record: "",
+        summary: {}
       }
     };
   },
@@ -149,6 +131,21 @@ export default {
         label = "buttons.renew";
       }
       return this.$t(label);
+    },
+    // Optional record fields, shown only when filled in.
+    confirmRows() {
+      const record = this.confirmModal.record || {};
+      return [
+        { label: this.$t("fieldLabels.owner"), value: record.owner },
+        {
+          label: this.$t("fieldLabels.backupOwner"),
+          value: record.backup_owner
+        },
+        { label: this.$t("fieldLabels.address"), value: record.value_wallet },
+        { label: "BChat ID", value: record.value_bchat },
+        { label: "Belnet ID", value: record.value_belnet },
+        { label: "ETH", value: record.value_eth_addr }
+      ].filter(row => row.value);
     }
   }),
 
@@ -194,11 +191,15 @@ export default {
       };
       this.$refs.form.setRecord(renewRecord);
     },
-    yearvalidate(year) {
-      let content = year && year.slice(0, year.indexOf("y"));
-      return content && content > 1
-        ? content + " years"
-        : content + " " + this.$t("fieldLabels.year");
+    onSummary(summary) {
+      this.summary = summary;
+      this.$emit("onSummary", summary);
+    },
+    // Middle-ellipsis long keys/addresses; the full value is in the title.
+    shorten(value) {
+      return value.length > 28
+        ? value.slice(0, 20) + "…" + value.slice(-7)
+        : value;
     },
     onSubmit(record) {
       if (this.updating) {
@@ -209,7 +210,8 @@ export default {
         this.confirmModal = {
           ...this.confirmModal,
           open: true,
-          record: record
+          record: record,
+          summary: this.summary
         };
       }
     },
@@ -279,7 +281,12 @@ export default {
             password
           });
           this.$gateway.send("wallet", "purchase_bns", bns);
-          this.confirmModal = { ...this.confirmModal, open: false, record: "" };
+          this.confirmModal = {
+            ...this.confirmModal,
+            open: false,
+            record: "",
+            summary: {}
+          };
         })
         .onDismiss(() => {})
         .onCancel(() => {});
@@ -319,9 +326,47 @@ export default {
 </script>
 
 <style lang="scss">
-.beldex-app .bns-confirm__value {
-  min-width: 0;
-  text-align: right;
-  overflow-wrap: anywhere;
+// Frame 421:18657.
+.beldex-app .beldex-dialog.bns-confirm {
+  width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--beldex-space-7);
+
+  .bns-confirm__details {
+    margin-top: var(--beldex-space-5);
+    line-height: 16px;
+  }
+
+  .bns-confirm__value {
+    min-width: 0;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--accent {
+      color: var(--beldex-accent);
+    }
+  }
+
+  .beldex-dialog__actions .bns-confirm__cancel {
+    font-family: var(--beldex-font-mono);
+    font-weight: 700;
+  }
+
+  .beldex-dialog__actions .bns-confirm__pay {
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+
+    .q-btn__content {
+      gap: var(--beldex-space-2);
+    }
+
+    img {
+      width: 14px;
+      height: 14px;
+    }
+  }
 }
 </style>

@@ -78,13 +78,11 @@
       v-if="config_daemon.type != 'local'"
       class="settings-general__grid settings-general__grid--2"
     >
-      <BeldexField
-        class="beldex-field--boxed"
-        :label="$t('fieldLabels.remoteNodeHost')"
-      >
+      <BeldexField :label="$t('fieldLabels.remoteNodeHost')">
         <q-input
           v-model="config_daemon.remote_host"
           :placeholder="daemon_defaults.remote_host"
+          dark
           borderless
           dense
         />
@@ -92,8 +90,9 @@
         <q-btn-dropdown
           v-if="config.app.net_type === 'mainnet'"
           class="settings-general__presets"
-          content-class="beldex-menu"
+          content-class="beldex-menu beldex-menu--compact"
           dropdown-icon="expand_more"
+          :menu-offset="[10, 7]"
           flat
           dense
         >
@@ -105,7 +104,9 @@
               clickable
               @click.native="setPreset(option)"
             >
-              <q-item-label>{{ option.host }}:{{ option.port }}</q-item-label>
+              <q-item-section>
+                <q-item-label>{{ option.host }}:{{ option.port }}</q-item-label>
+              </q-item-section>
             </q-item>
           </q-list>
         </q-btn-dropdown>
@@ -590,6 +591,27 @@ export default {
   &__presets {
     color: var(--beldex-accent);
     padding: 0;
+    // Keep the host field the same height as the port field next to it.
+    // `!important` beats the generic `.beldex-field .q-btn` pill rules.
+    width: 24px !important;
+    height: 24px !important;
+    min-height: 0;
+    margin: 0;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none;
+
+    .q-btn__content,
+    .q-btn-dropdown__arrow {
+      margin: 0 !important;
+      line-height: 1;
+    }
+
+    .q-icon {
+      color: var(--beldex-accent) !important;
+      font-size: 20px;
+    }
   }
 
   &__advanced {
@@ -636,6 +658,12 @@ export default {
     display: flex;
     justify-content: flex-end;
     margin-top: calc(var(--beldex-space-3) - 30px);
+
+    // Save / Next: 32px sides and dark green text, as in the design.
+    .beldex-btn.q-btn {
+      padding: 0 32px;
+      color: #002203;
+    }
 
     .beldex-btn img {
       width: 11px;

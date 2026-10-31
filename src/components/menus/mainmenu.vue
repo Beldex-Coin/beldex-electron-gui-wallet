@@ -69,7 +69,7 @@
             @click.native="exit"
           >
             <q-item-label header class="flex items-center flex-nowrap no-wrap">
-              <img src="~assets/icons/menu-exit.svg" class="icon" alt="" />
+              <img src="~assets/icons/rail-exit.svg" class="icon" alt="" />
               {{ $t("menuItems.exit") }}
             </q-item-label>
           </q-item>
@@ -199,8 +199,9 @@ body.desktop .q-hoverable:hover > .q-focus-helper {
     background-color: #40405e !important;
     border-radius: 10px;
   }
+  // Only drop Quasar's divider; keep the left hover bar.
   .q-item-type + .q-item-type {
-    border: unset !important;
+    border-top: unset !important;
   }
   .q-item {
     padding: 0;

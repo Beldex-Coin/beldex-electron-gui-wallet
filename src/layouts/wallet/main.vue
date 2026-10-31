@@ -2,6 +2,20 @@
   <q-layout view="hHh Lpr lFf" class="wallet-shell">
     <q-page-container>
       <q-page class="wallet-shell__page">
+        <!-- Background coins (Figma "image 5" / "image 12") -->
+        <div class="wallet-shell__decor" aria-hidden="true">
+          <img
+            class="wallet-shell__decor-coin wallet-shell__decor-coin--tilted"
+            src="~assets/images/bg-coin-tilted.png"
+            alt=""
+          />
+          <img
+            class="wallet-shell__decor-coin wallet-shell__decor-coin--round"
+            src="~assets/images/bg-coin-round.png"
+            alt=""
+          />
+        </div>
+
         <!-- Nav rail -->
         <nav class="wallet-shell__rail">
           <div class="wallet-shell__logo">
@@ -313,6 +327,41 @@ export default {
     min-height: 0 !important; // beats q-page's inline min-height
   }
 
+  // Decorative coins behind the rail and panels. z-index -1 inside the
+  // q-layout's isolated stacking context: above its background and dot
+  // grid, below all in-flow content. Positions are from the 1440px frames.
+  &__decor {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  &__decor-coin {
+    position: absolute;
+    display: block;
+  }
+
+  &__decor-coin--tilted {
+    top: 233px;
+    left: 358px;
+    width: 178px;
+    height: 156px;
+    opacity: 0.4;
+    mix-blend-mode: screen;
+    transform: rotate(6.1deg);
+    transform-origin: top left;
+  }
+
+  &__decor-coin--round {
+    right: -47px;
+    bottom: 0;
+    width: 296px;
+    height: 295px;
+    opacity: 0.55;
+  }
+
   // Nav rail
   &__rail {
     display: flex;
@@ -529,6 +578,13 @@ export default {
       border-radius: 17px;
       background: transparent !important;
       box-shadow: none;
+    }
+
+    // Quasar's wrapper keeps `padding: 4px 16px; min-height: 2.572em`,
+    // which is taller than the 34px button and pushes the icon off-centre.
+    .q-btn .q-btn__wrapper {
+      min-height: 0;
+      padding: 0;
     }
 
     .q-btn .q-icon {

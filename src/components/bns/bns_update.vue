@@ -26,7 +26,7 @@
         @onSubmit="onSubmit"
       />
       <q-dialog v-model="confirmModal.open">
-        <q-card class="beldex-dialog">
+        <q-card class="beldex-dialog bns-update-confirm">
           <div class="beldex-dialog__head">
             <div class="beldex-dialog__icon">
               <img src="~assets/icons/dialog-send.svg" alt="" />
@@ -273,6 +273,22 @@ export default {
 
   &__name {
     color: var(--beldex-text-muted);
+  }
+}
+
+// Long addresses / IDs wrap instead of widening the card.
+.beldex-app .beldex-dialog.bns-update-confirm {
+  overflow-x: hidden;
+
+  .beldex-dialog__kv-label {
+    flex-shrink: 0;
+  }
+
+  .bns-confirm__value {
+    min-width: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-all;
   }
 }
 </style>

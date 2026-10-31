@@ -326,6 +326,7 @@ export default {
     max-height: calc(100vh - 360px);
     min-height: 66px;
     overflow-y: auto;
+    padding-right: var(--beldex-space-2);
   }
 
   &__meta {
@@ -338,14 +339,14 @@ export default {
 
   &__name {
     font-family: var(--beldex-font-sans-medium);
-    font-size: 13px;
-    line-height: 18px;
+    font-size: 16px;
+    line-height: 22px;
     color: var(--beldex-text);
   }
 
   &__address {
-    font-size: var(--beldex-text-sm);
-    line-height: 16px;
+    font-size: var(--beldex-text-md);
+    line-height: 18px;
     color: var(--beldex-text-faint);
   }
 

@@ -750,8 +750,14 @@ export default {
       min-height: 32px;
     }
 
+    // Quasar's dense padding-top / 40px min-height push the value below
+    // the 32px control; centre it with the label and chevron instead.
     .q-field__native {
+      min-height: 32px;
+      padding: 0;
+      align-items: center;
       justify-content: flex-end;
+      line-height: 1;
       font-family: var(--beldex-font-mono);
       font-size: var(--beldex-text-md);
       font-weight: 500;
@@ -759,7 +765,12 @@ export default {
     }
 
     .q-field__append .q-icon {
-      color: var(--beldex-accent);
+      font-size: 18px;
+      color: var(--beldex-text-muted);
+    }
+
+    &.q-field--focused .q-field__append .q-icon {
+      color: var(--beldex-text);
     }
   }
 

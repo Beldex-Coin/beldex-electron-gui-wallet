@@ -98,6 +98,23 @@ export default {
 // Card styles are shared with language_select.vue (its
 // unscoped `.language-select` block); only the settings variant differs here.
 .language-select--settings {
+  .language-select__card {
+    padding: 20px 18px;
+  }
+
+  .language-select__flag {
+    width: 28px;
+    height: 19px;
+  }
+
+  .language-select__index {
+    font-size: 11px;
+  }
+
+  .language-select__name {
+    font-size: 16px;
+  }
+
   .beldex-check {
     margin-left: auto;
   }

@@ -109,7 +109,8 @@ export default {
     },
     confirmPurchase: {
       title: "Confirm Purchase",
-      ok: "Confirm"
+      message: "Review the BNS record before paying.",
+      ok: "Confirm & pay"
     },
     deleteAddress: {
       title: "Delete Address",
@@ -804,6 +805,7 @@ export default {
       contributors: "Contributors",
       lastRewardBlockHeight: "Last reward block height",
       lastUptimeProof: "Last uptime proof",
+      noUptimeProof: "Never",
       maxContribution: "Max contribution",
       minContribution: "Min contribution",
       operatorFee: "Operator Fee",
