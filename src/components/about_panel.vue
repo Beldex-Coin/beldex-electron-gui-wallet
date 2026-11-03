@@ -48,7 +48,7 @@
       class="about-panel__site"
       @click="openExternal('https://beldex.io')"
     >
-      <img src="www.svg" alt="" />
+      <img :src="wwwIcon" alt="" />
       www.beldex.io
     </button>
 
@@ -66,26 +66,31 @@
 // About tab. Shown in the Settings modal; `close` leaves it.
 import { mapState } from "vuex";
 import { version } from "../../package.json";
+import telegramIcon from "assets/icons/about-telegram.svg";
+import discordIcon from "assets/icons/about-discord.svg";
+import githubIcon from "assets/icons/about-github.svg";
+import wwwIcon from "assets/icons/about-www.svg";
 
 export default {
   name: "AboutPanel",
   data() {
     return {
       version,
+      wwwIcon,
       links: [
         {
           label: "Telegram",
-          icon: "telegram.svg",
+          icon: telegramIcon,
           url: "https://t.me/official_beldex"
         },
         {
           label: "Discord",
-          icon: "discord.svg",
+          icon: discordIcon,
           url: "https://discord.com/invite/Hj4MAmA5gs"
         },
         {
           label: "Github",
-          icon: "github.svg",
+          icon: githubIcon,
           url: "https://github.com/Beldex-Coin/beldex-electron-gui-wallet"
         }
       ]

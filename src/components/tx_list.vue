@@ -4,7 +4,7 @@
     <template v-if="tx_list_paged.length === 0">
       <section class="tx-list__empty">
         <div class="tx-list__empty-icon">
-          <img src="~assets/icons/tx-stake.svg" alt="" />
+          <img src="~assets/icons/empty-layers.svg" alt="" />
         </div>
         <p class="tx-list__empty-title">
           {{ $t("strings.noTransactionsFound") }}
@@ -13,6 +13,10 @@
           {{ $t("titles.swap.afterYourFirstTxn") }},
           {{ $t("titles.swap.youWillBeViewHere") }}.
         </p>
+        <button type="button" class="tx-list__empty-btn" @click="openReceive">
+          <img src="~assets/icons/btn-receive.svg" alt="" />
+          {{ $t("buttons.receive") }} BDX
+        </button>
       </section>
     </template>
 
@@ -239,6 +243,11 @@ export default {
     this.pageTxList();
   },
   methods: {
+    openReceive() {
+      this.$gateway.send("wallet", "set_router_path_rightpane", {
+        data: "receive"
+      });
+    },
     resetPagingAndRefilter() {
       if (this.$refs.scroller) {
         this.$refs.scroller.stop();
@@ -418,15 +427,40 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 56px;
+    height: 56px;
     margin-bottom: var(--beldex-space-3);
     background-color: rgba(235, 235, 235, 0.05);
     border: 1px solid rgba(235, 235, 235, 0.1);
 
     img {
-      width: 16px;
-      height: 16px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &__empty-btn {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 0 12px;
+    margin-top: var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-sm);
+    color: var(--beldex-text-faint);
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid rgba(235, 235, 235, 0.1);
+
+    &:hover {
+      background-color: rgba(235, 235, 235, 0.05);
+    }
+
+    img {
+      width: 14px;
+      height: 14px;
     }
   }
 

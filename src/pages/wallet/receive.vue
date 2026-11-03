@@ -4,9 +4,14 @@
     <div v-if="!address" class="receive__list">
       <section class="receive__primary">
         <!-- QR stays dark-on-light with a quiet zone (plan §8.3). -->
-        <div class="receive__qr">
-          <QrcodeVue ref="qr" :value="info.address" size="92"></QrcodeVue>
-        </div>
+        <button
+          type="button"
+          class="receive__qr"
+          :aria-label="$t('menuItems.showQRCode')"
+          @click="showQR(info.address, $event)"
+        >
+          <QrcodeVue :value="info.address" size="92"></QrcodeVue>
+        </button>
         <div class="receive__primary-meta">
           <span class="beldex-label">{{
             $t("strings.addresses.primaryAccount")
@@ -31,7 +36,10 @@
           <span class="beldex-label">{{
             $t("strings.addresses.myUnusedAddresses")
           }}</span>
-          <span class="receive__count">{{ address_list.unused.length }}</span>
+          <span class="receive__count receive__count--available"
+            >{{ address_list.unused.length }}
+            {{ $t("strings.availableShort") }}</span
+          >
         </div>
         <ReceiveItem
           v-for="item in address_list.unused"
@@ -101,7 +109,7 @@
             <div class="beldex-dialog__inset beldex-dialog__inset--copy">
               <div class="beldex-dialog__inset-text">{{ QR.address }}</div>
               <q-btn
-                class="beldex-dialog__copy"
+                class="beldex-dialog__copy beldex-dialog__copy--icon"
                 flat
                 :aria-label="$t('menuItems.copyAddress')"
                 @click="copyAddress(QR.address)"
@@ -237,6 +245,8 @@ export default {
     line-height: 0;
     padding: 8px; // quiet zone ≥ 4 modules at this size
     background-color: #fff;
+    border: 0;
+    cursor: pointer;
   }
 
   &__primary-meta {
@@ -291,6 +301,10 @@ export default {
   &__count {
     font-size: var(--beldex-text-xs);
     color: var(--beldex-text-faint);
+
+    &--available {
+      text-transform: lowercase;
+    }
   }
 }
 </style>

@@ -90,7 +90,7 @@
             :aria-label="$t('buttons.back')"
             @click="backbtn = false"
           >
-            ←
+            <span class="beldex-icon-btn__glyph">←</span>
           </button>
           <h1 class="beldex-heading__title">
             {{ $t("titles.selectWalletMode") }}
@@ -140,7 +140,7 @@
           <img src="~assets/icons/mode-import.svg" alt="" />
           <span class="wallet-select__mode-text">
             <span class="wallet-select__mode-title">
-              {{ $t("titles.wallet.importFromFile") }}
+              {{ $t("titles.importFromFile") }}
             </span>
             <span class="wallet-select__mode-hint">
               {{ $t("strings.importWalletHint") }}
@@ -389,9 +389,9 @@ export default {
 
   // Mode screen
   &__mode {
-    max-width: 624px;
+    max-width: 760px;
     gap: 30px;
-    padding: var(--beldex-space-8);
+    padding: 30px var(--beldex-space-8);
   }
 
   &__hero {
@@ -414,6 +414,8 @@ export default {
   }
 
   &__modes {
+    // 24px below the hero (frame 421:2005), the panel gap above is 30px.
+    margin-top: -6px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px 9px;

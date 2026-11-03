@@ -2,7 +2,6 @@
   <div>
     <q-btn
       class="menu setting-btn"
-      :icon="accountIcon ? undefined : 'settings'"
       size="14px"
       text-color="#A9A9CD"
       :aria-label="$t('menuItems.settings')"
@@ -15,11 +14,22 @@
         alt=""
         class="setting-btn__account"
       />
-      <!-- Same flat style as the wallet menu dropdown everywhere
-           (wallet-select, settings shell, in-wallet). -->
+      <!-- Welcome / wallet-select / settings gear: outline gear (frame
+           421:2005). -->
+      <img
+        v-else
+        src="~assets/icons/gear.svg"
+        alt=""
+        class="setting-btn__gear"
+      />
+      <!-- In-wallet account menu shares the wallet menu dropdown style;
+           the gear menu uses the top-bar dropdown of frame 421:2005. -->
       <q-menu
         class="settings-sub-menu-wrapper"
-        content-class="beldex-menu beldex-menu--wallet"
+        :offset="accountIcon ? [0, 0] : [0, 9]"
+        :content-class="
+          accountIcon ? 'beldex-menu beldex-menu--wallet' : 'beldex-menu'
+        "
       >
         <q-list separator class="menu-list settings-sub-menu">
           <q-item
@@ -218,6 +228,11 @@ body.desktop .q-hoverable:hover > .q-focus-helper {
   min-height: 0;
   padding: 4px;
 
+  &__gear {
+    width: 15px;
+    height: 15px;
+  }
+
   .q-btn__wrapper {
     min-height: 0;
     padding: 0;
@@ -235,9 +250,12 @@ body.desktop .q-hoverable:hover > .q-focus-helper {
 
 .beldex-app .beldex-menu {
   .settings-sub-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     width: 240px;
     border-radius: 0;
-    padding: var(--beldex-space-2) 0;
+    padding: 0;
   }
 
   .q-item {

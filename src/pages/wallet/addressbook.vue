@@ -11,7 +11,7 @@
             :aria-label="$t('buttons.back')"
             @click="setAddress({ address: '' })"
           >
-            ←
+            <span class="beldex-icon-btn__glyph">←</span>
           </button>
           <span class="beldex-label">{{ $t("titles.contactBook") }}</span>
         </div>

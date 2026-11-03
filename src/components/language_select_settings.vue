@@ -12,9 +12,15 @@
         @click="setLanguage(option.value)"
       >
         <span
-          :class="`flag-icon flag-icon-${option.flag}`"
           class="language-select__flag"
-        />
+          :class="{ 'language-select__flag--row': option.flag.row }"
+        >
+          <span
+            v-for="(stripe, i) in option.flag.stripes"
+            :key="i"
+            :style="{ background: stripe[0], flex: `${stripe[1]} 1 0` }"
+          />
+        </span>
         <span class="language-select__text">
           <span class="language-select__index">
             {{ String(index + 1).padStart(2, "0") }} /
@@ -26,10 +32,10 @@
           </span>
           <span class="language-select__name">{{ option.label }}</span>
         </span>
-        <span
-          class="beldex-check"
-          :class="{ 'beldex-check--on': langSelect === option.value }"
-        />
+        <span class="language-select__code">
+          <span class="language-select__marker" />
+          {{ localeCode(option.value) }}
+        </span>
       </button>
     </div>
     <div class="language-select__actions">
@@ -47,6 +53,7 @@
 
 <script>
 import { languages } from "src/i18n";
+import { flagGraphic, localeCode } from "src/i18n/flags";
 
 export default {
   name: "LanguageSelect",
@@ -62,9 +69,9 @@ export default {
     },
     options() {
       return languages.map(lang => ({
-        label: lang.name,
+        label: lang.native || lang.name,
         value: lang.code,
-        flag: lang.flag
+        flag: flagGraphic(lang.code)
       }));
     }
   },
@@ -76,6 +83,7 @@ export default {
     }
   },
   methods: {
+    localeCode,
     save() {
       const lang = this.langSelect;
 
@@ -99,24 +107,20 @@ export default {
 // unscoped `.language-select` block); only the settings variant differs here.
 .language-select--settings {
   .language-select__card {
-    padding: 20px 18px;
+    padding: 28px 22px;
   }
 
   .language-select__flag {
-    width: 28px;
-    height: 19px;
+    width: 34px;
+    height: 23px;
   }
 
   .language-select__index {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .language-select__name {
-    font-size: 16px;
-  }
-
-  .beldex-check {
-    margin-left: auto;
+    font-size: 18px;
   }
 }
 </style>

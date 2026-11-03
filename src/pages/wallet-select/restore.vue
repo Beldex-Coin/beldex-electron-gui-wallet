@@ -6,16 +6,16 @@
         <div class="beldex-heading">
           <button
             type="button"
-            class="beldex-icon-btn"
+            class="beldex-icon-btn beldex-icon-btn--arrow-lg"
             :aria-label="$t('buttons.back')"
             @click="back()"
           >
-            ←
+            <span class="beldex-icon-btn__glyph">←</span>
           </button>
           <h1 class="beldex-heading__title">
             {{
               step === 2
-                ? $t("buttons.restoreWallet")
+                ? $t("titles.wallet.restore")
                 : $t("titles.wallet.useExistingWallet")
             }}
           </h1>
@@ -276,7 +276,6 @@
         <BeldexField
           v-if="form.refresh_type == 'date'"
           class="restore-wallet__name restore-wallet__box"
-          :label="$t('fieldLabels.restoreFromDate')"
         >
           <q-input
             v-model="form.refresh_start_date"
@@ -313,7 +312,6 @@
         <template v-else>
           <BeldexField
             class="restore-wallet__name restore-wallet__box"
-            :label="$t('fieldLabels.restoreFromBlockHeight')"
             :error="$v[formKey].refresh_start_height.$error"
           >
             <q-input
@@ -397,7 +395,7 @@
               v-model="form.password_confirm"
               :placeholder="$t('placeholders.reEnterWalletPassword')"
               :aria-label="$t('fieldLabels.confirmPassword')"
-              :type="showPassword ? 'text' : 'password'"
+              :type="showPasswordConfirm ? 'text' : 'password'"
               dark
               borderless
               dense
@@ -407,16 +405,16 @@
               type="button"
               class="restore-wallet__reveal"
               :aria-label="
-                showPassword
+                showPasswordConfirm
                   ? $t('dialog.password.hidePassword')
                   : $t('dialog.password.showPassword')
               "
-              :aria-pressed="showPassword"
-              @click="showPassword = !showPassword"
+              :aria-pressed="showPasswordConfirm"
+              @click="showPasswordConfirm = !showPasswordConfirm"
             >
               <img
                 :src="
-                  showPassword
+                  showPasswordConfirm
                     ? require('assets/icons/password-eye.svg')
                     : require('assets/icons/eye-off.svg')
                 "
@@ -484,6 +482,7 @@ export default {
       // UI-only: seed tab step, 1 = name + seed, 2 = restore point + password
       step: 1,
       showPassword: false,
+      showPasswordConfirm: false,
       wallet: {
         name: "",
         seed: "",
@@ -1090,11 +1089,37 @@ export default {
 
   &__icon-btn.q-btn {
     flex: none;
-    width: 20px;
+    width: 28px;
     min-width: 0;
     min-height: 0;
-    height: 20px;
+    height: 28px;
     padding: 0;
+    border-radius: 4px;
+    transition: background-color 0.15s;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    // Quasar's wrapper keeps 4px/16px padding and a min-height, which pushes the
+    // icon off-centre and makes the hover/focus overlay bigger than the button.
+    .q-btn__wrapper {
+      padding: 0;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .q-btn__content {
+      align-items: center;
+      justify-content: center;
+    }
+
+    .q-focus-helper {
+      display: none;
+    }
 
     img {
       display: block;

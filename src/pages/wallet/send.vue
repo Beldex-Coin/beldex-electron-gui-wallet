@@ -88,7 +88,7 @@
               type="number"
               min="0"
               :max="unlocked_balance / 1e9"
-              placeholder="00.00"
+              placeholder="0.00"
               :aria-label="$t('fieldLabels.amount')"
               dark
               borderless
@@ -115,7 +115,7 @@
               class="full-width"
               type="textarea"
               autogrow
-              :placeholder="$t('placeholders.addNotesOptional')"
+              :placeholder="$t('placeholders.addPrivateNote')"
               dark
               borderless
               dense
@@ -140,6 +140,9 @@
             borderless
             dense
             dropdown-icon="expand_more"
+            menu-anchor="bottom right"
+            menu-self="top right"
+            :menu-offset="[0, 4]"
             popup-content-class="beldex-menu beldex-menu--compact"
           />
         </div>
@@ -741,7 +744,9 @@ export default {
   }
 
   &__priority {
-    min-width: 120px;
+    // Popup takes the field's width (Quasar sets it as min-width), so this
+    // is also the dropdown width.
+    min-width: 160px;
     margin: 0; // beats app.styl `.q-field { margin 20px 0 }`
 
     .q-field__control,

@@ -5,11 +5,11 @@
       <div class="beldex-heading">
         <button
           type="button"
-          class="beldex-icon-btn"
+          class="beldex-icon-btn beldex-icon-btn--arrow-lg"
           :aria-label="$t('buttons.back')"
           @click="cancel()"
         >
-          ←
+          <span class="beldex-icon-btn__glyph">←</span>
         </button>
         <h1 class="beldex-heading__title">
           {{ $t("titles.importFromFile") }}

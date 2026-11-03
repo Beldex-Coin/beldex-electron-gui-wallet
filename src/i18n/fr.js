@@ -294,7 +294,7 @@ export default {
     confirmPassword: "CONFIRMER LE MOT DE PASSE",
     daemonLogLevel: "NIVEAU D'IMPORTANCE DU DÉMON",
     daemonP2pPort: "PORT P2P DU DÉMON",
-    dataStoragePath: "CHEMIN DE STOCKAGE DE DONNÉES",
+    dataStoragePath: "STOCKAGE DE DONNÉES",
     decryptRecord: "Ajouter un enregistrement",
     expirationHeight: "Hauteur d'expiration",
     data: "Donnés",
@@ -343,7 +343,7 @@ export default {
     walletLogLevel: "NIVEAU D'IMPORTANCE DU PORTEFEUILLE",
     walletName: "NOM DU PORTEFEUILLE",
     walletRPCPort: "PORT RPC DU PORTEFEUILLE",
-    walletStoragePath: "CHEMIN DE STOCKAGE DU PORTEFEUILLE",
+    walletStoragePath: "STOCKAGE DU PORTEFEUILLE",
 
     // These are specific labels which do not get uppercased
     confirmNewPassword: "Confirmez le nouveau mot de passe",
@@ -542,6 +542,7 @@ export default {
   placeholders: {
     additionalNotes: "Remarques supplémentaires",
     addNotesOptional: "Ajouter des remarques (facultatif)",
+    addPrivateNote: "Ajouter une note privée - Vous seul pouvez la voir",
     addressBookName: "Nom rattaché à cette adresse",
     addressOfSigner: "Adresse du portefeuille public du signataire",
     beldexAddress: "Saisissez l'adresse ou le nom BNS",
@@ -822,7 +823,7 @@ export default {
     languageRegional: "Régional",
     networkActive: "{network} actif",
     connectionTopology: "Sélectionnez la topologie de connexion",
-    ringCtEnforced: "Chiffrement : RingCT imposé",
+    ringCtEnforced: "Chiffrement : Ring-CT imposé",
     netTypes: {
       mainnet: "Mainnet",
       stagenet: "Stagenet",
@@ -935,6 +936,7 @@ export default {
       walletImported: "Portefeuille importé",
       importFromFile: "Importer un portefeuille à partir d'un fichier",
       useExistingWallet: "Utiliser un portefeuille existant",
+      restore: "RESTAURER",
       importFromLegacyGUI:
         "Importer un portefeuille à partir d'un héritage GUI",
       importFromOldGUI: "Importer un portefeuille à partir d'un ancien GUI",

@@ -9,7 +9,7 @@
         :aria-label="$t('buttons.back')"
         @click="close()"
       >
-        ←
+        <span class="beldex-icon-btn__glyph">←</span>
       </button>
       <template v-if="mode == 'new'">
         <span class="beldex-label">{{
@@ -122,6 +122,7 @@
           unelevated
           no-caps
           :label="$t('buttons.save')"
+          :disable="!is_ready"
           @click="save()"
         />
       </div>
@@ -229,6 +230,16 @@ export default {
   },
   methods: {
     save() {
+      // wallet-rpc answers nothing while it scans, so a save now would just
+      // sit in its queue and the contact would not appear until sync ends
+      if (!this.is_ready) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 2000,
+          message: this.$t("notification.errors.contactsWaitForSync")
+        });
+        return;
+      }
       this.$v.newEntry.$touch();
       if (this.$v.newEntry.name.$error) {
         if (this.newEntry.name.trim() === "") {

@@ -16,7 +16,7 @@
       :aria-label="$t('menuItems.copyAddress')"
       @click="copyAddress(address.address, $event)"
     >
-      <q-icon name="content_copy" size="14px" />
+      <img src="~assets/icons/receive-copy.svg" alt="" />
       <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
         {{ $t("menuItems.copyAddress") }}
       </q-tooltip>
@@ -27,7 +27,7 @@
       :aria-label="$t('menuItems.showQRCode')"
       @click="showQR(address.address, $event)"
     >
-      <q-icon name="qr_code_scanner" size="14px" />
+      <img src="~assets/icons/receive-qr.svg" alt="" />
       <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
         {{ $t("menuItems.showQRCode") }}
       </q-tooltip>
@@ -169,6 +169,17 @@ export default {
   &__sub {
     font-size: var(--beldex-text-xs);
     color: var(--beldex-text-faint);
+  }
+
+  .beldex-square-btn {
+    width: 28px;
+    height: 28px;
+    background-color: #111;
+
+    img {
+      width: 14px;
+      height: 14px;
+    }
   }
 }
 </style>

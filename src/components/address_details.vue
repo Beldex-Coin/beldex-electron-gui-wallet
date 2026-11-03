@@ -8,7 +8,7 @@
         :aria-label="$t('buttons.back')"
         @click="$emit('details', '')"
       >
-        ←
+        <span class="beldex-icon-btn__glyph">←</span>
       </button>
       <span class="details__title">{{ $t("titles.addressDetails") }}</span>
     </div>
@@ -40,7 +40,7 @@
             class="beldex-btn beldex-btn--ghost details__copy"
             unelevated
             no-caps
-            icon="content_copy"
+            :icon="'img:' + copyIcon"
             :label="$t('menuItems.copyAddress')"
             @click="copyAddress()"
           />
@@ -116,7 +116,7 @@
             <div class="beldex-dialog__inset beldex-dialog__inset--copy">
               <div class="beldex-dialog__inset-text">{{ address.address }}</div>
               <q-btn
-                class="beldex-dialog__copy"
+                class="beldex-dialog__copy beldex-dialog__copy--icon"
                 flat
                 :aria-label="$t('menuItems.copyAddress')"
                 @click="copyAddress()"
@@ -147,6 +147,7 @@ import { clipboard, nativeImage } from "src/shims/electron-renderer";
 // import AddressHeader from "components/address_header";
 import FormatBeldex from "components/format_beldex";
 import QrcodeVue from "qrcode.vue";
+import copyIcon from "assets/icons/receive-copy.svg";
 // import TxList from "components/tx_list";
 export default {
   name: "AddressDetails",
@@ -163,6 +164,7 @@ export default {
   },
   data() {
     return {
+      copyIcon,
       isVisible: false,
       isQRCodeVisible: false
     };
@@ -276,6 +278,9 @@ export default {
 
     .q-icon {
       font-size: 14px;
+      // the SVG is a fixed-grey <img>; recolor it to the label's text colour
+      filter: brightness(0) invert(1);
+      opacity: 0.92;
     }
   }
 

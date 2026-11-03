@@ -9,7 +9,7 @@
           :aria-label="$t('buttons.back')"
           @click="goback()"
         >
-          ←
+          <span class="beldex-icon-btn__glyph">←</span>
         </button>
         <h2 class="txn-details__title">
           {{ $t("titles.swap.transactionDetails") }}

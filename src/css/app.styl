@@ -171,7 +171,7 @@
 
 // ---------------------------------------------------------------------------
 // Surfaces: page background (Figma: #0b0b0b + radial vignette at 30% + 4px
-// dot grid at 10%) on layouts, dialogs and menus.
+// dot grid, see ::before) on layouts, dialogs and menus.
 // ---------------------------------------------------------------------------
 .beldex-app .q-layout,
 .beldex-app .beldex-dialog,
@@ -199,9 +199,10 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.1;
-    background-image: url("~assets/icons/grid-dot.png");
-    background-size: 4px 4px;
+    // Figma dot grid: 2px dots on a 20px tile, second dot offset (10, 10),
+    // about 5% white over the page background.
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cg fill='%23ebebeb' fill-opacity='0.05'%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='14' y='14' width='2' height='2'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 20px 20px;
   }
 }
 
@@ -222,7 +223,7 @@ body.beldex-app {
     color: inherit;
 
     .q-btn.menu {
-      position: static;
+      position: relative;
       top: auto;
       width: auto;
       height: auto;
@@ -344,6 +345,7 @@ body.beldex-app {
     &__dot {
       width: 6px;
       height: 6px;
+      border-radius: 50%;
       background-color: var(--beldex-accent);
       box-shadow: 0 0 6px var(--beldex-accent-glow);
     }
@@ -580,7 +582,7 @@ body.beldex-app {
     height: 28px;
     padding: 0;
     font-family: var(--beldex-font-mono);
-    font-size: var(--beldex-text-lg);
+    font-size: 20px;
     line-height: 1;
     color: var(--beldex-text-subtle);
     background-color: var(--beldex-panel);
@@ -597,6 +599,17 @@ body.beldex-app {
     &--bare {
       background-color: transparent;
       border-color: transparent;
+    }
+
+    // Arrow glyphs sit below the em-box centre; lift to centre in the box.
+    &__glyph {
+      position: relative;
+      top: -2px;
+    }
+
+    // Wallet-select create / restore / import back arrow.
+    &--arrow-lg .beldex-icon-btn__glyph {
+      font-size: 25px;
     }
 
     &.q-btn {
@@ -886,11 +899,11 @@ body.beldex-app {
     }
   }
 
-  // Large centred input (create / restore / import, frames 421:2077, 421:2111).
+  // Large input (create / restore / import, frames 421:2077, 421:2111).
   .beldex-field--hero {
     .content {
       min-height: 64px;
-      padding: 0 10px;
+      padding: 0 14px;
       background: var(--beldex-bg);
     }
 
@@ -906,11 +919,23 @@ body.beldex-app {
     .q-field__native {
       font-size: var(--beldex-text-xl);
       font-weight: 300;
-      text-align: center;
+      text-align: left;
     }
 
     .q-field__native::placeholder {
       color: var(--beldex-text-faint);
+    }
+  }
+
+  // Centered, light placeholder with a bottom rule (frame 421:2089).
+  .beldex-field--center {
+    .content {
+      border: 0;
+      border-bottom: 1px solid var(--beldex-border);
+    }
+
+    .q-field__native {
+      text-align: center;
     }
   }
 
@@ -931,6 +956,11 @@ body.beldex-app {
       width: 100%;
       max-width: 560px;
       padding: var(--beldex-space-7) 30px;
+    }
+
+    // Password step: title sits close to the fields (no subtitle).
+    &__fields--tight {
+      margin-top: -16px;
     }
 
     &__fields {
@@ -1293,11 +1323,19 @@ body.beldex-app {
     }
 
     &__flag {
+      display: flex;
       flex: none;
+      flex-direction: column;
+      justify-content: space-between;
       width: 24px;
       height: 16px;
-      background-size: cover;
+      overflow: hidden;
+      background-color: #353534;
       opacity: 0.6;
+
+      &--row {
+        flex-direction: row;
+      }
     }
 
     &__text {
@@ -1305,13 +1343,11 @@ body.beldex-app {
       flex: 1 1 auto;
       flex-direction: column;
       min-width: 0;
-      margin-left: -2px;
     }
 
     &__index {
       font-size: var(--beldex-text-xs);
       line-height: 15px;
-      letter-spacing: 0.5px;
       text-transform: uppercase;
       color: var(--beldex-text-muted);
     }
@@ -1319,7 +1355,7 @@ body.beldex-app {
     &__name {
       font-family: var(--beldex-font-sans);
       font-size: var(--beldex-text-base);
-      line-height: 28px;
+      line-height: 28.8px;
       letter-spacing: 0.45px;
       color: var(--beldex-text-muted);
       overflow: hidden;
@@ -1338,12 +1374,6 @@ body.beldex-app {
       color: var(--beldex-text-muted);
     }
 
-    &__marker {
-      width: 6px;
-      height: 6px;
-      background-color: var(--beldex-border-strong);
-    }
-
     .beldex-option--active {
       .language-select__flag {
         opacity: 1;
@@ -1354,8 +1384,8 @@ body.beldex-app {
         color: var(--beldex-accent);
       }
 
-      .language-select__name {
-        color: var(--beldex-text);
+      .language-select__index {
+        letter-spacing: 0.5px;
       }
 
       .language-select__marker {
@@ -1363,6 +1393,16 @@ body.beldex-app {
         height: 8px;
         background-color: var(--beldex-accent);
       }
+
+      .language-select__name {
+        color: var(--beldex-text);
+      }
+    }
+
+    &__marker {
+      width: 6px;
+      height: 6px;
+      background-color: var(--beldex-border-strong);
     }
 
     &__actions {
@@ -1750,6 +1790,13 @@ body.beldex-app {
       height: 12px;
       margin-right: var(--beldex-space-2);
     }
+  }
+
+  // Icon-only variant (address + QR dialogs): no label, larger glyph.
+  .beldex-dialog__copy--icon.q-btn img {
+    width: 18px;
+    height: 18px;
+    margin-right: 0;
   }
 
   // QR tile: dark modules on a light ground, never inverted.

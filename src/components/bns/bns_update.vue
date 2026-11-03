@@ -8,7 +8,7 @@
         :aria-label="$t('buttons.back')"
         @click="onBackBtn()"
       >
-        <img src="~assets/icons/arrow-left-muted.svg" alt="" />
+        <span class="beldex-icon-btn__glyph">←</span>
       </button>
       <h3 class="bns-update__title">
         {{ $t("buttons.bnsUpdate") }}

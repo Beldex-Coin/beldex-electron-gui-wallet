@@ -51,7 +51,7 @@ export default {
     save: "Save",
     saveTxNotes: "Save Notes",
     selectLocation: "Location",
-    selectWalletFile: "Select File",
+    selectWalletFile: "Browse",
     send: "Send",
     sendCoins: "Send Coins",
     masterNode: "Master Node",
@@ -293,7 +293,7 @@ export default {
     daemonLogLevel: "Daemon Log Level",
     daemonP2pPort: "Daemon P2P Port",
     data: "Data",
-    dataStoragePath: "Data Storage Path",
+    dataStoragePath: "Data Storage",
     decryptRecord: "Add Record",
     expirationHeight: "Expiration Height",
     filter: "Filter",
@@ -340,7 +340,7 @@ export default {
     walletLogLevel: "Wallet Log Level",
     walletName: "Wallet Name",
     walletRPCPort: "Wallet RPC Port",
-    walletStoragePath: "Wallet Storage Path",
+    walletStoragePath: "Wallet Storage",
 
     // These are specific labels which do not get uppercased
     confirmNewPassword: "Confirm New Password",
@@ -471,6 +471,8 @@ export default {
       failedWalletRestore: "Failed to restore wallet. Please try again.",
       internalError: "Internal error",
       invalidAddress: "Address not valid",
+      contactsWaitForSync:
+        "Contacts can be saved once the wallet has finished syncing",
       invalidAmount: "Amount not valid",
       invalidBackupOwner: "Backup owner address not valid",
       invalidNameLength: "Invalid name length",
@@ -533,6 +535,7 @@ export default {
     searchContacts: "Search contacts",
     additionalNotes: "Additional notes",
     addNotesOptional: "Add notes (optional)",
+    addPrivateNote: "Add a private note - Only you can see this",
     addressBookName: "Name that belongs to this address",
     addressOfSigner: "Public wallet address of signer",
     beldexAddress: "Enter bx… address or name.bdx",
@@ -557,7 +560,7 @@ export default {
     proveOptionalMessage:
       "Optional message against which the signature is signed",
     recipientWalletAddress: "Recipient's wallet address",
-    selectAFile: "Please select a file",
+    selectAFile: "Choose file",
     bchatId: "The Bchat ID to link to Beldex Name Service",
     signature: "Signature to verify",
     transactionNotes: "Additional notes to locally attach to the transaction",
@@ -591,7 +594,7 @@ export default {
       myPrimaryAddress: "My primary address",
       myUnusedAddresses: "Unused Address",
       myUsedAddresses: "Used addresses",
-      // primaryAddress: "Primary address",
+      primaryAddress: "Primary address",
       subAddress: "Sub-address",
       subAddressIndex: "Index {index}",
       //new design vamp
@@ -607,10 +610,10 @@ export default {
     walletCount: "{count} wallet | {count} wallets",
     selectWalletToUnlock: "Select a wallet to unlock",
     walletsStoredIn: "Wallet files are stored locally in {path}",
-    walletModeSubtitle: "Choose how to add a wallet",
-    createWalletHint: "Generate a new seed",
-    createWalletSubtitle: "Name your new wallet",
-    restoreWalletHint: "Restore from your 25-word seed",
+    walletModeSubtitle: "Choose provisioning method for encrypted local vault",
+    createWalletHint: "Provision Fresh Vault Key",
+    createWalletSubtitle: "Initialize encrypted vault params",
+    restoreWalletHint: "Restore via 24 word Keyword",
     restoreWalletSubtitle: "Restore an encrypted vault from seed or keys",
     viewOnlyBadge: "View-only",
     viewOnlyTitle: "This wallet is view-only",
@@ -629,7 +632,7 @@ export default {
     restoreFromKeysTab: "Restore from keys",
     seedWordsHint: "Separate words with spaces",
     seedWordCount: "{count} / 25 words",
-    importWalletHint: "Import a wallet .keys file",
+    importWalletHint: ".keys, .wallet, or encrypted JSON blob",
     languageRegional: "Regional",
     networkActive: "{network} active",
     awaitingConfirmation: "Awaiting confirmation",
@@ -660,7 +663,7 @@ export default {
     contribution: "Contribution",
     contributor: "Contributor",
     connectionTopology: "Select connection topology",
-    ringCtEnforced: "Encryption: RingCT enforced",
+    ringCtEnforced: "Encryption: Ring-CT enforced",
     netTypes: {
       mainnet: "Mainnet",
       stagenet: "Stagenet",
@@ -673,7 +676,7 @@ export default {
           "Full security, wallet will download the full blockchain. You will not be able to transact until sync is completed."
       },
       localRemote: {
-        title: "Local + Remote Daemon",
+        title: "Local + Remote Daemon Only",
         description:
           "Get started quickly with this default option. Wallet will download the full blockchain, but use a remote node while syncing."
       },
@@ -740,7 +743,7 @@ export default {
     },
     proveTransactionDescription:
       "Generate a proof of your incoming or outgoing payment by supplying the transaction ID, the recipient address and an optional message. For outgoing payments you get a ‘Spend proof’ that proves authorship of a transaction; you don’t need to specify the recipient address.",
-    readingWalletList: "Reading wallet list",
+    readingWalletList: "Loading Wallets",
     recentIncomingTransactionsToAddress:
       "Recent incoming transactions to this address",
     recentTransactionsWithAddress: "Recent transactions",
@@ -937,6 +940,7 @@ export default {
       walletImported: "Wallet Imported",
       importFromFile: "Import Wallet from File",
       useExistingWallet: "Use Existing Wallet",
+      restore: "Restore",
       importFromLegacyGUI: "Import wallet from legacy GUI",
       importFromOldGUI: "Import wallet from old GUI",
       restoreFromSeed: "Restore wallet from seed",

@@ -295,7 +295,7 @@ export default {
     chooseNetwork: "Wählen Sie ein Netzwerk",
     daemonLogLevel: "Daemon-Protokollebene",
     daemonP2pPort: "Daemon P2P-Port",
-    dataStoragePath: "Datenspeicherpfad",
+    dataStoragePath: "Datenspeicher",
     decryptRecord: "Datensatz hinzufügen",
     expirationHeight: "Ablaufhöhe",
     encryptedBchatValue: "Verschlüsselter Bchat-Wert",
@@ -346,7 +346,7 @@ export default {
     walletLogLevel: "Wallet-Protokollebene",
     walletName: "Wallet-Name",
     walletRPCPort: "Wallet-RPC-Port",
-    walletStoragePath: "Wallet-Speicherpfad",
+    walletStoragePath: "Wallet-Speicher",
     // These are specific labels which do not get uppercased
     confirmNewPassword: "Neues Passwort bestätigen",
     newPassword: "Neues Passwort",
@@ -535,6 +535,7 @@ export default {
   placeholders: {
     additionalNotes: "Zusätzliche Notizen",
     addNotesOptional: "Notizen hinzufügen (optional)",
+    addPrivateNote: "Private Notiz hinzufügen - Nur Sie können sie sehen",
     addressBookName: "Zugehörige Namen zu dieser Adresse",
     addressOfSigner: "Öffentliche Wallet-Adresse des Unterzeichners",
     beldexAddress: "Adresse oder BNS-Namen eingeben",
@@ -812,7 +813,7 @@ export default {
     languageRegional: "Regional",
     networkActive: "{network} aktiv",
     connectionTopology: "Wählen Sie die Verbindungstopologie",
-    ringCtEnforced: "Verschlüsselung: RingCT erzwungen",
+    ringCtEnforced: "Verschlüsselung: Ring-CT erzwungen",
     netTypes: {
       mainnet: "Mainnet",
       stagenet: "Stagenet",
@@ -928,6 +929,7 @@ export default {
       walletImported: "Wallet Imported",
       importFromFile: "Importieren der Wallet aus Datei",
       useExistingWallet: "Vorhandene Wallet verwenden",
+      restore: "Wiederherstellen",
       importFromLegacyGUI: "Wiederherstellung der Wallet von legacy GUI",
       importFromOldGUI: "Wiederherstellung der Wallet von altem GUI",
       restoreFromSeed: "Wiederherstellung Wallet von Seed Wörtern",

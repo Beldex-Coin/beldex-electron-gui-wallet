@@ -2,12 +2,12 @@ import enUS from "./en-us";
 
 // ADD LANGUAGES HERE
 const languages = [
-  { name: "English", code: "en-us", flag: "gb" },
-  { name: "Russian", code: "ru", flag: "ru" },
-  { name: "German", code: "de", flag: "de" },
-  { name: "French", code: "fr", flag: "fr" },
-  { name: "Spanish", code: "es", flag: "es" },
-  { name: "Portuguese", code: "pt-br", flag: "pt" }
+  { name: "English", native: "English", code: "en-us", flag: "gb" },
+  { name: "Russian", native: "Русский", code: "ru", flag: "ru" },
+  { name: "German", native: "Deutsch", code: "de", flag: "de" },
+  { name: "French", native: "Français", code: "fr", flag: "fr" },
+  { name: "Spanish", native: "Español", code: "es", flag: "es" },
+  { name: "Portuguese", native: "Português", code: "pt-br", flag: "pt" }
 ];
 
 export { languages };

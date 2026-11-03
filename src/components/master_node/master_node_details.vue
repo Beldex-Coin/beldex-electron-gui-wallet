@@ -9,7 +9,7 @@
         :aria-label="$t('buttons.back')"
         @click="goback()"
       >
-        <img src="~assets/icons/arrow-left.svg" alt="" />
+        <span class="beldex-icon-btn__glyph">←</span>
       </button>
       <h3 class="mn-details__title">{{ $t("titles.masterNodeDetails") }}</h3>
       <span

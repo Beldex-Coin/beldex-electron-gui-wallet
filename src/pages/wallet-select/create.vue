@@ -6,11 +6,11 @@
         <div class="beldex-heading">
           <button
             type="button"
-            class="beldex-icon-btn"
+            class="beldex-icon-btn beldex-icon-btn--arrow-lg"
             :aria-label="$t('buttons.back')"
             @click="back()"
           >
-            ←
+            <span class="beldex-icon-btn__glyph">←</span>
           </button>
           <h1 class="beldex-heading__title">
             {{
@@ -26,7 +26,10 @@
       </div>
 
       <div v-show="step === 1" class="beldex-form-page__fields">
-        <BeldexField class="beldex-field--hero" :error="$v.wallet.name.$error">
+        <BeldexField
+          class="beldex-field--hero beldex-field--center"
+          :error="$v.wallet.name.$error"
+        >
           <q-input
             v-model="wallet.name"
             dark
@@ -39,22 +42,12 @@
             @blur="$v.wallet.name.$touch"
           />
         </BeldexField>
-
-        <BeldexField :label="$t('fieldLabels.seedLanguage')">
-          <q-select
-            v-model="wallet.language"
-            :options="languageOptions"
-            borderless
-            dense
-            emit-value
-            map-options
-            dropdown-icon="expand_more"
-            popup-content-class="beldex-menu beldex-menu--compact"
-          />
-        </BeldexField>
       </div>
 
-      <div v-show="step === 2" class="beldex-form-page__fields">
+      <div
+        v-show="step === 2"
+        class="beldex-form-page__fields beldex-form-page__fields--tight"
+      >
         <BeldexField class="beldex-field--hero">
           <q-input
             v-model="wallet.password"
@@ -109,34 +102,21 @@
 import { required } from "vuelidate/lib/validators";
 import { mapState } from "vuex";
 import BeldexField from "components/beldex_field";
+import ConfirmDialog from "components/confirm_dialog";
 export default {
   components: {
     BeldexField
   },
   data() {
-    const languageOptions = [
-      { label: "English", value: "English" },
-      { label: "Deutsch", value: "Deutsch" },
-      { label: "Español", value: "Español" },
-      { label: "Français", value: "Français" },
-      { label: "Italiano", value: "Italiano" },
-      { label: "Nederlands", value: "Nederlands" },
-      { label: "Português", value: "Português" },
-      { label: "Русский", value: "Русский" },
-      { label: "日本語", value: "日本語" },
-      { label: "简体中文 (中国)", value: "简体中文 (中国)" },
-      { label: "Esperanto", value: "Esperanto" },
-      { label: "Lojban", value: "Lojban" }
-    ];
     return {
       wallet: {
         name: "",
-        language: languageOptions[0].value,
+        // The design has no seed-language picker on this screen.
+        language: "English",
         password: "",
         password_confirm: ""
       },
-      languageOptions,
-      // UI-only: 1 = name (+ seed language), 2 = password
+      // UI-only: 1 = name, 2 = password
       step: 1
     };
   },
@@ -231,23 +211,16 @@ export default {
 
       // Warn user if no password is set
       if (!this.wallet.password) {
-        const passwordPromise = this.$q.dialog({
-          title: this.$t("dialog.noPassword.title"),
-          message: this.$t("dialog.noPassword.message"),
-          ok: {
-            label: this.$t("dialog.noPassword.ok"),
-            color: "primary"
-          },
-          cancel: {
-            // flat: true,
-            label: this.$t("dialog.buttons.cancel"),
-            // color: this.theme === "dark" ? "white" : "dark"
-            color: "accent"
-          },
-          dark: this.theme == "dark"
-          // color: "positive"
-        });
-        passwordPromise
+        this.$q
+          .dialog({
+            component: ConfirmDialog,
+            title: this.$t("dialog.noPassword.title"),
+            message: this.$t("dialog.noPassword.message"),
+            okLabel: this.$t("dialog.noPassword.ok"),
+            cancelLabel: this.$t("dialog.buttons.cancel"),
+            icon: "warning",
+            iconTone: "accent"
+          })
           .onOk(() => {
             this.createWallet();
           })

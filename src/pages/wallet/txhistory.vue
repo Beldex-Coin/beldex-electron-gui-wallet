@@ -5,7 +5,7 @@
       <div class="activity__head">
         <div class="activity__title-group">
           <h2 class="activity__title">{{ $t("titles.activityLedger") }}</h2>
-          <span class="beldex-chip">{{
+          <span v-if="tx_list.length !== 0" class="beldex-chip">{{
             $t("strings.transactions.recentCount", { count: tx_list.length })
           }}</span>
         </div>

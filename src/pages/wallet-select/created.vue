@@ -8,7 +8,24 @@
       <div class="created__rows">
         <div>
           <span class="beldex-label created__label">
-            {{ $t("footer.wallet") }}: {{ walletName }}
+            {{ $t("fieldLabels.walletName") }}
+          </span>
+          <div class="beldex-copy-row">
+            <span class="beldex-copy-row__value">{{ walletName }}</span>
+            <button
+              type="button"
+              class="beldex-copy-row__btn"
+              @click="copyName"
+            >
+              <img src="~assets/icons/copy.svg" alt="" />
+              {{ $t("buttons.copy") }}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <span class="beldex-label created__label">
+            {{ $t("fieldLabels.address") }}
           </span>
           <div class="beldex-copy-row">
             <span class="beldex-copy-row__value">{{ info.address }}</span>
@@ -231,6 +248,17 @@ export default {
             })
           });
         });
+    },
+    copyName() {
+      clipboard.writeText(this.walletName);
+      this.$q.notify({
+        type: "positive",
+        timeout: 1000,
+        message: this.$t("notification.positive.copied", {
+          item: this.$t("fieldLabels.walletName")
+        }),
+        dark: this.theme == "dark"
+      });
     },
     copyAddress() {
       clipboard.writeText(this.info.address);

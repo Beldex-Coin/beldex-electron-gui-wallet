@@ -11,9 +11,15 @@
         @click="setLanguage(option.value)"
       >
         <span
-          :class="`flag-icon flag-icon-${option.flag}`"
           class="language-select__flag"
-        />
+          :class="{ 'language-select__flag--row': option.flag.row }"
+        >
+          <span
+            v-for="(stripe, i) in option.flag.stripes"
+            :key="i"
+            :style="{ background: stripe[0], flex: `${stripe[1]} 1 0` }"
+          />
+        </span>
         <span class="language-select__text">
           <span class="language-select__index">
             {{ String(index + 1).padStart(2, "0") }} /
@@ -27,7 +33,7 @@
         </span>
         <span class="language-select__code">
           <span class="language-select__marker" />
-          {{ option.value.replace("-", "_").toUpperCase() }}
+          {{ localeCode(option.value) }}
         </span>
       </button>
     </div>
@@ -45,6 +51,7 @@
 
 <script>
 import { languages } from "src/i18n";
+import { flagGraphic, localeCode } from "src/i18n/flags";
 
 export default {
   name: "LanguageSelect",
@@ -59,13 +66,14 @@ export default {
     },
     options() {
       return languages.map(lang => ({
-        label: lang.name,
+        label: lang.native || lang.name,
         value: lang.code,
-        flag: lang.flag
+        flag: flagGraphic(lang.code)
       }));
     }
   },
   methods: {
+    localeCode,
     setLanguage(lang) {
       this.$gateway.send("core", "set_language", { lang });
       this.langData = lang;

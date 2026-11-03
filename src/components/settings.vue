@@ -61,7 +61,7 @@
                 :aria-label="$t('buttons.back')"
                 @click="isVisible = false"
               >
-                ←
+                <span class="beldex-icon-btn__glyph">←</span>
               </button>
               <h1 class="beldex-heading__title">
                 {{ headingTitle }}
@@ -155,7 +155,7 @@
                   :aria-label="$t('buttons.back')"
                   @click="page = 'peers'"
                 >
-                  ←
+                  <span class="beldex-icon-btn__glyph">←</span>
                 </button>
                 <h1 class="beldex-heading__title">
                   {{ $t("dialog.banPeer.title") }}
@@ -513,9 +513,10 @@ export default {
     box-shadow: none;
   }
 
-  // Language tab: heading and card share the 640px column.
+  // Language tab: heading and card share the 720px column (wider than the
+  // 660px Figma frame 421:2581, by request).
   &__content--narrow {
-    max-width: calc(640px + 2 * var(--beldex-space-6));
+    max-width: calc(720px + 2 * var(--beldex-space-6));
   }
 
   // Language and About sit in the vertical middle of the page, as in Figma.

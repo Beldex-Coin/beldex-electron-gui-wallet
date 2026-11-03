@@ -58,20 +58,23 @@
       </div>
 
       <div class="wallet-details__chips">
-        <button
-          type="button"
-          class="wallet-details__chip"
-          @click="copyAddress(info.address)"
-        >
+        <div class="wallet-details__chip">
           <img src="~assets/icons/chip-wallet.svg" alt="" />
           <span>{{
             info.address.slice(0, 12) + "…" + info.address.slice(-8)
           }}</span>
-          <img src="~assets/icons/chip-copy.svg" alt="" />
-          <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-            {{ $t("menuItems.copyAddress") }}
-          </q-tooltip>
-        </button>
+          <button
+            type="button"
+            class="wallet-details__chip-copy"
+            :aria-label="$t('menuItems.copyAddress')"
+            @click="copyAddress(info.address)"
+          >
+            <img src="~assets/icons/chip-copy.svg" alt="" />
+            <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
+              {{ $t("menuItems.copyAddress") }}
+            </q-tooltip>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -515,16 +518,25 @@ export default {
     color: var(--beldex-text-muted);
     background-color: var(--beldex-panel);
     border: 1px solid rgba(235, 235, 235, 0.1);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--beldex-text);
-      border-color: rgba(235, 235, 235, 0.2);
-    }
 
     img {
       width: 10px;
       height: 10px;
+    }
+  }
+
+  &__chip-copy {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px;
+    margin: -4px -4px -4px 0;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.7;
     }
   }
 

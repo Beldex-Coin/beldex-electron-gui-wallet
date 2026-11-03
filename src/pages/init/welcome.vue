@@ -31,19 +31,7 @@
         icon="settings"
       >
         <div class="beldex-panel welcome__language">
-          <LanguageSelect @select="onLanguageSelected">
-            <template #info>
-              <div class="welcome__versions">
-                <span>
-                  Wallet {{ $t("strings.version") }}: <b>{{ version }}</b>
-                </span>
-                <span>
-                  Daemon {{ $t("strings.version") }}:
-                  <b>{{ daemonVersion }}</b>
-                </span>
-              </div>
-            </template>
-          </LanguageSelect>
+          <LanguageSelect @select="onLanguageSelected" />
         </div>
       </q-step>
 
@@ -56,7 +44,7 @@
               :aria-label="$t('buttons.back')"
               @click="clickPrev()"
             >
-              ←
+              <span class="beldex-icon-btn__glyph">←</span>
             </button>
             <h1 class="beldex-heading__title">
               {{ $t("titles.settings.title") }}
@@ -167,8 +155,8 @@ export default {
 
   &__language {
     width: 100%;
-    max-width: 554px;
-    margin: 56px auto 0;
+    max-width: 666px;
+    margin: 108px auto 0;
     padding: 30px;
     box-shadow: none;
   }

@@ -291,7 +291,7 @@ export default {
     confirmPassword: "CONFIRMAR CONTRASEÑA",
     daemonLogLevel: "NIVEL LOG PARA EL SERVICIO",
     daemonP2pPort: "PUERTO P2P SERVICIO",
-    dataStoragePath: "RUTA DE ALMACENAMIENTO DE DATOS",
+    dataStoragePath: "ALMACENAMIENTO DE DATOS",
     decryptRecord: "Agregar registro",
     expirationHeight: "Altura de expiración",
     data: "Datos",
@@ -341,7 +341,7 @@ export default {
     walletLogLevel: "NIVEL LOG MONEDERO",
     walletName: "NOMBRE MONEDERO",
     walletRPCPort: "PUERTO RPC MONEDERO",
-    walletStoragePath: "RUTA DE ALMACENAMIENTO DEL MONEDERO",
+    walletStoragePath: "ALMACENAMIENTO DEL MONEDERO",
 
     // These are specific labels which do not get uppercased
     confirmNewPassword: "Confirme la nueva contraseña",
@@ -537,6 +537,7 @@ export default {
   placeholders: {
     additionalNotes: "Notas adicionales",
     addNotesOptional: "Añadir notas (opcional)",
+    addPrivateNote: "Añadir una nota privada - Solo tú puedes verla",
     addressBookName: "Nombre asociado a esta dirección",
     addressOfSigner: "Dirección de billetera pública de la firmante",
     beldexAddress: "Ingrese la dirección o el nombre del BNS",
@@ -811,7 +812,7 @@ export default {
     languageRegional: "Regional",
     networkActive: "{network} activa",
     connectionTopology: "Seleccione la topología de conexión",
-    ringCtEnforced: "Cifrado: RingCT forzado",
+    ringCtEnforced: "Cifrado: Ring-CT forzado",
     netTypes: {
       mainnet: "Mainnet",
       stagenet: "Stagenet",
@@ -923,6 +924,7 @@ export default {
       walletImported: "Cartera importada",
       importFromFile: "Importar monedero de un archivo",
       useExistingWallet: "Usar la billetera existente",
+      restore: "RESTAURAR",
       importFromLegacyGUI: "Importar monedero de una interfaz gráfica heredada",
       importFromOldGUI: "Importar monedero de una interfaz gráfica antigua",
       restoreFromSeed: "Restaurar monedero mediante semilla",

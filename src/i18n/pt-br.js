@@ -287,7 +287,7 @@ export default {
     confirmPassword: "CONFIRMAR PALAVRA-PASSE",
     daemonLogLevel: "NÍVEL DE LOG PARA O SERVIÇO",
     daemonP2pPort: "PORTA P2P DO SERVIÇO",
-    dataStoragePath: "DIRECTÓRIO DE ARMAZENAMENTO DOS DADOS",
+    dataStoragePath: "ARMAZENAMENTO DOS DADOS",
     decryptRecord: "Adicionar registro",
     expirationHeight: "Altura de expiração",
     data: "Dados",
@@ -336,7 +336,7 @@ export default {
     walletLogLevel: "NIVEL DE LOG DA CARTEIRA",
     walletName: "NOME DA CARTEIRA",
     walletRPCPort: "PORTA RPC DA CARTEIRA",
-    walletStoragePath: "DIRECTORIA DE SALVAMENTO DA CARTEIRA",
+    walletStoragePath: "ARMAZENAMENTO DA CARTEIRA",
     confirmNewPassword: "Confirmar Nova Palavra-Passe",
     newPassword: "Nova Palavra-Passe",
     oldPassword: "Antiga Palavra-Passe",
@@ -528,6 +528,7 @@ export default {
   placeholders: {
     additionalNotes: "Notas adicionais",
     addNotesOptional: "Adicionar notas (opcional)",
+    addPrivateNote: "Adicionar uma nota privada - Só você pode ver",
     addressBookName: "Nome que pertence a este endereço",
     addressOfSigner: "Endereço público da carteira do signatário",
     beldexAddress: "Insira o endereço ou o nome BNS",
@@ -801,7 +802,7 @@ export default {
     languageRegional: "Regional",
     networkActive: "{network} ativa",
     connectionTopology: "Selecione a topologia de conexão",
-    ringCtEnforced: "Criptografia: RingCT aplicada",
+    ringCtEnforced: "Criptografia: Ring-CT aplicada",
     netTypes: {
       mainnet: "Mainnet",
       stagenet: "Stagenet",
@@ -914,6 +915,7 @@ export default {
       walletImported: "Carteira importada",
       importFromFile: "Importar carteira a partir de ficheiro",
       useExistingWallet: "Usar carteira existente",
+      restore: "RESTAURAR",
       importFromLegacyGUI:
         "Importar carteira a partir da antiga carteira GUI (legado)",
       importFromOldGUI: "Importar carteira a partir da antiga carteira GUI",
