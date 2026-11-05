@@ -79,7 +79,10 @@
         <span>{{ $t("strings.total") }}</span>
         <strong>{{ summary.price }} BDX</strong>
       </div>
-      <p class="bns-page__note">{{ $t("strings.bnsPurchaseNote") }}</p>
+      <div class="bns-page__note">
+        <img src="~assets/icons/note-info.svg" alt="" />
+        <p>{{ $t("strings.bnsPurchaseNote") }}</p>
+      </div>
     </aside>
 
     <aside v-else-if="screen !== 'purchase'" class="bns-page__side">
@@ -93,11 +96,18 @@
           <dd>{{ names.length }}</dd>
         </div>
         <div class="bns-page__stat">
+          <dt>{{ $t("strings.expiringSoon") }}</dt>
+          <dd>{{ expiringSoon }}</dd>
+        </div>
+        <div class="bns-page__stat">
           <dt>{{ $t("strings.nextExpiry") }}</dt>
           <dd>{{ nextExpiry }}</dd>
         </div>
       </dl>
-      <p class="bns-page__note">{{ $t("strings.bnsRenewNote") }}</p>
+      <div class="bns-page__note">
+        <img src="~assets/icons/note-info.svg" alt="" />
+        <p>{{ $t("strings.bnsRenewNote") }}</p>
+      </div>
     </aside>
   </q-page>
 </template>
@@ -110,6 +120,8 @@ import BNSRenew from "components/bns/bns_renew.vue";
 import Vue from "vue";
 import { mapState } from "vuex";
 import _ from "lodash";
+
+const EXPIRING_SOON_BLOCKS = 30 * 720;
 
 export default {
   components: {
@@ -139,6 +151,16 @@ export default {
         );
       }
     }),
+    // Names expiring within ~30 days (2 minute blocks).
+    expiringSoon() {
+      const height = this.$store.state.gateway.daemon.info.height || 0;
+      if (!height) return 0;
+      return this.names.filter(
+        r =>
+          r.expiration_height > 0 &&
+          r.expiration_height - height <= EXPIRING_SOON_BLOCKS
+      ).length;
+    },
     nextExpiry() {
       const heights = this.names
         .map(r => r.expiration_height)
@@ -315,12 +337,24 @@ export default {
   }
 
   &__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     margin: 0;
     padding: 12px 14px;
     font-size: var(--beldex-text-sm);
     line-height: 17px;
     color: var(--beldex-text-muted);
     border: 1px solid var(--beldex-border);
+
+    img {
+      flex: 0 0 auto;
+      margin-top: 2px;
+    }
+
+    p {
+      margin: 0;
+    }
   }
 }
 </style>

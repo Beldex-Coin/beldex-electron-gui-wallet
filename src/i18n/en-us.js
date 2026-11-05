@@ -20,6 +20,7 @@ export default {
     close: "Close",
     contacts: "Contacts",
     copyAddress: "Copy Address",
+    openInWallet: "Open in wallet",
     startOver: "Start Over",
     copyData: "Copy Data",
     copy: "Copy",
@@ -341,7 +342,7 @@ export default {
     restoreFromDate: "Restore from Date",
     seedLanguage: "Seed Language",
     masterNodeCommand: "Master Node Command",
-    masterNodeKey: "Master Node Key",
+    masterNodeKey: "Masternode key",
     values: "Values",
     bchatId: "BCHAT ID",
     signature: "Signature",
@@ -780,7 +781,7 @@ export default {
     walletCreated: "Wallet Created",
     selectLanguage: "Select a language",
     masterNodeContributionDescription:
-      "Staking contributes to the safety of the Beldex network. For your contribution, you earn BDX. Once staked, you will have to wait either 15 or 30 days to have your BDX unlocked, depending on if a stake was unlocked by a contributor or the node was deregistered. To learn more about staking, please visit the documentation on the",
+      "Contribute BDX to a masternode and earn a share of its rewards. Enter the masternode key shared by the operator.",
     masterNodeRegistrationDescription:
       "Enter the {registerCommand} command produced by the daemon that is registering to become a Master Node using the {prepareCommand} command.",
     masterNodeRegistrationNote:
@@ -789,6 +790,7 @@ export default {
     masterNodeStartStakingDescription1: "Tab -->",
     stakingSummary: "Staking summary",
     totalStaked: "Total staked",
+    rewardsEarned: "Rewards earned",
     activeStakes: "Active stakes",
     deregisteredStakes: "Deregistered",
     unlockPeriod: "Unlock period",
@@ -812,8 +814,11 @@ export default {
       "It may take a minute or two for a new name to show up in My BNS.",
     yourNames: "Your names",
     activeNames: "Active",
+    expiringSoon: "Expiring soon",
     nextExpiry: "Next expiry",
     bnsRenewNote: "Renew a name before its expiration height to keep it.",
+    bnsRenewExtendNote:
+      "Renewal extends the expiration height from the current expiry, not from today.",
     masterNodeRegistered: "Registered",
     masterNodeDeregistered: "Deregistered",
     keyImage: "Key image",
@@ -823,7 +828,7 @@ export default {
     masterNodesNoneAvailable:
       "There are no masternodes currently available for contribution.",
     noMasterNodesCurrentlyAvailable:
-      "There are currently no master nodes available for contribution",
+      "There are no masternodes currently available for contribution.",
     masterNodeDetails: {
       contributors: "Contributors",
       lastRewardBlockHeight: "Last reward block height",
@@ -914,7 +919,7 @@ export default {
       sign: "Sign",
       verify: "Verify"
     },
-    availableForContribution: "Master nodes available for contribution",
+    availableForContribution: "Masternodes available for contribution",
     changePassword: "Change Password",
     configure: "Configuration Settings",
     currentlyStakedNodes: "Currently staked nodes",
@@ -980,6 +985,8 @@ export default {
       unsupportedpair: "Unsupported exchange pair",
       minimumAmt: "Minimum amount is",
       maximumAmt: "Maximum amount is",
+      minimumAmtSuffix: "for this pair. Increase the amount to continue.",
+      maximumAmtSuffix: "for this pair. Decrease the amount to continue.",
       transactionDetails: "Transaction details",
       youSend: "You send",
       youSent: "You sent",
@@ -1072,6 +1079,7 @@ export default {
       estimate: "Estimate",
       transactionPreview: "Transaction preview",
       waitingDeposit: "Waiting for your deposit",
+      checkedAgo: "Checked {seconds}s ago",
       timeLeft: "Time left to send",
       guaranteedRateDisc: "The guaranteed rate has been terminated",
       sendFundsAboveAddress:

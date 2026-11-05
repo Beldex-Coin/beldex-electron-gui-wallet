@@ -218,6 +218,21 @@
                     >{{ this.$t("titles.swap.unsupportedpair") }}</span
                   >
                   <span v-if="this.minMaxWarningContent === 'min'">
+                    <svg
+                      class="minmax-warning-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M8 1.8L14.5 13H1.5L8 1.8z" />
+                      <path d="M8 6.3v3.2M8 11.3v.1" />
+                    </svg>
                     {{ this.$t("titles.swap.minimumAmt") }}
                     <span
                       class="validMinMaxAmount"
@@ -235,6 +250,7 @@
                       }}
                       {{ this.pairsMinMax?.from }}
                     </span>
+                    {{ this.$t("titles.swap.minimumAmtSuffix") }}
                   </span>
                   <span
                     v-if="this.minMaxWarningContent === 'max'"
@@ -245,6 +261,21 @@
                           : pairsMinMax?.maxAmountFixed
                     "
                   >
+                    <svg
+                      class="minmax-warning-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M8 1.8L14.5 13H1.5L8 1.8z" />
+                      <path d="M8 6.3v3.2M8 11.3v.1" />
+                    </svg>
                     {{ this.$t("titles.swap.maximumAmt") }}
                     <span class="validMinMaxAmount">
                       {{
@@ -254,6 +285,7 @@
                       }}
                       {{ this.pairsMinMax?.from }}
                     </span>
+                    {{ this.$t("titles.swap.maximumAmtSuffix") }}
                   </span>
                 </div>
                 <div class="flex justify-center full-width">
@@ -735,6 +767,15 @@
               {{ historyPreview.networkFee }} {{ historyPreview.to }}
             </td>
           </tr>
+          <tr
+            v-if="
+              historyPreview.confirmations !== null &&
+                historyPreview.confirmations !== undefined
+            "
+          >
+            <td>{{ this.$t("titles.swap.confirmations") }}</td>
+            <td>{{ historyPreview.confirmations }} Blocks</td>
+          </tr>
           <tr>
             <td>{{ this.$t("titles.swap.youGet") }}</td>
             <td class="uppercase">
@@ -829,6 +870,10 @@
               }}
               {{ this.receiveAmountType.name }}
             </td>
+          </tr>
+          <tr v-if="this.routes === 'settlement' && confirmationCount !== null">
+            <td>{{ this.$t("titles.swap.confirmations") }}</td>
+            <td>{{ confirmationCount }} Blocks</td>
           </tr>
         </table>
       </aside>
@@ -1083,6 +1128,22 @@ export default {
     },
 
     createdTxnDetails: state => state.gateway.createdTxnDetails,
+    confirmationCount() {
+      const d = this.createdTxnDetails && this.createdTxnDetails.result;
+      if (!d) return null;
+      const raw =
+        d.raw_response && typeof d.raw_response === "object"
+          ? d.raw_response
+          : {};
+      const count =
+        d.minConfirmationsToTrade ??
+        d.payinConfirmations ??
+        raw.minConfirmationsToTrade ??
+        raw.payinConfirmations;
+      return count != null && count !== "" && !isNaN(Number(count))
+        ? Number(count)
+        : null;
+    },
     txnStatus: state => state.gateway.txnStatus,
 
     isValidRecipientAddress: state =>
@@ -1912,6 +1973,12 @@ export default {
     background-color: var(--beldex-danger-wash);
     border: 1px solid var(--beldex-danger-border);
     border-radius: 0;
+
+    .minmax-warning-icon {
+      flex: none;
+      margin-right: var(--beldex-space-3);
+      vertical-align: -3px;
+    }
   }
 
   .swap-btn.q-btn {
@@ -2274,10 +2341,25 @@ export default {
 
     &__copy.q-btn {
       flex: none;
+      align-self: center;
+      width: 28px;
+      height: 28px;
+      min-height: 28px;
+      padding: 0;
+      border-radius: 0;
       color: var(--beldex-accent);
+
+      .q-focus-helper {
+        display: none;
+      }
 
       .q-icon {
         font-size: 14px;
+      }
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(255, 255, 255, 0.06);
       }
     }
 
@@ -2459,9 +2541,15 @@ export default {
       margin-bottom: var(--beldex-space-4);
     }
 
+    // Fixed-width first column so the Transaction ID always starts at the same x.
+    &__fact:first-child {
+      min-width: 280px;
+    }
+
     &__label {
       font-family: var(--beldex-font-mono);
       font-size: var(--beldex-text-xs);
+      line-height: 1.2;
       letter-spacing: 0.5px;
       color: var(--beldex-text-muted);
       text-transform: uppercase;
@@ -2479,17 +2567,36 @@ export default {
     &__value {
       display: flex;
       align-items: center;
-      gap: var(--beldex-space-2);
-      margin-top: var(--beldex-space-2);
+      gap: var(--beldex-space-1);
+      margin-top: 1px;
       font-family: var(--beldex-font-mono);
       font-size: var(--beldex-text-md);
-      font-weight: 500;
-      color: var(--beldex-text-strong);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--beldex-text);
       word-break: break-all;
     }
 
+    // Compact icon-only button so it doesn't make the ID row taller than its text.
     &__id-copy.q-btn {
+      width: 24px;
+      height: 24px;
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      border-radius: 0;
       color: var(--beldex-accent);
+
+      .q-btn__wrapper {
+        min-width: 0;
+        min-height: 0;
+        padding: 0;
+        border-radius: 0;
+      }
+
+      .q-focus-helper {
+        border-radius: 0;
+      }
 
       .q-icon {
         font-size: 14px;
@@ -2502,6 +2609,12 @@ export default {
       font-size: var(--beldex-text-md);
       color: var(--beldex-text);
       word-break: break-all;
+    }
+
+    &__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--beldex-space-3);
     }
 
     &__copy.q-btn {
@@ -2531,6 +2644,11 @@ export default {
       color: var(--beldex-text-muted);
       background-color: rgba(8, 8, 8, 0.8);
       border: 1px solid var(--beldex-hairline);
+    }
+
+    &__status-checked {
+      margin-left: auto;
+      color: var(--beldex-text-muted);
     }
 
     &__status-dot {
@@ -2668,6 +2786,15 @@ export default {
         font-size: var(--beldex-text-md);
         color: var(--beldex-text);
         border-bottom: 1px solid var(--beldex-hairline);
+      }
+
+      // Beats the generic td colour above and legacy app.styl nth-child colours.
+      td.swapHistory__muted {
+        color: var(--beldex-text-muted);
+      }
+
+      td.swapHistory__muted--accent {
+        color: var(--beldex-accent);
       }
 
       tr:hover td {
@@ -2864,11 +2991,17 @@ export default {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
       color: var(--beldex-danger, #ff5a5a);
-      background-color: rgba(255, 90, 90, 0.1);
-      border: 1px solid rgba(255, 90, 90, 0.35);
+      background-color: rgba(242, 102, 102, 0.06);
+      border: 1px solid rgba(242, 102, 102, 0.25);
+
+      img {
+        width: 18px;
+        height: 18px;
+      }
     }
 
     &__status-title {

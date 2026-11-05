@@ -101,14 +101,6 @@
               {{ $t("strings.privacy") }}
             </div>
           </div>
-          <div v-if="getConfirmationCount() !== null" class="swapPayment__fact">
-            <div class="swapPayment__label">
-              {{ $t("titles.swap.confirmations") }}
-            </div>
-            <div class="swapPayment__value">
-              {{ getConfirmationCount() }} Blocks
-            </div>
-          </div>
         </div>
 
         <div class="swapPayment__label">
@@ -118,19 +110,29 @@
         <div class="swapPayment__address">
           {{ createdTxnDetails.payinAddress }}
         </div>
-        <q-btn
-          :label="$t('buttons.copyAddress')"
-          icon="content_copy"
-          class="beldex-btn beldex-btn--ghost swapPayment__copy"
-          unelevated
-          no-caps
-          @click="
-            copyAddress({
-              val: createdTxnDetails.payinAddress,
-              from: 'Recipient address'
-            })
-          "
-        />
+        <div class="swapPayment__actions">
+          <q-btn
+            :label="$t('buttons.copyAddress')"
+            icon="content_copy"
+            class="beldex-btn beldex-btn--ghost swapPayment__copy"
+            unelevated
+            no-caps
+            @click="
+              copyAddress({
+                val: createdTxnDetails.payinAddress,
+                from: 'Recipient address'
+              })
+            "
+          />
+          <q-btn
+            :label="$t('buttons.openInWallet')"
+            icon="open_in_new"
+            class="beldex-btn beldex-btn--ghost swapPayment__copy"
+            unelevated
+            no-caps
+            @click="backToMainpage()"
+          />
+        </div>
       </div>
     </section>
 
@@ -145,6 +147,9 @@
     <div class="swapPayment__status">
       <span class="swapPayment__status-dot" />
       {{ $t("titles.swap.waitingDeposit") }}
+      <span class="swapPayment__status-checked">
+        {{ $t("titles.swap.checkedAgo", { seconds: checkedSecondsAgo }) }}
+      </span>
     </div>
   </div>
 </template>
@@ -195,6 +200,9 @@ export default {
 
   data() {
     return {
+      lastCheckedAt: Date.now(),
+      checkedSecondsAgo: 0,
+      checkedTicker: null,
       timer: "",
       clock: "",
       timeIsExpire: false
@@ -209,10 +217,23 @@ export default {
         .toUpperCase();
     }
   },
+  watch: {
+    // Each swap-status poll result counts as a fresh "check".
+    "$store.state.gateway.txnStatus"() {
+      this.lastCheckedAt = Date.now();
+      this.checkedSecondsAgo = 0;
+    }
+  },
   beforeDestroy() {
+    clearInterval(this.checkedTicker);
     clearInterval(this.timer);
   },
   mounted() {
+    this.checkedTicker = setInterval(() => {
+      this.checkedSecondsAgo = Math.floor(
+        (Date.now() - this.lastCheckedAt) / 1000
+      );
+    }, 1000);
     this.startAndStopTimer();
   },
 
@@ -267,21 +288,6 @@ export default {
     clearintervals() {
       clearInterval(this.timer);
     },
-    getConfirmationCount() {
-      if (!this.createdTxnDetails) return null;
-      const count =
-        this.createdTxnDetails.minConfirmationsToTrade ??
-        this.createdTxnDetails.payinConfirmations ??
-        (this.createdTxnDetails.raw_response &&
-        typeof this.createdTxnDetails.raw_response === "object"
-          ? this.createdTxnDetails.raw_response.minConfirmationsToTrade ??
-            this.createdTxnDetails.raw_response.payinConfirmations
-          : null);
-      return count != null && count !== "" && !isNaN(Number(count))
-        ? Number(count)
-        : null;
-    },
-
     copyAddress(content) {
       clipboard.writeText(content.val);
       this.$q.notify({

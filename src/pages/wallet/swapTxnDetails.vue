@@ -54,7 +54,7 @@
     <section class="swapDetails__body">
       <div class="swapDetails__status">
         <span class="swapDetails__status-icon">
-          <q-icon name="history" size="18px" />
+          <img src="~assets/icons/swap-status-clock.svg" alt="" />
         </span>
         <div>
           <div class="swapDetails__status-title">{{ statusTitle }}</div>

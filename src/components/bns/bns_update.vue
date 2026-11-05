@@ -11,13 +11,22 @@
         <span class="beldex-icon-btn__glyph">←</span>
       </button>
       <h3 class="bns-update__title">
-        {{ $t("buttons.bnsUpdate") }}
+        {{ $t("buttons.update") }}
         <span
           v-if="currentRecord && currentRecord.name"
           class="bns-update__name"
-          >· {{ currentRecord.name }}.bdx</span
+          >·
+          {{
+            currentRecord.name.endsWith(".bdx")
+              ? currentRecord.name
+              : currentRecord.name + ".bdx"
+          }}</span
         >
       </h3>
+      <span class="beldex-hint bns-update__hint">
+        <img src="~assets/icons/at-sign.svg" alt="" />
+        {{ $t("strings.bnsServiceHint") }}
+      </span>
     </div>
     <div class="bns-input">
       <BNSUpdateInputForm
@@ -53,6 +62,17 @@
               }}</span>
               <span class="bns-confirm__value">{{
                 confirmModal.record.owner
+              }}</span>
+            </div>
+            <div
+              v-if="confirmModal.record.backup_owner"
+              class="beldex-dialog__kv"
+            >
+              <span class="beldex-dialog__kv-label">{{
+                $t("fieldLabels.backupOwner")
+              }}</span>
+              <span class="bns-confirm__value">{{
+                confirmModal.record.backup_owner
               }}</span>
             </div>
             <div
@@ -240,8 +260,8 @@ export default {
   background-color: transparent;
   border-radius: 0;
 
+  // Not positioned: the loading overlay covers the whole .bns-page__main card.
   .bns-input {
-    position: relative;
     height: auto;
     overflow-y: visible;
   }
@@ -252,13 +272,19 @@ export default {
     display: flex;
     align-items: center;
     gap: var(--beldex-space-3);
+    padding-bottom: var(--beldex-space-4);
     margin-bottom: var(--beldex-space-5);
+    border-bottom: 1px solid var(--beldex-hairline);
   }
 
   &__back {
     width: 28px;
     height: 28px;
     border-color: var(--beldex-border);
+  }
+
+  &__hint {
+    margin-left: auto;
   }
 
   &__title {

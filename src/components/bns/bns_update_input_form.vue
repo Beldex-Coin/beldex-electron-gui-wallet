@@ -36,6 +36,21 @@
             @blur="$v.ownerAddress.$touch"
           />
         </BeldexField>
+        <BeldexField
+          :label="$t('fieldLabels.backupOwnerWalletAddress')"
+          :error="$v.backupOwnerAddress.$error"
+        >
+          <q-input
+            v-model.trim="backupOwnerAddress"
+            :dark="theme == 'dark'"
+            :placeholder="
+              record.backup_owner || $t('placeholders.bnsBackupOwnerShort')
+            "
+            borderless
+            dense
+            @blur="$v.backupOwnerAddress.$touch"
+          />
+        </BeldexField>
       </div>
 
       <button
@@ -76,7 +91,9 @@
               v-model="bchatId"
               :disable="!bchatIdRef"
               :dark="theme == 'dark'"
-              :placeholder="record.value_bchat || 'Bchat ID'"
+              :placeholder="
+                record.value_bchat || $t('placeholders.bnsValueBchat')
+              "
               borderless
               dense
               @blur="$v.bchatId.$touch"
@@ -98,7 +115,9 @@
               v-model="belnetId"
               :disable="!belnetIdRef"
               :dark="theme == 'dark'"
-              :placeholder="record.value_belnet || 'Belnet ID'"
+              :placeholder="
+                record.value_belnet || $t('placeholders.bnsValueBelnet')
+              "
               borderless
               dense
               @blur="$v.belnetId.$touch"
@@ -120,7 +139,9 @@
               v-model="address"
               :disable="!addressRef"
               :dark="theme == 'dark'"
-              :placeholder="record.value_wallet || 'wallet address'"
+              :placeholder="
+                record.value_wallet || $t('placeholders.bnsValueAddress')
+              "
               borderless
               dense
               @blur="$v.address.$touch"
@@ -142,7 +163,9 @@
               v-model="ethAddress"
               :disable="!ethAddressRef"
               :dark="theme == 'dark'"
-              :placeholder="record.value_eth_addr || 'ETH address'"
+              :placeholder="
+                record.value_eth_addr || $t('placeholders.bnsValueEth')
+              "
               borderless
               dense
               @blur="$v.ethAddress.$touch"
@@ -165,7 +188,9 @@
           !(
             is_ready &&
             record.name &&
-            (contentUpdate === 'Owner' ? ownerAddress : true) &&
+            (contentUpdate === 'Owner'
+              ? ownerAddress || backupOwnerAddress
+              : true) &&
             (contentUpdate === 'Values'
               ? address || bchatId || ethAddress || belnetId
               : true)
@@ -219,6 +244,7 @@ export default {
     return {
       record: { ...initialRecord },
       ownerAddress: "",
+      backupOwnerAddress: "",
       bchatId: "",
       belnetId: "",
       address: "",
@@ -300,12 +326,28 @@ export default {
     },
     submit() {
       this.$v.ownerAddress.$touch();
+      if (
+        this.contentUpdate === "Owner" &&
+        !this.ownerAddress &&
+        !this.backupOwnerAddress
+      ) {
+        this.toastmsg(this.$t("notification.errors.invalidOwner"));
+        return;
+      }
       if (this.contentUpdate === "Owner" && this.$v.ownerAddress.$error) {
         this.toastmsg(this.$t("notification.errors.invalidOwner"));
         return;
       }
+      if (this.contentUpdate === "Owner") {
+        this.$v.backupOwnerAddress.$touch();
+        if (this.$v.backupOwnerAddress.$error) {
+          this.toastmsg(this.$t("notification.errors.invalidBackupOwner"));
+          return;
+        }
+      }
       if (
         this.contentUpdate === "Owner" &&
+        this.ownerAddress &&
         this.ownerAddress === this.record.owner
       ) {
         this.toastmsg("same owner address");
@@ -372,7 +414,7 @@ export default {
         submitRecord = {
           name: this.record.name,
           owner: this.ownerAddress,
-          backup_owner: this.record.backup_owner
+          backup_owner: this.backupOwnerAddress || this.record.backup_owner
         };
       } else {
         submitRecord = {
@@ -390,7 +432,14 @@ export default {
   validations: {
     ownerAddress: {
       validate: function(value) {
-        return this.isAddress(value);
+        // optional when only the backup owner is being updated
+        return !value || this.isAddress(value);
+      }
+    },
+    backupOwnerAddress: {
+      validate: function(value) {
+        // optional: empty keeps the current backup owner
+        return !value || this.isAddress(value);
       }
     },
     address: {
@@ -535,7 +584,6 @@ export default {
     gap: var(--beldex-space-3);
 
     .beldex-field .content {
-      padding-left: 0;
       background: transparent;
       border-color: rgba(235, 235, 235, 0.1);
       opacity: 0.5;
@@ -547,7 +595,6 @@ export default {
   }
 
   &__value--on .beldex-field .content {
-    padding-left: var(--beldex-space-3);
     background: var(--beldex-bg);
     border-color: var(--beldex-border);
     opacity: 1;

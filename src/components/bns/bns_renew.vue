@@ -9,7 +9,23 @@
       >
         <span class="beldex-icon-btn__glyph">←</span>
       </button>
-      <h3 class="bns-update__title">{{ $t("buttons.bnsRenew") }}</h3>
+      <h3 class="bns-update__title">
+        {{ $t("buttons.renew") }}
+        <span
+          v-if="currentRecord && currentRecord.name"
+          class="bns-update__name"
+          >·
+          {{
+            currentRecord.name.endsWith(".bdx")
+              ? currentRecord.name
+              : currentRecord.name + ".bdx"
+          }}</span
+        >
+      </h3>
+      <span class="beldex-hint bns-update__hint">
+        <img src="~assets/icons/at-sign.svg" alt="" />
+        {{ $t("strings.bnsServiceHint") }}
+      </span>
     </div>
     <div class="bns-form__block">
       <span class="beldex-label">{{ $t("strings.bns.duration") }}</span>
@@ -30,18 +46,23 @@
 
     <!-- Name -->
     <div class="bns-form__block">
-      <BeldexField :label="$t('fieldLabels.name')" :disable="true">
+      <BeldexField :label="$t('fieldLabels.name')" disable-hover>
         <q-input
           v-model.trim="currentRecord.name"
           dark
           maxlength="67"
           :placeholder="$t('placeholders.bnsName')"
-          :disable="true"
+          readonly
           borderless
           dense
           :suffix="'.bdx'"
         />
       </BeldexField>
+    </div>
+
+    <div class="bns-renew__note">
+      <img src="~assets/icons/note-info.svg" alt="" />
+      <p>{{ $t("strings.bnsRenewExtendNote") }}</p>
     </div>
 
     <div class="beldex-form-actions">
@@ -50,14 +71,16 @@
         unelevated
         no-caps
         :disable="!is_ready"
-        :label="$t('buttons.renew')"
         @click="handlePopup(currentRecord)"
-      />
+      >
+        <img class="bns-renew__btn-icon" src="~assets/icons/renew.svg" alt="" />
+        {{ $t("buttons.renew") }}
+      </q-btn>
     </div>
 
     <!-- Confirm renew -->
     <q-dialog v-model="confirmModal.open">
-      <q-card class="beldex-dialog">
+      <q-card class="beldex-dialog bns-renew-confirm">
         <div class="beldex-dialog__head">
           <div class="beldex-dialog__icon">
             <img src="~assets/icons/dialog-send.svg" alt="" />
@@ -105,9 +128,15 @@
             class="beldex-btn"
             unelevated
             no-caps
-            :label="$t('dialog.confirmRenew.ok')"
             @click="submit()"
-          />
+          >
+            <img
+              class="bns-renew__btn-icon"
+              src="~assets/icons/renew.svg"
+              alt=""
+            />
+            {{ $t("dialog.confirmRenew.ok") }}
+          </q-btn>
         </div>
       </q-card>
     </q-dialog>
@@ -141,24 +170,24 @@ export default {
   data() {
     let belnetOptions = [
       {
-        label: "1 yr",
+        label: "1 Year",
         value: "1y",
-        amount: "650 bdx"
+        amount: "650 BDX"
       },
       {
-        label: "2 yrs",
+        label: "2 Years",
         value: "2y",
-        amount: "1000 bdx"
+        amount: "1000 BDX"
       },
       {
-        label: "5 yrs",
+        label: "5 Years",
         value: "5y",
-        amount: "2000 bdx"
+        amount: "2000 BDX"
       },
       {
-        label: "10 yrs",
+        label: "10 Years",
         value: "10y",
-        amount: "4000 bdx"
+        amount: "4000 BDX"
       }
     ];
     let typeOptions = [...belnetOptions];
@@ -281,11 +310,55 @@ export default {
 
 <style lang="scss">
 .beldex-app .bns-renew-input-form {
-  position: relative;
+  // Not positioned on purpose: the loading overlay should cover the whole
+  // .bns-page__main card, not just this form.
   display: flex;
   flex-direction: column;
   gap: var(--beldex-space-5);
   height: auto;
   overflow-y: visible;
+
+  .bns-renew__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    font-size: var(--beldex-text-sm);
+    line-height: 17px;
+    color: var(--beldex-text-muted);
+    border: 1px solid var(--beldex-border);
+
+    img {
+      flex: 0 0 auto;
+      margin-top: 2px;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// Long owner addresses wrap instead of widening the dialog.
+.beldex-app .beldex-dialog.bns-renew-confirm {
+  overflow-x: hidden;
+
+  .beldex-dialog__kv-label {
+    flex-shrink: 0;
+  }
+
+  .bns-confirm__value {
+    min-width: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+}
+
+// Shared by the form button and the (portaled) confirm dialog button.
+.beldex-app .bns-renew__btn-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
 }
 </style>

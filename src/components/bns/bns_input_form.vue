@@ -667,6 +667,16 @@ export default {
     border: 1px solid var(--beldex-danger);
   }
 
+  // ".bdx" sits in its own cell, split from the name by a vertical bar.
+  .beldex-field .content .q-field__suffix {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    margin: 0 -10px 0 var(--beldex-space-3); // cancel the field's 10px right padding
+    padding: 0 var(--beldex-space-4);
+    border-left: 1px solid var(--beldex-border);
+  }
+
   .bns-form__durations {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -679,16 +689,32 @@ export default {
     gap: 2px;
     padding: var(--beldex-space-3) var(--beldex-space-4);
     text-align: left;
-    background-color: rgba(8, 8, 8, 0.8);
-    border: 1px solid var(--beldex-hairline);
-    border-bottom: 2px solid transparent;
+    background-color: var(--beldex-input-bg);
+    border: 1px solid transparent; // same box as the selected tile, no shift
+    border-bottom: 1px solid var(--beldex-border);
     cursor: pointer;
     position: relative;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &:hover:not(.bns-form__duration--on) {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: var(--beldex-border-strong);
+    }
 
     &--on {
-      background-color: var(--beldex-accent-bg);
-      border-color: var(--beldex-accent-border-soft);
-      border-bottom-color: var(--beldex-accent);
+      background: rgba(0, 191, 10, 0.07);
+      border: 1px solid rgba(0, 191, 10, 0.3);
+      border-bottom: 1px solid var(--beldex-accent);
+      box-shadow: inset 0 -2px 0 var(--beldex-accent);
+
+      .bns-form__duration-label {
+        color: var(--beldex-text-strong);
+      }
+
+      .bns-form__duration-amount {
+        font-weight: 600;
+        color: var(--beldex-accent);
+      }
     }
   }
 

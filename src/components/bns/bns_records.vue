@@ -60,13 +60,10 @@
         <p class="bns-records__empty-hint">
           {{ $t("strings.bns.noNamesHint") }}
         </p>
-        <q-btn
-          class="beldex-btn"
-          unelevated
-          no-caps
-          :label="$t('strings.bns.buyAName')"
-          @click="$emit('onBuy')"
-        />
+        <q-btn class="beldex-btn" unelevated no-caps @click="$emit('onBuy')">
+          <img src="~assets/icons/plus.svg" alt="" />
+          {{ $t("strings.bns.buyAName") }}
+        </q-btn>
       </div>
     </div>
     <q-inner-loading v-else :showing="true" dark>

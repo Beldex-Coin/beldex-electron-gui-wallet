@@ -2441,7 +2441,7 @@ export class WalletRPC {
         params.owner = owner;
       }
       if (backupOwner) {
-        params.backupOwner = backupOwner;
+        params.backup_owner = backupOwner;
       }
       if (value_bchat) {
         params.value_bchat = value_bchat;

@@ -1,6 +1,4 @@
 <template>
-  <!-- Masternode. No "Rewards earned" stat: there is no rewards data in the
-       store. -->
   <q-page class="master-node-page" style="min-height: unset">
     <section class="master-node-page__main">
       <div v-if="toggleVisible" class="master-node-page__head">
@@ -51,6 +49,13 @@
           <span class="beldex-label">{{ $t("strings.totalStaked") }}</span>
           <span class="master-node-page__stat-value">
             {{ totalStaked }}
+            <span class="master-node-page__stat-unit">BDX</span>
+          </span>
+        </div>
+        <div class="master-node-page__stat">
+          <span class="beldex-label">{{ $t("strings.rewardsEarned") }}</span>
+          <span class="master-node-page__stat-value">
+            {{ rewardsEarned }}
             <span class="master-node-page__stat-unit">BDX</span>
           </span>
         </div>
@@ -111,6 +116,7 @@ export default {
         const primary = state.gateway.wallet.address_list.primary[0];
         return (primary && primary.address) || null;
       },
+      txList: state => state.gateway.wallet.transactions.tx_list || [],
       nodes: state => state.gateway.daemon.master_nodes.nodes || [],
       deregisterNodes: state => {
         const signed = state.gateway.daemon.signed_key_images || [];
@@ -142,6 +148,14 @@ export default {
     totalStaked() {
       const total = this.ownContributions.reduce((sum, c) => sum + c.amount, 0);
       return (total / 1e9).toLocaleString();
+    },
+    rewardsEarned() {
+      const total = this.txList
+        .filter(tx => tx && tx.type === "mnode")
+        .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      return (total / 1e9).toLocaleString(undefined, {
+        maximumFractionDigits: 4
+      });
     },
     activeStakes() {
       return this.ownContributions.length;

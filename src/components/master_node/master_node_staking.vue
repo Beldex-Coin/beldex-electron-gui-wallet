@@ -4,9 +4,6 @@
     <div v-if="toggleVisible" class="master-node-staking__form">
       <p class="beldex-form-desc">
         {{ $t("strings.masterNodeContributionDescription") }}
-        <a class="master-node-staking__link" @click="oxenWebsite"
-          >Beldex {{ $t("strings.website") }}.</a
-        >
       </p>
       <BeldexField
         :label="$t('fieldLabels.masterNodeKey')"
@@ -556,6 +553,10 @@ export default {
     display: flex;
     flex-direction: column;
     gap: var(--beldex-space-5);
+  }
+
+  &__form .beldex-form-desc {
+    color: var(--beldex-text-muted);
   }
 
   &__link {

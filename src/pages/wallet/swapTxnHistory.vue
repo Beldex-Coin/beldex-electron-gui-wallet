@@ -19,7 +19,7 @@
       <div class="swapHistory__actions">
         <q-btn
           v-if="txnHistory.length > 0"
-          icon="file_download"
+          :icon="`img:${downloadIcon}`"
           :label="$t('titles.swap.downloadCsv')"
           class="beldex-btn beldex-btn--ghost swapHistory__csv"
           unelevated
@@ -199,6 +199,7 @@ import SwapTxnCompeleted from "./swapTxnCompeleted.vue";
 // the production CSP blocks.
 import lottie from "lottie-web/build/player/lottie_light";
 import emptyAnimation from "assets/animations/beldex-swap-empty.json";
+import downloadIcon from "assets/icons/download.svg";
 
 export default {
   name: "SwapTxnHistory",
@@ -219,6 +220,7 @@ export default {
   },
   data() {
     return {
+      downloadIcon,
       isVisible: true,
       refreshTxnStatus: null,
       refreshTxnHistory: "",

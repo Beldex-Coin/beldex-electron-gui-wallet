@@ -122,7 +122,7 @@ export default {
     font-weight: 600;
     letter-spacing: -0.35px;
     line-height: 20px;
-    color: var(--beldex-text-strong);
+    color: var(--beldex-text);
   }
 
   &__refresh.q-btn {
@@ -142,15 +142,21 @@ export default {
     display: flex;
     align-items: center;
     gap: var(--beldex-space-3);
+    min-height: 42px;
     padding: var(--beldex-space-3) var(--beldex-space-4);
+    font-family: var(--beldex-font-mono);
     font-size: var(--beldex-text-md);
+    line-height: 16px;
+    text-align: left;
     color: var(--beldex-text-muted);
     background-color: rgba(8, 8, 8, 0.8);
     border: 1px solid var(--beldex-hairline);
 
     img {
+      flex: 0 0 auto;
       width: 14px;
       height: 14px;
+      margin: 0;
     }
   }
 }
