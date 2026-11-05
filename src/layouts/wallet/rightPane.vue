@@ -22,8 +22,36 @@
           {{ tab.label }}
         </button>
       </div>
+      <div
+        v-if="routes === 'address' && contactState === 'view'"
+        class="wallet-pane__icons"
+      >
+        <button
+          type="button"
+          class="beldex-square-btn wallet-pane__icon"
+          :disabled="!is_ready"
+          :aria-label="$t('buttons.edit')"
+          @click="$refs.contacts.editCurrent()"
+        >
+          <img src="~assets/icons/contact-edit.svg" alt="" />
+          <q-tooltip anchor="bottom right" self="top right">
+            {{ $t("buttons.edit") }}
+          </q-tooltip>
+        </button>
+        <button
+          type="button"
+          class="beldex-square-btn wallet-pane__icon wallet-pane__icon--danger"
+          :aria-label="$t('buttons.delete')"
+          @click="$refs.contacts.deleteCurrent()"
+        >
+          <img src="~assets/icons/contact-delete.svg" alt="" />
+          <q-tooltip anchor="bottom right" self="top right">
+            {{ $t("buttons.delete") }}
+          </q-tooltip>
+        </button>
+      </div>
       <q-btn
-        v-if="routes === 'address'"
+        v-else-if="routes === 'address' && contactState === ''"
         class="beldex-btn wallet-pane__add"
         unelevated
         no-caps
@@ -44,7 +72,7 @@
           <Receive />
         </div>
         <div v-else>
-          <Adressbook ref="contacts" />
+          <Adressbook ref="contacts" @state="contactState = $event" />
         </div>
       </keep-alive>
     </div>
@@ -64,11 +92,22 @@ export default {
     Receive,
     Adressbook
   },
+  data() {
+    return { contactState: "" };
+  },
   computed: mapState({
+    is_ready() {
+      return this.$store.getters["gateway/isReady"];
+    },
     info: state => state.gateway.wallet.info,
     view_only: state => state.gateway.wallet.info.view_only,
     routes: state => state.gateway.router_path_rightpane
   }),
+  watch: {
+    routes() {
+      this.contactState = "";
+    }
+  },
   methods: {
     router: function(e) {
       this.$gateway.send("wallet", "set_sender_address", {
@@ -103,8 +142,31 @@ export default {
     min-height: 0;
 
     > * {
+      display: flex;
       flex: 1 1 auto;
+      flex-direction: column;
+
+      > * {
+        flex: 1 1 auto;
+      }
     }
+  }
+}
+
+// 28px edit + delete chips in the contact header.
+.beldex-app .wallet-pane__icons {
+  display: flex;
+  gap: 8px;
+}
+
+.beldex-app .wallet-pane__icon.beldex-square-btn {
+  width: 28px;
+  height: 28px;
+  background-color: #111;
+
+  img {
+    width: 14px;
+    height: 14px;
   }
 }
 

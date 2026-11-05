@@ -2,6 +2,7 @@ export default {
   buttons: {
     // All button text is uppercased in the gui
     advanced: "Advanced",
+    new: "New",
     addAddressBook: "Add to Address book",
     addWallet: "Add Wallet",
     all: "All",
@@ -9,6 +10,7 @@ export default {
     browse: "Browse",
     cancel: "Cancel",
     change: "Change",
+    changePassword: "Change password",
     check: "Check",
     clear: "Clear",
     goToStake: "Go to stake",
@@ -65,6 +67,8 @@ export default {
     update: "Update",
     verify: "Verify",
     viewOnExplorer: "View in explorer",
+    copyId: "Copy ID",
+    saveContact: "Save contact",
     add: "Add",
     max: "Max",
     paste: "Paste",
@@ -150,10 +154,14 @@ export default {
       confirm: "Exit"
     },
     keyImages: {
-      title: "{type} Key Images",
+      title: "Key Images",
+      subtitle:
+        "Export key images for a view-only wallet, or import them back.",
       message: "Do you want to {type} key images?",
       export: "Export",
-      import: "Import"
+      exportHint: "Write key images to a file",
+      import: "Import",
+      importHint: "Load key images from a file"
     },
     bnsUpdate: {
       title: "Update BNS record",
@@ -253,6 +261,7 @@ export default {
     },
     confirmTransaction: {
       title: "Confirm Sending",
+      subtitle: "Review the transfer before it is broadcast.",
       sendTo: "Send to",
       priority: "Priority"
     },
@@ -298,6 +307,7 @@ export default {
     expirationHeight: "Expiration Height",
     filter: "Filter",
     filterTransactionType: "FILTER BY TRANSACTION TYPE",
+    transactionType: "Transaction type",
     startDate: "Start Date",
     endDate: "End Date",
     internalWalletPort: "Internal Wallet Port",
@@ -394,6 +404,7 @@ export default {
     copyTransactionId: "Copy transaction ID",
     copyViewKey: "Copy view key",
     createNewWallet: "Create New Wallet",
+    deleteContact: "Delete contact",
     deleteWallet: "Delete wallet",
     exit: "Exit Wallet",
     importOldGUIWallet: "Import wallets from old GUI",
@@ -540,7 +551,7 @@ export default {
     addressOfSigner: "Public wallet address of signer",
     beldexAddress: "Enter bx… address or name.bdx",
     dataToSign: "Data you want to sign with your primary address's private key",
-    filterTx: "Enter an ID, name, address or amount",
+    filterTx: "Search by ID, name, address or amount",
     hexCharacters: "{count} hexadecimal characters",
     bnsName: "The name to purchase via Beldex Name Service",
     bnsOwner: "The wallet address of the owner",
@@ -581,6 +592,9 @@ export default {
     bnsValueEth: "Enter ETH value"
   },
   strings: {
+    changePasswordHint:
+      "Use at least 8 characters. You'll need it to open this wallet.",
+    contactAdded: "added {date}",
     aboutPanel: {
       walletVersion: "Wallet version",
       daemonVersion: "Daemon version",
@@ -588,6 +602,9 @@ export default {
       rights: "All rights reserved."
     },
     addAddressBookEntry: "Add Address ",
+    addContact: "Add contact",
+    contactsStoredNote:
+      "Contacts are stored only on this device, inside your encrypted wallet file.",
     addressBookDetails: "Address book details",
     addressBookIsEmpty: "Address book is empty",
     addresses: {
@@ -598,7 +615,8 @@ export default {
       subAddress: "Sub-address",
       subAddressIndex: "Index {index}",
       //new design vamp
-      primaryAccount: "Primary Account"
+      primaryAccount: "Primary Account",
+      shareToReceive: "Share this address to receive BDX"
     },
     advancedOptions: "Advanced Settings",
     availableBalance: "Available balance",
@@ -764,7 +782,9 @@ export default {
     masterNodeContributionDescription:
       "Staking contributes to the safety of the Beldex network. For your contribution, you earn BDX. Once staked, you will have to wait either 15 or 30 days to have your BDX unlocked, depending on if a stake was unlocked by a contributor or the node was deregistered. To learn more about staking, please visit the documentation on the",
     masterNodeRegistrationDescription:
-      'Enter the {registerCommand} command produced by the daemon that is registering to become a Master Node using the "{prepareCommand}" command',
+      "Enter the {registerCommand} command produced by the daemon that is registering to become a Master Node using the {prepareCommand} command.",
+    masterNodeRegistrationNote:
+      "Registration broadcasts a staking transaction from this wallet. Make sure the command was generated within the last 2 weeks.",
     masterNodeStartStakingDescription: "To start Staing, Please visit",
     masterNodeStartStakingDescription1: "Tab -->",
     stakingSummary: "Staking summary",

@@ -25,6 +25,7 @@
           {{ starred ? "Remove favourite" : "Add favourite" }}
         </q-tooltip>
       </q-btn>
+      <slot name="label-action"></slot>
     </div>
     <div class="content row items-center" :class="{ error }">
       <slot></slot>

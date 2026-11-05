@@ -83,12 +83,11 @@
             </div>
             <div>
               <h2 class="beldex-dialog__title">
-                {{
-                  address.address_index === 0
-                    ? $t("strings.addresses.primaryAccount")
-                    : $t("strings.addresses.subAddress")
-                }}
+                {{ qrTitle }}
               </h2>
+              <p class="beldex-dialog__subtitle">
+                {{ $t("strings.addresses.shareToReceive") }}
+              </p>
             </div>
           </div>
 
@@ -170,6 +169,17 @@ export default {
     };
   },
   computed: mapState({
+    qrTitle() {
+      if (this.address.address_index === 0) {
+        return this.$t("strings.addresses.primaryAccount");
+      }
+      if (!this.address.used) {
+        return `${this.$t("strings.addresses.myUnusedAddresses")} #${
+          this.address.address_index
+        }`;
+      }
+      return this.$t("strings.addresses.subAddress");
+    },
     addressHeaderInfo() {
       if (!this.address) return null;
 

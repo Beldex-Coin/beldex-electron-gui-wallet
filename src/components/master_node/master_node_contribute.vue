@@ -9,10 +9,11 @@
         class="beldex-btn beldex-btn--ghost contribute__refresh"
         unelevated
         no-caps
-        icon="refresh"
-        :label="$t('buttons.refresh')"
         @click="updateMasterNodeList"
-      />
+      >
+        <img src="~assets/icons/send-clear.svg" alt="" />
+        {{ $t("buttons.refresh") }}
+      </q-btn>
     </div>
     <div v-if="awaitingMasterNodes.length == 0" class="contribute__empty">
       <img src="~assets/icons/info.svg" alt="" />
@@ -131,9 +132,9 @@ export default {
     font-size: var(--beldex-text-md);
     color: var(--beldex-text-muted);
 
-    .q-icon {
-      font-size: 14px;
-      color: inherit;
+    img {
+      width: 14px;
+      height: 14px;
     }
   }
 

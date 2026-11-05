@@ -19,7 +19,7 @@
             class="beldex-segmented__item"
             :class="{ 'beldex-segmented__item--active': screen === tab.value }"
             :aria-selected="screen === tab.value ? 'true' : 'false'"
-            @click="screen = tab.value"
+            @click="selectTab(tab.value)"
           >
             <span v-if="screen === tab.value" class="beldex-segmented__dot" />
             {{ tab.label }}
@@ -95,6 +95,31 @@ export default {
     return {
       screen: "prove"
     };
+  },
+  // The page is kept alive by the wallet layout, and the proof results live
+  // in the store, so clear them when leaving the page or switching tabs.
+  deactivated() {
+    this.screen = "prove";
+    this.resetResults();
+  },
+  methods: {
+    selectTab(value) {
+      if (value === this.screen) return;
+      this.resetResults();
+      this.screen = value;
+    },
+    resetResults() {
+      const blank = { code: 0, message: "", i18n: "" };
+      const commit = this.$store.commit;
+      commit("gateway/set_prove_transaction_status", { ...blank, state: {} });
+      commit("gateway/set_check_transaction_status", { ...blank, state: {} });
+      commit("gateway/set_sign_status", {
+        ...blank,
+        signature: "",
+        sending: false
+      });
+      commit("gateway/set_verify_status", { ...blank, sending: false });
+    }
   }
 };
 </script>
@@ -102,7 +127,7 @@ export default {
 <style lang="scss">
 .beldex-app .advanced-page {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 0 auto; // grow with content so result rows stay inside the panel
   align-items: stretch;
   gap: var(--beldex-space-5);
   min-height: 0 !important; // beats q-page's inline min-height

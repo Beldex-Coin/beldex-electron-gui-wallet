@@ -31,15 +31,26 @@
         </div>
       </section>
 
-      <section v-if="address_list.unused.length" class="receive__group">
+      <section class="receive__group">
         <div class="receive__group-head">
           <span class="beldex-label">{{
             $t("strings.addresses.myUnusedAddresses")
           }}</span>
-          <span class="receive__count receive__count--available"
-            >{{ address_list.unused.length }}
-            {{ $t("strings.availableShort") }}</span
-          >
+          <div class="receive__group-tools">
+            <span class="receive__count receive__count--available"
+              >{{ address_list.unused.length }}
+              {{ $t("strings.availableShort") }}</span
+            >
+            <button
+              type="button"
+              class="receive__new"
+              :disabled="creating"
+              @click="createSubaddress"
+            >
+              <img src="~assets/icons/plus-sm.svg" alt="" />
+              {{ $t("buttons.new") }}
+            </button>
+          </div>
         </div>
         <ReceiveItem
           v-for="item in address_list.unused"
@@ -86,12 +97,11 @@
             </div>
             <div>
               <h2 class="beldex-dialog__title">
-                {{
-                  QR.address === info.address
-                    ? $t("strings.addresses.primaryAccount")
-                    : $t("strings.addresses.subAddress")
-                }}
+                {{ qrTitle }}
               </h2>
+              <p class="beldex-dialog__subtitle">
+                {{ $t("strings.addresses.shareToReceive") }}
+              </p>
             </div>
           </div>
 
@@ -174,19 +184,45 @@ export default {
       },
       menuItems,
       subAddressList: false,
+      creating: false,
       address: ""
     };
   },
-  computed: mapState({
-    theme: state => state.gateway.app.config.appearance.theme,
-    address_list: state => state.gateway.wallet.address_list,
-    info: state => state.gateway.wallet.info
-  }),
+  computed: {
+    ...mapState({
+      theme: state => state.gateway.app.config.appearance.theme,
+      address_list: state => state.gateway.wallet.address_list,
+      info: state => state.gateway.wallet.info
+    }),
+    qrTitle() {
+      if (this.QR.address === this.info.address) {
+        return this.$t("strings.addresses.primaryAccount");
+      }
+      const unused = this.address_list.unused.find(
+        item => item.address === this.QR.address
+      );
+      if (unused) {
+        return `${this.$t("strings.addresses.myUnusedAddresses")} #${
+          unused.address_index
+        }`;
+      }
+      return this.$t("strings.addresses.subAddress");
+    }
+  },
   methods: {
     details(address) {
       this.address = address;
       // this.$refs.addressDetails.address = address;
       // this.$refs.addressDetails.isVisible = true;
+    },
+    createSubaddress() {
+      if (this.creating) return;
+      this.creating = true;
+      this.$gateway.send("wallet", "create_subaddress", {});
+      // backend replies via set_wallet_data / show_notification
+      setTimeout(() => {
+        this.creating = false;
+      }, 1500);
     },
     showQR(address, event) {
       event.stopPropagation();
@@ -295,6 +331,43 @@ export default {
 
     .beldex-label {
       font-size: var(--beldex-text-sm);
+    }
+  }
+
+  &__group-tools {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-3);
+  }
+
+  &__new {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 28px;
+    padding: 0 12px;
+    font-family: "Beldex Roboto Mono", "Roboto Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: #737373;
+    background: transparent;
+    border: 1px solid rgba(235, 235, 235, 0.1);
+    cursor: pointer;
+
+    img {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: rgba(235, 235, 235, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
     }
   }
 

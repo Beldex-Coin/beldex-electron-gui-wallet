@@ -12,6 +12,15 @@
         :label="$t('fieldLabels.masterNodeKey')"
         :error="$v.master_node.key.$error"
       >
+        <template #label-action>
+          <button
+            type="button"
+            class="master-node-staking__paste"
+            @click="pasteKey"
+          >
+            {{ $t("buttons.paste") }}
+          </button>
+        </template>
         <q-input
           v-model.trim="master_node.key"
           dark
@@ -26,6 +35,12 @@
         :label="$t('fieldLabels.amount')"
         :error="$v.master_node.amount.$error"
       >
+        <template #label-action>
+          <span class="master-node-staking__available">
+            {{ $t("strings.availableShort") }}:
+            <FormatBeldex :amount="unlocked_balance" />
+          </span>
+        </template>
         <q-input
           v-model.trim="master_node.amount"
           dark
@@ -62,17 +77,21 @@
           unelevated
           no-caps
           :disable="!is_able_to_send"
-          :label="$t('buttons.sweepAll')"
           @click="sweepAllWarning()"
-        />
+        >
+          <img src="~assets/icons/sweep-all.svg" alt="" />
+          {{ $t("buttons.sweepAll") }}
+        </q-btn>
         <q-btn
           class="beldex-btn"
           unelevated
           no-caps
           :disable="!is_able_to_send"
-          :label="$t('buttons.stake')"
           @click="stake()"
-        />
+        >
+          <img src="~assets/icons/stake-btn.svg" alt="" />
+          {{ $t("buttons.stake") }}
+        </q-btn>
       </div>
     </div>
     <div v-if="toggleVisible" class="beldex-hr master-node-staking__hr" />
@@ -105,6 +124,8 @@ import { mapState } from "vuex";
 import { required, decimal } from "vuelidate/lib/validators";
 import { master_node_key, greater_than_zero } from "src/validators/common";
 import BeldexField from "components/beldex_field";
+import FormatBeldex from "components/format_beldex";
+import { clipboard } from "src/shims/electron-renderer";
 import WalletPassword from "src/mixins/wallet_password";
 import ConfirmDialogMixin from "src/mixins/confirm_dialog_mixin";
 import MasterNodeContribute from "./master_node_contribute";
@@ -117,6 +138,7 @@ export default {
   name: "MasterNodeStaking",
   components: {
     BeldexField,
+    FormatBeldex,
     MasterNodeContribute,
     ConfirmTransactionDialog
   },
@@ -292,6 +314,12 @@ export default {
     }
   },
   methods: {
+    pasteKey() {
+      const text = (clipboard.readText() || "").trim();
+      if (!text) return;
+      this.master_node.key = text;
+      this.$v.master_node.key.$touch();
+    },
     oxenWebsite() {
       const url = "https://www.beldex.io/";
       this.$gateway.send("core", "open_url", {
@@ -534,6 +562,46 @@ export default {
     color: var(--beldex-text);
     text-decoration: underline;
     cursor: pointer;
+  }
+
+  .beldex-btn img {
+    width: 14px;
+    height: 14px;
+  }
+
+  &__paste,
+  &__available {
+    margin-left: auto;
+  }
+
+  &__paste {
+    padding: 0;
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--beldex-accent);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__available {
+    font-size: var(--beldex-text-sm);
+    text-transform: none;
+    color: var(--beldex-text-muted);
+
+    .coin-extensions {
+      color: var(--beldex-text);
+    }
+
+    > span {
+      color: var(--beldex-text);
+    }
   }
 
   &__hr {

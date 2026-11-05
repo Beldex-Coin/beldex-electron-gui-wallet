@@ -280,14 +280,11 @@
           </div>
           <div>
             <h2 class="beldex-dialog__title">
-              {{
-                $t("dialog.keyImages.title", {
-                  type: $t(
-                    `dialog.keyImages.${modals.key_image.type.toLowerCase()}`
-                  )
-                })
-              }}
+              {{ $t("dialog.keyImages.title") }}
             </h2>
+            <p class="beldex-dialog__subtitle">
+              {{ $t("dialog.keyImages.subtitle") }}
+            </p>
           </div>
         </div>
 
@@ -296,7 +293,7 @@
             <button
               v-if="!view_only"
               type="button"
-              class="beldex-option"
+              class="beldex-option beldex-option--bar"
               :class="{
                 'beldex-option--active': modals.key_image.type === 'Export'
               }"
@@ -308,11 +305,18 @@
                   'beldex-check--on': modals.key_image.type === 'Export'
                 }"
               />
-              {{ $t("dialog.keyImages.export") }}
+              <span class="beldex-option__text">
+                <span class="beldex-option__title">{{
+                  $t("dialog.keyImages.export")
+                }}</span>
+                <span class="beldex-option__hint">{{
+                  $t("dialog.keyImages.exportHint")
+                }}</span>
+              </span>
             </button>
             <button
               type="button"
-              class="beldex-option"
+              class="beldex-option beldex-option--bar"
               :class="{
                 'beldex-option--active': modals.key_image.type === 'Import'
               }"
@@ -324,7 +328,14 @@
                   'beldex-check--on': modals.key_image.type === 'Import'
                 }"
               />
-              {{ $t("dialog.keyImages.import") }}
+              <span class="beldex-option__text">
+                <span class="beldex-option__title">{{
+                  $t("dialog.keyImages.import")
+                }}</span>
+                <span class="beldex-option__hint">{{
+                  $t("dialog.keyImages.importHint")
+                }}</span>
+              </span>
             </button>
           </div>
 
@@ -376,13 +387,14 @@
             :label="$t('buttons.cancel')"
             @click="hideModal('key_image')"
           />
-          <q-btn
-            class="beldex-btn"
-            unelevated
-            no-caps
-            :label="$t('buttons.' + modals.key_image.type.toLowerCase())"
-            @click="doKeyImages()"
-          />
+          <q-btn class="beldex-btn" unelevated no-caps @click="doKeyImages()">
+            <q-icon
+              :name="modals.key_image.type === 'Export' ? 'output' : 'input'"
+              size="14px"
+              class="q-mr-sm"
+            />
+            {{ $t("buttons." + modals.key_image.type.toLowerCase()) }}
+          </q-btn>
         </div>
       </div>
     </q-dialog>
@@ -396,12 +408,15 @@
       <div class="beldex-dialog">
         <div class="beldex-dialog__head">
           <div class="beldex-dialog__icon">
-            <q-icon name="o_lock" size="18px" />
+            <img src="~assets/icons/dialog-lock.svg" alt="" />
           </div>
           <div>
             <h2 class="beldex-dialog__title">
               {{ $t("titles.changePassword") }}
             </h2>
+            <p class="beldex-dialog__subtitle">
+              {{ $t("strings.changePasswordHint") }}
+            </p>
           </div>
         </div>
 
@@ -415,23 +430,25 @@
             />
           </BeldexField>
 
-          <BeldexField :label="$t('fieldLabels.newPassword')">
-            <q-input
-              v-model="modals.change_password.new_password"
-              type="password"
-              borderless
-              :placeholder="$t('placeholders.enterNewPassword')"
-            />
-          </BeldexField>
+          <div class="column q-gutter-y-sm">
+            <BeldexField :label="$t('fieldLabels.newPassword')">
+              <q-input
+                v-model="modals.change_password.new_password"
+                type="password"
+                borderless
+                :placeholder="$t('placeholders.enterNewPassword')"
+              />
+            </BeldexField>
 
-          <BeldexField :label="$t('fieldLabels.confirmNewPassword')">
-            <q-input
-              v-model="modals.change_password.new_password_confirm"
-              type="password"
-              borderless
-              :placeholder="$t('placeholders.reEnterPassword')"
-            />
-          </BeldexField>
+            <BeldexField :aria-label="$t('fieldLabels.confirmNewPassword')">
+              <q-input
+                v-model="modals.change_password.new_password_confirm"
+                type="password"
+                borderless
+                :placeholder="$t('placeholders.reEnterPassword')"
+              />
+            </BeldexField>
+          </div>
         </div>
 
         <div class="beldex-dialog__actions">
@@ -446,9 +463,11 @@
             class="beldex-btn"
             unelevated
             no-caps
-            :label="$t('buttons.change')"
             @click="doChangePassword()"
-          />
+          >
+            <img src="~assets/icons/btn-check.svg" alt="" />
+            {{ $t("buttons.changePassword") }}
+          </q-btn>
         </div>
       </div>
     </q-dialog>

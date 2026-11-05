@@ -32,6 +32,7 @@
               class="full-width"
               type="textarea"
               autogrow
+              maxlength="97"
               :placeholder="address_placeholder"
               :aria-label="$t('fieldLabels.recipientAddressBns')"
               dark
@@ -115,6 +116,7 @@
               class="full-width"
               type="textarea"
               autogrow
+              input-style="max-height: 5lh; overflow-y: auto"
               :placeholder="$t('placeholders.addPrivateNote')"
               dark
               borderless

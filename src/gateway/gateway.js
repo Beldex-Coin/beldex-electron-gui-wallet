@@ -289,7 +289,7 @@ export class Gateway extends EventEmitter {
         icon: restart ? "restart" : "exit",
         iconTone: restart ? "accent" : "danger",
         okTone: restart ? "primary" : "danger",
-        okIcon: restart ? "restart" : "exit"
+        okIcon: restart ? "restart-btn" : "exit"
       })
         .onOk(() => {
           this.closeDialog = false;

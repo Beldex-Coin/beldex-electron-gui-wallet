@@ -34,12 +34,14 @@
       />
       <q-btn
         v-if="can_open && !deregisterDetail"
-        class="beldex-btn beldex-btn--ghost mn-details__btn"
+        class="beldex-btn beldex-btn--ghost mn-details__btn mn-details__explorer"
         unelevated
         no-caps
-        :label="$t('buttons.viewOnExplorer')"
         @click="openExplorer"
-      />
+      >
+        <img src="~assets/icons/external-link.svg" alt="" />
+        {{ $t("buttons.viewOnExplorer") }}
+      </q-btn>
     </div>
 
     <div v-if="!deregisterDetail" class="mn-details__body">
@@ -358,6 +360,16 @@ export default {
     min-height: 36px;
     padding: 0 var(--beldex-space-4);
     font-size: var(--beldex-text-md);
+  }
+
+  // Design: sentence-case label with a leading external-link icon.
+  &__explorer.q-btn {
+    gap: var(--beldex-space-3);
+    padding: 0 var(--beldex-space-5);
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--beldex-text-muted);
+    background-color: transparent;
   }
 
   &__body {

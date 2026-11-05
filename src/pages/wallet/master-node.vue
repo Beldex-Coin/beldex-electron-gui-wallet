@@ -19,7 +19,10 @@
             {{ tab.label }}
           </button>
         </div>
-        <span class="beldex-hint">{{ $t("strings.masterNodesHint") }}</span>
+        <span class="beldex-hint">
+          <img src="~assets/icons/masternode-hint.svg" alt="" />
+          {{ $t("strings.masterNodesHint") }}
+        </span>
       </div>
       <MasterNodeUnlock
         v-if="screen === 'myStakes'"

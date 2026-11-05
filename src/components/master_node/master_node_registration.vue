@@ -6,8 +6,8 @@
       tag="p"
       class="beldex-form-desc"
     >
-      <b place="registerCommand">register_master_node</b>
-      <b place="prepareCommand">prepare_registration</b>
+      <code place="registerCommand">register_master_node</code>
+      <code place="prepareCommand">prepare_registration</code>
     </i18n>
     <BeldexField
       :label="$t('fieldLabels.masterNodeCommand')"
@@ -18,7 +18,7 @@
         v-model.trim="registration_string"
         type="textarea"
         class="full-width text-area-oxen"
-        placeholder="register_master_node ..."
+        placeholder="register_master_node …"
         :disabled="registration_status.sending"
         dark
         borderless
@@ -27,15 +27,22 @@
         @paste="onPaste"
       />
     </BeldexField>
+    <div class="beldex-hr" />
+    <div class="master-node-registration__note">
+      <img src="~assets/icons/warning-amber.svg" alt="" />
+      <p>{{ $t("strings.masterNodeRegistrationNote") }}</p>
+    </div>
     <div class="beldex-form-actions">
       <q-btn
         class="beldex-btn"
         unelevated
         no-caps
-        :label="$t('buttons.registerMasterNode')"
         :disabled="registration_status.sending"
         @click="register()"
-      />
+      >
+        <img src="~assets/icons/register-btn.svg" alt="" />
+        {{ $t("buttons.registerMasterNode") }}
+      </q-btn>
     </div>
 
     <q-inner-loading :showing="registration_status.sending" dark>
@@ -156,5 +163,62 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--beldex-space-5);
+
+  .beldex-form-desc {
+    margin: 0;
+    font-family: var(--beldex-font-mono);
+    color: var(--beldex-text-muted);
+
+    code {
+      font-family: inherit;
+      color: var(--beldex-accent-glow);
+    }
+  }
+
+  .beldex-form-actions {
+    margin-top: 0;
+  }
+
+  // Command box: the shared field rules pin the control to 36px.
+  .beldex-field .content {
+    align-items: stretch;
+    min-height: 150px;
+    padding: var(--beldex-space-3) var(--beldex-space-4);
+  }
+
+  .beldex-field .q-field,
+  .beldex-field .q-field__control,
+  .beldex-field .q-field__control-container,
+  .beldex-field .q-field__native {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .beldex-field .q-field__native {
+    padding: 0;
+    resize: none;
+    font-family: var(--beldex-font-mono);
+  }
+
+  &__note {
+    display: flex;
+    align-items: center;
+    gap: var(--beldex-space-4);
+    padding: var(--beldex-space-3) 14px;
+    background-color: var(--beldex-warning-wash);
+    border: 1px solid var(--beldex-warning-border);
+
+    img {
+      flex: 0 0 auto;
+    }
+
+    p {
+      margin: 0;
+      font-family: var(--beldex-font-mono);
+      font-size: var(--beldex-text-sm);
+      line-height: 17px;
+      color: var(--beldex-warning-strong);
+    }
+  }
 }
 </style>

@@ -55,7 +55,8 @@
 const ICONS = {
   trash: require("assets/icons/wmenu-trash.svg"),
   exit: require("assets/icons/rail-exit.svg"),
-  restart: require("assets/icons/wmenu-rescan.svg")
+  restart: require("assets/icons/restart-head.svg"),
+  "restart-btn": require("assets/icons/restart-btn.svg")
 };
 
 export default {

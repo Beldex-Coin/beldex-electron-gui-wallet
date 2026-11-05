@@ -42,17 +42,19 @@
           no-caps
           @click="copyAddress(tx.txid)"
         >
-          <img src="~assets/icons/copy.svg" alt="" />
-          {{ $t("menuItems.copyTransactionId") }}
+          <img src="~assets/icons/copy-muted.svg" alt="" />
+          {{ $t("buttons.copyId") }}
         </q-btn>
         <q-btn
           v-if="can_open"
           class="beldex-btn beldex-btn--ghost txn-details__action"
           unelevated
           no-caps
-          :label="$t('buttons.viewOnExplorer')"
           @click="openExplorer"
-        />
+        >
+          <img src="~assets/icons/external-link.svg" alt="" />
+          {{ $t("buttons.viewOnExplorer") }}
+        </q-btn>
         <q-btn
           class="beldex-btn beldex-btn--ghost txn-details__action"
           unelevated
@@ -225,14 +227,15 @@
           v-if="!editNotes"
           type="button"
           class="txn-details__edit"
-          @click="editNotes = true"
+          @click="startEditNotes"
         >
-          <q-icon name="edit_note" size="14px" />
+          <img src="~assets/icons/edit-note.svg" alt="" />
           {{ $t("buttons.editNotes") }}
         </button>
       </div>
       <BeldexField v-if="editNotes">
         <q-input
+          ref="notesInput"
           v-model="txNotes"
           type="textarea"
           rows="2"
@@ -252,13 +255,22 @@
       </p>
       <div v-if="editNotes" class="txn-details__notes-actions">
         <q-btn
+          class="beldex-btn beldex-btn--ghost"
+          unelevated
+          no-caps
+          :label="$t('buttons.cancel')"
+          @click="cancelEditNotes"
+        />
+        <q-btn
           class="beldex-btn"
           unelevated
           no-caps
           :disable="!is_ready"
-          :label="$t('buttons.saveTxNotes')"
           @click="saveTxNotes"
-        />
+        >
+          <img src="~assets/icons/btn-check.svg" alt="" />
+          {{ $t("buttons.saveTxNotes") }}
+        </q-btn>
       </div>
     </div>
 
@@ -327,6 +339,7 @@ export default {
       isVisible: false,
       txNotes: "",
       editNotes: false,
+      notesBackup: "",
       // tx: {
       //   address: "",
       //   amount: 0,
@@ -436,6 +449,17 @@ export default {
         type: "tx",
         id: this.tx.txid
       });
+    },
+    startEditNotes() {
+      this.notesBackup = this.txNotes;
+      this.editNotes = true;
+      this.$nextTick(
+        () => this.$refs.notesInput && this.$refs.notesInput.focus()
+      );
+    },
+    cancelEditNotes() {
+      this.txNotes = this.notesBackup;
+      this.editNotes = false;
     },
     saveTxNotes() {
       this.$q.notify({
@@ -678,6 +702,11 @@ export default {
     border: 0;
     cursor: pointer;
 
+    img {
+      width: 14px;
+      height: 14px;
+    }
+
     &:hover {
       color: var(--beldex-text);
     }
@@ -692,6 +721,7 @@ export default {
 
   &__notes-actions {
     display: flex;
+    gap: var(--beldex-space-2);
     justify-content: flex-end;
   }
 }

@@ -1,5 +1,6 @@
 import child_process from "child_process";
 import axios from "axios";
+import { app, BrowserWindow, Notification } from "electron";
 const queue = require("promise-queue");
 const http = require("http");
 const os = require("os");
@@ -622,12 +623,38 @@ export class WalletRPC {
       case "deregister_images":
         this.deregisterImages(params.password);
         break;
+      case "create_subaddress":
+        this.createSubaddress();
+        break;
       case "set_stepperPosition":
         this.set_stepperPosition(params.data);
         break;
 
       default:
     }
+  }
+
+  async createSubaddress() {
+    const response = await this.sendRPC("create_address", {
+      account_index: 0
+    });
+    if (response.error || !response.result) {
+      this.sendGateway("show_notification", {
+        type: "negative",
+        message: "Failed to create sub-address",
+        timeout: 2000
+      });
+      return;
+    }
+    const wallet = await this.getAddressList();
+    if (wallet.address_list) {
+      this.sendGateway("set_wallet_data", wallet);
+    }
+    this.sendGateway("show_notification", {
+      type: "positive",
+      message: "Sub-address created",
+      timeout: 1500
+    });
   }
 
   async getBalance(method) {
@@ -2678,9 +2705,6 @@ export class WalletRPC {
             wallet.address_list.unused.push(address);
           }
         }
-
-        // limit to 10 unused addresses
-        wallet.address_list.unused = wallet.address_list.unused.slice(0, 10);
 
         if (wallet.address_list.unused.length < num_unused_addresses) {
           for (

@@ -79,6 +79,7 @@
                     </div>
                     <q-date
                       :value="qDateValue"
+                      class="beldex-date"
                       range
                       minimal
                       no-unset
@@ -97,14 +98,14 @@
                         v-close-popup
                         flat
                         :label="$t('buttons.clear')"
-                        color="negative"
+                        color="white"
                         @click="clearDateRange"
                       />
                       <q-btn
                         v-close-popup
                         flat
                         :label="dateRangeActionLabel"
-                        color="primary"
+                        color="white"
                         @click="applyDateRange"
                       />
                     </div>
@@ -138,9 +139,18 @@
           emit-value
           map-options
           :aria-label="$t('fieldLabels.filter')"
-          popup-content-class="beldex-menu beldex-menu--compact"
+          popup-content-class="beldex-menu beldex-menu--compact beldex-menu--filter"
           dropdown-icon="tune"
-        />
+          menu-anchor="bottom right"
+          menu-self="top right"
+          :menu-offset="[11, 6]"
+        >
+          <template v-slot:before-options>
+            <div class="beldex-menu__head">
+              {{ $t("fieldLabels.transactionType") }}
+            </div>
+          </template>
+        </q-select>
 
         <!-- CSV export -->
         <button
@@ -545,8 +555,13 @@ export default {
     }
 
     .q-field__native {
+      align-items: center;
+      min-height: 34px;
+      padding-top: 0;
+      padding-bottom: 0;
       font-family: var(--beldex-font-mono);
       font-size: var(--beldex-text-md);
+      line-height: 34px;
       color: var(--beldex-text);
     }
 
@@ -585,9 +600,10 @@ export default {
   right: 0;
   margin-top: 6px;
   padding: 4px 20px 4px 8px;
-  color: #d1d1d3;
-  background: #32324a;
-  border-radius: 4px;
+  color: var(--beldex-text-secondary);
+  background: var(--beldex-panel-raised);
+  border: 1px solid var(--beldex-border);
+  font-family: var(--beldex-font-mono);
   font-size: 11px;
   white-space: nowrap;
   z-index: 5;
@@ -596,33 +612,93 @@ export default {
   position: absolute;
   top: -5px;
   right: -5px;
-  color: #d1d1d3;
+  color: var(--beldex-text-secondary);
 }
 .date-range-popup {
+  background: var(--beldex-panel-raised);
+  border: 1px solid var(--beldex-border);
+  color: var(--beldex-text);
+  font-family: var(--beldex-font-mono);
+
+  // The calendar's own surface is the popup's; no second frame inside it.
+  .q-date.beldex-date {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
   .q-date__view {
     padding: 14px;
   }
   .date-range-summary {
-    border-bottom: 1px solid #2c2c43;
+    background: var(--beldex-panel-sunken);
+    border-bottom: 1px solid var(--beldex-border);
   }
   .date-range-summary-item {
     padding: 10px;
     padding-left: 24px;
   }
   .date-range-summary-label {
+    font-family: var(--beldex-font-mono);
     font-size: 11px;
-    color: #82828d;
+    color: var(--beldex-text-muted);
     text-transform: uppercase;
   }
   .date-range-summary-value {
+    font-family: var(--beldex-font-sans-medium);
     font-size: 14px;
-    font-weight: 600;
+    color: var(--beldex-text-strong);
+  }
+  .q-btn {
+    font-family: var(--beldex-font-sans);
+    border-radius: var(--beldex-radius-none);
+  }
+  .q-btn:hover {
+    background: var(--beldex-accent-bg-strong);
   }
 
+  // In-range days: accent wash between the solid accent endpoints.
+  .q-date__range,
+  .q-date__range-from,
+  .q-date__range-to {
+    color: var(--beldex-accent);
+  }
   .q-date__calendar-item button.bg-primary {
-    background: #35af3b !important;
-    color: #fff !important;
-    border-radius: 7px !important;
+    background: var(--beldex-accent) !important;
+    color: var(--beldex-text-strong) !important;
+  }
+
+  // Rounded day cells; the range band is a dark-green strip that runs
+  // behind the cells and meets the rounded endpoints.
+  // Single day (Quasar tags it range-to only): 10px all round. Range start:
+  // 10px left / 3px right. Range end: 3px left / 10px right. In-between: 3px.
+  .q-date__calendar-item button {
+    border-radius: 10px !important;
+  }
+  .q-date__range button {
+    border-radius: 3px !important;
+  }
+  .q-date__range-from button {
+    border-radius: 10px 3px 3px 10px !important;
+  }
+  .q-date__range-from + .q-date__range-to button,
+  .q-date__range + .q-date__range-to button {
+    border-radius: 3px 10px 10px 3px !important;
+  }
+  .q-date__range:before,
+  .q-date__range-from:before,
+  .q-date__range-to:before {
+    top: 0;
+    bottom: 0;
+    opacity: 0.25;
+    border-radius: 0;
+  }
+  .q-date__range,
+  .q-date__range-from,
+  .q-date__range-to {
+    color: var(--beldex-accent);
+  }
+  .q-date__range button:not(.bg-primary) {
+    color: var(--beldex-text-strong);
   }
 }
 </style>

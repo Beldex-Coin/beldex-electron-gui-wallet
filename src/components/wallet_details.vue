@@ -1,9 +1,65 @@
 <template>
-  <div class="wallet-details wallet-details--compact">
-    <!-- Balance strip on every section: label, balance, unlocked and address
-         on one row. -->
+  <div
+    class="wallet-details"
+    :class="{ 'wallet-details--compact': !isOverview }"
+  >
+    <!-- My Wallet: full balance hero. Every other section: compact strip. -->
     <div class="wallet-details__hero">
-      <div class="wallet-details__left">
+      <div v-if="isOverview" class="wallet-details__left">
+        <div class="wallet-details__label">
+          <span class="beldex-net-chip__dot" />
+          <span>{{ $t("strings.availableBalance") }}</span>
+          <span class="wallet-details__muted">·</span>
+          <span class="wallet-details__unlocked">
+            {{ $t("strings.oxenUnlockedShort") }}:
+            <FormatBeldex
+              v-if="!balanceHidden"
+              :amount="info.unlocked_balance"
+            />
+            <span v-else class="wallet-details__mask wallet-details__mask--sm"
+              ><i class="wallet-details__mask-int" /><b>.</b
+              ><i class="wallet-details__mask-dec" /><span
+                class="coin-extensions"
+                >BDX</span
+              ></span
+            >
+          </span>
+          <template v-if="info.view_only">
+            <span class="wallet-details__muted">·</span>
+            <span class="wallet-details__no-spend">{{
+              $t("strings.spendKeyNotLoaded")
+            }}</span>
+            <span class="wallet-details__badge">{{
+              $t("strings.viewOnlyTag")
+            }}</span>
+          </template>
+          <button
+            type="button"
+            class="wallet-details__toggle"
+            :aria-pressed="balanceHidden ? 'true' : 'false'"
+            @click="toggleBalance"
+          >
+            <img src="~assets/icons/eye.svg" alt="" />
+            {{
+              balanceHidden
+                ? $t("strings.showBalance")
+                : $t("strings.hideBalance")
+            }}
+          </button>
+        </div>
+        <div class="wallet-details__amount">
+          <FormatBeldex v-if="!balanceHidden" :amount="info.balance" />
+          <span v-else class="wallet-details__mask" aria-hidden="true"
+            ><i class="wallet-details__mask-int" /><b>.</b
+            ><i class="wallet-details__mask-dec" /><span class="coin-extensions"
+              >BDX</span
+            ></span
+          >
+        </div>
+      </div>
+
+      <!-- Other sections: balance on a single compact row. -->
+      <div v-else class="wallet-details__left">
         <div class="wallet-details__label">
           <span class="beldex-net-chip__dot" />
           <span>{{ $t("strings.availableBalance") }}</span>
@@ -112,7 +168,7 @@
               ]"
               :key="option.value"
               type="button"
-              class="beldex-option"
+              class="beldex-option beldex-option--bar"
               :class="{
                 'beldex-option--active': modals.rescan.type === option.value
               }"
@@ -159,7 +215,7 @@ import { mapState } from "vuex";
 import FormatBeldex from "components/format_beldex";
 import ConfirmDialog from "components/confirm_dialog";
 
-const RESCAN_ICON = require("assets/icons/wmenu-rescan.svg");
+const RESCAN_ICON = require("assets/icons/header-rescan.svg");
 // import CopyIcon from "components/icons/copy_icon";
 
 // UI-only preference (plan §5 B4): kept in localStorage, never in config.
@@ -189,6 +245,9 @@ export default {
     };
   },
   computed: mapState({
+    isOverview() {
+      return ["/wallet", "/wallet/"].includes(this.$route.path);
+    },
     theme: state => state.gateway.app.config.appearance.theme,
     info: state => state.gateway.wallet.info,
     is_ready() {
@@ -241,7 +300,7 @@ export default {
             cancelLabel: this.$t("dialog.buttons.cancel"),
             icon: "restart",
             iconTone: "accent",
-            okIcon: "restart"
+            okIcon: "restart-btn"
           })
           .onOk(() => {
             this.$store.commit("gateway/set_wallet_data", {
@@ -278,7 +337,7 @@ export default {
 </script>
 
 <style lang="scss">
-// Full hero and compact strip.
+// Full hero (My Wallet) and compact address row (other sections).
 .wallet-details {
   flex: none;
 
@@ -540,6 +599,7 @@ export default {
     }
   }
 
+  // Compact strip on non-overview sections.
   // Compact strip on non-overview sections.
   &--compact &__hero {
     align-items: center;

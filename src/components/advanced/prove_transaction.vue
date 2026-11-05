@@ -12,12 +12,16 @@
         >
           <q-input
             v-model.trim="txid"
+            class="col"
             :dark="theme == 'dark'"
             :placeholder="$t('placeholders.pasteTransactionId')"
             borderless
             dense
             @blur="$v.txid.$touch"
           />
+          <button type="button" class="advanced-paste" @click="pasteTxid">
+            {{ $t("buttons.paste") }}
+          </button>
         </BeldexField>
         <BeldexField
           class="q-mt-md ft-medium"
@@ -144,6 +148,12 @@ export default {
     }
   },
   methods: {
+    pasteTxid() {
+      const text = (clipboard.readText() || "").trim();
+      if (!text) return;
+      this.txid = text;
+      this.$v.txid.$touch();
+    },
     generate() {
       this.$v.txid.$touch();
       this.$v.address.$touch();
@@ -192,6 +202,24 @@ export default {
 
 <style lang="scss">
 .beldex-app .prove-transaction {
+  .advanced-paste {
+    flex: none;
+    align-self: center;
+    padding: 0 var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--beldex-accent);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   .description {
     white-space: pre-line;
   }

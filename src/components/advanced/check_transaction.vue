@@ -12,12 +12,16 @@
         >
           <q-input
             v-model.trim="txid"
+            class="col"
             :dark="theme == 'dark'"
             :placeholder="$t('placeholders.pasteTransactionId')"
             borderless
             dense
             @blur="$v.txid.$touch"
           />
+          <button type="button" class="advanced-paste" @click="pasteTxid">
+            {{ $t("buttons.paste") }}
+          </button>
         </BeldexField>
         <BeldexField
           class="q-mt-md ft-medium"
@@ -71,13 +75,10 @@
             :label="$t('buttons.clear')"
             @click="clear"
           />
-          <q-btn
-            class="beldex-btn"
-            unelevated
-            no-caps
-            :label="$t('buttons.check')"
-            @click="check"
-          />
+          <q-btn class="beldex-btn" unelevated no-caps @click="check">
+            <img src="~assets/icons/btn-check.svg" alt="" />
+            {{ $t("buttons.check") }}
+          </q-btn>
         </div>
       </div>
       <div v-if="status.state.txid" class="beldex-result">
@@ -135,6 +136,7 @@ import { required } from "vuelidate/lib/validators";
 import { address } from "src/validators/common";
 import { i18n } from "boot/i18n";
 import BeldexField from "components/beldex_field";
+import { clipboard } from "src/shims/electron-renderer";
 import FormatBeldex from "components/format_beldex";
 
 export default {
@@ -201,6 +203,12 @@ export default {
     }
   },
   methods: {
+    pasteTxid() {
+      const text = (clipboard.readText() || "").trim();
+      if (!text) return;
+      this.txid = text;
+      this.$v.txid.$touch();
+    },
     check() {
       this.$v.txid.$touch();
       this.$v.address.$touch();
@@ -253,6 +261,24 @@ export default {
 
 <style lang="scss">
 .beldex-app .check-transaction {
+  .advanced-paste {
+    flex: none;
+    align-self: center;
+    padding: 0 var(--beldex-space-3);
+    font-family: var(--beldex-font-mono);
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--beldex-accent);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   .description {
     white-space: pre-line;
   }

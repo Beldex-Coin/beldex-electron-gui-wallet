@@ -38,7 +38,7 @@
             class="contacts__star"
             :class="{ 'contacts__star--on': entry.starred }"
             :name="entry.starred ? 'star' : 'star_border'"
-            size="16px"
+            size="14px"
           />
           <button
             type="button"
@@ -55,32 +55,22 @@
           <template v-if="from !== 'send'">
             <button
               type="button"
-              class="beldex-square-btn"
+              class="beldex-square-btn contacts__copy"
               :aria-label="$t('menuItems.copyAddress')"
               @click="copyAddress(entry)"
             >
-              <q-icon name="content_copy" size="14px" />
+              <img src="~assets/icons/receive-copy.svg" alt="" />
               <q-tooltip anchor="bottom right" self="top right">
                 {{ $t("menuItems.copyAddress") }}
               </q-tooltip>
             </button>
-            <button
-              type="button"
-              class="beldex-square-btn"
-              :aria-label="$t('menuItems.sendToThisAddress')"
-              :disabled="view_only"
-              @click="sendToAddress(entry, $event)"
-            >
-              <q-icon name="north_east" size="14px" />
-              <q-tooltip anchor="bottom right" self="top right">
-                {{ $t("menuItems.sendToThisAddress") }}
-              </q-tooltip>
-            </button>
             <ContextMenu
               :menu-items="menuItems"
+              menu-class="beldex-menu--contact"
               @showDetails="details(entry)"
               @sendToAddress="sendToAddress(entry, $event)"
               @copyAddress="copyAddress(entry)"
+              @deleteContact="deleteContact(entry)"
             />
           </template>
         </div>
@@ -93,6 +83,7 @@
       <AddressBookDetails
         ref="addressBookDetails"
         @isvisible="displayAddressList"
+        @state="$emit('state', $event)"
       />
     </section>
   </q-page>
@@ -103,6 +94,7 @@ import { clipboard } from "src/shims/electron-renderer";
 import { mapState } from "vuex";
 import AddressBookDetails from "components/address_book_details";
 import ContextMenu from "components/menus/contextmenu";
+import ConfirmDialog from "components/confirm_dialog";
 export default {
   components: {
     AddressBookDetails,
@@ -117,9 +109,27 @@ export default {
   },
   data() {
     const menuItems = [
-      { action: "showDetails", i18n: "menuItems.showDetails" },
-      { action: "sendToAddress", i18n: "menuItems.sendToThisAddress" },
-      { action: "copyAddress", i18n: "menuItems.copyAddress" }
+      {
+        action: "showDetails",
+        i18n: "menuItems.showDetails",
+        icon: "visibility"
+      },
+      {
+        action: "sendToAddress",
+        i18n: "menuItems.sendToThisAddress",
+        icon: "send"
+      },
+      {
+        action: "copyAddress",
+        i18n: "menuItems.copyAddress",
+        icon: "content_copy"
+      },
+      {
+        action: "deleteContact",
+        i18n: "menuItems.deleteContact",
+        icon: "delete_outline",
+        danger: true
+      }
     ];
 
     return {
@@ -157,6 +167,39 @@ export default {
       this.$refs.addressBookDetails.mode = "view";
       this.$refs.addressBookDetails.isVisible = true;
       this.isvisible = false;
+    },
+    // Panel header buttons (layouts/wallet/rightPane.vue) act on the contact
+    // that is open in the details view.
+    editCurrent() {
+      this.$refs.addressBookDetails.edit();
+    },
+    deleteCurrent() {
+      this.deleteContact(this.$refs.addressBookDetails.entry);
+    },
+    deleteContact(entry) {
+      this.$q
+        .dialog({
+          component: ConfirmDialog,
+          parent: this,
+          title: this.$t("dialog.deleteAddress.heading"),
+          message: this.$t("dialog.deleteAddress.question", {
+            name: entry.name || this.$t("fieldLabels.address")
+          }),
+          okLabel: this.$t("buttons.delete"),
+          cancelLabel: this.$t("dialog.buttons.cancel"),
+          icon: "trash",
+          iconTone: "danger",
+          okTone: "danger",
+          okIcon: "trash"
+        })
+        .onOk(() => {
+          this.$gateway.send("wallet", "delete_address_book", {
+            index: entry.index
+          });
+          this.$refs.addressBookDetails.close();
+        })
+        .onDismiss(() => {})
+        .onCancel(() => {});
     },
     setAddress: function(entry) {
       this.$emit("setContactAddress", entry);
@@ -202,6 +245,15 @@ export default {
 // Contacts.
 .beldex-app .address-book {
   min-height: 0 !important; // beats q-page's inline min-height
+  display: flex;
+  flex-direction: column;
+
+  // lets the details view pin its Send button to the panel bottom
+  > section:last-child {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
 
   .contacts {
     display: flex;
@@ -225,10 +277,14 @@ export default {
     &__search {
       display: flex;
       align-items: center;
-      gap: var(--beldex-space-3);
-      padding: var(--beldex-space-4) 0;
+      gap: 12px;
+      box-sizing: border-box;
+      height: 40px;
+      margin-bottom: 8px;
+      padding: 0 12px;
       color: var(--beldex-text-muted);
-      border-bottom: 1px solid var(--beldex-hairline);
+      background-color: var(--beldex-panel-sunken);
+      border: 1px solid #222;
     }
 
     &__search-input {
@@ -251,10 +307,22 @@ export default {
     &__row {
       display: flex;
       align-items: center;
-      gap: var(--beldex-space-3);
-      min-height: 46px;
-      padding: var(--beldex-space-1) 0;
+      gap: 16px;
+      min-height: 55px;
+      padding: 10px 4px;
       border-bottom: 1px solid var(--beldex-hairline);
+    }
+
+    // 28px chip, 14px #737373 copy glyph.
+    &__copy {
+      width: 28px;
+      height: 28px;
+      background-color: #111;
+
+      img {
+        width: 14px;
+        height: 14px;
+      }
     }
 
     &__star {
@@ -282,12 +350,13 @@ export default {
     &__name {
       font-family: var(--beldex-font-sans);
       font-size: var(--beldex-text-md);
+      font-weight: 500;
       color: var(--beldex-text);
     }
 
     &__address {
-      font-size: var(--beldex-text-sm);
-      color: var(--beldex-text-faint);
+      font-size: 11px;
+      color: #555;
     }
 
     &__empty {

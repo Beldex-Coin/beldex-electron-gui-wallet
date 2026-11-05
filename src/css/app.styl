@@ -1191,6 +1191,17 @@ body.beldex-app {
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    // Selected state with a 2px accent bar on the left and a soft accent
+    // outline elsewhere (Rescan dialog, frame 421:11595).
+    &--bar.beldex-option--active {
+      border-color: var(--beldex-accent-border-soft);
+      box-shadow: inset 2px 0 0 var(--beldex-accent);
+
+      &:hover {
+        border-color: var(--beldex-accent-border-soft);
+      }
+    }
   }
 
   // Two-line option (title + hint), e.g. the Rescan dialog (frame 421:11595).
@@ -1627,6 +1638,47 @@ body.beldex-app {
   }
 }
 
+// Activity type filter (frame 421:4656): 220px panel, uppercase header,
+// left-aligned rows with the check at the right edge.
+.beldex-app .beldex-menu.beldex-menu--compact.beldex-menu--filter {
+  width: 220px;
+  min-width: 220px;
+  background-color: var(--beldex-panel-sunken);
+  border: 1px solid rgba(235, 235, 235, 0.2);
+  box-shadow: 0 16px 16px rgba(0, 0, 0, 0.6);
+
+  .q-virtual-scroll__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .beldex-menu__head {
+    box-sizing: border-box;
+    height: 27px;
+    padding: 8px 12px 0;
+    font-family: var(--beldex-font-micro);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    line-height: 15px;
+    color: var(--beldex-text-faint);
+    text-transform: uppercase;
+  }
+
+  .q-item__section {
+    justify-content: flex-start;
+  }
+
+  .q-item__label {
+    line-height: 16px;
+  }
+
+  .q-item--active::after {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 // Modal dialogs (Phase 3, frames 421:10705 / 421:13313 and siblings).
 // On the q-card: class="beldex-dialog". Header = .beldex-dialog__head with an
 // icon box, uppercase title and muted subtitle; footer = .beldex-dialog__actions.
@@ -1933,6 +1985,19 @@ body.beldex-app {
       height: 14px;
     }
 
+    // Primary is Inter SemiBold sentence case, Cancel is Roboto Mono Bold.
+    .beldex-btn {
+      font-family: var(--beldex-font-sans);
+      font-weight: 600;
+      line-height: 16px;
+      text-transform: none;
+    }
+
+    .beldex-btn--ghost {
+      font-family: var(--beldex-font-mono);
+      font-weight: 700;
+    }
+
     .beldex-btn.confirm-dialog__ok--danger {
       color: var(--beldex-danger);
       background-color: rgba(220, 38, 38, 0.15);
@@ -2002,6 +2067,17 @@ body.beldex-app {
       font-family: var(--beldex-font-sans);
       font-weight: 600;
       text-transform: none;
+
+      // Leading icon (e.g. the check) sits inline, left of the label.
+      .q-btn__content {
+        flex-flow: row nowrap;
+      }
+
+      img {
+        flex: none;
+        width: 12px;
+        height: 12px;
+      }
     }
 
     > .q-btn,
@@ -3209,4 +3285,52 @@ body {
 .page-btn.q-btn--disabled {
   opacity: 0.45;
   background: #34344f;
+}
+
+// Contact row context menu: icon + mono label rows, red
+// destructive row. Extends `beldex-menu--compact` via menu-class.
+.beldex-app .beldex-menu.beldex-menu--contact {
+  min-width: 220px;
+  padding: 0;
+  background-color: var(--beldex-panel-sunken);
+
+  .q-item {
+    min-height: 44px;
+    padding: 0 16px 0 14px;
+    gap: 12px;
+    justify-content: flex-start;
+    letter-spacing: 0.3px;
+    border-left: 2px solid transparent;
+  }
+
+  .q-item__section {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .q-item__label {
+    text-align: left;
+  }
+
+  .beldex-menu__icon {
+    flex: none;
+    margin: 0;
+  }
+
+  .q-item:hover,
+  .q-manual-focusable--focused {
+    color: var(--beldex-text-strong);
+    background-color: rgba(235, 235, 235, 0.05);
+    border-left-color: var(--beldex-text);
+  }
+
+  .q-item.beldex-menu__danger,
+  .q-item.beldex-menu__danger:hover {
+    color: var(--beldex-danger);
+  }
+
+  .q-item.beldex-menu__danger:hover {
+    background-color: var(--beldex-danger-wash);
+    border-left-color: var(--beldex-danger);
+  }
 }

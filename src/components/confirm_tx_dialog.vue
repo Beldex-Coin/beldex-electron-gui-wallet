@@ -9,6 +9,9 @@
           <h2 class="beldex-dialog__title">
             {{ $t("dialog.confirmTransaction.title") }}
           </h2>
+          <p class="beldex-dialog__subtitle">
+            {{ $t("dialog.confirmTransaction.subtitle") }}
+          </p>
         </div>
       </div>
 

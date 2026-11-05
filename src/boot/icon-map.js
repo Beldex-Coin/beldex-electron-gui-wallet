@@ -1,14 +1,15 @@
-/* Maps the Quasar-builtin "content_copy" material icon name to the project's
-   custom copy icon (SVG path), without touching any component that uses
+/* Maps the Quasar-builtin "content_copy" / "file_copy" material icon names to
+   the project's single copy glyph (the "Copy icon", same path as
+   assets/icons/receive-copy.svg), without touching any component that uses
    icon="content_copy" / icon-right="content_copy" / <q-icon name="content_copy">.
    See: https://v1.quasar.dev/vue-components/icon#icon-mapping */
-const CONTENT_COPY_ICON =
-  "M1.615 0C0.722712 0 0 0.722712 0 1.615V12.92H1.615V1.615H12.92V0H1.615ZM4.845 3.23C3.95271 3.23 3.23 3.95271 3.23 4.845V14.535C3.23 15.4273 3.95271 16.15 4.845 16.15H14.535C15.4273 16.15 16.15 15.4273 16.15 14.535V4.845C16.15 3.95271 15.4273 3.23 14.535 3.23H4.845ZM4.845 4.845H14.535V14.535H4.845V4.845Z|0 0 17 17";
+const COPY_ICON =
+  "M4.66667 0.582031V2.91536H1.75V12.832H9.91667V10.4987H12.8333V3.6696L9.74577 0.582031H4.66667ZM5.25 1.16536H9.33333V4.08203H12.25V9.91537H5.25V1.16536ZM9.91667 1.5778L11.8376 3.4987H9.91667V1.5778ZM2.33333 3.4987H4.66667V10.4987H9.33333V12.2487H2.33333V3.4987Z|0 0 14 14";
 
 export default ({ Vue }) => {
   Vue.prototype.$q.iconMapFn = iconName => {
-    if (iconName === "content_copy") {
-      return { icon: CONTENT_COPY_ICON };
+    if (iconName === "content_copy" || iconName === "file_copy") {
+      return { icon: COPY_ICON };
     }
   };
 };

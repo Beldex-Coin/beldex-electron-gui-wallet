@@ -224,7 +224,12 @@ export default {
     position: sticky;
     top: 0;
     display: flex;
+    // Fixed width: a long name must wrap inside, not widen the panel.
     flex: 0 0 400px;
+    width: 400px;
+    min-width: 0;
+    max-width: 400px;
+    box-sizing: border-box;
     flex-direction: column;
     gap: var(--beldex-space-5);
   }
@@ -276,8 +281,17 @@ export default {
       text-transform: uppercase;
     }
 
+    dt {
+      flex: 0 0 auto;
+      margin-right: var(--beldex-space-3);
+    }
+
     dd {
+      min-width: 0;
       margin: 0;
+      text-align: right;
+      overflow-wrap: anywhere;
+      word-break: break-all;
       font-size: var(--beldex-text-md);
       color: var(--beldex-text-strong);
     }
