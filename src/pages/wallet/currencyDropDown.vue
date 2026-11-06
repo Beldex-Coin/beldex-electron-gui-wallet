@@ -283,10 +283,21 @@ export default {
     cursor: pointer;
     color: var(--beldex-text);
     border-radius: 4px;
+    transition: background-color 0.12s ease;
 
     &:hover,
     &--selected {
-      background-color: var(--beldex-panel-raised);
+      background-color: #1c1c1c;
+    }
+
+    &:hover .coin-full,
+    &--selected .coin-full {
+      color: var(--beldex-text);
+    }
+
+    &:hover .coin-proto,
+    &--selected .coin-proto {
+      color: var(--beldex-text);
     }
   }
 

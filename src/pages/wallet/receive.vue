@@ -314,6 +314,7 @@ export default {
     img {
       width: 14px;
       height: 14px;
+      filter: brightness(0) invert(0.85);
     }
   }
 

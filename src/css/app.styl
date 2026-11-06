@@ -1956,6 +1956,12 @@ body.beldex-app {
       color: var(--beldex-text-muted);
       background-color: rgba(235, 235, 235, 0.05);
       border-color: var(--beldex-border);
+
+      // The base rule tints .q-icon accent-green directly, which would
+      // override the tone colour set on the box.
+      .q-icon {
+        color: inherit;
+      }
     }
 
     .confirm-dialog__icon--danger {
@@ -3327,6 +3333,10 @@ body {
   .q-item.beldex-menu__danger,
   .q-item.beldex-menu__danger:hover {
     color: var(--beldex-danger);
+  }
+
+  .q-item.beldex-menu__danger {
+    border-top: 1px solid rgba(235, 235, 235, 0.1);
   }
 
   .q-item.beldex-menu__danger:hover {

@@ -2,15 +2,15 @@
   <div class="SwapTxnCompeleted">
     <header class="swapDetails__head">
       <div class="swapDetails__title-wrap">
-        <q-btn
+        <button
           v-if="from === 'history'"
-          flat
-          dense
-          icon="arrow_back"
-          class="swapDetails__back"
+          type="button"
+          class="beldex-icon-btn swapDetails__back"
           :aria-label="$t('buttons.back')"
           @click="$emit('goback')"
-        />
+        >
+          <img src="~assets/icons/arrow-left.svg" alt="" />
+        </button>
         <span class="swapDetails__status-icon swapDetails__status-icon--ok">
           <q-icon name="check" size="16px" />
         </span>

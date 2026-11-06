@@ -3263,10 +3263,23 @@ export class WalletRPC {
         const wallet_name = path.parse(filename).name;
         if (!wallet_name) return;
 
+        // Last time the wallet was used: the wallet cache file is rewritten
+        // whenever the wallet is saved/closed, so its mtime is a good proxy.
+        let last_opened = null;
+        try {
+          const cache_stat = fs.statSync(
+            path.join(this.wallet_dir, wallet_name)
+          );
+          last_opened = cache_stat.mtimeMs;
+        } catch (e) {
+          last_opened = fs.statSync(name).mtimeMs;
+        }
+
         let wallet_data = {
           name: wallet_name,
           address: null,
-          password_protected: null
+          password_protected: null,
+          last_opened
         };
 
         if (

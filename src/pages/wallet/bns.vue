@@ -238,8 +238,16 @@ export default {
 
   &__main {
     position: relative;
+    display: flex;
+    flex-direction: column;
     flex: 1 1 auto;
     min-width: 0;
+  }
+
+  .my-bns {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
   }
 
   &__side {

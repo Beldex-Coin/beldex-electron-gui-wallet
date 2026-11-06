@@ -29,8 +29,35 @@
           <span class="contact__name beldex-truncate">{{
             mode == "edit" ? newEntry.name : entry && entry.name
           }}</span>
-          <span v-if="contactMeta" class="contact__meta">
-            <img src="~assets/icons/contact-star.svg" alt="" />
+          <span v-if="contactMeta || mode == 'edit'" class="contact__meta">
+            <component
+              :is="mode == 'edit' ? 'button' : 'span'"
+              v-if="mode == 'edit' || (entry && entry.starred)"
+              class="contact__meta-star"
+              :class="{
+                'contact__meta-star--on': (newEntry || {}).starred,
+                'contact__meta-star--static': mode != 'edit'
+              }"
+              :type="mode == 'edit' ? 'button' : null"
+              :aria-pressed="mode == 'edit' ? String(!!newEntry.starred) : null"
+              @click="mode == 'edit' && updateStarred()"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M5.765 1.15C5.8097 1.0597 5.90174 1.00255 6.0025 1.00255C6.10326 1.00255 6.1953 1.0597 6.24 1.15L7.395 3.49C7.54973 3.8034 7.84902 4.02039 8.195 4.07L10.775 4.45C10.8745 4.46409 10.9575 4.53325 10.9893 4.62858C11.021 4.72392 10.9961 4.82903 10.925 4.9L9.055 6.72C8.80456 6.96387 8.69045 7.31554 8.75 7.66L9.19 10.23C9.20749 10.3297 9.16669 10.4306 9.08485 10.4901C9.00302 10.5496 8.89443 10.5573 8.805 10.51L6.495 9.295C6.1866 9.13319 5.8184 9.13319 5.51 9.295L3.2 10.505C3.11057 10.5523 3.00198 10.5446 2.92015 10.4851C2.83831 10.4256 2.79751 10.3247 2.815 10.225L3.255 7.655C3.31455 7.31054 3.20044 6.95887 2.95 6.715L1.08 4.9C1.00885 4.82903 0.98397 4.72392 1.01575 4.62858C1.04753 4.53325 1.1305 4.46409 1.23 4.45L3.81 4.07C4.15598 4.02039 4.45527 3.8034 4.61 3.49L5.765 1.15Z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </component>
             {{ contactMeta }}
           </span>
         </div>
@@ -66,9 +93,6 @@
       <BeldexField
         :label="$t('fieldLabels.address')"
         :error="$v.newEntry.address.$error"
-        :starred="newEntry.starred"
-        :update-starred="updateStarred"
-        :enable-star="mode == 'edit'"
       >
         <template v-if="mode == 'new'" #label-action>
           <button type="button" class="contact__paste" @click="pasteAddress">
@@ -524,9 +548,23 @@ export default {
     line-height: 16px;
     color: var(--beldex-text-muted);
 
-    img {
-      width: 12px;
-      height: 12px;
+    .contact__meta-star {
+      display: inline-flex;
+      flex: none;
+      padding: 0;
+      color: #737373;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+
+      &--on,
+      &--static {
+        color: var(--beldex-accent);
+      }
+
+      &--static {
+        cursor: default;
+      }
     }
   }
 

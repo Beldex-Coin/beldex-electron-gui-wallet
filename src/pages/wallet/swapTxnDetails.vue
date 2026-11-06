@@ -2,14 +2,14 @@
   <div class="swapTxnDetails">
     <header class="swapDetails__head">
       <div class="swapDetails__title-wrap">
-        <q-btn
-          flat
-          dense
-          icon="arrow_back"
-          class="swapDetails__back"
+        <button
+          type="button"
+          class="beldex-icon-btn swapDetails__back"
           :aria-label="$t('buttons.back')"
           @click="backToHistory"
-        />
+        >
+          <img src="~assets/icons/arrow-left.svg" alt="" />
+        </button>
         <h2 class="swapDetails__title">
           {{ $t("titles.swap.swapStatus") }}
         </h2>

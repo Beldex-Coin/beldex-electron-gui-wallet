@@ -51,7 +51,8 @@
             class="settings-modal__content"
             :class="{
               'settings-modal__content--narrow': page === 'language',
-              'settings-modal__content--about': page === 'about'
+              'settings-modal__content--about': page === 'about',
+              'settings-modal__content--peers': page === 'peers'
             }"
           >
             <div v-if="page !== 'ban'" class="beldex-heading">
@@ -61,13 +62,21 @@
                 :aria-label="$t('buttons.back')"
                 @click="isVisible = false"
               >
-                <span class="beldex-icon-btn__glyph">←</span>
+                <img
+                  class="settings-modal__icon-arrow"
+                  src="~assets/icons/arrow-left-muted.svg"
+                  alt=""
+                />
               </button>
               <h1 class="beldex-heading__title">
                 {{ headingTitle }}
               </h1>
               <span v-if="page === 'peers'" class="beldex-chip">
-                {{ daemon.connections.length }}
+                {{
+                  $t("strings.peersConnected", {
+                    count: daemon.connections.length
+                  })
+                }}
               </span>
             </div>
 
@@ -115,11 +124,13 @@
                   :class="{
                     'settings-modal__peer-state--busy': entry.state !== 'normal'
                   }"
-                  >{{ entry.state }}</span
+                  >{{ peerStateLabel(entry.state) }}</span
                 >
-                <span class="settings-modal__peer-muted" aria-hidden="true"
-                  >›</span
-                >
+                <img
+                  class="settings-modal__peer-chevron"
+                  src="~assets/icons/chevron-right-muted.svg"
+                  alt=""
+                />
               </button>
 
               <template v-if="daemon.bans.length">
@@ -217,7 +228,7 @@
         <q-card class="beldex-dialog peer-dialog">
           <div class="beldex-dialog__head">
             <div class="beldex-dialog__icon">
-              <img src="~assets/icons/nav-peers.svg" alt="" />
+              <img src="~assets/icons/peer-details.svg" alt="" />
             </div>
             <div>
               <h2 class="beldex-dialog__title">
@@ -236,7 +247,7 @@
               @click="peerEntryModal = false"
             />
             <q-btn
-              class="beldex-btn confirm-dialog__ok--danger"
+              class="beldex-btn peer-dialog__ban"
               unelevated
               no-caps
               :label="'✕ ' + $t('dialog.banPeer.banAction')"
@@ -345,6 +356,15 @@ export default {
     save() {
       this.$gateway.send("core", "save_config", this.pending_config);
       this.isVisible = false;
+    },
+    // beldexd reports normal / synchronizing / before_handshake / idle.
+    peerStateLabel(state) {
+      const keys = {
+        normal: "strings.peerStateSynced",
+        synchronizing: "strings.peerStateSynchronizing",
+        before_handshake: "strings.peerStateConnecting"
+      };
+      return keys[state] ? this.$t(keys[state]) : state;
     },
     showPeerDetails(entry) {
       this.peerEntry = entry;
@@ -519,6 +539,10 @@ export default {
     max-width: calc(720px + 2 * var(--beldex-space-6));
   }
 
+  &__content--peers {
+    padding-top: 120px;
+  }
+
   // Language and About sit in the vertical middle of the page, as in Figma.
   &__content--narrow,
   &__content--about {
@@ -540,6 +564,7 @@ export default {
     width: 100%;
     min-height: 47px;
     padding: 0 var(--beldex-space-2);
+    line-height: 1;
     font-family: var(--beldex-font-mono);
     font-size: var(--beldex-text-md);
     text-align: left;
@@ -594,6 +619,17 @@ export default {
     }
   }
 
+  &__icon-arrow {
+    width: 14px;
+    height: 14px;
+  }
+
+  &__peer-chevron {
+    justify-self: center;
+    width: 6px;
+    height: 10px;
+  }
+
   &__peer-muted {
     color: var(--beldex-text-faint);
   }
@@ -601,6 +637,7 @@ export default {
   &__peer-state {
     color: var(--beldex-accent);
     text-transform: capitalize;
+    line-height: 1;
 
     &--busy {
       color: var(--beldex-warning);
@@ -691,8 +728,28 @@ export default {
 }
 
 // Peer details dialog.
-.peer-dialog {
+.beldex-app .peer-dialog {
   width: 620px;
+
+  .beldex-dialog__actions .beldex-btn {
+    min-height: 46px;
+    font-size: var(--beldex-text-md);
+    font-weight: 700;
+  }
+
+  .beldex-dialog__actions .beldex-btn--ghost {
+    font-family: var(--beldex-font-mono);
+  }
+
+  .beldex-dialog__actions .peer-dialog__ban {
+    color: var(--beldex-danger);
+    background-color: rgba(147, 0, 10, 0.3);
+    border-color: rgba(242, 102, 102, 0.3);
+
+    &:hover {
+      background-color: rgba(147, 0, 10, 0.45);
+    }
+  }
 
   &__json {
     max-height: 170px;

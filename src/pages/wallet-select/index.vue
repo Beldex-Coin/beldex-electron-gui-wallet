@@ -38,15 +38,28 @@
             <span class="wallet-select__name beldex-truncate">
               {{ wallet.name }}
             </span>
-            <span class="wallet-select__address beldex-truncate">
-              {{ wallet.address }}
+            <span class="wallet-select__address" :title="wallet.address">
+              {{ shortAddress(wallet.address) }}
             </span>
           </span>
-          <img
-            src="~assets/icons/chevron-right-muted.svg"
+          <span v-if="wallet.last_opened" class="wallet-select__opened">
+            {{ $t("strings.opened") }}
+            <timeago :datetime="wallet.last_opened" :auto-update="60" />
+          </span>
+          <svg
             class="wallet-select__chevron"
-            alt=""
-          />
+            viewBox="0 0 5.5 9.5"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M0.75 8.75L4.75 4.75L0.75 0.75"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
           <ContextMenu
             :menu-items="menuItems"
             @openWallet="openWallet(wallet)"
@@ -290,6 +303,10 @@ export default {
     importLegacyWallet() {
       this.$router.replace({ path: "wallet-select/import-legacy" });
     },
+    shortAddress(address) {
+      if (!address || address.length <= 24) return address || "";
+      return `${address.slice(0, 12)}...${address.slice(-12)}`;
+    },
     copyAddress(address) {
       clipboard.writeText(address);
       this.$q.notify({
@@ -350,10 +367,23 @@ export default {
     color: var(--beldex-text-faint);
   }
 
+  &__opened {
+    flex: none;
+    font-size: var(--beldex-text-md);
+    color: var(--beldex-text-faint);
+    white-space: nowrap;
+  }
+
   &__chevron {
     flex: none;
     width: 6px;
     height: 10px;
+    color: var(--beldex-text-faint);
+    transition: color var(--beldex-transition);
+  }
+
+  .beldex-row:hover .wallet-select__chevron {
+    color: var(--beldex-accent);
   }
 
   &__actions {

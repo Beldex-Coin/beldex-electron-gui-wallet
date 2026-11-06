@@ -76,7 +76,7 @@
             @click="clear"
           />
           <q-btn class="beldex-btn" unelevated no-caps @click="check">
-            <img src="~assets/icons/btn-check.svg" alt="" />
+            <img src="~assets/icons/btn-check-circle.svg" alt="" />
             {{ $t("buttons.check") }}
           </q-btn>
         </div>

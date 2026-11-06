@@ -6,7 +6,7 @@
         <div class="activity__title-group">
           <h2 class="activity__title">{{ $t("titles.activityLedger") }}</h2>
           <span v-if="tx_list.length !== 0" class="beldex-chip">{{
-            $t("strings.transactions.recentCount", { count: tx_list.length })
+            $t("strings.transactions.recentCount", { count: recentTxCount })
           }}</span>
         </div>
         <div class="beldex-filter-tabs" role="tablist">
@@ -191,7 +191,7 @@
       />
     </section>
     <section v-else>
-      <TxDetails :tx="txnDetails" @goback="goback($event)" />
+      <TxDetails :tx="liveTxnDetails" @goback="goback($event)" />
     </section>
   </q-page>
 </template>
@@ -382,6 +382,20 @@ export default {
       theme: state => state.gateway.app.config.appearance.theme,
       tx_list: state => state.gateway.wallet.transactions.tx_list
     }),
+
+    // The opened transaction, refreshed from the store so edits (e.g. notes)
+    // show up instead of the stale copy captured when it was clicked.
+    liveTxnDetails() {
+      if (!this.txnDetails) return this.txnDetails;
+      const fresh = this.tx_list.find(tx => tx.txid === this.txnDetails.txid);
+      return fresh || this.txnDetails;
+    },
+
+    // Transactions from the last 2 hours (timestamps are in seconds)
+    recentTxCount() {
+      const cutoff = Date.now() / 1000 - 2 * 60 * 60;
+      return this.tx_list.filter(tx => tx.timestamp >= cutoff).length;
+    },
 
     tx_type_options() {
       return [

@@ -268,10 +268,14 @@ export default {
 <style lang="scss">
 .beldex-app .bns-records {
   position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 120px;
 
   &__body {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: var(--beldex-space-5);
 
@@ -348,8 +352,10 @@ export default {
 
   &__empty {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--beldex-space-3);
     padding: var(--beldex-space-9) 0;
     text-align: center;

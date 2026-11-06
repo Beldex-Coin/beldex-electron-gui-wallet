@@ -237,6 +237,7 @@
         <q-input
           ref="notesInput"
           v-model="txNotes"
+          class="full-width"
           type="textarea"
           rows="2"
           dark
@@ -245,14 +246,15 @@
           :aria-label="$t('fieldLabels.transactionNotes')"
         />
       </BeldexField>
-      <p v-else class="txn-details__notes">
-        {{
+      <p
+        v-else
+        class="txn-details__notes"
+        v-text="
           txNotes
             ? txNotes
-            : `The notes are saved to remark the details about the transaction.
-               You can change this by hitting edit note.`
-        }}
-      </p>
+            : 'The notes are saved to remark the details about the transaction. You can change this by hitting edit note.'
+        "
+      ></p>
       <div v-if="editNotes" class="txn-details__notes-actions">
         <q-btn
           class="beldex-btn beldex-btn--ghost"
@@ -420,6 +422,16 @@ export default {
       return this.$store.getters["gateway/isReady"];
     }
   }),
+  watch: {
+    // Keep the notes in sync with the stored transaction (initial open and
+    // after the tx list refreshes), unless the user is mid-edit.
+    "tx.note": {
+      immediate: true,
+      handler(note) {
+        if (!this.editNotes) this.txNotes = note || "";
+      }
+    }
+  },
   methods: {
     goback() {
       this.$emit("goback", "");
@@ -703,8 +715,8 @@ export default {
     cursor: pointer;
 
     img {
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
     }
 
     &:hover {
@@ -717,6 +729,10 @@ export default {
     font-size: var(--beldex-text-md);
     line-height: 18px;
     color: var(--beldex-text-muted);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
   }
 
   &__notes-actions {

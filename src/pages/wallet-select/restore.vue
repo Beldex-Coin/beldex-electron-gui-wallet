@@ -89,6 +89,15 @@
               :label="$t('fieldLabels.mnemonicSeed')"
               :error="$v.wallet.seed.$error"
             >
+              <template #label-action>
+                <button
+                  type="button"
+                  class="restore-wallet__paste restore-wallet__paste--seed"
+                  @click="paste('seed')"
+                >
+                  {{ $t("buttons.paste") }}
+                </button>
+              </template>
               <q-input
                 v-model="wallet.seed"
                 class="full-width text-area-oxen"
@@ -275,6 +284,7 @@
 
         <BeldexField
           v-if="form.refresh_type == 'date'"
+          :label="$t('fieldLabels.restoreFromDate')"
           class="restore-wallet__name restore-wallet__box"
         >
           <q-input
@@ -312,6 +322,7 @@
         <template v-else>
           <BeldexField
             class="restore-wallet__name restore-wallet__box"
+            :label="$t('fieldLabels.restoreFromBlockHeight')"
             :error="$v[formKey].refresh_start_height.$error"
           >
             <q-input
@@ -624,6 +635,11 @@ export default {
     paste(field) {
       const text = (clipboard.readText() || "").trim();
       if (!text) return;
+      if (field === "seed") {
+        this.wallet.seed = text;
+        this.$v.wallet.seed.$touch();
+        return;
+      }
       this.walletKeys[field] = text;
       if (this.$v.walletKeys[field]) this.$v.walletKeys[field].$touch();
     },
@@ -975,6 +991,10 @@ export default {
 
     &:hover {
       text-decoration: underline;
+    }
+
+    &--seed {
+      margin: 0 0 0 auto;
     }
   }
 

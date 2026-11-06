@@ -2042,7 +2042,7 @@ export default {
 
     a {
       color: var(--beldex-text);
-      text-decoration: none;
+      text-decoration: underline;
       cursor: pointer;
     }
   }
@@ -2893,6 +2893,18 @@ export default {
 
       &.q-btn--disabled {
         background: var(--beldex-panel);
+      }
+
+      // Global `.q-btn--flat:hover` rounds to a pill and tints the
+      // background (Prev / Next); keep the square shape on hover.
+      &:hover:not(.active):not(.q-btn--disabled) {
+        background: var(--beldex-panel) !important;
+        border-radius: 0 !important;
+        border-color: var(--beldex-border-strong);
+      }
+
+      &.q-btn--flat:hover {
+        border-radius: 0 !important;
       }
     }
   }

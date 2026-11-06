@@ -464,11 +464,11 @@ export default {
   &__mask {
     display: inline-flex;
     align-items: flex-end;
-    gap: 6px;
+    gap: 8px;
 
     i {
       display: block;
-      height: 26px;
+      height: 36px;
       background-image: radial-gradient(
         circle,
         var(--beldex-text-faint) 0.7px,
@@ -478,22 +478,24 @@ export default {
     }
 
     &-int {
-      width: 150px;
+      width: 208px;
     }
 
     &-dec {
-      width: 56px;
+      width: 76px;
     }
 
     b {
       font-weight: 400;
-      line-height: 48px;
+      line-height: 1;
       color: var(--beldex-text-muted);
     }
 
     .coin-extensions {
-      margin-left: 0;
-      font-size: 12px;
+      margin-left: var(--beldex-space-3);
+      font-size: 18px;
+      line-height: 1;
+      align-self: flex-end;
     }
   }
 
