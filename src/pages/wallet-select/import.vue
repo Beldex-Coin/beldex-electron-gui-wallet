@@ -54,11 +54,10 @@
         </BeldexField>
 
         <BeldexField>
-          <q-input
+          <PasswordInput
             v-model="wallet.password"
             :placeholder="$t('placeholders.walletPassword')"
             :aria-label="$t('fieldLabels.password')"
-            type="password"
             dark
             borderless
             dense
@@ -67,11 +66,10 @@
         </BeldexField>
 
         <BeldexField>
-          <q-input
+          <PasswordInput
             v-model="wallet.password_confirm"
             :placeholder="$t('placeholders.reEnterWalletPassword')"
             :aria-label="$t('fieldLabels.confirmPassword')"
-            type="password"
             dark
             borderless
             dense
@@ -88,7 +86,7 @@
           @click="import_wallet"
         >
           {{ $tc("buttons.importWallet", 1) }}
-          <img src="~assets/icons/arrow-right.svg" alt="" />
+          <span class="beldex-form-page__submit-arrow">↓</span>
         </q-btn>
       </div>
     </section>
@@ -99,9 +97,11 @@
 import { required } from "vuelidate/lib/validators";
 import { mapState } from "vuex";
 import BeldexField from "components/beldex_field";
+import PasswordInput from "components/password_input";
 import { dialog } from "src/shims/electron-renderer";
 export default {
   components: {
+    PasswordInput,
     BeldexField
   },
   data() {

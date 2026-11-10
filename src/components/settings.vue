@@ -62,11 +62,7 @@
                 :aria-label="$t('buttons.back')"
                 @click="isVisible = false"
               >
-                <img
-                  class="settings-modal__icon-arrow"
-                  src="~assets/icons/arrow-left-muted.svg"
-                  alt=""
-                />
+                <span class="beldex-icon-btn__glyph">←</span>
               </button>
               <h1 class="beldex-heading__title">
                 {{ headingTitle }}
@@ -534,7 +530,7 @@ export default {
   }
 
   // Language tab: heading and card share the 720px column (wider than the
-  // 660px Figma frame 421:2581, by request).
+  // original 660px frame, by request).
   &__content--narrow {
     max-width: calc(720px + 2 * var(--beldex-space-6));
   }
@@ -543,7 +539,7 @@ export default {
     padding-top: 120px;
   }
 
-  // Language and About sit in the vertical middle of the page, as in Figma.
+  // Language and About sit in the vertical middle of the page.
   &__content--narrow,
   &__content--about {
     justify-content: center;
@@ -617,11 +613,6 @@ export default {
     &--busy {
       background-color: var(--beldex-warning);
     }
-  }
-
-  &__icon-arrow {
-    width: 14px;
-    height: 14px;
   }
 
   &__peer-chevron {

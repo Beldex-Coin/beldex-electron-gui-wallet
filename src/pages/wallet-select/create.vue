@@ -49,11 +49,10 @@
         class="beldex-form-page__fields beldex-form-page__fields--tight"
       >
         <BeldexField class="beldex-field--hero">
-          <q-input
+          <PasswordInput
             v-model="wallet.password"
-            type="password"
             dark
-            :placeholder="$t('placeholders.walletPassword')"
+            :placeholder="$t('placeholders.createWalletPassword')"
             :aria-label="$t('fieldLabels.password')"
             borderless
             dense
@@ -61,9 +60,8 @@
           />
         </BeldexField>
         <BeldexField class="beldex-field--hero">
-          <q-input
+          <PasswordInput
             v-model="wallet.password_confirm"
-            type="password"
             dark
             :placeholder="$t('placeholders.reEnterWalletPassword')"
             :aria-label="$t('fieldLabels.confirmPassword')"
@@ -83,7 +81,7 @@
           @click="next"
         >
           {{ $t("buttons.next") }}
-          <img src="~assets/icons/arrow-right.svg" alt="" />
+          <span class="beldex-form-page__submit-arrow">→</span>
         </q-btn>
         <q-btn
           v-else
@@ -102,9 +100,11 @@
 import { required } from "vuelidate/lib/validators";
 import { mapState } from "vuex";
 import BeldexField from "components/beldex_field";
+import PasswordInput from "components/password_input";
 import ConfirmDialog from "components/confirm_dialog";
 export default {
   components: {
+    PasswordInput,
     BeldexField
   },
   data() {

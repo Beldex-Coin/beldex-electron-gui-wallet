@@ -6,7 +6,7 @@
 // Design tokens
 // ---------------------------------------------------------------------------
 // Values follow the designer's "Beldex Terminal · v2" design system
-// (Figma node 445:3 + Beldex_Wallet_Design_System.md).
+// (Beldex_Wallet_Design_System.md).
 //
 // Defined as CSS custom properties so `<style lang="scss">` and plain
 // `<style>` component blocks can use them via var(--beldex-*).
@@ -103,7 +103,7 @@
   --beldex-warning-wash: rgba(245, 158, 11, 0.06);
   --beldex-warning-border: rgba(245, 158, 11, 0.25);
 
-  // Toast surfaces (Figma Toast component set, 524:2108).
+  // Toast surfaces (Toast component set).
   --beldex-toast-success-bg: #0f1a10;
   --beldex-toast-error-bg: #1a0f0f;
   --beldex-toast-warning-bg: #1a160c;
@@ -170,7 +170,7 @@
 // redefine them; per-control interaction states live here.
 
 // ---------------------------------------------------------------------------
-// Surfaces: page background (Figma: #0b0b0b + radial vignette at 30% + 4px
+// Surfaces: page background (#0b0b0b + radial vignette at 30% + 4px
 // dot grid, see ::before) on layouts, dialogs and menus.
 // ---------------------------------------------------------------------------
 .beldex-app .q-layout,
@@ -199,7 +199,7 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    // Figma dot grid: 2px dots on a 20px tile, second dot offset (10, 10),
+    // Dot grid: 2px dots on a 20px tile, second dot offset (10, 10),
     // about 5% white over the page background.
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cg fill='%23ebebeb' fill-opacity='0.05'%3E%3Crect x='4' y='4' width='2' height='2'/%3E%3Crect x='14' y='14' width='2' height='2'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 20px 20px;
@@ -986,9 +986,17 @@ body.beldex-app {
       background-color: var(--beldex-text-strong);
       border-color: var(--beldex-text-strong);
 
-      img {
-        width: 11px;
-        height: 11px;
+      // Uses a thin "→" text glyph (16px, #0b0b0b), not an SVG.
+      &-arrow {
+        font-family: var(--beldex-font-mono);
+        // Mono arrow glyphs render small and below centre; same fix as the
+        // back arrow (.beldex-icon-btn--arrow-lg).
+        position: relative;
+        top: -2px;
+        font-size: 25px;
+        font-weight: 400;
+        line-height: 16px;
+        color: #0b0b0b;
       }
     }
   }
@@ -2020,7 +2028,7 @@ body.beldex-app {
     font-size: var(--beldex-text-sm);
     line-height: 16px;
     letter-spacing: 0.6px;
-    text-transform: uppercase;
+    text-transform: none;
   }
 
   .unlock-dialog__input {
@@ -2178,8 +2186,7 @@ body.beldex-app {
   .q-date__actions .q-btn:hover
     background-color var(--beldex-accent-bg-strong) !important
 
-// Toasts (Figma Toast component set 524:2108: Compact 524:2119, Detailed
-// 524:2145). The classes come from the notify types registered in
+// Toasts (Toast component set: Compact and Detailed sizes). The classes come from the notify types registered in
 // boot/notify.js. A toast with a caption is the Detailed size.
 // Stack sits 24px in from the bottom-right corner, 8px between toasts.
 .beldex-app .q-notifications__list--bottom
@@ -2397,7 +2404,7 @@ footer {
 }
 .q-inner-loading {
   z-index: 2;
-  // Same scrim as the full-screen loader (Figma "Scrim" 571:2298).
+  // Same scrim as the full-screen loader (Scrim).
   background-color: rgba(0, 0, 0, 0.72);
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
@@ -3160,20 +3167,79 @@ body {
     max-height: 81vh;
   }
 }
+// $q.dialog() plugin popups (copy seed/keys, confirms, prompts): themed to
+// match .beldex-dialog (square panel, mono title, Inter body, light button).
 .q-dialog-plugin {
-  border-radius: 10px !important;
-  background: #242433 !important;
-  color: #fff !important;
+  min-width: 420px;
+  max-width: 90vw;
+  padding: 22px var(--beldex-space-7);
+  border: 1px solid var(--beldex-border);
+  border-radius: var(--beldex-radius-none) !important;
+  background: var(--beldex-bg) !important;
+  box-shadow: var(--beldex-shadow-panel) !important;
+  color: var(--beldex-text) !important;
   text-align: center;
+}
+.q-dialog-plugin .q-card__section {
+  padding: 0;
 }
 .q-dialog-plugin .q-dialog__title {
+  font-family: var(--beldex-font-mono);
+  font-size: var(--beldex-text-lg);
+  font-weight: 700;
+  line-height: 22px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
   text-align: center;
-  font-family: "Poppins-SemiBold";
-  font-size: 1.5rem;
+  color: var(--beldex-text-strong);
 }
 .q-dialog-plugin .q-dialog__message {
-  color: #afafbe !important;
-  font-family: "Poppins-Regular";
+  padding-top: var(--beldex-space-3);
+  color: var(--beldex-text-muted) !important;
+  font-family: var(--beldex-font-mono);
+  font-size: var(--beldex-text-md);
+  line-height: 18px;
+}
+.q-dialog-plugin .q-card__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--beldex-space-3);
+  margin: var(--beldex-space-5) 0 0;
+  padding: 0;
+}
+.q-dialog-plugin .q-card__actions .q-btn {
+  flex: 1 1 0;
+  min-height: 40px;
+  padding: 0 var(--beldex-space-8);
+  border: 1px solid var(--beldex-btn-primary-bg);
+  border-radius: var(--beldex-radius-none) !important;
+  background: var(--beldex-btn-primary-bg) !important;
+  color: var(--beldex-btn-primary-text) !important;
+  box-shadow: none !important;
+  font-family: var(--beldex-font-sans);
+  font-size: var(--beldex-text-md);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: none;
+}
+.q-dialog-plugin .q-card__actions .q-btn:hover {
+  background: var(--beldex-text-strong) !important;
+}
+.q-dialog-plugin .q-card__actions .q-btn .q-focus-helper {
+  display: none;
+}
+.q-dialog-plugin .q-card__actions .q-btn .block {
+  color: inherit !important;
+}
+// Cancel / secondary buttons render as ghost.
+.q-dialog-plugin .q-card__actions .q-btn:first-child:not(:last-child) {
+  border-color: var(--beldex-border);
+  background: var(--beldex-panel) !important;
+  color: var(--beldex-text) !important;
+}
+.q-dialog-plugin .q-card__actions .q-btn:first-child:not(:last-child):hover {
+  border-color: var(--beldex-border-strong);
+  background: var(--beldex-panel-raised) !important;
 }
 .q-dialog-plugin .q-field--standard .q-field__control:before {
   border-bottom: unset !important;
@@ -3186,12 +3252,13 @@ body {
 }
 .q-dialog-plugin .q-field {
   padding: 10px 15px;
-  border: 1px solid #484856;
-  border-radius: 10px;
+  border: 1px solid var(--beldex-border-input);
+  border-radius: var(--beldex-radius-none);
   margin: 0;
 }
 .q-dialog-plugin .q-field__native {
-  color: #fff !important;
+  color: var(--beldex-text) !important;
+  font-family: var(--beldex-font-mono);
 }
 // One placeholder colour app-wide (design: #555, node 421:13988).
 ::-webkit-input-placeholder {
@@ -3343,4 +3410,18 @@ body {
     background-color: var(--beldex-danger-wash);
     border-left-color: var(--beldex-danger);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Tooltips (portaled to body, so scoped by `.beldex-app` only).
+// ---------------------------------------------------------------------------
+.beldex-app .q-tooltip {
+  padding: 6px 10px;
+  font-family: var(--beldex-font-sans);
+  font-size: 12px;
+  color: var(--beldex-text);
+  background-color: #141414;
+  border: 1px solid rgba(235, 235, 235, 0.1);
+  border-radius: 0;
+  box-shadow: none;
 }

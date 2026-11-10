@@ -452,7 +452,7 @@
           @click="next"
         >
           {{ $t("buttons.next") }}
-          <img src="~assets/icons/arrow-right.svg" alt="" />
+          <span class="beldex-form-page__submit-arrow">→</span>
         </q-btn>
         <q-btn
           v-else
@@ -462,7 +462,7 @@
           @click="restore"
         >
           {{ $t("buttons.restoreWallet") }}
-          <img src="~assets/icons/arrow-right.svg" alt="" />
+          <span class="beldex-form-page__submit-arrow">→</span>
         </q-btn>
       </div>
     </section>
@@ -670,6 +670,14 @@ export default {
         });
         return;
       }
+      if (![24, 25].includes(this.seedWordCount)) {
+        this.$q.notify({
+          type: "negative",
+          timeout: 1000,
+          message: this.$t("notification.errors.invalidSeedLength")
+        });
+        return;
+      }
       this.step = 2;
     },
     nextKeys() {
@@ -727,12 +735,7 @@ export default {
         .replace(/\s{2,}/g, " ")
         .split(" ");
       /* eslint-enable no-constant-condition */
-      if (
-        seed.length !== 14 &&
-        seed.length !== 24 &&
-        seed.length !== 25 &&
-        seed.length !== 26
-      ) {
+      if (seed.length !== 24 && seed.length !== 25) {
         this.$q.notify({
           type: "negative",
           timeout: 1000,

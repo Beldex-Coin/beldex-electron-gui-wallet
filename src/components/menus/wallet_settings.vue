@@ -422,9 +422,8 @@
 
         <div class="beldex-dialog__body">
           <BeldexField :label="$t('fieldLabels.oldPassword')">
-            <q-input
+            <PasswordInput
               v-model="modals.change_password.old_password"
-              type="password"
               borderless
               :placeholder="$t('placeholders.enteroldPassword')"
             />
@@ -432,18 +431,16 @@
 
           <div class="column q-gutter-y-sm">
             <BeldexField :label="$t('fieldLabels.newPassword')">
-              <q-input
+              <PasswordInput
                 v-model="modals.change_password.new_password"
-                type="password"
                 borderless
                 :placeholder="$t('placeholders.enterNewPassword')"
               />
             </BeldexField>
 
             <BeldexField :aria-label="$t('fieldLabels.confirmNewPassword')">
-              <q-input
+              <PasswordInput
                 v-model="modals.change_password.new_password_confirm"
-                type="password"
                 borderless
                 :placeholder="$t('placeholders.reEnterPassword')"
               />
@@ -480,12 +477,14 @@ import { mapState } from "vuex";
 import WalletPassword from "src/mixins/wallet_password";
 import ClipboardCopyMixin from "src/mixins/clipboard_copy_mixin";
 import BeldexField from "components/beldex_field";
+import PasswordInput from "components/password_input";
 import ConfirmDialog from "components/confirm_dialog";
 import PasswordConfirmDialog from "components/password_confirm_dialog";
 
 export default {
   name: "WalletSettings",
   components: {
+    PasswordInput,
     BeldexField
   },
   mixins: [WalletPassword, ClipboardCopyMixin],

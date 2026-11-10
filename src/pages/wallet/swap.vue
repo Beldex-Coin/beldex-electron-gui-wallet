@@ -3023,6 +3023,7 @@ export default {
     }
 
     &__status-desc {
+      margin-top: 6px;
       font-family: var(--beldex-font-mono);
       font-size: var(--beldex-text-sm);
       color: var(--beldex-text-muted);

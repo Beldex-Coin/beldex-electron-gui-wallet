@@ -121,18 +121,16 @@
       </article>
 
       <q-field>
-        <q-input
+        <PasswordInput
           v-model="wallet.password"
-          type="password"
           float-label="Password"
           :dark="theme == 'dark'"
         />
       </q-field>
 
       <q-field>
-        <q-input
+        <PasswordInput
           v-model="wallet.password_confirm"
-          type="password"
           float-label="Confirm Password"
           :dark="theme == 'dark'"
         />
@@ -153,6 +151,7 @@
 import { required, numeric } from "vuelidate/lib/validators";
 import { privkey, address } from "src/validators/common";
 import { mapState } from "vuex";
+import PasswordInput from "components/password_input";
 import { date } from "quasar";
 
 // Same first-block timestamp/format used on the seed-restore screen
@@ -163,6 +162,7 @@ const qDateFormat = "YYYY/MM/DD";
 let dateFirstBlock = date.formatDate(timeStampFirstBlock, qDateFormat);
 
 export default {
+  components: { PasswordInput },
   data() {
     return {
       wallet: {

@@ -2,7 +2,7 @@
   <q-layout view="hHh Lpr lFf" class="wallet-shell">
     <q-page-container>
       <q-page class="wallet-shell__page">
-        <!-- Background coins (Figma "image 5" / "image 12") -->
+        <!-- Background coins -->
         <div class="wallet-shell__decor" aria-hidden="true">
           <img
             class="wallet-shell__decor-coin wallet-shell__decor-coin--tilted"
@@ -59,7 +59,11 @@
                 :class="`wallet-shell__rail-icon--${item.icon}`"
                 aria-hidden="true"
               />
-              <q-tooltip anchor="center right" self="center left">
+              <q-tooltip
+                anchor="center right"
+                self="center left"
+                :offset="[12, 0]"
+              >
                 {{ item.label }}
               </q-tooltip>
             </router-link>
@@ -74,7 +78,11 @@
               class="wallet-shell__rail-icon wallet-shell__rail-icon--exit"
               aria-hidden="true"
             />
-            <q-tooltip anchor="center right" self="center left">
+            <q-tooltip
+              anchor="center right"
+              self="center left"
+              :offset="[12, 0]"
+            >
               {{ $t("menuItems.exit") }}
             </q-tooltip>
           </button>

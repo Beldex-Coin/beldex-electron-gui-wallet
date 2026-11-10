@@ -2,6 +2,14 @@
   <q-page class="beldex-form-page created">
     <section class="beldex-panel beldex-form-page__card created__card">
       <div class="beldex-heading">
+        <button
+          type="button"
+          class="beldex-icon-btn beldex-icon-btn--arrow-lg"
+          :aria-label="$t('buttons.back')"
+          @click="back()"
+        >
+          <img src="~assets/icons/arrow-back.svg" alt="" />
+        </button>
         <h1 class="beldex-heading__title">{{ $route.query.title }}</h1>
       </div>
 
@@ -122,7 +130,7 @@
           @click="open"
         >
           {{ $t("buttons.openWallet") }}
-          <img src="~assets/icons/arrow-right.svg" alt="" />
+          <span class="beldex-form-page__submit-arrow">→</span>
         </q-btn>
       </div>
     </section>
@@ -181,6 +189,9 @@ export default {
     this.$gateway.send("wallet", "forget_new_wallet_secrets");
   },
   methods: {
+    back() {
+      this.$router.replace({ path: "/wallet-select" });
+    },
     open() {
       setTimeout(() => {
         this.$store.commit("gateway/set_wallet_data", {
@@ -279,6 +290,11 @@ export default {
     max-width: 838px;
     gap: 31px;
     padding: var(--beldex-space-7) 33px 32px;
+  }
+
+  .beldex-icon-btn img {
+    width: 18px;
+    height: auto;
   }
 
   &__rows {
