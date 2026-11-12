@@ -84,7 +84,7 @@
             v-model="bchatIdRef"
             class="bns-update-form__check"
             dense
-            label="BChat ID"
+            :label="$t('fieldLabels.bchatIdTitle')"
           />
           <BeldexField class="full-width" :error="$v.bchatId.$error">
             <q-input
@@ -108,7 +108,7 @@
             v-model="belnetIdRef"
             class="bns-update-form__check"
             dense
-            label="Belnet ID"
+            :label="$t('fieldLabels.belnetId')"
           />
           <BeldexField class="full-width" :error="$v.belnetId.$error">
             <q-input
@@ -156,7 +156,7 @@
             v-model="ethAddressRef"
             class="bns-update-form__check"
             dense
-            label="ETH"
+            :label="$t('fieldLabels.eth')"
           />
           <BeldexField class="full-width" :error="$v.ethAddress.$error">
             <q-input

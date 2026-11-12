@@ -523,7 +523,7 @@ export default {
           this.$q.notify({
             type: "negative",
             timeout: 3000,
-            message: "Invalid Address"
+            message: this.$t("notification.errors.invalidAddress")
           });
           return;
         }
@@ -534,7 +534,7 @@ export default {
           this.$q.notify({
             type: "negative",
             timeout: 3000,
-            message: "Invalid Bchat Id"
+            message: this.$t("notification.errors.invalidBchatIdInput")
           });
           return;
         }
@@ -545,7 +545,7 @@ export default {
           this.$q.notify({
             type: "negative",
             timeout: 3000,
-            message: "Invalid Belnet Id"
+            message: this.$t("notification.errors.invalidBelnetId")
           });
           return;
         }
@@ -556,7 +556,7 @@ export default {
           this.$q.notify({
             type: "negative",
             timeout: 3000,
-            message: "Invalid Etherum address"
+            message: this.$t("notification.errors.invalidEthAddress")
           });
           return;
         }

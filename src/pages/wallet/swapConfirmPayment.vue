@@ -5,11 +5,11 @@
       <div class="confirmPayment__title-wrap">
         <button
           type="button"
-          class="beldex-square-btn"
+          class="beldex-icon-btn"
           :aria-label="$t('buttons.back')"
           @click="goToExchangepair"
         >
-          <q-icon name="arrow_back" size="16px" />
+          <span class="beldex-icon-btn__glyph">←</span>
         </button>
         <h2 class="confirmPayment__title">
           {{ $t("titles.swap.checkout") }}
@@ -187,7 +187,12 @@
             size="sm"
             icon="content_copy"
             class="confirmPayment__copy"
-            @click="copyValue(recipientAddress, 'Recipient address')"
+            @click="
+              copyValue(
+                recipientAddress,
+                'notification.positive.recipientAddressCopied'
+              )
+            "
           />
         </div>
       </div>
@@ -204,7 +209,12 @@
             size="sm"
             icon="content_copy"
             class="confirmPayment__copy"
-            @click="copyValue(refundAddress, 'Refund address')"
+            @click="
+              copyValue(
+                refundAddress,
+                'notification.positive.refundAddressCopied'
+              )
+            "
           />
         </div>
       </div>
@@ -331,12 +341,12 @@ export default {
     goToExchangepair() {
       this.$emit("goback");
     },
-    copyValue(val, from) {
+    copyValue(val, messageKey) {
       clipboard.writeText(val);
       this.$q.notify({
         type: "positive",
         timeout: 1000,
-        message: `${from} copied`
+        message: this.$t(messageKey)
       });
     },
     makePayment() {

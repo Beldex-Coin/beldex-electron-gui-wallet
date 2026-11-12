@@ -136,7 +136,7 @@ export default {
           this.$store.commit("gateway/set_mnode_status", {
             registration: {
               code: 1,
-              message: "Registering...",
+              message: this.$t("strings.progress.registering"),
               sending: true
             }
           });

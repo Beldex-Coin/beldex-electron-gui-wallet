@@ -17,7 +17,7 @@
       </div>
 
       <div class="beldex-form-page__fields">
-        <BeldexField :error="$v.wallet.name.$error">
+        <BeldexField class="beldex-field--hero" :error="$v.wallet.name.$error">
           <q-input
             v-model="wallet.name"
             :placeholder="$t('placeholders.walletName')"
@@ -32,7 +32,7 @@
         </BeldexField>
 
         <BeldexField
-          class="beldex-field--with-action"
+          class="beldex-field--with-action import-wallet__file"
           :label="$t('fieldLabels.walletFile')"
           disable-hover
           :error="$v.wallet.path.$error"
@@ -53,7 +53,7 @@
           />
         </BeldexField>
 
-        <BeldexField>
+        <BeldexField class="beldex-field--hero">
           <PasswordInput
             v-model="wallet.password"
             :placeholder="$t('placeholders.walletPassword')"
@@ -65,7 +65,7 @@
           />
         </BeldexField>
 
-        <BeldexField>
+        <BeldexField class="beldex-field--hero">
           <PasswordInput
             v-model="wallet.password_confirm"
             :placeholder="$t('placeholders.reEnterWalletPassword')"

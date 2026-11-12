@@ -9,7 +9,7 @@
           :aria-label="$t('buttons.back')"
           @click="$emit('goback')"
         >
-          <img src="~assets/icons/arrow-left.svg" alt="" />
+          <span class="beldex-icon-btn__glyph">←</span>
         </button>
         <span class="swapDetails__status-icon swapDetails__status-icon--ok">
           <q-icon name="check" size="16px" />
@@ -290,12 +290,15 @@ export default {
       if (isNaN(date.getTime())) return "N/A";
       return moment(date).format("DD MMM YYYY, HH:mm:ss");
     },
-    copyAddress(txnId, message = "Transaction ID is copied!") {
+    copyAddress(
+      txnId,
+      messageKey = "notification.positive.transactionIdCopied"
+    ) {
       clipboard.writeText(txnId);
       this.$q.notify({
         type: "positive",
         timeout: 1000,
-        message: message
+        message: this.$t(messageKey)
       });
     },
     inputHash(hash) {
@@ -310,14 +313,14 @@ export default {
       if (!hash) {
         payinhash = this.txnStatus?.raw_response?.deposits[0]?.txId || "";
       }
-      this.copyAddress(payinhash, "Input Hash is copied!");
+      this.copyAddress(payinhash, "notification.positive.inputHashCopied");
     },
     outputHash(url) {
       let payoutHash = url;
       if (!payoutHash) {
         payoutHash = this.txnStatus?.raw_response?.withdrawals[0]?.txId || "";
       }
-      this.copyAddress(payoutHash, "Output Hash is copied!");
+      this.copyAddress(payoutHash, "notification.positive.outputHashCopied");
       // this.$gateway.send("core", "open_url", { url });
     }
   }

@@ -110,7 +110,7 @@
             <span class="beldex-dialog__kv-label">{{
               $t("fieldLabels.owner")
             }}</span>
-            <span class="bns-confirm__value">{{
+            <span class="bns-confirm__value bns-confirm__value--address">{{
               confirmModal.record.owner
             }}</span>
           </div>
@@ -289,7 +289,7 @@ export default {
           password = password || "";
           this.$store.commit("gateway/set_bns_status", {
             code: 1,
-            message: "Sending renew mapping transaction",
+            message: this.$t("strings.progress.sendingRenewMapping"),
             sending: true
           });
           const params = {
@@ -352,6 +352,13 @@ export default {
     text-align: left;
     overflow-wrap: anywhere;
     word-break: break-all;
+  }
+
+  // Cap the width so a 97-char address wraps onto three lines (~33 chars each).
+  .bns-confirm__value--address {
+    flex: 0 0 auto;
+    width: 34ch;
+    max-width: 100%;
   }
 }
 

@@ -176,8 +176,7 @@
     <q-dialog ref="aboutModal" minimized>
       <div class="about-modal">
         <p class="q-my-sm">
-          There is a new version of Beldex Electron Wallet is available. Please
-          update your wallet from Beldex Official Website.
+          {{ $t("strings.newVersionAvailable") }}
         </p>
 
         <div class="q-mt-md q-mb-lg external-links">
@@ -201,7 +200,11 @@
             />
           </p>
         </div>
-        <q-btn color="primary" label="Close" @click="showAbout(false)" />
+        <q-btn
+          color="primary"
+          :label="$t('buttons.close')"
+          @click="showAbout(false)"
+        />
       </div>
     </q-dialog>
   </q-layout>

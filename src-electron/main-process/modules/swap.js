@@ -254,7 +254,8 @@ export class Swap {
       walletAddress,
       page: requestedPage = 1,
       pageSize: requestedPageSize = 7,
-      isCsvExport = false
+      isCsvExport = false,
+      statusFilter = "all"
     } = params;
 
     if (!walletAddress) {
@@ -274,13 +275,17 @@ export class Swap {
     let totalCount = 0;
 
     if (isCsvExport) {
-      rawRows = this.swapTxnHistory.getOrderHistory(walletAddress);
+      rawRows = this.swapTxnHistory.getOrderHistory(
+        walletAddress,
+        statusFilter
+      );
       totalCount = rawRows.length;
     } else {
       const paginatedResult = this.swapTxnHistory.getPaginatedOrderHistory(
         walletAddress,
         page,
-        pageSize
+        pageSize,
+        statusFilter
       );
       rawRows = paginatedResult.transactions;
       totalCount = paginatedResult.totalCount;
@@ -290,6 +295,11 @@ export class Swap {
     const sendMeta = () =>
       this.sendGateway("set_txnHistoryMeta", {
         totalCount,
+        // Unfiltered total, so the header can keep showing every swap
+        overallCount:
+          statusFilter === "all"
+            ? totalCount
+            : this.swapTxnHistory.getTotalOrderCount(walletAddress),
         totalPages,
         page,
         pageSize

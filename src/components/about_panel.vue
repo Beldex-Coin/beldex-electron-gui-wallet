@@ -56,7 +56,7 @@
       class="beldex-btn beldex-btn--light about-panel__ok"
       unelevated
       no-caps
-      label="OK"
+      :label="$t('buttons.ok')"
       @click="$emit('close')"
     />
   </section>

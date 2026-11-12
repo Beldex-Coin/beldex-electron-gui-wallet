@@ -158,7 +158,7 @@
     <div v-else class="mn-details__body">
       <div class="mn-details__grid mn-details__grid--two">
         <div class="mn-details__stat">
-          <span class="beldex-label">Amount</span>
+          <span class="beldex-label">{{ $t("fieldLabels.amount") }}</span>
           <span class="mn-details__value mn-details__value--big"
             ><FormatBeldex :amount="deregisterDetail.amount"
           /></span>

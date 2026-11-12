@@ -133,25 +133,31 @@
             $t("fieldLabels.walletAddress")
           }}</span>
           <span class="bns-record__kv-value">{{
-            record.value_wallet ? record.value_wallet : "None"
+            record.value_wallet ? record.value_wallet : $t("strings.none")
           }}</span>
         </div>
         <div v-if="record.name" class="bns-record__kv">
-          <span class="bns-record__kv-label">BChat ID</span>
+          <span class="bns-record__kv-label">{{
+            $t("fieldLabels.bchatIdTitle")
+          }}</span>
           <span class="bns-record__kv-value">{{
-            record.value_bchat ? record.value_bchat : "None"
+            record.value_bchat ? record.value_bchat : $t("strings.none")
           }}</span>
         </div>
         <div v-if="record.name" class="bns-record__kv">
-          <span class="bns-record__kv-label">Belnet ID</span>
+          <span class="bns-record__kv-label">{{
+            $t("fieldLabels.belnetId")
+          }}</span>
           <span class="bns-record__kv-value">{{
-            record.value_belnet ? record.value_belnet : "None"
+            record.value_belnet ? record.value_belnet : $t("strings.none")
           }}</span>
         </div>
         <div v-if="record.name" class="bns-record__kv">
-          <span class="bns-record__kv-label">ETH Address</span>
+          <span class="bns-record__kv-label">{{
+            $t("fieldLabels.ethAddress")
+          }}</span>
           <span class="bns-record__kv-value">{{
-            record.value_eth_addr ? record.value_eth_addr : "None"
+            record.value_eth_addr ? record.value_eth_addr : $t("strings.none")
           }}</span>
         </div>
         <div

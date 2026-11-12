@@ -5,10 +5,18 @@
         <q-field>
           <div class="row gutter-md">
             <div>
-              <q-radio v-model="legacy_type" val="0" label="Full wallet" />
+              <q-radio
+                v-model="legacy_type"
+                val="0"
+                :label="$t('fieldLabels.fullWallet')"
+              />
             </div>
             <div>
-              <q-radio v-model="legacy_type" val="1" label="LITE wallet" />
+              <q-radio
+                v-model="legacy_type"
+                val="1"
+                :label="$t('fieldLabels.liteWallet')"
+              />
             </div>
           </div>
         </q-field>
@@ -17,7 +25,7 @@
       <q-field class="q-mt-none">
         <q-input
           v-model="wallet.name"
-          float-label="New wallet name"
+          :float-label="$t('fieldLabels.newWalletName')"
           :error="$v.wallet.name.$error"
           :dark="theme == 'dark'"
           @blur="$v.wallet.name.$touch"
@@ -29,7 +37,7 @@
           <div class="col-12">
             <q-input
               v-model="wallet_path"
-              stack-label="Wallet file"
+              :stack-label="$t('fieldLabels.walletFile')"
               disable
               :dark="theme == 'dark'"
             />
@@ -40,7 +48,7 @@
       <q-field>
         <PasswordInput
           v-model="wallet.password"
-          float-label="Password"
+          :float-label="$t('fieldLabels.passwordLabel')"
           :dark="theme == 'dark'"
         />
       </q-field>
@@ -48,13 +56,17 @@
       <q-field>
         <PasswordInput
           v-model="wallet.password_confirm"
-          float-label="Confirm Password"
+          :float-label="$t('fieldLabels.confirmPasswordLabel')"
           :dark="theme == 'dark'"
         />
       </q-field>
 
       <q-field>
-        <q-btn color="primary" label="Import wallet" @click="import_wallet" />
+        <q-btn
+          color="primary"
+          :label="$t('buttons.importWalletAction')"
+          @click="import_wallet"
+        />
       </q-field>
     </div>
   </q-page>

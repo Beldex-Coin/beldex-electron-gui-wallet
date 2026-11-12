@@ -1,5 +1,5 @@
 <template>
   <div class="fixed-center text-center">
-    Internal Error
+    {{ $t("strings.pageInternalError") }}
   </div>
 </template>

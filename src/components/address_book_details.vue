@@ -321,13 +321,13 @@ export default {
           return this.$q.notify({
             type: "negative",
             timeout: 1000,
-            message: "Please enter the name"
+            message: this.$t("notification.errors.pleaseEnterName")
           });
         } else {
           return this.$q.notify({
             type: "negative",
             timeout: 1000,
-            message: "Please enter the name correctly."
+            message: this.$t("notification.errors.enterNameCorrectly")
           });
         }
       }
@@ -348,7 +348,7 @@ export default {
           this.$q.notify({
             type: "negative",
             timeout: 1000,
-            message: "Address is already exist!"
+            message: this.$t("notification.errors.addressAlreadyExists")
           });
           return;
         }

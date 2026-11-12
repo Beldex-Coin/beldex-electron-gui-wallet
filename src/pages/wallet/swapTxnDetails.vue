@@ -8,7 +8,7 @@
           :aria-label="$t('buttons.back')"
           @click="backToHistory"
         >
-          <img src="~assets/icons/arrow-left.svg" alt="" />
+          <span class="beldex-icon-btn__glyph">←</span>
         </button>
         <h2 class="swapDetails__title">
           {{ $t("titles.swap.swapStatus") }}
@@ -96,7 +96,12 @@
           size="xs"
           icon="content_copy"
           class="swapDetails__id-copy"
-          @click="copyAddress(txnDetails?.payoutAddress, 'Recipient address')"
+          @click="
+            copyAddress(
+              txnDetails?.payoutAddress,
+              'notification.positive.recipientAddressCopied'
+            )
+          "
         />
       </div>
 
@@ -155,10 +160,11 @@ export default {
 
   computed: {
     isExpired() {
-      return this.txnDetails?.status === "expired";
+      return ["expired", "overdue"].includes(this.txnDetails?.status);
     },
     statusTitle() {
-      return this.txnDetails?.status;
+      const status = String(this.txnDetails?.status || "");
+      return status.charAt(0).toUpperCase() + status.slice(1);
     },
     statusDesc() {
       return this.isExpired ? this.$t("titles.swap.depositWindowExpired") : "";
@@ -195,12 +201,15 @@ export default {
         status: status.charAt(0).toUpperCase() + status.slice(1)
       });
     },
-    copyAddress(value, label = "Transaction ID") {
+    copyAddress(
+      value,
+      messageKey = "notification.positive.transactionIdCopied"
+    ) {
       clipboard.writeText(value);
       this.$q.notify({
         type: "positive",
         timeout: 1000,
-        message: `${label} is copied!`
+        message: this.$t(messageKey)
       });
     },
     backToHistory() {

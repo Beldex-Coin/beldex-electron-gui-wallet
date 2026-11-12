@@ -1,5 +1,6 @@
 <template>
   <q-input
+    ref="input"
     v-bind="$attrs"
     :value="value"
     :type="revealed ? 'text' : 'password'"
@@ -46,6 +47,11 @@ export default {
         ...this.$listeners,
         input: val => this.$emit("input", val)
       };
+    }
+  },
+  methods: {
+    focus() {
+      if (this.$refs.input) this.$refs.input.focus();
     }
   }
 };

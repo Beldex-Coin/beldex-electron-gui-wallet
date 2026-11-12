@@ -26,13 +26,12 @@
       </div>
 
       <div v-show="step === 1" class="beldex-form-page__fields">
-        <BeldexField
-          class="beldex-field--hero beldex-field--center"
-          :error="$v.wallet.name.$error"
-        >
+        <BeldexField class="beldex-field--hero" :error="$v.wallet.name.$error">
           <q-input
+            ref="walletNameInput"
             v-model="wallet.name"
             dark
+            autofocus
             :placeholder="$t('placeholders.walletName')"
             :aria-label="$t('fieldLabels.walletName')"
             borderless
@@ -50,6 +49,7 @@
       >
         <BeldexField class="beldex-field--hero">
           <PasswordInput
+            ref="passwordInput"
             v-model="wallet.password"
             dark
             :placeholder="$t('placeholders.createWalletPassword')"
@@ -125,6 +125,9 @@ export default {
     status: state => state.gateway.wallet.status
   }),
   watch: {
+    step() {
+      this.focusCurrent();
+    },
     status: {
       handler(val, old) {
         if (val.code == old.code) return;
@@ -156,6 +159,7 @@ export default {
   },
   mounted() {
     this.$q.loading.hide();
+    this.focusCurrent();
   },
   validations: {
     wallet: {
@@ -163,6 +167,16 @@ export default {
     }
   },
   methods: {
+    // Delay so focus lands after the page transition / v-show reveal.
+    focusCurrent() {
+      setTimeout(() => {
+        const input =
+          this.step === 1
+            ? this.$refs.walletNameInput
+            : this.$refs.passwordInput;
+        if (input && input.focus) input.focus();
+      }, 150);
+    },
     next() {
       this.$v.wallet.name.$touch();
       if (this.$v.wallet.name.$error) {

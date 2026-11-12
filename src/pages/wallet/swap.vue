@@ -1,7 +1,10 @@
 <template>
   <q-page
     class="swap"
-    :class="{ 'swap--fill': routes === 'maintenance' }"
+    :class="{
+      'swap--fill': ['maintenance', 'txnHistory'].includes(routes),
+      'swap--history': routes === 'txnHistory'
+    }"
     style="min-height: unset"
   >
     <q-inner-loading :showing="swaploading">
@@ -377,7 +380,7 @@
             class="q-mt-md ft-regular address-wrapper"
             :label="$t('fieldLabels.recipientAddress')"
             :error="this.recipientAddress.error"
-            error-label="Invalid Address"
+            :error-label="$t('notification.errors.invalidAddress')"
           >
             <div v-if="showProtocol(this.receiveAmountType)" class="q-pr-sm">
               <span class="proto ft-semibold">{{
@@ -455,9 +458,9 @@
           >
             <BeldexField
               class="q-mt-md ft-regular address-wrapper"
-              label="Refund wallet Address"
+              :label="$t('fieldLabels.refundWalletAddress')"
               :error="this.refundAddress.error"
-              error-label="Please enter valid address"
+              :error-label="$t('notification.errors.enterValidAddress')"
             >
               <div v-if="showProtocol(this.sendAmounType)" class="q-pr-sm">
                 <span class="proto ft-semibold">
@@ -1645,7 +1648,7 @@ export default {
         this.$q.notify({
           type: "negative",
           timeout: 1000,
-          message: "please fill the inputs"
+          message: this.$t("notification.errors.fillInputs")
         });
       }
     },
@@ -1759,6 +1762,11 @@ export default {
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
+  // Fill the content area so the absolutely-positioned loading overlay
+  // (q-inner-loading) covers the whole screen, not just the content height.
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
 
   &__layout {
     display: flex;
@@ -1780,6 +1788,11 @@ export default {
       display: flex;
       flex-direction: column;
     }
+  }
+
+  // History fills the content area but stops short of the very bottom.
+  &--history {
+    padding-bottom: 24px;
   }
 
   &__main {
@@ -2662,6 +2675,12 @@ export default {
   // ---- History
   // app.styl `.swapTxnHistory` sets th/td fonts, per-column widths and padding.
   .swapTxnHistory {
+    // Stretch to the bottom of the content area (swap--fill) so the box ends
+    // level with the sidebar's exit icon; the table area absorbs the slack.
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+
     .swapHistory__head {
       display: flex;
       align-items: center;
@@ -2754,6 +2773,39 @@ export default {
       }
     }
 
+    .swapHistory__filter.q-btn {
+      min-height: 42px;
+      padding: 0 var(--beldex-space-4);
+      font-family: var(--beldex-font-mono);
+
+      // The funnel art is 14px; a 16px box would add 2px of dead space
+      // between the icon and the label.
+      .q-icon {
+        width: 14px;
+        height: 14px;
+        font-size: 14px;
+        margin-right: 6px;
+      }
+
+      &.swapHistory__filter--active {
+        color: var(--beldex-text);
+        background-color: var(--beldex-accent-bg);
+        border-color: var(--beldex-accent-border);
+      }
+    }
+
+    .swapHistory__filter-art {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      margin-bottom: var(--beldex-space-5);
+      color: var(--beldex-text-muted);
+      background-color: var(--beldex-panel);
+      border: 1px solid var(--beldex-border);
+    }
+
     .swapHistory__csv.q-btn {
       min-height: 42px;
       padding: 0 var(--beldex-space-4);
@@ -2798,7 +2850,7 @@ export default {
       }
 
       tr:hover td {
-        background-color: var(--beldex-accent-bg);
+        background-color: rgba(235, 235, 235, 0.03);
       }
     }
 
@@ -2864,9 +2916,20 @@ export default {
       }
     }
 
+    // Never shorter than header (46) + 7 rows (7 x 54) + pager (gap 20 + 36),
+    // and grows to fill the box, so a short last page doesn't shrink it and
+    // the pager stays at the bottom.
+    .swapHistory__table-wrap {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 480px;
+    }
+
     .swapHistory__pager {
       justify-content: flex-end;
-      margin-top: var(--beldex-space-5);
+      margin-top: auto;
+      padding-top: var(--beldex-space-5);
     }
 
     .page-btn {

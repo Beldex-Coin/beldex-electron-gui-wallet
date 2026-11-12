@@ -5,18 +5,53 @@
       <div class="swapHistory__title-wrap">
         <button
           type="button"
-          class="beldex-square-btn"
+          class="beldex-icon-btn"
           :aria-label="$t('buttons.back')"
           @click="backToSwap"
         >
-          <q-icon name="arrow_back" size="16px" />
+          <span class="beldex-icon-btn__glyph">←</span>
         </button>
         <h2 class="swapHistory__title">{{ $t("titles.swap.swapHistory") }}</h2>
         <span class="swapHistory__count">
-          {{ txnHistory.length }} {{ $t("titles.swap.swaps") }}
+          {{ overallCount }} {{ $t("titles.swap.swaps") }}
         </span>
       </div>
       <div class="swapHistory__actions">
+        <q-btn
+          v-if="txnHistory.length > 0 || statusFilter !== 'all'"
+          :icon="`img:${filterIcon}`"
+          :label="filterButtonLabel"
+          class="beldex-btn beldex-btn--ghost swapHistory__filter"
+          :class="{ 'swapHistory__filter--active': statusFilter !== 'all' }"
+          unelevated
+          no-caps
+          :disable="isLoading || isCsvExporting"
+        >
+          <q-menu
+            auto-close
+            anchor="bottom right"
+            self="top right"
+            :offset="[0, 6]"
+            content-class="beldex-menu beldex-menu--compact beldex-menu--filter"
+          >
+            <div class="beldex-menu__head">
+              {{ $t("titles.swap.status") }}
+            </div>
+            <q-list>
+              <q-item
+                v-for="option in statusFilterOptions"
+                :key="option.value"
+                clickable
+                :active="statusFilter === option.value"
+                @click="setStatusFilter(option.value)"
+              >
+                <q-item-section>
+                  <q-item-label>{{ $t(option.label) }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
         <q-btn
           v-if="txnHistory.length > 0"
           :icon="`img:${downloadIcon}`"
@@ -58,12 +93,46 @@
     </div>
     <!-- Empty state -->
     <section v-else-if="txnHistory.length === 0" class="swapHistory__empty">
-      <div ref="emptyArt" class="swapHistory__empty-art" aria-hidden="true" />
-      <p class="swapHistory__empty-title">{{ $t("titles.swap.noSwapsYet") }}</p>
-      <p class="swapHistory__empty-hint">
-        {{ $t("titles.swap.noSwapsYetDisc") }}
-      </p>
-      <button type="button" class="swapHistory__empty-btn" @click="backToSwap">
+      <template v-if="statusFilter !== 'all'">
+        <div class="swapHistory__filter-art" aria-hidden="true">
+          <q-icon name="filter_alt" size="20px" />
+        </div>
+        <p class="swapHistory__empty-title">
+          {{ $t("titles.swap.noMatchingSwaps") }}
+        </p>
+        <p class="swapHistory__empty-hint">
+          {{
+            $t("titles.swap.noMatchingSwapsDisc", {
+              count: overallCount,
+              status: selectedStatusText.toUpperCase()
+            })
+          }}
+        </p>
+      </template>
+      <template v-else>
+        <div ref="emptyArt" class="swapHistory__empty-art" aria-hidden="true" />
+        <p class="swapHistory__empty-title">
+          {{ $t("titles.swap.noSwapsYet") }}
+        </p>
+        <p class="swapHistory__empty-hint">
+          {{ $t("titles.swap.noSwapsYetDisc") }}
+        </p>
+      </template>
+      <button
+        v-if="statusFilter !== 'all'"
+        type="button"
+        class="swapHistory__empty-btn"
+        @click="setStatusFilter('all')"
+      >
+        <q-icon name="close" size="12px" />
+        {{ $t("titles.swap.clearFilter") }}
+      </button>
+      <button
+        v-else
+        type="button"
+        class="swapHistory__empty-btn"
+        @click="backToSwap"
+      >
         <img src="~assets/icons/swap-nav.svg" alt="" />
         {{ $t("titles.swap.newExchange") }}
       </button>
@@ -142,7 +211,7 @@
         <q-btn
           flat
           no-caps
-          label="Prev"
+          :label="$t('buttons.prev')"
           class="page-btn nav-btn"
           :disable="isLoading || currentPage === 1"
           @click="changePage(currentPage - 1)"
@@ -161,7 +230,7 @@
         <q-btn
           flat
           no-caps
-          label="Next"
+          :label="$t('buttons.next')"
           class="page-btn nav-btn"
           :disable="isLoading || currentPage === totalPages"
           @click="changePage(currentPage + 1)"
@@ -200,6 +269,7 @@ import SwapTxnCompeleted from "./swapTxnCompeleted.vue";
 import lottie from "lottie-web/build/player/lottie_light";
 import emptyAnimation from "assets/animations/beldex-swap-empty.json";
 import downloadIcon from "assets/icons/download.svg";
+import filterIcon from "assets/icons/filter.svg";
 
 export default {
   name: "SwapTxnHistory",
@@ -221,6 +291,7 @@ export default {
   data() {
     return {
       downloadIcon,
+      filterIcon,
       isVisible: true,
       refreshTxnStatus: null,
       refreshTxnHistory: "",
@@ -228,6 +299,15 @@ export default {
       currentPage: 1,
       rowsPerPage: 7,
       csvExportPageSize: 100000,
+      statusFilter: "all",
+      statusFilterOptions: [
+        { value: "all", label: "titles.swap.allStatuses" },
+        { value: "completed", label: "titles.swap.statusCompleted" },
+        { value: "pending", label: "titles.swap.statusPending" },
+        { value: "waiting", label: "titles.swap.statusWaiting" },
+        { value: "failed", label: "titles.swap.statusFailed" },
+        { value: "expired", label: "titles.swap.statusExpired" }
+      ],
       isLoading: false,
       isCsvExporting: false
     };
@@ -274,6 +354,27 @@ export default {
       info: state => state.gateway.wallet.info,
       storeTxnStatus: state => state.gateway.txnStatus
     }),
+
+    selectedStatusText() {
+      const option = this.statusFilterOptions.find(
+        o => o.value === this.statusFilter
+      );
+      return this.$t(option ? option.label : "titles.swap.allStatuses");
+    },
+    filterButtonLabel() {
+      return this.statusFilter === "all"
+        ? this.selectedStatusText
+        : this.$t("titles.swap.statusFilterLabel", {
+            status: this.selectedStatusText
+          });
+    },
+    // Unfiltered total; falls back to the page length until the backend reports it
+    overallCount() {
+      const meta = this.txnHistoryMeta;
+      return meta.overallCount != null
+        ? meta.overallCount
+        : this.txnHistory.length;
+    },
 
     totalPages() {
       const totalCount = Number(this.txnHistoryMeta.totalCount || 0);
@@ -529,6 +630,11 @@ export default {
         }, 30000);
       }
     },
+    setStatusFilter(value) {
+      if (value === this.statusFilter) return;
+      this.statusFilter = value;
+      this.get_transaction_History(this.privacySwap, 1);
+    },
     changePage(page) {
       if (this.isLoading || page < 1 || page > this.totalPages) {
         return;
@@ -672,6 +778,7 @@ export default {
         privacySwap: privacySwap,
         page: isCsvExport ? 1 : this.currentPage,
         pageSize: isCsvExport ? this.csvExportPageSize : this.rowsPerPage,
+        statusFilter: this.statusFilter,
         isCsvExport
       };
       this.$gateway.send("swap", "transaction_history", data);

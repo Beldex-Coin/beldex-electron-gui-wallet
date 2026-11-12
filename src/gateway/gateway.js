@@ -233,7 +233,7 @@ export class Gateway extends EventEmitter {
         Notify.create({
           type: "warning",
           timeout: 2000,
-          message: "Retrying backend connection..."
+          message: i18n.t("notification.warnings.retryingBackend")
         });
       }
 

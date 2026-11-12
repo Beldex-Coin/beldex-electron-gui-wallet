@@ -73,6 +73,7 @@
               :error="$v.wallet.name.$error"
             >
               <q-input
+                ref="seedNameInput"
                 v-model="wallet.name"
                 :placeholder="$t('placeholders.walletName')"
                 dark
@@ -126,6 +127,7 @@
               :error="$v.walletKeys.name.$error"
             >
               <q-input
+                ref="keysNameInput"
                 v-model="walletKeys.name"
                 :placeholder="$t('placeholders.walletName')"
                 dark
@@ -288,6 +290,7 @@
           class="restore-wallet__name restore-wallet__box"
         >
           <q-input
+            ref="dateInput"
             v-model="form.refresh_start_date"
             mask="date"
             dark
@@ -313,7 +316,12 @@
                 :options="dateRangeOptions"
               >
                 <div class="row items-center justify-end">
-                  <q-btn v-close-popup label="Close" color="primary" flat />
+                  <q-btn
+                    v-close-popup
+                    :label="$t('buttons.close')"
+                    color="primary"
+                    flat
+                  />
                 </div>
               </q-date>
             </q-popup-proxy>
@@ -326,6 +334,7 @@
             :error="$v[formKey].refresh_start_height.$error"
           >
             <q-input
+              ref="heightInput"
               v-model="form.refresh_start_height"
               min="0"
               dark
@@ -582,6 +591,15 @@ export default {
     }
   },
   watch: {
+    tab() {
+      this.focusCurrent();
+    },
+    step() {
+      this.focusCurrent();
+    },
+    "form.refresh_type"() {
+      this.focusCurrent();
+    },
     status: {
       handler(val, old) {
         if (val.code == old.code) return;
@@ -631,7 +649,28 @@ export default {
       refresh_start_height: { numeric }
     }
   },
+  mounted() {
+    this.focusCurrent();
+  },
   methods: {
+    // Delay so focus lands after the panel animation / v-if render.
+    focusCurrent() {
+      setTimeout(() => {
+        let input;
+        if (this.step === 1) {
+          input =
+            this.tab === "restoreFromSeed"
+              ? this.$refs.seedNameInput
+              : this.$refs.keysNameInput;
+        } else {
+          input =
+            this.form.refresh_type === "date"
+              ? this.$refs.dateInput
+              : this.$refs.heightInput;
+        }
+        if (input && input.focus) input.focus();
+      }, 200);
+    },
     paste(field) {
       const text = (clipboard.readText() || "").trim();
       if (!text) return;

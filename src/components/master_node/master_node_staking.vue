@@ -369,7 +369,7 @@ export default {
       // put the loading spinner up
       this.$store.commit("gateway/set_sweep_all_status", {
         code: DO_NOTHING,
-        message: "Getting sweep all tx information",
+        message: this.$t("strings.progress.gettingSweepAllInfo"),
         sending: true
       });
 
@@ -386,7 +386,7 @@ export default {
     onCancelTransaction() {
       this.$store.commit("gateway/set_sweep_all_status", {
         code: DO_NOTHING,
-        message: "Cancel the transaction from confirm dialog",
+        message: this.$t("strings.progress.cancelTransactionFromConfirm"),
         sending: false
       });
     },
@@ -454,7 +454,7 @@ export default {
           password = password || "";
           this.$store.commit("gateway/set_sweep_all_status", {
             code: DO_NOTHING,
-            message: "Sweeping all",
+            message: this.$t("strings.progress.sweepingAll"),
             sending: true
           });
           const newTx = objectAssignDeep.noMutate(tx, {
@@ -529,7 +529,7 @@ export default {
           this.$store.commit("gateway/set_mnode_status", {
             stake: {
               code: 1,
-              message: "Staking...",
+              message: this.$t("strings.progress.staking"),
               sending: true
             }
           });

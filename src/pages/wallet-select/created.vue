@@ -8,7 +8,7 @@
           :aria-label="$t('buttons.back')"
           @click="back()"
         >
-          <img src="~assets/icons/arrow-back.svg" alt="" />
+          <span class="beldex-icon-btn__glyph">←</span>
         </button>
         <h1 class="beldex-heading__title">{{ $route.query.title }}</h1>
       </div>
@@ -27,6 +27,9 @@
             >
               <img src="~assets/icons/copy.svg" alt="" />
               {{ $t("buttons.copy") }}
+              <q-tooltip anchor="center left" self="center right">
+                {{ $t("menuItems.copyWalletName") }}
+              </q-tooltip>
             </button>
           </div>
         </div>

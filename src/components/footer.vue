@@ -12,7 +12,7 @@
     <div class="status-footer__heights">
       <template v-if="config_daemon.type !== 'remote'">
         <span>
-          <span class="status-footer__key">Daemon:</span>
+          <span class="status-footer__key">{{ $t("fieldLabels.daemon") }}</span>
           {{ daemon_height }} / {{ target_height }}
           <span class="status-text" :class="[status]"
             >({{ formatPercent(daemon_local_pct) }}%)</span

@@ -4,7 +4,7 @@
       <q-field class="q-mt-none">
         <q-input
           v-model="wallet.name"
-          float-label="Wallet name"
+          :float-label="$t('fieldLabels.walletName')"
           :error="$v.wallet.name.$error"
           :dark="theme == 'dark'"
           @blur="$v.wallet.name.$touch"
@@ -14,7 +14,7 @@
       <q-field>
         <q-input
           v-model="wallet.address"
-          float-label="Wallet address"
+          :float-label="$t('fieldLabels.walletAddress')"
           :error="$v.wallet.address.$error"
           :dark="theme == 'dark'"
           @blur="$v.wallet.address.$touch"
@@ -24,7 +24,7 @@
       <q-field>
         <q-input
           v-model="wallet.viewkey"
-          float-label="Private viewkey"
+          :float-label="$t('fieldLabels.privateViewkey')"
           :error="$v.wallet.viewkey.$error"
           :dark="theme == 'dark'"
           @blur="$v.wallet.viewkey.$touch"
@@ -38,7 +38,7 @@
               <q-input
                 v-model="wallet.refresh_start_date"
                 mask="date"
-                float-label="Restore from date"
+                :float-label="$t('fieldLabels.restoreFromDate')"
                 :dark="theme == 'dark'"
               >
                 <template v-slot:append>
@@ -56,7 +56,7 @@
                         <div class="row items-center justify-end">
                           <q-btn
                             v-close-popup
-                            label="Close"
+                            :label="$t('buttons.close')"
                             color="primary"
                             flat
                           />
@@ -72,7 +72,7 @@
                 v-model="wallet.refresh_start_height"
                 type="number"
                 min="0"
-                float-label="Restore from block height"
+                :float-label="$t('fieldLabels.restoreFromBlockHeight')"
                 :error="$v.wallet.refresh_start_height.$error"
                 :dark="theme == 'dark'"
                 @blur="$v.wallet.refresh_start_height.$touch"
@@ -89,7 +89,9 @@
               >
                 <div style="width: 80px;" class="text-center">
                   <q-icon class="block" name="clear_all" />
-                  <div style="font-size:10px">Switch to<br />height select</div>
+                  <div style="font-size:10px">
+                    {{ $t("strings.switchToHeightSelect") }}
+                  </div>
                 </div>
               </q-btn>
             </template>
@@ -102,7 +104,9 @@
               >
                 <div style="width: 80px;" class="text-center">
                   <q-icon class="block" name="today" />
-                  <div style="font-size:10px">Switch to<br />date select</div>
+                  <div style="font-size:10px">
+                    {{ $t("strings.switchToDateSelect") }}
+                  </div>
                 </div>
               </q-btn>
             </template>
@@ -113,17 +117,14 @@
       <article v-if="wallet.refresh_type == 'date'" class="restore-date-hint">
         <q-icon name="o_info" size="16px" class="hint-icon" />
         <span class="q-ml-sm hint-txt">
-          Restoring from the very first block
-          <strong class="hint-date">{{ firstBlockDate }}</strong> so no
-          transactions are missed. If you know roughly when this wallet was
-          created, choosing a later date here will make restoring much faster.
+          {{ $t("strings.restoreFirstBlockHint", { date: firstBlockDate }) }}
         </span>
       </article>
 
       <q-field>
         <PasswordInput
           v-model="wallet.password"
-          float-label="Password"
+          :float-label="$t('fieldLabels.passwordLabel')"
           :dark="theme == 'dark'"
         />
       </q-field>
@@ -131,7 +132,7 @@
       <q-field>
         <PasswordInput
           v-model="wallet.password_confirm"
-          float-label="Confirm Password"
+          :float-label="$t('fieldLabels.confirmPasswordLabel')"
           :dark="theme == 'dark'"
         />
       </q-field>
@@ -139,7 +140,7 @@
       <q-field>
         <q-btn
           color="primary"
-          label="Restore view-only wallet"
+          :label="$t('buttons.restoreViewOnlyWallet')"
           @click="restore_view_wallet"
         />
       </q-field>

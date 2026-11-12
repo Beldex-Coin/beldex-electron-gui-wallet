@@ -33,20 +33,37 @@ export class SwapTxnHistory {
     );
   }
 
-  getOrderHistory(address) {
+  getOrderHistory(address, statusFilter = "all") {
     if (!address) {
       return [];
     }
-    return this._getDbManager().getAllOrderHistory(address);
+    return this._getDbManager().getAllOrderHistory(address, statusFilter);
   }
 
-  getPaginatedOrderHistory(address, page = 1, pageSize = 7) {
+  getTotalOrderCount(address) {
+    if (!address) {
+      return 0;
+    }
+    return this._getDbManager().getOrderHistoryCount(address);
+  }
+
+  getPaginatedOrderHistory(
+    address,
+    page = 1,
+    pageSize = 7,
+    statusFilter = "all"
+  ) {
     if (!address) {
       return { transactions: [], totalCount: 0 };
     }
     const dbManager = this._getDbManager();
-    const transactions = dbManager.getOrderHistory(address, page, pageSize);
-    const totalCount = dbManager.getOrderHistoryCount(address);
+    const transactions = dbManager.getOrderHistory(
+      address,
+      page,
+      pageSize,
+      statusFilter
+    );
+    const totalCount = dbManager.getOrderHistoryCount(address, statusFilter);
     return { transactions, totalCount };
   }
 

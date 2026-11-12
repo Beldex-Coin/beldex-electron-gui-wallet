@@ -48,7 +48,8 @@ export default {
       primary: [],
       used: [],
       unused: [],
-      address_book: []
+      address_book: [],
+      address_book_starred: []
     },
     bnsRecords: [],
     isRPCSyncing: false

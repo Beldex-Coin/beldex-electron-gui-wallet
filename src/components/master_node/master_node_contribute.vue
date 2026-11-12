@@ -80,8 +80,10 @@ export default {
       this.scrollToTop();
       const key = node.master_node_pubkey;
       const minContribution = node.minContribution;
-      // close the detail popup if it's open
-      this.$refs.masterNodeDetailsContribute.isVisible = false;
+      // close the detail popup if it's open (the ref only exists while the
+      // details view is rendered, not when staking from the list)
+      const detailsRef = this.$refs.masterNodeDetailsContribute;
+      if (detailsRef) detailsRef.isVisible = false;
       this.$emit("onChangeVisible", false);
       this.$emit("contribute", key, minContribution);
       this.$q.notify({

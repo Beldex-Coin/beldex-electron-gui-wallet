@@ -90,7 +90,9 @@
               v-if="confirmModal.record.value_bchat"
               class="beldex-dialog__kv"
             >
-              <span class="beldex-dialog__kv-label">BChat ID</span>
+              <span class="beldex-dialog__kv-label">{{
+                $t("fieldLabels.bchatIdTitle")
+              }}</span>
               <span class="bns-confirm__value">{{
                 confirmModal.record.value_bchat
               }}</span>
@@ -99,7 +101,9 @@
               v-if="confirmModal.record.value_belnet"
               class="beldex-dialog__kv"
             >
-              <span class="beldex-dialog__kv-label">Belnet ID</span>
+              <span class="beldex-dialog__kv-label">{{
+                $t("fieldLabels.belnetId")
+              }}</span>
               <span class="bns-confirm__value">{{
                 confirmModal.record.value_belnet
               }}</span>
@@ -108,7 +112,9 @@
               v-if="confirmModal.record.value_eth_addr"
               class="beldex-dialog__kv"
             >
-              <span class="beldex-dialog__kv-label">ETH</span>
+              <span class="beldex-dialog__kv-label">{{
+                $t("fieldLabels.eth")
+              }}</span>
               <span class="bns-confirm__value">{{
                 confirmModal.record.value_eth_addr
               }}</span>
@@ -238,7 +244,7 @@ export default {
           password = password || "";
           this.$store.commit("gateway/set_bns_status", {
             code: 1,
-            message: "Sending transaction",
+            message: this.$t("strings.progress.sendingTransaction"),
             sending: true
           });
           const bns = objectAssignDeep.noMutate(updatedRecord, {

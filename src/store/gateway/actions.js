@@ -25,7 +25,8 @@ export const resetWalletData = state => {
       primary: [],
       used: [],
       unused: [],
-      address_book: []
+      address_book: [],
+      address_book_starred: []
     }
   });
 };

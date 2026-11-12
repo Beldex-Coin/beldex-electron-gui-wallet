@@ -29,7 +29,7 @@
               ref="currency"
               :value="searchTxt"
               class="search-input coin-search__input"
-              placeholder="Search coins"
+              :placeholder="$t('placeholders.searchCoins')"
               @input="event => this.set_searchCurrency(event.target.value)"
             />
           </div>
@@ -67,7 +67,9 @@
                 />
               </div>
             </template>
-            <div v-if="!hasResults" class="coin-empty">No coins found</div>
+            <div v-if="!hasResults" class="coin-empty">
+              {{ $t("strings.noCoinsFound") }}
+            </div>
           </div>
         </div>
       </div>
@@ -129,11 +131,17 @@ export default {
       const privacy = this.privacyCurrency || [];
       return [
         ...(privacy.length
-          ? [{ key: "privacy", title: "Privacy Currencies", items: privacy }]
+          ? [
+              {
+                key: "privacy",
+                title: this.$t("strings.privacyCurrencies"),
+                items: privacy
+              }
+            ]
           : []),
         {
           key: "all",
-          title: privacy.length ? "All Currencies" : "",
+          title: privacy.length ? this.$t("strings.allCurrencies") : "",
           items: all
         }
       ];

@@ -441,28 +441,71 @@ export class SwapDatabaseManager {
     insertMany(txArray);
   }
 
-  getOrderHistory(walletAddress, page = 1, pageSize = 7) {
+  // Builds the status clause for a UI filter group. Returns null for "all"
+  // (or an unknown group) so callers fall back to the unfiltered statements.
+  // Only fixed literals are interpolated, never user input.
+  _statusFilterClause(statusFilter) {
+    const status = "COALESCE(NULLIF(txn_status, ''), 'waiting')";
+    switch (statusFilter) {
+      case "completed":
+        return `${status} = 'finished'`;
+      case "waiting":
+        return `${status} = 'waiting'`;
+      case "failed":
+        return `${status} = 'failed'`;
+      case "expired":
+        return `${status} IN ('expired', 'overdue')`;
+      case "pending":
+        return `${status} NOT IN ('finished', 'waiting', 'failed', 'refunded', 'expired', 'overdue')`;
+      default:
+        return null;
+    }
+  }
+
+  getOrderHistory(walletAddress, page = 1, pageSize = 7, statusFilter = "all") {
     this.init();
     if (!walletAddress) return [];
     const limit = Math.max(1, Number(pageSize) || 7);
     const offset = Math.max(0, (Math.max(1, Number(page) || 1) - 1) * limit);
-    return this.statements.getOrderHistory
+    const clause = this._statusFilterClause(statusFilter);
+    const stmt = clause
+      ? this.db.prepare(`
+          SELECT * FROM swap_transactions_history
+          WHERE wallet_address = ? AND ${clause}
+          ORDER BY created_at DESC
+          LIMIT ? OFFSET ?;
+        `)
+      : this.statements.getOrderHistory;
+    return stmt
       .all(walletAddress, limit, offset)
       .map(row => this._decryptRow(row));
   }
 
-  getAllOrderHistory(walletAddress) {
+  getAllOrderHistory(walletAddress, statusFilter = "all") {
     this.init();
     if (!walletAddress) return [];
-    return this.statements.getAllOrderHistory
-      .all(walletAddress)
-      .map(row => this._decryptRow(row));
+    const clause = this._statusFilterClause(statusFilter);
+    const stmt = clause
+      ? this.db.prepare(`
+          SELECT * FROM swap_transactions_history
+          WHERE wallet_address = ? AND ${clause}
+          ORDER BY created_at DESC;
+        `)
+      : this.statements.getAllOrderHistory;
+    return stmt.all(walletAddress).map(row => this._decryptRow(row));
   }
 
-  getOrderHistoryCount(walletAddress) {
+  getOrderHistoryCount(walletAddress, statusFilter = "all") {
     this.init();
     if (!walletAddress) return 0;
-    const row = this.statements.getOrderHistoryCount.get(walletAddress);
+    const clause = this._statusFilterClause(statusFilter);
+    const stmt = clause
+      ? this.db.prepare(`
+          SELECT COUNT(*) as count FROM swap_transactions_history
+          WHERE wallet_address = ? AND ${clause};
+        `)
+      : this.statements.getOrderHistoryCount;
+    const row = stmt.get(walletAddress);
     return row ? row.count : 0;
   }
 

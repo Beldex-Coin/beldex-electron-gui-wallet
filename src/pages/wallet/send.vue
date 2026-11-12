@@ -228,7 +228,7 @@ export default {
     return {
       contact: false,
       newTx: {
-        amount: 0,
+        amount: "",
         address: "",
         priority: priorityOptions[0].value,
         address_book: {
@@ -332,7 +332,7 @@ export default {
             });
             this.$v.$reset();
             this.newTx = {
-              amount: 0,
+              amount: "",
               address: "",
               priority: this.priorityOptions[0].value,
               address_book: {
@@ -410,7 +410,7 @@ export default {
       // put the loading spinner up
       this.$store.commit("gateway/set_tx_status", {
         code: DO_NOTHING,
-        message: "Getting transaction information",
+        message: this.$t("strings.progress.gettingTransactionInfo"),
         sending: true
       });
       const { name, description, save } = this.newTx.address_book;
@@ -441,14 +441,14 @@ export default {
     onCancelTransaction() {
       this.$store.commit("gateway/set_tx_status", {
         code: DO_NOTHING,
-        message: "Cancel the transaction from confirm dialog",
+        message: this.$t("strings.progress.cancelTransactionFromConfirm"),
         sending: false
       });
     },
 
     clearStateValues() {
       this.newTx = {
-        amount: 0,
+        amount: "",
         address: "",
         priority: this.priorityOptions[0].value,
         address_book: {
@@ -511,7 +511,7 @@ export default {
           this.$q.notify({
             type: "negative",
             timeout: 1000,
-            message: "Address is already exist!"
+            message: this.$t("notification.errors.addressAlreadyExists")
           });
           return;
         }
@@ -546,7 +546,7 @@ export default {
           password = password || "";
           this.$store.commit("gateway/set_tx_status", {
             code: DO_NOTHING,
-            message: "Getting transaction information",
+            message: this.$t("strings.progress.gettingTransactionInfo"),
             sending: true
           });
           const newTx = objectAssignDeep.noMutate(this.newTx, {

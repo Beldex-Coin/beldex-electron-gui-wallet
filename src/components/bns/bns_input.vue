@@ -243,7 +243,7 @@ export default {
           password = password || "";
           this.$store.commit("gateway/set_bns_status", {
             code: 1,
-            message: "Sending transaction",
+            message: this.$t("strings.progress.sendingTransaction"),
             sending: true
           });
           const bns = objectAssignDeep.noMutate(updatedRecord, {
@@ -274,7 +274,7 @@ export default {
           password = password || "";
           this.$store.commit("gateway/set_bns_status", {
             code: 1,
-            message: "Sending transaction",
+            message: this.$t("strings.progress.sendingTransaction"),
             sending: true
           });
           const bns = objectAssignDeep.noMutate(record, {
@@ -308,7 +308,7 @@ export default {
           password = password || "";
           this.$store.commit("gateway/set_bns_status", {
             code: 1,
-            message: "Sending renew mapping transaction",
+            message: this.$t("strings.progress.sendingRenewMapping"),
             sending: true
           });
           const params = {

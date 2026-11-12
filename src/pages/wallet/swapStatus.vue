@@ -177,7 +177,7 @@ export default {
       this.$q.notify({
         type: "positive",
         timeout: 1000,
-        message: "Input Hash is copied!"
+        message: this.$t("notification.positive.inputHashCopied")
       });
     }
   }

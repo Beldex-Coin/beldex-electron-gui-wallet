@@ -601,15 +601,19 @@ body.beldex-app {
       border-color: transparent;
     }
 
-    // Arrow glyphs sit below the em-box centre; lift to centre in the box.
+    // Back arrow: the "←" text in the markup is hidden and the icon is an SVG
+    // mask (12x4), so it is centred by the flex box and never depends on a
+    // font. Mask + currentColor keeps the hover colour change.
     &__glyph {
-      position: relative;
-      top: -2px;
-    }
-
-    // Wallet-select create / restore / import back arrow.
-    &--arrow-lg .beldex-icon-btn__glyph {
-      font-size: 25px;
+      display: block;
+      flex: none;
+      width: 18px;
+      height: 6px;
+      font-size: 0;
+      line-height: 0;
+      color: inherit;
+      background-color: currentColor;
+      -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='4' viewBox='0 0 12 4'><path d='M2.11189 3.74399C1.78122 3.34933 1.43989 3.00799 1.08789 2.71999C0.735889 2.43199 0.373222 2.19733 -0.000111103 2.01599V1.72799C0.735889 1.35466 1.43989 0.778661 2.11189 -6.19888e-06H2.67189C2.50122 0.36266 2.33056 0.682661 2.15989 0.959994C1.98922 1.22666 1.82389 1.45066 1.66389 1.63199V2.11199C1.82389 2.28266 1.98922 2.50666 2.15989 2.78399C2.33056 3.05066 2.50122 3.37066 2.67189 3.74399H2.11189ZM1.58389 2.20799V1.53599H11.0719V2.20799H1.58389Z'/></svg>") center / 18px 6px no-repeat;
     }
 
     &.q-btn {
@@ -897,6 +901,44 @@ body.beldex-app {
     &--with-action:not(.disable):not(.disable-hover) .content:hover {
       background: var(--beldex-input-bg-strong);
     }
+
+    // Compact file picker (import-from-file): small box, small text.
+    &.import-wallet__file {
+      .content,
+      &:not(.disable):not(.disable-hover) .content:hover {
+        background: var(--beldex-bg);
+      }
+
+      .content {
+        min-height: 32px;
+      }
+
+      .q-field__control,
+      .q-field__marginal {
+        height: 30px;
+        min-height: 30px;
+      }
+
+      .q-field__native {
+        font-size: var(--beldex-text-sm);
+      }
+
+      // The input is `disable`d, which fades it; keep the placeholder exact.
+      .q-field--disabled .q-field__native,
+      .q-field--disabled .q-field__control {
+        opacity: 1;
+      }
+
+      .q-field__native::placeholder {
+        color: #a3a3a3;
+        opacity: 1;
+      }
+
+      .content > .q-btn {
+        font-size: var(--beldex-text-sm) !important;
+        font-weight: 700;
+      }
+    }
   }
 
   // Large input (create / restore / import, frames 421:2077, 421:2111).
@@ -1067,6 +1109,7 @@ body.beldex-app {
   .beldex-collapse,
   .beldex-collapse.q-expansion-item--expanded {
     border: 1px solid var(--beldex-border-header);
+    border-radius: 0;
     background-color: rgba(11, 11, 11, 0.2); // beats the base --expanded #242433
 
     .q-item {
@@ -1671,6 +1714,13 @@ body.beldex-app {
     line-height: 15px;
     color: var(--beldex-text-faint);
     text-transform: uppercase;
+  }
+
+  // q-menu (not q-select) renders rows in a q-list rather than a virtual scroll.
+  .q-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .q-item__section {
@@ -2713,7 +2763,6 @@ footer {
 }
 .q-btn--flat:hover {
   background: rgba(119,119,151,0.3) !important;
-  border-radius: 300px !important;
 }
 .q-card__actions {
   margin-right: 16px;

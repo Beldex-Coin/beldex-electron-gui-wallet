@@ -34,7 +34,9 @@
       :action="unlockWarning"
     />
     <template v-if="deregister_master_nodes.length > 0">
-      <div class="master-node-unlock__group">Deregistered Nodes</div>
+      <div class="master-node-unlock__group">
+        {{ $t("strings.deregisteredNodes") }}
+      </div>
       <div class="master-node-list">
         <div
           v-for="node in deregister_master_nodes"
@@ -290,7 +292,7 @@ export default {
       this.$store.commit("gateway/set_mnode_status", {
         unlock: {
           code: 2, // Code 1 is reserved for can_unlock
-          message: "Unlocking...",
+          message: this.$t("strings.progress.unlocking"),
           sending: true
         }
       });

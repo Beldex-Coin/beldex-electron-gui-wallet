@@ -7,7 +7,6 @@
     <div class="wallet-details__hero">
       <div v-if="isOverview" class="wallet-details__left">
         <div class="wallet-details__label">
-          <span class="beldex-net-chip__dot" />
           <span>{{ $t("strings.availableBalance") }}</span>
           <span class="wallet-details__muted">·</span>
           <span class="wallet-details__unlocked">
@@ -61,7 +60,6 @@
       <!-- Other sections: balance on a single compact row. -->
       <div v-else class="wallet-details__left">
         <div class="wallet-details__label">
-          <span class="beldex-net-chip__dot" />
           <span>{{ $t("strings.availableBalance") }}</span>
           <button
             type="button"
@@ -116,9 +114,7 @@
       <div class="wallet-details__chips">
         <div class="wallet-details__chip">
           <img src="~assets/icons/chip-wallet.svg" alt="" />
-          <span>{{
-            info.address.slice(0, 12) + "…" + info.address.slice(-8)
-          }}</span>
+          <span class="wallet-details__chip-text">{{ info.address }}</span>
           <button
             type="button"
             class="wallet-details__chip-copy"
@@ -368,13 +364,6 @@ export default {
     text-transform: uppercase;
     color: var(--beldex-text-muted);
 
-    .beldex-net-chip__dot {
-      width: 6px;
-      height: 6px;
-      background-color: var(--beldex-accent);
-      box-shadow: 0 0 6px var(--beldex-accent-glow);
-    }
-
     .coin-extensions {
       color: inherit;
     }
@@ -564,7 +553,8 @@ export default {
 
   &__chips {
     display: flex;
-    flex: none;
+    flex: 0 1 auto;
+    min-width: 0;
     gap: var(--beldex-space-3);
   }
 
@@ -572,8 +562,9 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: var(--beldex-space-2);
-    height: 28px;
-    padding: 0 10px;
+    min-width: 0;
+    min-height: 28px;
+    padding: 4px 10px;
     font-family: var(--beldex-font-mono);
     font-size: var(--beldex-text-md);
     color: var(--beldex-text-muted);
@@ -586,7 +577,14 @@ export default {
     }
   }
 
+  &__chip-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    user-select: text;
+  }
+
   &__chip-copy {
+    flex: none;
     display: inline-flex;
     align-items: center;
     padding: 4px;
