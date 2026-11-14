@@ -167,8 +167,7 @@
                   borderless
                   dense
                   type="number"
-                  min="0.1"
-                  max="100000"
+                  step="any"
                   :placeholder="0"
                   @keydown="keyHandler"
                   @blur="$v.sendAmount.$touch"
@@ -1010,7 +1009,7 @@ export default {
           toCoin = btcCoin;
         }
         this.sendAmounType = fromCoin;
-        this.btcCoinDetails = fromCoin;
+        this.btcCoinDetails = bdxCoin.enabledTo ? fromCoin : toCoin;
         let filterCoin = newValue.filter(
           item =>
             item.enabled &&
@@ -1031,7 +1030,7 @@ export default {
         filterCoin.unshift(toCoin);
         this.privacyCurrency = filterCoin;
         if (toCoin.enabled && fromCoin.enabled) {
-          this.bdxCoinDetails = toCoin;
+          this.bdxCoinDetails = bdxCoin;
           this.receiveAmountType = toCoin;
           this.restartAllIntervals();
         } else {
@@ -1350,13 +1349,14 @@ export default {
       this.refundAddress = { val: "", error: false };
       this.refundDestinationTag = "no";
       this.refundDestinationTagValue = "";
-      if (
-        this.sendAmounType.value === "bdx" &&
-        this.receiveAmountType.value === "btc"
-      ) {
-        this.receiveAmountType = this.btcCoinDetails;
-      } else if (this.sendAmounType.value === this.receiveAmountType.value) {
+      // Exactly one side must be BDX: pick a non-BDX coin → other side is BDX;
+      // pick BDX → other side must not be BDX.
+      const sendIsBdx = this.sendAmounType.value === "bdx";
+      const receiveIsBdx = this.receiveAmountType.value === "bdx";
+      if (!sendIsBdx) {
         this.receiveAmountType = this.bdxCoinDetails;
+      } else if (receiveIsBdx) {
+        this.receiveAmountType = this.btcCoinDetails;
       }
       this.restartAllIntervals();
       if (
@@ -1372,13 +1372,12 @@ export default {
       this.destinationTag = "no";
       this.destinationTagValue = "";
 
-      if (
-        this.sendAmounType.value === "bdx" &&
-        this.receiveAmountType.value === "bdx"
-      ) {
-        this.sendAmounType = this.btcCoinDetails;
-      } else if (this.sendAmounType.value === this.receiveAmountType.value) {
+      const sendIsBdx = this.sendAmounType.value === "bdx";
+      const receiveIsBdx = this.receiveAmountType.value === "bdx";
+      if (!receiveIsBdx) {
         this.sendAmounType = this.bdxCoinDetails;
+      } else if (sendIsBdx) {
+        this.sendAmounType = this.btcCoinDetails;
       }
       this.restartAllIntervals();
       if (
@@ -2507,6 +2506,11 @@ export default {
       background-color: var(--beldex-warning-wash);
       border: 1px solid var(--beldex-warning-border);
 
+      img {
+        flex: none;
+        display: block;
+      }
+
       &.is-expired {
         color: var(--beldex-danger);
         background-color: var(--beldex-danger-wash);
@@ -2943,9 +2947,13 @@ export default {
       border: 1px solid var(--beldex-border);
       border-radius: 0;
 
+      // Prev / Next labels are localised ("Anterior", "SIGUIENTE"), so
+      // size to the label instead of a fixed width, which overflowed.
       &.nav-btn {
-        width: 56px;
+        width: auto;
         min-width: 56px;
+        padding: 0 14px;
+        white-space: nowrap;
       }
 
       &.active {

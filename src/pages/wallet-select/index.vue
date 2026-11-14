@@ -44,7 +44,11 @@
           </span>
           <span v-if="wallet.last_opened" class="wallet-select__opened">
             {{ $t("strings.opened") }}
-            <timeago :datetime="wallet.last_opened" :auto-update="60" />
+            <timeago
+              :datetime="wallet.last_opened"
+              :auto-update="60"
+              :locale="timeagoLocale"
+            />
           </span>
           <svg
             class="wallet-select__chevron"
@@ -189,6 +193,11 @@ export default {
     theme: state => state.gateway.app.config.appearance.theme,
     wallets: state => state.gateway.wallets,
     status: state => state.gateway.wallet.status,
+    timeagoLocale() {
+      // Map app locale codes to the locales registered in boot/timeago.js
+      const code = (this.$i18n.locale || "en").split("-")[0];
+      return ["ru", "de", "fr", "es", "pt"].includes(code) ? code : "en";
+    },
     actions() {
       // TODO: Add this in once BELDEX has the functionality
       // <q-item @click.native="restoreViewWallet()">

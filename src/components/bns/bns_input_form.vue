@@ -13,7 +13,9 @@
           :class="{ 'bns-form__duration--on': record.years == item.value }"
           @click="record.years = item.value"
         >
-          <span class="bns-form__duration-label">{{ item.label }}</span>
+          <span class="bns-form__duration-label">{{
+            $t(item.labelKey, { count: item.count })
+          }}</span>
           <span class="bns-form__duration-amount">{{ item.amount }}</span>
           <q-icon
             v-if="record.years == item.value"
@@ -285,25 +287,29 @@ export default {
   data() {
     let belnetOptions = [
       {
-        label: "1 Year",
+        labelKey: "strings.durationYear",
+        count: 1,
         value: "1y",
         amount: "650 BDX",
         price: 650
       },
       {
-        label: "2 Years",
+        labelKey: "strings.durationYears",
+        count: 2,
         value: "2y",
         amount: "1000 BDX",
         price: 1000
       },
       {
-        label: "5 Years",
+        labelKey: "strings.durationYears",
+        count: 5,
         value: "5y",
         amount: "2000 BDX",
         price: 2000
       },
       {
-        label: "10 Years",
+        labelKey: "strings.durationYears",
+        count: 10,
         value: "10y",
         amount: "4000 BDX",
         price: 4000
@@ -388,7 +394,7 @@ export default {
       const name = (this.record.name || "").toLowerCase();
       return {
         name: name ? (name.includes(".bdx") ? name : name + ".bdx") : "",
-        duration: option.label,
+        duration: this.$t(option.labelKey, { count: option.count }),
         price: option.price
       };
     },

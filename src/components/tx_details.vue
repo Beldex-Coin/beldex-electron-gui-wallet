@@ -141,6 +141,9 @@
           @click="copyAddress(tx.txid)"
         >
           <img src="~assets/icons/copy.svg" alt="" />
+          <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 6]">
+            {{ $t("buttons.copiedId") }}
+          </q-tooltip>
         </button>
       </div>
     </div>
@@ -249,11 +252,7 @@
       <p
         v-else
         class="txn-details__notes"
-        v-text="
-          txNotes
-            ? txNotes
-            : 'The notes are saved to remark the details about the transaction. You can change this by hitting edit note.'
-        "
+        v-text="txNotes ? txNotes : $t('strings.transactionNotesHint')"
       ></p>
       <div v-if="editNotes" class="txn-details__notes-actions">
         <q-btn
@@ -501,9 +500,7 @@ export default {
       this.$q.notify({
         type: "positive",
         timeout: 1000,
-        message: this.$t("notification.positive.copied", {
-          item: "Transaction Id"
-        })
+        message: this.$t("notification.positive.transactionIdCopied")
       });
     }
   }

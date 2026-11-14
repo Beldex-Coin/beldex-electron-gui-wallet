@@ -309,19 +309,35 @@
               ref="qDateProxy"
               transition-show="scale"
               transition-hide="scale"
+              @before-show="pendingDate = form.refresh_start_date"
             >
               <q-date
-                v-model="form.refresh_start_date"
+                v-model="pendingDate"
                 class="beldex-date"
                 :options="dateRangeOptions"
               >
                 <div class="row items-center justify-end">
                   <q-btn
+                    v-if="pendingDate === form.refresh_start_date"
                     v-close-popup
                     :label="$t('buttons.close')"
                     color="primary"
                     flat
                   />
+                  <template v-else>
+                    <q-btn
+                      v-close-popup
+                      :label="$t('buttons.cancel')"
+                      color="primary"
+                      flat
+                    />
+                    <q-btn
+                      :label="$t('buttons.ok')"
+                      color="primary"
+                      flat
+                      @click="submitDate"
+                    />
+                  </template>
                 </div>
               </q-date>
             </q-popup-proxy>
@@ -503,6 +519,8 @@ export default {
       step: 1,
       showPassword: false,
       showPasswordConfirm: false,
+      // Date chosen in the open calendar; only applied to the form on Submit
+      pendingDate: "",
       wallet: {
         name: "",
         seed: "",
@@ -906,6 +924,12 @@ export default {
       const now = Date.now();
       const formattedNow = date.formatDate(now, qDateFormat);
       return dateSelected >= dateFirstBlock && dateSelected <= formattedNow;
+    },
+    submitDate() {
+      this.form.refresh_start_date = this.pendingDate;
+      // Close explicitly: the button set swaps to "Close" once the date is
+      // applied, so don't rely on v-close-popup surviving that re-render.
+      this.$refs.qDateProxy.hide();
     },
     cancel() {
       this.$router.replace({ path: "/wallet-select" });

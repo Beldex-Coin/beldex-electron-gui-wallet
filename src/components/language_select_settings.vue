@@ -63,7 +63,9 @@ export default {
     };
   },
   computed: {
-    pending_config: state => state.gateway.app.pending_config,
+    pending_config() {
+      return this.$store.state.gateway.app.pending_config;
+    },
     lang() {
       return this.$i18n.locale;
     },
@@ -75,13 +77,6 @@ export default {
       }));
     }
   },
-  watch: {
-    isVisible: function() {
-      if (this.isVisible == false) {
-        this.$store.dispatch("gateway/resetPendingConfig");
-      }
-    }
-  },
   methods: {
     localeCode,
     save() {
@@ -91,7 +86,7 @@ export default {
       this.$emit("select", lang);
 
       this.$gateway.send("core", "save_config", this.pending_config);
-      this.isVisible = false;
+      this.$emit("close");
     },
     setLanguage(lang) {
       this.langSelect = lang;

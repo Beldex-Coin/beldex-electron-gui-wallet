@@ -4,7 +4,7 @@
       <q-header class="settings-modal__header">
         <BeldexTopBar :net-type="config.app.net_type">
           <template #actions>
-            <MainMenu disable-settings="true" @about="page = 'about'" />
+            <MainMenu :disable-settings="true" @about="page = 'about'" />
           </template>
         </BeldexTopBar>
       </q-header>
@@ -214,7 +214,7 @@
               v-if="page === 'language'"
               class="beldex-panel settings-modal__panel settings-modal__language"
             >
-              <LanguageSelect username="matt" />
+              <LanguageSelect username="matt" @close="isVisible = false" />
             </section>
           </main>
         </q-page>
@@ -260,7 +260,6 @@
 import { mapState } from "vuex";
 import SettingsGeneral from "components/settings_general";
 import LanguageSelect from "components/language_select_settings";
-import MainMenu from "components/menus/mainmenu";
 import BeldexTopBar from "components/beldex_top_bar";
 import AboutPanel from "components/about_panel";
 import { version } from "../../package.json";
@@ -270,7 +269,9 @@ export default {
   components: {
     LanguageSelect,
     SettingsGeneral,
-    MainMenu,
+    // Lazy: mainmenu.vue imports this file, so a static import is circular and
+    // leaves MainMenu undefined when this module is evaluated first.
+    MainMenu: () => import("components/menus/mainmenu"),
     BeldexTopBar,
     AboutPanel
   },

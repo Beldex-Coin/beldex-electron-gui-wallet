@@ -641,7 +641,7 @@ export class WalletRPC {
     if (response.error || !response.result) {
       this.sendGateway("show_notification", {
         type: "negative",
-        message: "Failed to create sub-address",
+        i18n: "notification.errors.subaddressCreateFailed",
         timeout: 2000
       });
       return;
@@ -652,7 +652,7 @@ export class WalletRPC {
     }
     this.sendGateway("show_notification", {
       type: "positive",
-      message: "Sub-address created",
+      i18n: "notification.positive.subaddressCreated",
       timeout: 1500
     });
   }
@@ -755,9 +755,26 @@ export class WalletRPC {
     });
   }
 
+  // Returns true (and notifies the UI) if a wallet with this name already exists
+  walletNameTaken(filename) {
+    if (!this.wallet_dir || !filename) return false;
+    const destination = path.join(this.wallet_dir, String(filename));
+    if (fs.existsSync(destination) || fs.existsSync(destination + ".keys")) {
+      this.sendGateway("set_wallet_error", {
+        status: {
+          code: -1,
+          i18n: "notification.errors.walletAlreadyExists"
+        }
+      });
+      return true;
+    }
+    return false;
+  }
+
   createWallet(filename, password, language) {
     // Reset the status error
     this.sendGateway("reset_wallet_error");
+    if (this.walletNameTaken(filename)) return;
     this.sendRPC("create_wallet", {
       filename,
       password,
@@ -813,6 +830,8 @@ export class WalletRPC {
       });
       return;
     }
+    this.sendGateway("reset_wallet_error");
+    if (this.walletNameTaken(filename)) return;
     let restore_height = Number.parseInt(refresh_start_timestamp_or_height);
 
     // if the height can't be parsed just start from block 0
@@ -888,6 +907,7 @@ export class WalletRPC {
       return;
     }
 
+    if (this.walletNameTaken(filename)) return;
     let refresh_start_height = Number.parseInt(
       refresh_start_timestamp_or_height
     );
@@ -967,6 +987,7 @@ export class WalletRPC {
       return;
     }
 
+    if (this.walletNameTaken(filename)) return;
     let restore_height = Number.parseInt(refresh_start_timestamp_or_height);
 
     // if the height can't be parsed just start from block 0

@@ -73,6 +73,7 @@ export default {
     verify: "Verify",
     viewOnExplorer: "View in explorer",
     copyId: "Copy ID",
+    copiedId: "Copied ID",
     saveContact: "Save contact",
     add: "Add",
     max: "Max",
@@ -159,7 +160,7 @@ export default {
       confirm: "Exit"
     },
     keyImages: {
-      title: "Key Images",
+      title: "{type} Key Images",
       subtitle:
         "Export key images for a view-only wallet, or import them back.",
       message: "Do you want to {type} key images?",
@@ -625,6 +626,10 @@ export default {
     bnsValueEth: "Enter ETH value"
   },
   strings: {
+    transactionNotesHint:
+      "The notes are saved to remark the details about the transaction. You can change this by hitting edit note.",
+    durationYear: "{count} Year",
+    durationYears: "{count} Years",
     changePasswordHint:
       "Use at least 8 characters. You'll need it to open this wallet.",
     contactAdded: "added {date}",

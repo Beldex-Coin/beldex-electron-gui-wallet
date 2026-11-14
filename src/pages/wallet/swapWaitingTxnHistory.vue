@@ -10,7 +10,7 @@
           class="swapPayment__timer"
           :class="{ 'is-expired': timeIsExpire }"
         >
-          <q-icon name="timer" size="14px" />
+          <img src="~assets/icons/timer.svg" alt="" width="14" height="14" />
           <beldex-spinner v-if="!clock" size="12px" color="warning" />
           <span v-else>{{ clock }}</span>
         </span>
@@ -87,7 +87,7 @@
                 @click="
                   copyAddress({
                     val: txnDetails.id,
-                    from: 'Transaction ID'
+                    from: 'notification.positive.transactionIdCopied'
                   })
                 "
               />
@@ -120,7 +120,7 @@
             @click="
               copyAddress({
                 val: txnDetails.payinAddress,
-                from: 'Recipient address'
+                from: 'notification.positive.recipientAddressCopied'
               })
             "
           />
@@ -319,7 +319,7 @@ export default {
       this.$q.notify({
         type: "positive",
         timeout: 1000,
-        message: `${content.from} copied`
+        message: this.$t(content.from)
       });
     }
   }

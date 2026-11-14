@@ -280,7 +280,7 @@
           </div>
           <div>
             <h2 class="beldex-dialog__title">
-              {{ $t("dialog.keyImages.title") }}
+              {{ keyImageTitle }}
             </h2>
             <p class="beldex-dialog__subtitle">
               {{ $t("dialog.keyImages.subtitle") }}
@@ -388,10 +388,12 @@
             @click="hideModal('key_image')"
           />
           <q-btn class="beldex-btn" unelevated no-caps @click="doKeyImages()">
-            <q-icon
-              :name="modals.key_image.type === 'Export' ? 'output' : 'input'"
-              size="14px"
-              class="q-mr-sm"
+            <img
+              :src="
+                modals.key_image.type === 'Import' ? importIcon : exportIcon
+              "
+              alt=""
+              class="beldex-btn__icon"
             />
             {{ $t("buttons." + modals.key_image.type.toLowerCase()) }}
           </q-btn>
@@ -478,6 +480,8 @@ import WalletPassword from "src/mixins/wallet_password";
 import ClipboardCopyMixin from "src/mixins/clipboard_copy_mixin";
 import BeldexField from "components/beldex_field";
 import PasswordInput from "components/password_input";
+import importIcon from "assets/icons/import.svg";
+import exportIcon from "assets/icons/export.svg";
 import ConfirmDialog from "components/confirm_dialog";
 import PasswordConfirmDialog from "components/password_confirm_dialog";
 
@@ -490,6 +494,8 @@ export default {
   mixins: [WalletPassword, ClipboardCopyMixin],
   data() {
     return {
+      importIcon,
+      exportIcon,
       // Only show keys that this menu asked for, not secrets that reach the
       // store some other way (e.g. a late update after creating a wallet).
       awaitingPrivateKeys: false,
@@ -527,6 +533,12 @@ export default {
     },
     locale() {
       return this.$q.lang.getLocale();
+    },
+    keyImageTitle() {
+      const type = this.$t(
+        `dialog.keyImages.${this.modals.key_image.type.toLowerCase()}`
+      );
+      return this.$t("dialog.keyImages.title", { type });
     },
     hasSpendKey() {
       return !!this.secret.spend_key && !/^0*$/.test(this.secret.spend_key);

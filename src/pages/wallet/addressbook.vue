@@ -75,6 +75,17 @@
                 {{ $t("menuItems.copyAddress") }}
               </q-tooltip>
             </button>
+            <button
+              type="button"
+              class="beldex-square-btn contacts__copy"
+              :aria-label="$t('menuItems.sendToThisAddress')"
+              @click="sendToAddress(entry, $event)"
+            >
+              <img src="~assets/icons/send-muted.svg" alt="" />
+              <q-tooltip anchor="bottom right" self="top right">
+                {{ $t("menuItems.sendToThisAddress") }}
+              </q-tooltip>
+            </button>
             <ContextMenu
               :menu-items="menuItems"
               menu-class="beldex-menu--contact"
@@ -128,7 +139,7 @@ export default {
       {
         action: "sendToAddress",
         i18n: "menuItems.sendToThisAddress",
-        icon: "o_send"
+        icon: "app_send"
       },
       {
         action: "copyAddress",

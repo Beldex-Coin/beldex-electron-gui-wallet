@@ -38,7 +38,9 @@
           :class="{ 'bns-form__duration--on': renewYear == item.value }"
           @click="renewYear = item.value"
         >
-          <span class="bns-form__duration-label">{{ item.label }}</span>
+          <span class="bns-form__duration-label">{{
+            $t(item.labelKey, { count: item.count })
+          }}</span>
           <span class="bns-form__duration-amount">{{ item.amount }}</span>
         </button>
       </div>
@@ -170,22 +172,26 @@ export default {
   data() {
     let belnetOptions = [
       {
-        label: "1 Year",
+        labelKey: "strings.durationYear",
+        count: 1,
         value: "1y",
         amount: "650 BDX"
       },
       {
-        label: "2 Years",
+        labelKey: "strings.durationYears",
+        count: 2,
         value: "2y",
         amount: "1000 BDX"
       },
       {
-        label: "5 Years",
+        labelKey: "strings.durationYears",
+        count: 5,
         value: "5y",
         amount: "2000 BDX"
       },
       {
-        label: "10 Years",
+        labelKey: "strings.durationYears",
+        count: 10,
         value: "10y",
         amount: "4000 BDX"
       }

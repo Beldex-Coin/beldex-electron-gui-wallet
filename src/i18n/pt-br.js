@@ -1,6 +1,7 @@
 export default {
   buttons: {
     advanced: "Avançado",
+    new: "Novo",
     addAddressBook: "Adicionar ao catálogo de endereços",
     addWallet: "Adicionar Carteira",
     all: "TUDO",
@@ -8,13 +9,20 @@ export default {
     browse: "PESQUISAR",
     cancel: "CANCELAR",
     change: "MUDAR",
+    changePassword: "Alterar senha",
     check: "Verificar",
     clear: "Claro",
     clearAll: "Limpar tudo",
     close: "FECHAR",
+    ok: "OK",
+    prev: "Anterior",
+    importWalletAction: "Importar carteira",
+    restoreViewOnlyWallet: "Restaurar carteira apenas para visualização",
     contacts: "CONTACTOS",
     copy: "cópia de",
+    copyJson: "Copiar JSON",
     copyAddress: "COPIAR ENDEREÇO",
+    openInWallet: "Abrir na carteira",
     copyData: "Copiar dados",
     copySignature: "COPY SIGNATURE",
     createWallet: "CRIAR CARTEIRA",
@@ -33,6 +41,7 @@ export default {
     bns: "Serviço de Nomes BELDEX",
     min: "mín",
     max: "máx.",
+    paste: "Colar",
     next: "PRÓXIMO",
     purchase: "Comprar",
     openWallet: "ABRIR CARTEIRA",
@@ -59,6 +68,9 @@ export default {
     update: "Atualizar",
     verify: "Verificar",
     viewOnExplorer: "VISUALIZAR NO EXPLORADOR",
+    copyId: "Copiar ID",
+    copiedId: "ID copiado",
+    saveContact: "Salvar contato",
     add: "Adicionar",
     bnsUpdate: "Atualização do BNS",
     bnsRenew: "Renovação do BNS",
@@ -106,6 +118,7 @@ export default {
     },
     confirmPurchase: {
       title: "Confirmar compra",
+      message: "Revise o registro BNS antes de efetuar o pagamento.",
       ok: "Confirmar"
     },
     deleteAddress: {
@@ -147,9 +160,13 @@ export default {
     },
     keyImages: {
       title: "{type} imagens chave",
+      subtitle:
+        "Exporte imagens de chave para uma carteira somente leitura, ou importe-as de volta.",
       message: "Quer {type} imagens chave?",
       export: "Exportar",
-      import: "Importar"
+      exportHint: "Gravar imagens de chave em um arquivo",
+      import: "Importar",
+      importHint: "Carregar chaves a partir de um arquivo"
     },
     bnsUpdate: {
       title: "Atualizar registro do BNS",
@@ -234,6 +251,7 @@ export default {
     },
     transactionDetails: {
       title: "Detalhes das transações",
+      subtitle: "Dados brutos retornados pela carteira",
       ok: "Fechar"
     },
     transfer: {
@@ -243,6 +261,7 @@ export default {
     },
     confirmTransaction: {
       title: "Confirmar envio",
+      subtitle: "Revise a transferência antes de ela ser transmitida à rede.",
       sendTo: "Enviar para",
       priority: "Prioridade"
     },
@@ -281,10 +300,18 @@ export default {
     address: "Endereço",
     recipientAddress: "Endereço do destinatário",
     amount: "QUANTIDADE",
+    bchatIdTitle: "ID do BChat",
+    ethAddress: "Endereço ETH",
+    daemon: "Daemon:",
+    refundWalletAddress: "Endereço de carteira para reembolso",
+    fullWallet: "Carteira completa",
+    liteWallet: "Carteira LITE",
+    passwordLabel: "Senha",
+    confirmPasswordLabel: "Confirmar senha",
     belnetId: "ID Belnet",
     eth: "ETH",
     backupOwner: "Proprietário de backup",
-    confirmPassword: "CONFIRMAR PALAVRA-PASSE",
+    confirmPassword: "CONFIRMAR PALAVRA-PASSE (OPCIONAL)",
     daemonLogLevel: "NÍVEL DE LOG PARA O SERVIÇO",
     daemonP2pPort: "PORTA P2P DO SERVIÇO",
     dataStoragePath: "ARMAZENAMENTO DOS DADOS",
@@ -295,6 +322,7 @@ export default {
     startDate: "Data de início",
     endDate: "Data de término",
     filterTransactionType: "FILTRAR POR TIPO DE TRANSAÇÃO",
+    transactionType: "Tipo de transação",
     internalWalletPort: "PORTA INTERNA DA CARTEIRA",
     keyImages: {
       exportDirectory: "DIRETORIA DE EXPORTAÇÃO DAS CHAVES DE IMAGEM",
@@ -317,7 +345,7 @@ export default {
     addressBookNotes: "Notas do livro de endereços",
     optional: "OPCIONAL",
     owner: "Proprietário",
-    password: "PALAVRA-PASSE",
+    password: "PALAVRA-PASSE (OPCIONAL)",
     paymentId: "ID DE PAGAMENTO",
     priority: "PRIORIDADE",
     remoteNodeHost: "NÓDULO HÓSPEDE REMOTO",
@@ -351,6 +379,8 @@ export default {
     updateValues: "Atualizar valores",
     updateHeight: "Atualizar altura",
     walletAddress: "Endereço da carteira",
+    privateViewkey: "Chave de visualização privada (private viewkey)",
+    privateSpendkey: "Chave de gasto privada (private spendkey)",
     year: "Ano",
     values: "Valores",
     recipientAddressBns: "Endereço do destinatário / nome BNS"
@@ -373,6 +403,7 @@ export default {
     copyBelnetAddress: "Copiar endereço belnet",
     copyBelnetName: "Copiar nome belnet",
     copyName: "Copiar nome",
+    copyWalletName: "Copiar nome da carteira",
     copyOwner: "Proprietário da cópia",
     copyQR: "Copiar código QR",
     copySeedWords: "Copiar palavras semente",
@@ -381,6 +412,7 @@ export default {
     copyTransactionId: "Copira ID da transação",
     copyViewKey: "Copiar chave de visualização",
     createNewWallet: "Criar nova carteira",
+    deleteContact: "Excluir contato",
     deleteWallet: "Apagar carteira",
     exit: "Sair da carteira",
     importOldGUIWallet: "Importar carteiras da antiga carteira GUI",
@@ -404,11 +436,18 @@ export default {
   notification: {
     positive: {
       addressCopied: "Copiar endereço para o clipboard",
+      subaddressCreated: "Subendereço criado",
+      paymentReceived: "Pagamento recebido",
       linkCopied: "Link copiado para a área de transferência",
       backupOwnerCopied:
         "O proprietário do backup copiou para a área de transferência",
       bannedPeer: "{host} banido até {time}",
       copied: "{item} copiado para o clipboard",
+      inputHashCopied: "Hash de entrada copiado!",
+      outputHashCopied: "Hash de saída copiado!",
+      transactionIdCopied: "ID da transação copiado!",
+      recipientAddressCopied: "Endereço do destinatário copiado!",
+      refundAddressCopied: "Endereço para reembolso copiado!",
       decryptedBNSRecord:
         "Registro BNS descriptografado com sucesso para {name}",
       itemSaved: "{item} salvado em {filename}",
@@ -436,6 +475,10 @@ export default {
     },
     errors: {
       banningPeer: "Erro ao banir par",
+      subaddressCreateFailed: "Falha ao criar subendereço",
+      fillInputs: "Por favor, preencha os campos",
+      addressAlreadyExists: "O endereço já existe!",
+      pleaseEnterName: "Por favor, insira o nome",
       cannotAccessRemoteNode:
         "Não foi possível aceder ao nódulo remoto, por favor experimente outro nódulo remoto",
       changingPassword: "Erro ao alterar palabra-passe",
@@ -450,6 +493,8 @@ export default {
       enterTransactionProof: "Enter transaction proof",
       enterWalletName: "Introduza o nome da carteira",
       enterName: "Digite um nome",
+      enterNameCorrectly: "Por favor, insira o nome corretamente.",
+      invalidBchatIdInput: "ID do Bchat inválido",
       errorSavingItem: "Erro salvando {item}",
       failedMasterNodeUnlock: "Falhou o desbloqueamento do nódulo de serviço",
       failedToSetLanguage: "Falhou mudança de língua: {lang}",
@@ -463,6 +508,8 @@ export default {
 
       internalError: "Erro interno",
       invalidAddress: "Endereço não válido",
+      contactsWaitForSync:
+        "Contatos podem ser salvos assim que a sincronização da carteira for concluída",
       invalidAmount: "Quantidade não válida",
       invalidBackupOwner: "Endereço do proprietário de backup inválido",
       invalidNameLength: "Comprimento do nome inválido",
@@ -483,6 +530,9 @@ export default {
         "Por favor introduza o comando de registro do nódulo de serviço",
       invalidMasterNodeKey: "Chave do nódulo de serviço inválido",
       invalidBchatId: "ID do Bchat inválido",
+      invalidBelnetId: "ID do Belnet inválido",
+      invalidEthAddress: "Endereço Ethereum inválido",
+      enterValidAddress: "Por favor, insira um endereço válido",
       invalidSignature: "Assinatura inválida",
       invalidWalletPath: "Caminho da carteira inválido",
       keyImages: {
@@ -513,6 +563,7 @@ export default {
         "O registro BNS fornecido não existe ou não pertence a esta carteira"
     },
     warnings: {
+      retryingBackend: "Tentando reconectar ao backend...",
       privateKeysAfterSync:
         "As chaves privadas poderão ser exibidas quando a carteira terminar de sincronizar.",
       noKeyImageExport: "Nenhuma chave de imagem encontrada para exportar",
@@ -543,10 +594,12 @@ export default {
     enterRecipientAddress: "Insira o endereço do destinatário de {coin}",
     enteroldPassword: "Digite a senha antiga",
     enterNewPassword: "Insira a nova senha",
+    createWalletPassword: "Insira a nova senha",
     reEnterPassword: "Digite novamente a senha",
     filterTx: "Digite um ID, nome, endereço ou valor",
     hexCharacters: "{count} caracteres hexadecimais",
     mnemonicSeed: "25 (or 24) palavras semente mnemónicas",
+    restoreSeed: "Insira sua frase de recuperação de 25 palavras",
     pasteTransactionId: "Colar o ID da transação",
     pasteTransactionProof: "Colar prova de transação",
     dataToSign:
@@ -560,6 +613,7 @@ export default {
     transactionNotes: "Notas adicionais para anexar à transação",
     unsignedData: "Os dados como deveriam aparecer antes de serem assinados",
     walletName: "Um nome para a sua carteira",
+    hexKey: "Chave hexadecimal de 64 caracteres",
     walletPassword: "Uma palavra-passe opcional para a carteira",
     reEnterWalletPassword: "Digite novamente a senha",
     enterEthAddress: "Insira seu endereço ETH",
@@ -567,6 +621,7 @@ export default {
     enterBchatId: "Insira seu ID do BChat",
     enterWalletAddress: "Insira o endereço da sua carteira",
     pasteSignature: "Colar assinatura",
+    searchCoins: "Buscar moedas",
     signerAddress: "Endereço do signatário",
     dataThatWasSigned: "Dados que foram assinados",
     searchContacts: "Pesquisar contatos",
@@ -578,17 +633,29 @@ export default {
     bnsValueEth: "Insira o valor ETH"
   },
   strings: {
+    transactionNotesHint:
+      "As notas são salvas para registrar os detalhes da transação. Você pode alterá-las clicando em editar notas.",
+    durationYear: "{count} ano",
+    durationYears: "{count} anos",
+    changePasswordHint:
+      "Use pelo menos 8 caracteres. Você precisará deles para abrir esta carteira.",
+    contactAdded: "adicionado em {date}",
     addAddressBookEntry: "Adicionar registo ao livro de endereços",
+    addContact: "Adicionar contato",
+    contactsStoredNote:
+      "Os contatos são armazenados apenas neste dispositivo, dentro do arquivo criptografado da sua carteira.",
     addressBookDetails: "Detalhes do livro de endereço",
     addressBookIsEmpty: "Livro de endereço vazio",
     addresses: {
       myPrimaryAddress: "Meu endereço primario",
       myUnusedAddresses: "Meus endereços não utilizados",
       myUsedAddresses: "Meus endereços utilizados",
+      primaryAddress: "Endereço principal",
       // primaryAddress: "Endereço primario",
       subAddress: "Sub-endereço",
       subAddressIndex: "Índice {index}",
-      primaryAccount: "Conta primária"
+      primaryAccount: "Conta primária",
+      shareToReceive: "Compartilhe este endereço para receber BDX"
     },
     advancedOptions: "Opções Avançadas",
     awaitingConfirmation: "Aguardando confirmação",
@@ -643,6 +710,10 @@ export default {
     encryptedWalletValue: "Encrypted Wallet Value",
     encryptedEthAddrValue: "Encrypted ETH Address",
     bns: {
+      noNamesYet: "Nenhum nome BNS ainda",
+      noNamesHint:
+        "Os nomes que você adquirir com esta carteira aparecerão aqui.",
+      buyAName: "Comprar um nome",
       bchatID: "ID do bate-papo",
       belnetName1Year: "Nome Belnet 1 ano",
       belnetNameXYears: "Nome Belnet {years} anos",
@@ -656,6 +727,9 @@ export default {
       records: "Registros BNS",
       addRecord: "Adicionar registro",
       fetchNewRecord: "Obtendo o registro BNS da rede...",
+      updateOwnerHint:
+        "Transferir o nome para um novo proprietário ou proprietário reserva",
+      updateValuesHint: "Alterar o BChat, Belnet, endereço ou valor em ETH",
       duration: "Duração"
     },
     bnsPurchaseDescription:
@@ -677,6 +751,10 @@ export default {
     operator: "Operador",
     paymentID: "ID de Pagamento",
     peerList: "Lista de pares",
+    peersConnected: "{count} Conectado(s)",
+    peerStateSynced: "Synced",
+    peerStateSynchronizing: "Synchronizing",
+    peerStateConnecting: "Connecting",
     priorityOptions: {
       automatic: "Automatico",
       slow: "Lento",
@@ -703,6 +781,8 @@ export default {
       "O staking contribui para a segurança da rede Beldex. Ao contribuir, você ganha BDX. Após o staking, você precisará aguardar 15 ou 30 dias para que seus BDX sejam desbloqueados, dependendo se o staking foi desbloqueado por um contribuinte ou se o nó foi desativado. Para saber mais sobre staking, consulte a documentação em [link para a documentação]",
     masterNodeRegistrationDescription:
       'Introduza o {registerCommand} commando produzido pelo serviço que está se registando para se tornar un Nódulo de Serviço utilizando o commando "{prepareCommand}" ',
+    masterNodeRegistrationNote:
+      "O registro transmite uma transação de *staking* a partir desta carteira. Certifique-se de que o comando tenha sido gerado nas últimas 2 semanas.",
     masterNodeStartStakingDescription: "Para começar a pintar, visite",
     masterNodeStartStakingDescription1: "Guia -->",
     noMasterNodesCurrentlyAvailable:
@@ -711,6 +791,7 @@ export default {
       contributors: "Contribuidores",
       lastRewardBlockHeight: "Altura do último bloco de recompensa",
       lastUptimeProof: "Última prova de tempo de atividade",
+      noUptimeProof: "Nunca",
       maxContribution: "Contribuição máxima",
       minContribution: "Contribuição mínima",
       operatorFee: "Taxa de Operador",
@@ -730,6 +811,19 @@ export default {
     startingDaemon: "Começando serviço",
     startingWallet: "Começando carteira",
     switchToDateSelect: "Mudar para data de seleção",
+    progress: {
+      gettingTransactionInfo: "Obtendo informações da transação",
+      cancelTransactionFromConfirm:
+        "Cancelar a transação na janela de confirmação",
+      sendingTransaction: "Enviando transação",
+      sendingRenewMapping: "Enviando transação de renovação de mapeamento",
+      unlocking: "Desbloqueando...",
+      registering: "Registrando...",
+      staking: "Realizando staking...",
+      gettingSweepAllInfo:
+        "Obtendo informações da transação de transferência total (sweep all)",
+      sweepingAll: "Transferindo tudo (sweep all)"
+    },
     switchToHeightSelect: "Mudar para altura de seleção",
     syncingDaemon: "Daemon de sincronização",
     transactionID: "ID da Transação",
@@ -774,7 +868,6 @@ export default {
     viewKey: "Chave de visualização",
     viewOnlyMode:
       "Modo de visualização apenas. Por favor carregue a carteira completa para poder enviar moedas.",
-    WalletAddress: "Endereço da carteira",
     website: "site",
     privacy: "Privacidade",
     normal: "Normal",
@@ -792,21 +885,50 @@ export default {
     languageDefault: "Padrão",
     walletCount: "{count} carteira | {count} carteiras",
     selectWalletToUnlock: "Selecione uma carteira para desbloquear",
+    opened: "Aberta",
+    privacyCurrencies: "Moedas voltadas à privacidade",
+    allCurrencies: "Todas as moedas",
+    noCoinsFound: "Nenhuma moeda encontrada",
+    deregisteredNodes: "Nós (nodes) desregistrados",
+    none: "Nenhum",
+    pageInternalError: "Erro interno",
+    newVersionAvailable:
+      "Uma nova versão da Beldex Electron Wallet está disponível. Por favor, atualize sua carteira através do site oficial da Beldex.",
     walletsStoredIn:
       "Os arquivos da carteira são armazenados localmente em {path}",
     walletModeSubtitle: "Escolha como adicionar uma carteira",
     createWalletHint: "Gerar uma nova semente",
     createWalletSubtitle: "Nomeie sua nova carteira",
     restoreWalletHint: "Restaurar da sua semente de 25 palavras",
+    restoreWalletSubtitle:
+      "Restaurar um cofre criptografado a partir de uma frase de recuperação ou chaves",
+    viewOnlyBadge: "Somente visualização",
+    viewOnlyTitle: "Esta carteira é apenas para visualização",
+    viewOnlyDescription:
+      "Carregue a carteira completa para habilitar o envio de moedas.",
+    spendKeyNotLoaded: "Chave de gastos não carregada",
+    viewOnlyTag: "Somente visualização",
+    noSpendKeyViewOnly:
+      "Sem chave de gastos — esta carteira será restaurada no modo SOMENTE VISUALIZAÇÃO. Você pode acompanhar o saldo e as transferências recebidas, mas não é possível enviar BDX a partir dela.",
+    restorePointSubtitle: "Passo 2 / 2 · escolha de onde começar a verificação",
+    restoreFirstBlockHint:
+      "A restauração será feita a partir do primeiro bloco ({date}) para garantir que nenhuma transação seja perdida. Se você souber aproximadamente quando esta carteira foi criada, escolher uma data mais recente tornará a restauração muito mais rápida.",
+    currentHeight: "Altura atual: {height}",
+    passwordsMatch: "As senhas coincidem",
+    restoreKeysSubtitle: "Passo 1 / 2 · insira as chaves da sua carteira",
+    restoreFromSeedTab: "Restaurar a partir da frase de recuperação (seed)",
+    restoreFromKeysTab: "Restaurar a partir das chaves",
+    seedWordsHint: "Separe as palavras com espaços",
+    seedWordCount: "{count} / 25 palavras",
     importWalletHint: "Importar um arquivo .keys de carteira",
     languageRegional: "Regional",
     networkActive: "{network} ativa",
     connectionTopology: "Selecione a topologia de conexão",
     ringCtEnforced: "Criptografia: Ring-CT aplicada",
     netTypes: {
-      mainnet: "Mainnet",
-      stagenet: "Stagenet",
-      testnet: "Testnet"
+      mainnet: "Rede principal",
+      stagenet: "Rede de teste intermediária",
+      testnet: "Rede de teste"
     },
     availableShort: "Disponível",
     rescanFullHint:
@@ -817,6 +939,7 @@ export default {
     primaryAddressLabel: "Endereço principal",
     stakingSummary: "Resumo do staking",
     totalStaked: "Total em staking",
+    rewardsEarned: "Recompensas obtidas",
     activeStakes: "Stakes ativos",
     deregisteredStakes: "Cancelado",
     unlockPeriod: "Período de desbloqueio",
@@ -840,9 +963,12 @@ export default {
       "Pode levar um ou dois minutos para que um novo nome apareça no Meu BNS.",
     yourNames: "Seus nomes",
     activeNames: "Ativo",
+    expiringSoon: "Expirando em breve",
     nextExpiry: "Próxima expiração",
     bnsRenewNote:
       "Renove um nome antes da sua altura de expiração para mantê-lo.",
+    bnsRenewExtendNote:
+      "A renovação estende o prazo de expiração a partir da data de vencimento atual, e não a partir de hoje.",
     masterNodeRegistered: "Registrado",
     masterNodeDeregistered: "Cancelado",
     keyImage: "Imagem da chave",
@@ -934,6 +1060,8 @@ export default {
       unsupportedpair: "Par de exchanges não suportado",
       minimumAmt: "O valor mínimo é",
       maximumAmt: "O valor máximo é",
+      minimumAmtSuffix: "para este par. Aumente o valor para continuar.",
+      maximumAmtSuffix: "para este par. Diminua o valor para continuar.",
       transactionDetails: "Detalhes da transação",
       youSend: "Você envia",
       exchangeRate: "Taxa de câmbio",
@@ -1038,17 +1166,28 @@ export default {
       depositAddress: "Endereço de depósito",
       swapHistory: "Histórico de swaps",
       swaps: "swaps",
+      noSwapsYet: "Nenhuma troca realizada ainda",
+      noSwapsYetDisc:
+        "Troque BDX por mais de 100 outras moedas. Todas as suas trocas serão listadas aqui, com seu status em tempo real.",
+      newExchange: "Nova troca",
       statusPending: "Pendente",
       statusCompleted: "Concluído",
       statusWaiting: "Aguardando",
       statusRefund: "Reembolso",
       statusFailed: "Falhou",
       statusExpired: "Expirado",
+      allStatuses: "Todos os status",
+      statusFilterLabel: "Status: {status}",
+      noMatchingSwaps: "Nenhum swap corresponde a este filtro",
+      noMatchingSwapsDisc:
+        "Nenhum dos seus {count} swaps tem o status {status}. Tente outro status ou limpe o filtro.",
+      clearFilter: "Limpar filtro",
       swapStatus: "Status do swap",
       depositWindowExpired: "A janela de depósito expirou após 3 horas",
       reviewBeforePaying: "Revise antes de pagar",
       estimate: "Estimativa",
-      waitingDeposit: "Aguardando seu depósito"
+      waitingDeposit: "Aguardando seu depósito",
+      checkedAgo: "Verificado há {seconds}s"
     },
     bnsNames: "Nomes BNS",
     masternode: "Masternode",

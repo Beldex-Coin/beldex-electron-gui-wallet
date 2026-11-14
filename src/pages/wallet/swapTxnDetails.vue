@@ -163,8 +163,7 @@ export default {
       return ["expired", "overdue"].includes(this.txnDetails?.status);
     },
     statusTitle() {
-      const status = String(this.txnDetails?.status || "");
-      return status.charAt(0).toUpperCase() + status.slice(1);
+      return this.localizedStatus(this.txnDetails?.status);
     },
     statusDesc() {
       return this.isExpired ? this.$t("titles.swap.depositWindowExpired") : "";
@@ -190,7 +189,6 @@ export default {
       if (!this.setSwapPreview || !this.txnDetails) return;
       const t = this.txnDetails;
       const rate = Number(t.rate);
-      const status = String(t.status || "");
       this.setSwapPreview({
         compact: true,
         from: t.currencyFrom || "",
@@ -198,8 +196,20 @@ export default {
         amountFrom: t.amountExpectedFrom > 0 ? t.amountExpectedFrom : 0,
         rate: isNaN(rate) || !rate ? "--" : rate.toFixed(8),
         amountTo: t.amountExpectedTo,
-        status: status.charAt(0).toUpperCase() + status.slice(1)
+        status: this.localizedStatus(t.status)
       });
+    },
+    // Same status buckets/labels as the swap history list.
+    localizedStatus(status) {
+      const keys = {
+        finished: "statusCompleted",
+        failed: "statusFailed",
+        refunded: "statusRefund",
+        overdue: "statusExpired",
+        expired: "statusExpired",
+        waiting: "statusWaiting"
+      };
+      return this.$t(`titles.swap.${keys[status] || "statusPending"}`);
     },
     copyAddress(
       value,
